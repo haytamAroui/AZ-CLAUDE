@@ -13,48 +13,33 @@ AZCLAUDE defaults to Claude Code paths. When another CLI is detected, substitute
 
 ---
 
-### Detection
+### Path Table
+
+| CLI | Rules File | Config Dir | Agents | Commands | Memory |
+|-----|-----------|------------|--------|----------|--------|
+| Claude Code | `CLAUDE.md` | `.claude/` | `.claude/agents/` | `.claude/commands/` | `.claude/memory/` |
+| Codex CLI | `AGENTS.md` | `.codex/` | `.codex/agents/` | `.codex/commands/` | `.codex/memory/` |
+| OpenCode | `AGENTS.md` | `.opencode/` | `.opencode/agents/` | `.opencode/commands/` | `.opencode/memory/` |
+| Gemini CLI | `GEMINI.md` | `.gemini/` | `.gemini/agents/` | `.gemini/commands/` | `.gemini/memory/` |
+| Cursor | `.cursor/rules/project.mdc` | `.cursor/` | `.cursor/agents/` | `.cursor/commands/` | `.cursor/memory/` |
+
+---
+
+### Auto-Detection
+
+Detect by directory presence — not by executable name (executables aren't always in PATH).
 
 ```bash
-# Detect active CLI
-if command -v claude &>/dev/null; then echo "claude-code"
-elif command -v codex &>/dev/null; then echo "openai-codex"
-elif command -v opencode &>/dev/null; then echo "opencode"
-elif command -v gemini &>/dev/null; then echo "gemini-cli"
-else echo "unknown"
+if   [ -d .claude ];   then CFG=".claude";   RULES="CLAUDE.md"
+elif [ -d .gemini ];   then CFG=".gemini";   RULES="GEMINI.md"
+elif [ -d .opencode ]; then CFG=".opencode"; RULES="AGENTS.md"
+elif [ -d .codex ];    then CFG=".codex";    RULES="AGENTS.md"
+elif [ -d .cursor ];   then CFG=".cursor";   RULES=".cursor/rules/project.mdc"
+else CFG=".claude"; RULES="CLAUDE.md"
 fi
 ```
 
----
-
-### Path Table
-
-| Path type | Claude Code | OpenAI Codex | OpenCode | Gemini CLI | Cursor |
-|-----------|------------|--------------|----------|------------|--------|
-| Config dir | `.claude/` | `.codex/` | `.opencode/` | `.gemini/` | `.cursor/` |
-| Commands dir | `.claude/commands/` | `.codex/commands/` | `.opencode/commands/` | `.gemini/commands/` | `.cursor/rules/` |
-| Agents dir | `.claude/agents/` | N/A | `.opencode/agents/` | N/A | `.cursor/agents/` |
-| Memory dir | `.claude/memory/` | `.codex/memory/` | `.opencode/memory/` | `.gemini/memory/` | `.cursor/memory/` |
-| Always-hot file | `CLAUDE.md` | `AGENTS.md` | `OPENCODE.md` | `GEMINI.md` | `.cursorrules` |
-| Settings file | `~/.claude/settings.json` | `~/.codex/config.json` | N/A | `~/.gemini/settings.json` | N/A |
-
----
-
-### Substitution Rule
-
-When CLI ≠ claude-code, replace every hardcoded `.claude/` path before writing files.
-
-```bash
-CONFIG_DIR=".claude"        # Default
-case "$DETECTED_CLI" in
-  openai-codex) CONFIG_DIR=".codex" ;;
-  opencode)     CONFIG_DIR=".opencode" ;;
-  gemini-cli)   CONFIG_DIR=".gemini" ;;
-  cursor)       CONFIG_DIR=".cursor" ;;
-esac
-```
-
-Write all capability files, commands, and memory to `$CONFIG_DIR/` instead of `.claude/`.
+Use `$CFG` and `$RULES` in all file operations. Never hardcode `.claude/`.
 
 ---
 

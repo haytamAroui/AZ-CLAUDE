@@ -1,53 +1,31 @@
 ---
 name: vocabulary-transform
 description: >
-  Domain vocabulary mapping. Transforms generic system language into domain-native terms.
-  Load when domain is detected during /setup or when agents produce output that feels off-register.
-  Triggers on: domain detection, "use proper terminology", vocabulary mismatch.
-tokens: ~60
+  Domain-native vocabulary mapping. Transforms generic system language
+  into the vocabulary of the project's domain. Load when creating agents,
+  skills, or commands for a specific domain.
+tokens: ~80
 ---
 
-## Domain Vocabulary Transformation
+## Vocabulary Transformation
 
-Generic system terms feel wrong in domain-specific contexts. This table maps them.
+Do NOT use generic system terms. Use the vocabulary of THIS project's domain.
 
-**Rule**: After detecting domain in Step 2 of orchestrator-init, substitute every generic term
-with the domain-native equivalent in CLAUDE.md, goals.md, skills, and agent instructions.
+| Domain | Notes become | Decisions become | Reviews become | Patterns become |
+|--------|-------------|-----------------|----------------|-----------------|
+| Research | claims, evidence | methodology choices | peer review | findings |
+| Product | requirements, specs | product decisions | design review | solutions |
+| API/Backend | endpoints, contracts | architectural decisions | code review | conventions |
+| Frontend | components, views | UX decisions | design review | UI patterns |
+| Data/ML | features, experiments | model decisions | validation | learnings |
+| Writing | drafts, arguments | editorial decisions | editing pass | style rules |
+| Compliance | obligations, assessments | regulatory interpretations | conformity review | requirements |
+| Medical | observations, findings | clinical decisions | audit | protocols |
+| Finance | positions, signals | risk decisions | validation | strategies |
 
----
-
-| Generic Term | Developer | Writer | Researcher | Compliance/Legal | Medical/Clinical | Finance/Trading |
-|-------------|-----------|--------|------------|------------------|-----------------|----------------|
-| notes | code comments | scene notes | field notes | annotations | clinical notes | trade notes |
-| decisions | architecture choices | narrative choices | methodology choices | compliance determinations | clinical decisions | investment decisions |
-| review | code review | editorial review | peer review | conformity review | clinical review | risk review |
-| tasks | issues / tickets | writing tasks | research tasks | obligations | care tasks | positions |
-| output | build artifact | manuscript | findings | compliance report | clinical outcome | P&L |
-| goals | sprint goals | manuscript goals | research objectives | compliance targets | patient outcomes | return targets |
-| problems | bugs / failures | plot holes | gaps in evidence | non-conformities | adverse events | drawdowns |
-| patterns | code patterns | narrative patterns | recurring themes | regulatory patterns | clinical patterns | market patterns |
-| history | git log | revision history | literature | precedent | patient history | trade history |
-
----
-
-## How to Apply
-
-**At /setup** (Step 3 of orchestrator-init): substitute vocabulary in the generated CLAUDE.md.
-
-```
-Wrong: "Document decisions in .claude/memory/decisions.md"
-Right (Researcher): "Document methodology choices in .claude/memory/decisions.md"
-Right (Compliance): "Document compliance determinations in .claude/memory/decisions.md"
-```
-
-**In agent instructions**: replace Layer 1 (PERSONA) and Layer 5 (DOMAIN CONTEXT) language.
-
-**In skill descriptions**: replace trigger words with domain-native synonyms so skills fire correctly.
-
-```
-Wrong (generic): "Triggers on: 'add a task', 'new issue'"
-Right (Medical):  "Triggers on: 'add a care task', 'new patient obligation', 'new clinical task'"
-```
+Apply to: agent descriptions, skill names, command names, memory content,
+and all generated text. An agent that speaks the project's language gets used.
+An agent that speaks generic system language gets ignored.
 
 ---
 
@@ -55,10 +33,30 @@ Right (Medical):  "Triggers on: 'add a care task', 'new patient obligation', 'ne
 
 | Signal in codebase / README | Detected domain |
 |----------------------------|----------------|
-| `package.json`, `requirements.txt`, test files | Developer |
-| No code files, `.docx`, prose content | Writer |
-| `knowledge/` dir, citations, `references/` | Researcher |
-| EU AI Act, GDPR, compliance, audit | Compliance/Legal |
-| `patient`, `clinical`, `ICD`, `FHIR` | Medical/Clinical |
-| `portfolio`, `trading`, `P&L`, `positions` | Finance/Trading |
+| `package.json`, `requirements.txt`, test files | Developer (API/Backend or Frontend) |
+| No code files, `.docx`, prose content | Writing |
+| `knowledge/` dir, citations, `references/` | Research |
+| EU AI Act, GDPR, compliance, audit | Compliance |
+| `patient`, `clinical`, `ICD`, `FHIR` | Medical |
+| `portfolio`, `trading`, `P&L`, `positions` | Finance |
+| ML frameworks, experiments, features | Data/ML |
 | Mixed signals | Developer (fallback) |
+
+---
+
+## How to Apply
+
+**At /setup** — substitute vocabulary in the generated CLAUDE.md, goals.md, and skill descriptions.
+
+```
+Wrong: "Document decisions in .claude/memory/decisions.md"
+Right (Research): "Document methodology choices in .claude/memory/decisions.md"
+Right (Compliance): "Document regulatory interpretations in .claude/memory/decisions.md"
+```
+
+**In skill descriptions** — replace trigger words with domain-native synonyms so skills fire correctly:
+
+```
+Wrong (generic): "Triggers on: 'add a task', 'new issue'"
+Right (Medical):  "Triggers on: 'add a care task', 'new patient obligation', 'new clinical task'"
+```

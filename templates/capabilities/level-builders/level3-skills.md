@@ -55,7 +55,7 @@ description: >
   Use this whenever a new .tsx file needs to be created with project conventions.
 ```
 
-Rule: **If the description doesn't list 3+ trigger variants, it will be underused.**
+Rule: **List 10+ trigger scenarios. Overtriggering is better than undertriggering.**
 
 ---
 
@@ -114,6 +114,8 @@ tokens: ~{estimate}
 ---
 
 ### Command Design — Encode Decisions, Not Delegation
+
+**Test**: If deleting the command and telling the agent directly gives the same result → the command adds no value. Rewrite it.
 
 **Bad command (thin delegator):**
 ```

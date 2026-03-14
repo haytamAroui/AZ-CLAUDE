@@ -14,54 +14,39 @@ Every agent file starts with this. Omitting fields = missing capability.
 ---
 name: {agent-name}
 description: >
-  What this agent does. When to spawn it.
-  What input it receives. What output it produces.
-
-# Model routing — choose based on task type, not preference
-model: claude-sonnet-4-6
-
-# Hard stop — prevents runaway loops
-maxTurns: 20
-
-# Tools this agent may use — whitelist only what it needs
-tools:
-  - Read
-  - Write
-  - Edit
-  - Bash
-  - Grep
-  - Glob
-
-# Tools explicitly blocked — deny what it must never touch
-disallowedTools: []
-
-# default = asks for permission | acceptEdits = auto-accepts edits | bypassPermissions = full trust
-permissionMode: default
-
-# true = runs in background (for parallel agents)
-background: false
-
-# none = normal | worktree = isolated git branch (for experiments — no risk to main)
-isolation: none
-
-# MCP servers this agent can access — empty = inherits parent
-mcpServers: []
-
-# Memory files to read at start — only what this agent actually needs
-memory:
-  - .claude/memory/goals.md
+  {Pushy description — list 10+ trigger scenarios. Claude under-triggers.}
+tools: Read, Write, Edit, Bash, Glob, Grep
+disallowedTools: Agent          # for non-orchestrating agents
+model: sonnet                   # see Model Routing below
+memory: project
+permissionMode: acceptEdits     # see Permission Modes below
+maxTurns: 50
+skills:
+  - project-conventions
+  - {relevant-skill}
+mcpServers: []                  # scope MCP access per agent
 ---
 ```
 
-## Model Routing Table
+## Model Routing
 
-| Task type | Model | Reason |
-|-----------|-------|--------|
-| Architecture decisions, review, debate | `claude-opus-4-6` | Complex reasoning, nuanced judgment |
-| Implementation, code generation, most tasks | `claude-sonnet-4-6` | Fast, capable, default choice |
-| Simple tasks, summarization, quick lookups | `claude-haiku-4-5` | Low cost, high speed |
+| Model | Use for |
+|-------|---------|
+| `opus` | Architecture, review, orchestration, debate |
+| `sonnet` | Implementation (frontend, backend, testing) |
+| `haiku` | Simple/fast tasks (formatting, lookup) |
 
-Never use `claude-opus-4-6` by default — use it only when the task explicitly requires it.
+## Permission Modes
+
+| Mode | Use for |
+|------|---------|
+| `acceptEdits` | Implementation agents — can write code |
+| `plan` | Reviewer agents — read-only, cannot edit |
+
+## Agent Design Patterns
+- Review agents: `tools: Read, Glob, Grep, Bash` + `disallowedTools: Write, Edit`
+- Use `background: true` for concurrent agents (linting, formatting)
+- Use `isolation: worktree` for risky/experimental work
 
 ---
 
@@ -98,7 +83,9 @@ not hypothetical examples. Domain context must be grounded in reality.
 
 ---
 
-## Layer 6: After Completing — Learning Protocol
+## After Completing — MANDATORY for Every Agent
+
+An agent that works brilliantly and forgets everything is a waste.
 
 Every agent appends what it learned before it exits. This turns single-use workers into accumulating specialists.
 
@@ -142,16 +129,14 @@ Reviewer agents must follow this order. **Skipping Step 1 = broken review.**
 - Are all edge cases covered?
 - Output: `{ spec_compliance: pass|fail, violations: [...] }`
 
-**Step 2: Code Quality Check** ← Do NOT begin if Step 1 has ❌ violations
-- Is the code readable and maintainable?
+**Step 2: CODE QUALITY** — only proceed if Step 1 passes
+- Reference patterns.md and antipatterns.md
 - Does it follow project conventions (from CLAUDE.md)?
 - Are there performance or security concerns?
-- Output: `{ quality_issues: [...], suggestions: [...] }`
 
-**Why this order**: Code quality is irrelevant if the spec is wrong. Beautiful code that does
-the wrong thing is worse than ugly code that does the right thing. Fix spec violations first.
+**RULE: Do NOT begin Step 2 if Step 1 has ❌ issues.**
+Reviewing code quality before spec compliance wastes time.
 
-Reviewer agent output must always include both checks with explicit pass/fail status.
 ```
 Bad: "The code looks good overall but could be improved."
 Good: "Spec: ✓ pass (all 4 requirements met). Quality: 2 issues (lines 45, 78) — non-blocking."

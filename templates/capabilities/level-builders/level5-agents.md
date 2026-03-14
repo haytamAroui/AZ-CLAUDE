@@ -32,22 +32,24 @@ Do NOT create an agent when:
 
 ### Co-Change Analysis — Determine Agent Boundaries
 
-**Before creating agents**, run this to find which files change together:
+Do NOT create one agent per directory. Check what changes together:
 
 ```bash
-git log --name-only --pretty=format: | grep -v '^$' | sort | uniq -d | head -30
+# Files frequently edited together in the same commits
+git log --name-only --format="" --diff-filter=M \
+  | sort | uniq -c | sort -rn | head -30
 ```
 
-Or more precisely — find files that appear in the same commits:
+**Rule**: Directories in the same commits → same agent.
+Example: if `api/routes/` and `extraction/` always change together,
+one agent owns both — not two.
 
-```bash
-git log --format="%H" | while read sha; do
-  git diff-tree --no-commit-id -r --name-only "$sha"
-done | sort | uniq -c | sort -rn | head -20
-```
+**Rule**: Testing is a responsibility, not a role.
+The agent that owns `engine/` also owns `tests/engine/`.
+Do NOT create a separate tester agent unless tests are truly
+independent from the code they test (rare).
 
-**Rule**: Directories that appear in the same commits → same agent boundary.
-If `src/api/` and `src/db/` always change together, they belong in ONE agent, not two.
+3 focused agents with clear boundaries > 6 overlapping agents.
 
 **Good agent split** (files that change independently):
 ```
@@ -61,7 +63,17 @@ agent: schema-agent    → src/db/schema/   (these always change
 agent: migration-agent → src/db/migrations/  ← with schema — merge them)
 ```
 
-Co-change coupling means the agents would always fire together anyway — merging saves a context switch and eliminates coordination overhead.
+### Framework Collision Detection
+
+```bash
+grep -r "langgraph\|crewai\|autogen\|langchain.*agent" \
+  pyproject.toml package.json 2>/dev/null | head -5
+```
+
+If found: prefix ALL Claude Code agents with `cc-` (e.g., `cc-frontend`).
+Add to every agent description: `# Claude Code Development Agent (not a {framework} application agent)`
+
+This prevents Claude from confusing the application's LangGraph agents with Claude Code agents.
 
 ---
 
