@@ -130,6 +130,35 @@ Rules:
 
 ---
 
+---
+
+## For Reviewer Agents — Spec-First Rule
+
+Reviewer agents must follow this order. **Skipping Step 1 = broken review.**
+
+**Step 1: Spec Compliance Check**
+- Does the output satisfy the requirements?
+- Does it match the acceptance criteria?
+- Are all edge cases covered?
+- Output: `{ spec_compliance: pass|fail, violations: [...] }`
+
+**Step 2: Code Quality Check** ← Do NOT begin if Step 1 has ❌ violations
+- Is the code readable and maintainable?
+- Does it follow project conventions (from CLAUDE.md)?
+- Are there performance or security concerns?
+- Output: `{ quality_issues: [...], suggestions: [...] }`
+
+**Why this order**: Code quality is irrelevant if the spec is wrong. Beautiful code that does
+the wrong thing is worse than ugly code that does the right thing. Fix spec violations first.
+
+Reviewer agent output must always include both checks with explicit pass/fail status.
+```
+Bad: "The code looks good overall but could be improved."
+Good: "Spec: ✓ pass (all 4 requirements met). Quality: 2 issues (lines 45, 78) — non-blocking."
+```
+
+---
+
 ## Subagent Passing Rule
 When spawning this agent, pass ONLY the capability files it needs for this specific task.
 A detection agent gets `detect.md` (~100 lines). Not the full evolution module.

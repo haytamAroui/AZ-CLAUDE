@@ -1,6 +1,6 @@
 # AZCLAUDE Capabilities Manifest
 last_updated: 2026-03-14
-version: 1.1.0
+version: 1.2.0
 
 The model reads this file ONCE (~100 tokens) to know what exists.
 Load only the files that match the current task. Never load the full list.
@@ -13,6 +13,9 @@ Load only the files that match the current task. Never load the full list.
 | shared/session-rhythm.md | Session start or end | ~80 |
 | shared/friction-log.md | Persist phase only | ~60 |
 | shared/5-layer-agent.md | Creating or improving agents | ~300 |
+| shared/vocabulary-transform.md | Domain detected during /setup, vocabulary mismatch | ~60 |
+| shared/multi-cli-paths.md | Non-Claude-Code CLI detected, path configuration needed | ~80 |
+| shared/quality-check.md | After /setup or /level-up, verify environment is correct | ~80 |
 
 ## Level Builders — load ONE at a time
 | File | When to load | Tokens |
@@ -41,4 +44,5 @@ Load only the files that match the current task. Never load the full list.
 | intelligence/debate.md | "debate", "tradeoff", hard architectural decision | ~400 |
 | intelligence/opro.md | "optimize prompts", improving skill instructions | ~300 |
 | intelligence/elo.md | Quality ranking across options or agents | ~200 |
-| intelligence/pipeline.md | 3+ agents that chain output to input | ~250 |
+| intelligence/pipeline.md | 3+ agents that chain output to input | ~350 |
+| intelligence/experiment.md | Risky approach needing worktree isolation, "try this safely" | ~80 |

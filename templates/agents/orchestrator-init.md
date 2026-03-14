@@ -37,7 +37,7 @@ Scale modes:
 
 ---
 
-## Step 2: Signal Extraction
+## Step 2: Signal Extraction + Category Detection
 
 Read based on scale mode:
 - `package.json` / `requirements.txt` / `Cargo.toml` / `go.mod`
@@ -61,10 +61,27 @@ Signal → Domain Profile:
 **Framework collision warning**: if agent framework detected →
 > "This project contains an application-level agent framework. AZCLAUDE operates at the Claude Code level. Do not confuse the two layers."
 
+### Project Category — Adapt or Skip Rules
+
+Classify project into one of 4 categories and apply the rules:
+
+| Category | Detection | Skip | Adapt |
+|----------|-----------|------|-------|
+| **Code** | Has package.json / requirements / Cargo / go.mod | Nothing — apply all levels | — |
+| **Creative** | No code files, prose/markdown content, writing-focused | Skip MCP (Level 2), skip custom agents (Level 5) | Skills become domain patterns (how-to-write-chapter.md); memory tracks manuscript state |
+| **Research** | knowledge/ dir, citations, no code | Skip hooks (Level 6), skip MCP (Level 2) | Skills become retrieval patterns; agents become role specialists (literature-reviewer, summarizer) |
+| **Business** | Docs, reports, spreadsheets, no code | Skip MCP, hooks, custom agents | Skills become workflow templates; commands target business deliverables (report.md, deck.md) |
+
+**Apply before building any level** — wrong category = wrong levels built.
+
+Example: detecting a Creative project → do NOT generate TDD hooks or MCP servers.
+Instead: generate `write-chapter.md`, `outline.md`, `edit-draft.md` skills.
+
 ---
 
 ## Step 3: Derive Domain Profile
 
+Load `capabilities/shared/vocabulary-transform.md` — substitute domain vocabulary in all generated files.
 Build one structured object — do not output intermediate reasoning:
 ```json
 {

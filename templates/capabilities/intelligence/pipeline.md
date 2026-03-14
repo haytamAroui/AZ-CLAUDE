@@ -14,6 +14,74 @@ Do NOT use for work one agent can do with tools directly.
 
 ---
 
+### Pipeline Building Blocks
+
+Six primitives. Every pipeline is a composition of these.
+
+| Block | What it does | When to use |
+|-------|-------------|-------------|
+| **Sequential** | A → B → C | Each step needs the previous result |
+| **Parallel** | A + B + C → merge | Independent tasks that can run simultaneously |
+| **Reflect** | Agent reviews its own output before passing it | High-stakes output, expensive to fix downstream |
+| **Debate** | Two agents argue a position → synthesizer picks winner | Architectural decisions, tradeoffs |
+| **Summarize** | Compresses large context before passing to next agent | When Agent A output would overflow Agent B context |
+| **Tool-use** | Agent calls scripts/tools and passes JSON result | Programmatic data (never raw tool transcripts) |
+
+**Compose by need**: most pipelines are Sequential + Summarize. Add Reflect only for high-risk steps.
+Adding Debate to every pipeline wastes tokens — reserve for genuine tradeoffs.
+
+---
+
+### Pre-Built Pipeline Templates
+
+#### Feature Pipeline (new feature implementation)
+```
+Agents: planner → implementer → reviewer
+Planner input:  feature description + CLAUDE.md
+Planner output: { files_to_change, test_plan, approach }
+Implementer input: planner output + tdd.md
+Implementer output: { files_changed, tests_written, test_results }
+Reviewer input:  implementer output + spec
+Reviewer output: { spec_compliance: pass|fail, issues: [...] }
+Block types: Sequential + Reflect (implementer self-reviews tests before passing)
+```
+
+#### Fix Pipeline (bug investigation)
+```
+Agents: investigator → hypothesizer → fixer
+Investigator input:  error description + relevant files
+Investigator output: { root_cause, affected_files, reproduction_steps }
+Hypothesizer input:  investigator output
+Hypothesizer output: { hypothesis, fix_approach, risk: low|medium|high }
+Fixer input:         hypothesizer output (high risk → add Debate block before fix)
+Fixer output:        { files_changed, tests_passing, fix_summary }
+Block types: Sequential (+ Debate if risk = high)
+```
+
+#### Review Pipeline (code review)
+```
+Agents: spec-checker → quality-checker
+Spec-checker input:  PR diff + spec/requirements
+Spec-checker output: { spec_compliance: pass|fail, violations: [...] }
+Quality-checker input: PR diff + spec-checker output
+  GATE: if spec_compliance = fail → stop, return spec-checker output (do not proceed)
+Quality-checker output: { quality_issues: [...], suggestions: [...] }
+Block types: Sequential with hard gate
+```
+
+#### Architecture Pipeline (major design decision)
+```
+Agents: analyst → maximalist → skeptic → synthesizer
+Analyst input:   problem statement + codebase signals
+Analyst output:  { options: [A, B, C], constraints, tradeoffs }
+Maximalist input: analyst output → argues for best option
+Skeptic input:    analyst output → argues against best option
+Synthesizer input: maximalist + skeptic outputs → picks winner with reasoning
+Block types: Sequential → Parallel (maximalist + skeptic run together) → Sequential
+```
+
+---
+
 ### Pipeline Validity Check
 Before building a pipeline, confirm:
 1. Can a single agent do this with Read/Write/Bash tools? If yes → don't pipeline.

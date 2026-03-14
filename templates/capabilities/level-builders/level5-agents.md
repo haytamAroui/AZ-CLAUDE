@@ -30,6 +30,41 @@ Do NOT create an agent when:
 
 ---
 
+### Co-Change Analysis — Determine Agent Boundaries
+
+**Before creating agents**, run this to find which files change together:
+
+```bash
+git log --name-only --pretty=format: | grep -v '^$' | sort | uniq -d | head -30
+```
+
+Or more precisely — find files that appear in the same commits:
+
+```bash
+git log --format="%H" | while read sha; do
+  git diff-tree --no-commit-id -r --name-only "$sha"
+done | sort | uniq -c | sort -rn | head -20
+```
+
+**Rule**: Directories that appear in the same commits → same agent boundary.
+If `src/api/` and `src/db/` always change together, they belong in ONE agent, not two.
+
+**Good agent split** (files that change independently):
+```
+agent: frontend-agent  → src/components/, src/pages/  (UI changes alone)
+agent: api-agent       → src/api/, src/middleware/    (backend changes alone)
+```
+
+**Bad agent split** (files that always change together):
+```
+agent: schema-agent    → src/db/schema/   (these always change
+agent: migration-agent → src/db/migrations/  ← with schema — merge them)
+```
+
+Co-change coupling means the agents would always fire together anyway — merging saves a context switch and eliminates coordination overhead.
+
+---
+
 ### Agent File Structure
 ```yaml
 ---

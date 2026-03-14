@@ -25,9 +25,9 @@ Spawn the initialization specialist for this project:
    - Runs environment scan as a single script (not 15 separate calls)
 
 4. After the agent completes:
-   - Confirm CLAUDE.md is filled (no `{{placeholder}}` remaining)
-   - Confirm goals.md exists
-   - Print both files
+   - Load `capabilities/shared/quality-check.md` and run the environment check
+   - All ✓ required before printing "Setup complete"
+   - Print filled CLAUDE.md and goals.md as proof
 
 ## If Running Again on an Existing Project
 Do not overwrite CLAUDE.md — read it first and update only the placeholders that are still unfilled.
