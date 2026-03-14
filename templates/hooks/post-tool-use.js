@@ -3,18 +3,31 @@
 /**
  * AZCLAUDE — PostToolUse hook
  * Auto-saves work progress to goals.md after every Write/Edit.
+ * Captures: timestamp, file path, git diff stat (+N/-N), and change summary.
  * Survives Claude Code context compaction — goals.md is the external memory.
  * No user action required. Silent. Works on Windows/macOS/Linux.
  */
-const fs   = require('fs');
-const path = require('path');
+const fs            = require('fs');
+const path          = require('path');
+const { spawnSync } = require('child_process');
 
-// Read tool input from stdin — Claude Code sends JSON and closes stdin
+// Read tool input + response from stdin — Claude Code sends JSON and closes stdin
 let filePath = '';
+let changeSummary = '';
 try {
   const raw  = fs.readFileSync(0, 'utf8'); // fd 0 = stdin, cross-platform
   const data = JSON.parse(raw);
   filePath   = data.tool_input?.file_path || data.tool_input?.path || '';
+  // Extract change summary from old_string/new_string diff hint (Edit tool)
+  const oldStr = data.tool_input?.old_string || '';
+  const newStr = data.tool_input?.new_string || '';
+  if (oldStr && newStr) {
+    // Summarize: first non-empty line of new content (what was added)
+    const firstNew = newStr.split('\n').find(l => l.trim().length > 0) || '';
+    if (firstNew.length > 0 && firstNew.length < 80) {
+      changeSummary = ' — ' + firstNew.trim().replace(/^[-*#`]+\s*/, '').slice(0, 60);
+    }
+  }
 } catch (_) {}
 
 // Also accept env var fallback (older Claude Code versions)
@@ -34,7 +47,23 @@ if (!fs.existsSync(goalsPath)) process.exit(0); // not an AZCLAUDE project
 // Timestamp HH:MM
 const now = new Date();
 const ts  = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-const entry = `- ${ts} — ${rel}`;
+
+// Git diff stat: "+N/-M" — tells WHAT changed in size
+let diffStat = '';
+try {
+  const r = spawnSync('git', ['diff', 'HEAD', '--numstat', '--', rel],
+    { encoding: 'utf8', cwd: process.cwd(), timeout: 3000 });
+  if (r.status === 0 && r.stdout.trim()) {
+    const [added, deleted] = r.stdout.trim().split('\t');
+    const a = parseInt(added, 10);
+    const d = parseInt(deleted, 10);
+    if (!isNaN(a) && !isNaN(d) && (a > 0 || d > 0)) {
+      diffStat = ` (+${a}/-${d})`;
+    }
+  }
+} catch (_) {}
+
+const entry = `- ${ts} — ${rel}${diffStat}${changeSummary}`;
 
 let content = fs.readFileSync(goalsPath, 'utf8');
 

@@ -17,3 +17,13 @@ Updated: 2026-03-14
 
 ## Open blockers
 - None
+
+## In progress
+- 22:35 — test-features.sh
+- 22:33 — bin\cli.js
+- 22:33 — templates\CLAUDE.md
+- 22:33 — templates\hooks\user-prompt.js
+- 22:33 — templates\commands\checkpoint.md
+- 22:29 — templates\hooks\post-tool-use.js
+- 22:13 — README.md
+- 22:03 — CONTRIBUTING.md

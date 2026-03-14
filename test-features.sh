@@ -802,17 +802,18 @@ check_file "install: /evolve installed"                "$IDIR/.claude/commands/e
 check_file "install: /loop installed"                  "$IDIR/.claude/commands/loop.md"
 check_file "install: /persist installed"               "$IDIR/.claude/commands/persist.md"
 check_file "install: /status installed"                "$IDIR/.claude/commands/status.md"
+check_file "install: /checkpoint installed"            "$IDIR/.claude/commands/checkpoint.md"
 check_file "install: shared/tdd.md present"            "$IDIR/.claude/capabilities/shared/tdd.md"
 check_file "install: shared/native-tools.md present"   "$IDIR/.claude/capabilities/shared/native-tools.md"
 check_file "install: shared/security.md present"       "$IDIR/.claude/capabilities/shared/security.md"
 check      "install: CLAUDE.md has placeholders"       "$IDIR/CLAUDE.md" "{{PROJECT_NAME}}"
 INSTALLED=$(ls "$IDIR/.claude/commands/" | wc -l | tr -d ' ')
-if [ "$INSTALLED" -eq 15 ]; then
-  echo "  ✓ install: all 15 commands present"
+if [ "$INSTALLED" -eq 16 ]; then
+  echo "  ✓ install: all 16 commands present"
   PASS=$((PASS + 1))
 else
-  echo "  ✗ install: expected 15 commands, got $INSTALLED"
-  ERRORS="$ERRORS\n  FAILED: install: expected 15 commands, got $INSTALLED"
+  echo "  ✗ install: expected 16 commands, got $INSTALLED"
+  ERRORS="$ERRORS\n  FAILED: install: expected 16 commands, got $INSTALLED"
   FAIL=$((FAIL + 1))
 fi
 rm -rf "$IDIR"
@@ -837,6 +838,9 @@ check        "hooks: post-tool-use deduplicates entries"  "templates/hooks/post-
 check        "hooks: cli installs post-tool-use script"   "bin/cli.js"                       "post-tool-use\.js"
 check        "hooks: cli wires PostToolUse event"         "bin/cli.js"                       "PostToolUse"
 check        "hooks: cli upgrades missing PostToolUse"    "bin/cli.js"                       "hasPostToolUse"
+check        "hooks: post-tool-use captures git diff stat"  "templates/hooks/post-tool-use.js" "numstat\|diffStat\|added.*deleted"
+check        "hooks: post-tool-use captures change summary" "templates/hooks/post-tool-use.js" "changeSummary\|old_string\|new_string"
+check        "hooks: post-tool-use entry includes diffStat" "templates/hooks/post-tool-use.js" "diffStat.*changeSummary\|diffStat\}.*changeSummary"
 check        "hooks: stop migrates In progress to Done"   "templates/hooks/stop.js"          "In progress\|ipEntries"
 check        "hooks: user-prompt warns interrupted"       "templates/hooks/user-prompt.js"   "INTERRUPTED\|interrupted"
 
@@ -897,6 +901,21 @@ check      "demo: shows before and after goals.md"   "bin/cli.js" "In progress\|
 check      "demo: cleans up temp dir"                "bin/cli.js" "rmSync.*tmpBase\|tmpBase.*rmSync"
 check      "demo: shows install command"             "bin/cli.js" "npx azclaude"
 
+# ─── /checkpoint ──────────────────────────────────────────────────────────────
+echo ""
+echo "─── /checkpoint ───"
+CKPT="$ROOT/commands/checkpoint.md"
+check_file "checkpoint: command file exists"              "$CKPT"
+check      "checkpoint: writes to checkpoints dir"       "$CKPT" "checkpoints"
+check      "checkpoint: captures current reasoning"      "$CKPT" "What I'm doing right now\|current.*reasoning"
+check      "checkpoint: captures decisions + why"        "$CKPT" "key decisions\|Why"
+check      "checkpoint: captures what's next"            "$CKPT" "What's next"
+check      "checkpoint: updates goals.md thread"         "$CKPT" "Current threads\|goals\.md"
+check      "checkpoint: cli includes checkpoint command" "bin/cli.js" "checkpoint"
+check      "checkpoint: CLAUDE.md dispatch entry"        "templates/CLAUDE.md" "checkpoint"
+check      "checkpoint: user-prompt injects latest"      "templates/hooks/user-prompt.js" "checkpoints\|checkpoint"
+check      "checkpoint: user-prompt labels checkpoint"   "templates/hooks/user-prompt.js" "LAST CHECKPOINT\|END CHECKPOINT"
+
 # ─── CONTRIBUTING.md ──────────────────────────────────────────────────────────
 echo ""
 echo "─── CONTRIBUTING.md ───"
@@ -906,6 +925,16 @@ check      "contributing: how to run tests"            "CONTRIBUTING.md" "test-f
 check      "contributing: no bash-only rule"           "CONTRIBUTING.md" "Windows\|cross-platform\|bash-only"
 check      "contributing: doctor command mentioned"    "CONTRIBUTING.md" "doctor"
 check      "contributing: PR checklist present"        "CONTRIBUTING.md" "checklist\|PR checklist"
+
+# ─── AZROLE sync: v3.9.0 stress test signals ──────────────────────────────────
+echo ""
+echo "─── AZROLE sync ───"
+check "azrole-sync: cc- prefix protocol"             "$ORCH" "cc-frontend\|cc-backend\|cc-"
+check "azrole-sync: framework collision bash scan"   "$ORCH" "langgraph.*crewai\|crewai.*autogen\|grep.*langgraph"
+check "azrole-sync: layer comment on cc- agents"    "$ORCH" "Claude Code Development Agent"
+check "azrole-sync: STRUCTURE-ONLY co_change field" "$ORCH" "co_change_data"
+check "azrole-sync: STRUCTURE-ONLY confidence low"  "$ORCH" "confidence.*low"
+check "azrole-sync: compliance article-level"        "$ORCH" "article-level traceability"
 
 echo ""
 echo "════════════════════════════════════════════════════"

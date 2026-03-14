@@ -42,3 +42,20 @@ if (ipMatch) {
 console.log('--- ACTIVE GOALS ---');
 console.log(filtered);
 console.log('--- END GOALS ---');
+
+// Inject latest checkpoint if one exists — captures mid-session reasoning
+const checkpointDir = path.join('.claude', 'memory', 'checkpoints');
+if (fs.existsSync(checkpointDir)) {
+  const files = fs.readdirSync(checkpointDir)
+    .filter(f => f.endsWith('.md'))
+    .sort()
+    .reverse(); // latest first
+  if (files.length > 0) {
+    const latest = path.join(checkpointDir, files[0]);
+    const cpContent = fs.readFileSync(latest, 'utf8');
+    console.log('');
+    console.log(`--- LAST CHECKPOINT (${files[0]}) ---`);
+    console.log(cpContent.trim());
+    console.log('--- END CHECKPOINT ---');
+  }
+}
