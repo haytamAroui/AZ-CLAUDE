@@ -284,10 +284,53 @@ azclaude/
 │   ├── commands/         (11)   ← dream, setup, fix, ship, evolve, debate...
 │   └── scripts/env-scan.sh      ← environment scanner (one script, one JSON)
 ├── package.json
-└── test-features.sh              ← 364 tests
+└── test-features.sh              ← 376 tests
 ```
 
 **47 files. ~4,700 lines. 376 tests.**
+
+---
+
+## Verified End-to-End
+
+AZCLAUDE ships with a chain verification test suite — 376 tests that prove every link in the system is connected, not just assumed.
+
+```bash
+bash test-features.sh
+```
+
+```
+[ File Structure — All Templates Present ]
+  ✓ manifest.md exists
+  ✓ shared/security.md exists
+  ✓ commands/fix.md exists
+  ... 43 file checks
+
+[ Manifest — Capability Index ]
+  ✓ shared/security.md in manifest
+  ✓ level6-hooks.md in manifest
+  ✓ intelligence/pipeline.md in manifest
+  ... 18 routing checks
+
+[ CLI Installer — bin/cli.js ]
+  ✓ detectCLI function
+  ✓ sanitizePath function
+  ✓ generateIntegrityHash exists
+  ✓ verifyIntegrity exists
+  ... 26 installer checks
+
+[ Security — shared/security.md ]
+  ✓ Hook integrity concept present
+  ✓ Path sanitization rules documented
+  ✓ Credential handling rules present
+  ... 12 security checks
+
+════════════════════════════════════════════════════
+  Results: 376 passed, 0 failed, 376 total
+════════════════════════════════════════════════════
+```
+
+Each test checks that the right **concept** exists in the right **file** — not just that the file is present. If a future edit removes the path sanitization rules from `security.md`, test 317 fails and tells you exactly why.
 
 ---
 
