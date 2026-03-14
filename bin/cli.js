@@ -38,9 +38,10 @@ function installGlobalHooks() {
 
   const userPromptCmd = [
     "mkdir -p .claude/memory ops/observations shared-skills",
-    "if [ -f .claude/memory/goals.md ]; then",
-    "  AGE=$(( $(date +%s) - $(date -r .claude/memory/goals.md +%s 2>/dev/null || echo 0) ))",
-    "  if [ \"$AGE\" -gt 1800 ]; then",
+    "SESSION_MARKER=\"/tmp/.azclaude-session-${PPID}\"",
+    "if [ ! -f \"$SESSION_MARKER\" ]; then",
+    "  touch \"$SESSION_MARKER\"",
+    "  if [ -f .claude/memory/goals.md ]; then",
     "    echo '--- ACTIVE GOALS ---'",
     "    cat .claude/memory/goals.md",
     "    echo '--- END GOALS ---'",

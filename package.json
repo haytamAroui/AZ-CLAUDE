@@ -15,6 +15,14 @@
     "context-engineering",
     "lazy-loading"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/haytamAroui/AZ-CLAUDE.git"
+  },
+  "homepage": "https://github.com/haytamAroui/AZ-CLAUDE#readme",
+  "bugs": {
+    "url": "https://github.com/haytamAroui/AZ-CLAUDE/issues"
+  },
   "author": "haytamAroui",
   "license": "MIT",
   "engines": {

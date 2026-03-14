@@ -117,8 +117,6 @@ Rules:
 
 ---
 
----
-
 ## For Reviewer Agents — Spec-First Rule
 
 Reviewer agents must follow this order. **Skipping Step 1 = broken review.**

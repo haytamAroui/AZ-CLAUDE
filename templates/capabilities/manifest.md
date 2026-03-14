@@ -12,7 +12,7 @@ Load only the files that match the current task. Never load the full list.
 | shared/completion-rule.md | Every task | ~40 |
 | shared/session-rhythm.md | Session start or end | ~80 |
 | shared/friction-log.md | Persist phase only | ~60 |
-| shared/5-layer-agent.md | Creating or improving agents | ~300 |
+| shared/5-layer-agent.md | Creating or improving agents | ~500 |
 | shared/vocabulary-transform.md | Domain detected during /setup, vocabulary mismatch | ~60 |
 | shared/multi-cli-paths.md | Non-Claude-Code CLI detected, path configuration needed | ~80 |
 | shared/quality-check.md | After /setup or /level-up, verify environment is correct | ~80 |
@@ -22,10 +22,10 @@ Load only the files that match the current task. Never load the full list.
 |------|-------------|--------|
 | level-builders/level1-claudemd.md | Building Level 1 (CLAUDE.md) | ~200 |
 | level-builders/level2-mcp.md | Building Level 2 (MCP servers) | ~150 |
-| level-builders/level3-skills.md | Building Level 3 (skills/commands) | ~250 |
+| level-builders/level3-skills.md | Building Level 3 (skills/commands) | ~600 |
 | level-builders/level4-memory.md | Building Level 4 (memory system) | ~200 |
-| level-builders/level5-agents.md | Building Level 5 (custom agents) | ~300 |
-| level-builders/level6-hooks.md | Building Level 6 (lifecycle hooks) | ~200 |
+| level-builders/level5-agents.md | Building Level 5 (custom agents) | ~400 |
+| level-builders/level6-hooks.md | Building Level 6 (lifecycle hooks) | ~400 |
 | level-builders/level7-extmcp.md | Building Level 7 (external MCP) | ~150 |
 | level-builders/level8-orchestrated.md | Building Level 8+ (intelligence/evolution), decision matrix for when | ~200 |
 

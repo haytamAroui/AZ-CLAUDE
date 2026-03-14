@@ -13,7 +13,7 @@ FILE_COUNT=$(find . \
 
 has_file() { [ -f "$1" ] && echo true || echo false; }
 has_dir()  { [ -d "$1" ] && echo true || echo false; }
-count_files() { ls "$1"/*.md 2>/dev/null | wc -l | tr -d ' '; }
+count_files() { ls "$1"/*.md 2>/dev/null | wc -l | tr -d ' ' || echo 0; }
 
 cat <<EOF
 {
@@ -37,8 +37,8 @@ cat <<EOF
     "has_git":             $(has_dir .git),
     "has_mcp":             $(has_file .mcp.json),
     "has_memory":          $(has_file .claude/memory/goals.md),
-    "commands_count":      "$(count_files .claude/commands 2>/dev/null || echo 0)",
-    "agents_count":        "$(count_files .claude/agents 2>/dev/null || echo 0)"
+    "commands_count":      $(count_files .claude/commands 2>/dev/null),
+    "agents_count":        $(count_files .claude/agents 2>/dev/null)
   },
   "git_log": "$(git log --oneline -5 2>/dev/null | head -5 | tr '\n' '|' || echo 'none')",
   "readme_head": "$(head -10 README.md 2>/dev/null | tr '\n' '|' || echo 'none')"

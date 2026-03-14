@@ -52,9 +52,9 @@ grep -q "$(date +%Y-%m-%d)" .claude/memory/goals.md && echo "✓ goals.md has to
 
 ---
 
-### Skill Quality Check (RECIPE vs REFERENCE)
+### Command Quality Check (RECIPE vs REFERENCE)
 
-For each skill in `.claude/commands/`:
+For each command in `.claude/commands/`:
 
 ```bash
 for skill in .claude/commands/*.md; do

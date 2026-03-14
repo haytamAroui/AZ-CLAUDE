@@ -112,7 +112,7 @@ When spawning this agent, pass ONLY:
 - Shared rules if the task requires them (tdd.md, completion-rule.md)
 
 Pass micro-sections, not monoliths. A detection agent gets detect.md (~100 lines).
-Not evolution-module.md (563 lines in AZROLE — do NOT replicate this).
+Not a full module file — pass only the micro-section for the specific task.
 
 ---
 

@@ -292,7 +292,7 @@ check "black fallback for Python"                "$L6" "black"
 check "gofmt command"                            "$L6" "gofmt"
 check "CLAUDE_FILE_PATH env var"                 "$L6" "CLAUDE_FILE_PATH"
 check "|| true safety on all formatters"         "$L6" "|| true"
-check "AGE threshold 1800 seconds"               "$L6" "1800"
+check "Session-marker based injection"           "$L6" "session.marker\|session marker\|PPID\|session start"
 check "UserPromptSubmit hook behavior"           "$L6" "UserPromptSubmit"
 check "Stop hook friction stub"                  "$L6" "friction"
 

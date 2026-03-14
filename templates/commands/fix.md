@@ -9,6 +9,8 @@ tokens: ~300
 
 # /fix — 4-Phase Debugging Protocol
 
+$ARGUMENTS
+
 Load: shared/tdd.md + shared/completion-rule.md before starting.
 
 ---

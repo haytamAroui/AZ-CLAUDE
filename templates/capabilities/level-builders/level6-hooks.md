@@ -97,20 +97,10 @@ Only add if the formatter is confirmed installed (`which prettier` etc.).
 
 ### Global Hook Behavior
 
-**UserPromptSubmit** — fires before every user message is processed:
-```bash
-mkdir -p .claude/memory ops/observations shared-skills
-if [ -f .claude/memory/goals.md ]; then
-  AGE=$(($(date +%s) - $(date -r .claude/memory/goals.md +%s 2>/dev/null || echo 0)))
-  if [ "$AGE" -gt 1800 ]; then
-    echo "--- ACTIVE GOALS ---"
-    cat .claude/memory/goals.md
-    echo "--- END GOALS ---"
-  fi
-fi
-```
+The exact hook commands are defined in `bin/cli.js` — that is the source of truth.
+Do not duplicate the hook code here; reference it instead.
 
-AGE threshold 1800s (30 minutes) — inject only if goals haven't been read recently.
+**UserPromptSubmit** — injects `goals.md` once at session start using a session-marker file (`/tmp/.azclaude-session-$PPID`). Fires on the first prompt only — not on every subsequent prompt.
 
 **Stop** — fires when session ends without /persist:
 - Creates friction stub in `ops/observations/`

@@ -52,7 +52,10 @@ CLAUDE.md (~30 lines)                    ← always loaded, dispatch table
     │   │   ├── completion-rule.md       ~40 tokens
     │   │   ├── session-rhythm.md        ~80 tokens
     │   │   ├── friction-log.md          ~60 tokens
-    │   │   └── 5-layer-agent.md         ~150 tokens
+    │   │   ├── 5-layer-agent.md         ~500 tokens
+    │   │   ├── vocabulary-transform.md  ~80 tokens
+    │   │   ├── multi-cli-paths.md       ~80 tokens
+    │   │   └── quality-check.md         ~80 tokens
     │   │
     │   ├── evolution/       ← loaded per cycle, not all at once
     │   │   ├── detect.md                ~250 tokens
@@ -66,23 +69,31 @@ CLAUDE.md (~30 lines)                    ← always loaded, dispatch table
     │   │   ├── debate.md                ~400 tokens
     │   │   ├── opro.md                  ~300 tokens
     │   │   ├── elo.md                   ~200 tokens
-    │   │   └── pipeline.md              ~250 tokens
+    │   │   ├── pipeline.md              ~350 tokens
+    │   │   └── experiment.md            ~80 tokens
     │   │
     │   └── level-builders/  ← load ONE at a time
     │       ├── level1-claudemd.md       ~200 tokens
     │       ├── level2-mcp.md            ~150 tokens
-    │       ├── level3-skills.md         ~250 tokens
+    │       ├── level3-skills.md         ~600 tokens
     │       ├── level4-memory.md         ~200 tokens
-    │       ├── level5-agents.md         ~300 tokens
-    │       ├── level6-hooks.md          ~200 tokens
-    │       └── level7-extmcp.md         ~150 tokens
+    │       ├── level5-agents.md         ~400 tokens
+    │       ├── level6-hooks.md          ~400 tokens
+    │       ├── level7-extmcp.md         ~150 tokens
+    │       └── level8-orchestrated.md   ~200 tokens
     │
     ├── .claude/commands/    ← skills, loaded when invoked
-    │   ├── fix.md           ← direct executor
+    │   ├── dream.md         ← thin router → orchestrator-init
     │   ├── setup.md         ← thin router → orchestrator-init
+    │   ├── fix.md           ← direct executor
     │   ├── evolve.md        ← thin router → evolution/* by cycle
     │   ├── debate.md        ← thin router → intelligence/debate.md
-    │   └── persist.md       ← direct executor
+    │   ├── persist.md       ← direct executor
+    │   ├── level-up.md      ← detects level, loads ONE level-builder
+    │   ├── ship.md          ← direct executor (git)
+    │   ├── status.md        ← direct executor (health check)
+    │   ├── explain.md       ← direct executor
+    │   └── loop.md          ← recurring task runner
     │
     └── .claude/agents/
         └── orchestrator-init.md  ← fires ONCE at /setup, then exits
