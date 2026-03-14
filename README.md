@@ -12,9 +12,19 @@
 
 ## The Problem
 
-You open Claude Code (or Gemini CLI, or Cursor). You ask it to fix a bug. It doesn't know your project conventions, your test patterns, your architecture decisions. You explain them. Next session — you explain them again. Every agent you spawn starts from zero.
+You open Claude Code. You ask it to fix a bug. It doesn't know your project conventions, your test patterns, your architecture decisions. You explain them. Next session — you explain them again. Every agent you spawn starts from zero. Context compacts at turn 80 and you lose where you were.
 
 **AZCLAUDE fixes this.** One install. Your AI coding CLI remembers your project, speaks your domain's language, routes tasks to the right capability, and improves itself over time.
+
+---
+
+## See It Working (30 seconds)
+
+```bash
+npx azclaude demo
+```
+
+Runs the actual memory hooks on a temp project. Shows goals.md being written by a file edit, surviving simulated compaction, and being injected back at session start. Real output, no mocks, cleans up after itself.
 
 ---
 
@@ -25,10 +35,29 @@ You open Claude Code (or Gemini CLI, or Cursor). You ask it to fix a bug. It doe
 ```
 ✓ CLAUDE.md — 30-line dispatch table, not a knowledge dump
 ✓ goals.md — session continuity (auto-injected via hook, never forgotten)
-✓ 11 commands ready: /dream /setup /fix /ship /evolve /debate /persist /level-up /status /explain /loop
+✓ 15 commands ready: /dream /setup /fix /add /review /test /plan /ship /evolve /debate /persist /level-up /status /explain /loop
 ✓ Domain detected → vocabulary adapted (compliance project gets "obligations", not "tasks")
 ✓ Capabilities indexed → only loaded when needed (~380 tokens per bug fix, not ~21,000)
 ```
+
+### Memory that survives context compaction
+
+Every file you edit is silently logged to `goals.md` by a PostToolUse hook — no user action required:
+
+```
+You edit src/auth.js
+  → PostToolUse fires automatically
+  → goals.md updated: "22:10 — src/auth.js"
+
+Claude Code compacts conversation at turn 80
+  → Earlier context gone
+
+Next prompt — UserPromptSubmit hook fires
+  → Claude receives: "## In progress — 22:10 — src/auth.js"
+  → Knows exactly where you left off
+```
+
+No `/persist` required to survive compaction. Goals.md is written continuously. The ceremony (`/persist`) is for end-of-session reflection — not rescue.
 
 ### When you run 1 agent
 
@@ -55,44 +84,33 @@ Reviewer → { spec_compliance: pass|fail, issues: [...] }
 
 **No context bleed.** Agent 3 doesn't inherit Agent 1's 50,000-token conversation. It gets a JSON object.
 
-4 pre-built pipeline templates included: Feature, Fix, Review, Architecture.
-
-### When you come back tomorrow
-
-```
-Session starts → hook injects goals.md automatically
-→ Claude already knows: what's in progress, what's done, what's next, what's blocked
-
-No "let me re-read the codebase" warm-up. Continuity is built in.
-```
-
 ### When you run `/evolve` after a week of work
 
 ```
+/evolve        — full cycle: detect gaps → generate fixes → evaluate quality (~3-6k tokens)
+/evolve quick  — detect only: list gaps without fixing them (~500 tokens, 30 seconds)
+```
+
+```
 Cycle 1: Scans for gaps in your environment
-  → "You have 3 agents but no skill for adding endpoints — generating one"
-  → New skill created, quality-checked, added to manifest
+  → "manifest.md version stuck at 1.9.0 — updating"
+  → "level6-hooks.md still references bash $PPID — correcting"
 
 Cycle 2: Consolidates what you learned
-  → Patterns extracted from 5 sessions → patterns.md
-  → Stale memory archived (importance score < 15)
+  → Patterns extracted from sessions → patterns.md
+  → Stale memory archived
 
 Cycle 3: Optimizes your agent topology
   → "Agent X has < 0.10 influence — consider merging with Agent Y"
-  → Pipeline map updated
 ```
 
-Your environment gets smarter every week. Not because you configure it — because it reads its own friction logs.
+This is not aspirational. On March 14 2026, `/evolve` found 3 real stale-doc bugs in AZCLAUDE itself and fixed them in the same run.
 
 ---
 
 ## Installation
 
 ```bash
-# Install globally
-npm install -g azclaude
-
-# Or run directly in any project
 npx azclaude
 ```
 
@@ -102,6 +120,20 @@ Then in your AI coding CLI:
 ```
 
 Auto-detects your CLI. Installs to the correct paths. Done.
+
+### Verify it's working
+
+```bash
+npx azclaude doctor
+```
+
+Runs 24 checks across runtime, global hooks, project structure, and commands. Exits 0 if healthy, exits 1 with a fix hint if anything is wrong.
+
+### See a live demo
+
+```bash
+npx azclaude demo
+```
 
 ---
 
@@ -113,22 +145,26 @@ Auto-detects your CLI. Installs to the correct paths. Done.
 |---------|-------------|
 | `/dream` | "I want to build X with Y" → full project scaffold: rules file, memory, skills, agents — built level by level |
 | `/setup` | Analyzes your project once. Detects domain + stack + scale. Creates everything `/dream` creates, but for an existing project |
+| `/add` | Add a feature, endpoint, component, or function. TDD opt-in (checks your project signals). Follows existing patterns — never invents new ones |
 | `/fix` | Paste an error → REPRODUCE → INVESTIGATE → HYPOTHESIZE → FIX. Shows passing test output. Never says "should work" |
-| `/ship` | `git add` + smart commit message + `git push`. Skips `.env` and secrets automatically |
+| `/review` | Spec-first code review. Checks requirements before code quality. Blocking vs suggestion distinction |
+| `/test` | Run tests with IDE diagnostics first, framework detection, exit-code gate, failure classification |
+| `/plan` | For 4+ file changes or risky refactors. Read-only analysis → presents plan with risk level → approval gate before any code written |
+| `/ship` | Pre-ship gate (IDE diagnostics + tests) → docs sync check → `git add` + smart commit + `git push` |
 
 ### Think & Improve
 
 | Command | What happens |
 |---------|-------------|
 | `/debate` | "REST or GraphQL?" → two advocates argue with evidence → fact-checked → winner with confidence score → logged to decisions.md |
-| `/evolve` | Scans everything, finds what's weak, generates improvements, quality-checks them, consolidates learnings |
+| `/evolve` | Scans everything, finds what's weak, generates improvements, quality-checks them. `/evolve quick` for fast detect-only mode |
 | `/level-up` | Shows your current level (0–10) → builds the next one. MCP, skills, agents, hooks — one level at a time |
 
 ### Daily Use
 
 | Command | What happens |
 |---------|-------------|
-| `/persist` | End of session: saves goals, writes friction log, appends session summary. Next session starts where this one left off |
+| `/persist` | End of session: saves goals, writes friction log, appends session summary |
 | `/status` | Quick overview: app health, recent changes, current level, next steps from goals.md |
 | `/explain` | Paste code or an error → plain language explanation. Zero jargon |
 | `/loop` | `/loop 5m /status` → repeats a command on an interval |
@@ -187,7 +223,7 @@ Not every project is code. AZCLAUDE adapts:
 
 | Your project | What changes |
 |-------------|-------------|
-| **Next.js app** | TDD active. Skills: `new-page.md`, `new-component.md`. Agents: frontend, API |
+| **Next.js app** | TDD opt-in (activates when test files + CLAUDE.md rule exist). Skills: `new-page.md`, `new-component.md` |
 | **Legal compliance tool** | Vocabulary: obligations, conformity review. Skip: TDD, hooks |
 | **Book manuscript** | Skills become: `write-chapter.md`, `edit-draft.md`. No MCP, no agents |
 | **ML research** | Memory tracks experiments + citations. Skills become retrieval patterns |
@@ -225,27 +261,18 @@ Path substitution happens at install time — zero runtime cost. Your capabiliti
 | 3 | Skills + commands | Repeatable workflows: `/add-endpoint`, `/new-page`, `/test` |
 | 4 | Memory | Session continuity — goals, learnings, friction logs |
 | 5 | Custom agents | Parallel specialists with clear boundaries |
-| 6 | Hooks | Auto-format on save, goals injection, friction detection |
+| 6 | Hooks | Auto-save on edit, goals injection, friction detection |
 | 7 | External MCP | Cross-project memory, production monitoring |
 | 8–10 | Intelligence | Debates, pipelines, experiments, self-improvement |
 
 Run `/level-up` → see your current level → build the next one. One at a time.
 
-Levels 8–10 are gated by an 8-question decision matrix. You only add intelligence capabilities when the overhead is worth it.
-
-### Self-Improvement
-
-After a week of sessions, run `/evolve`:
-
-1. **What's missing?** Scans friction logs → generates new skills automatically
-2. **What's stale?** Scores memory by importance → archives what's no longer relevant
-3. **What's overlapping?** Maps agent topology → suggests merges
-
-Your environment compounds. The more you use it, the better it gets.
-
 ---
 
 ## What Makes It Different
+
+**Memory without user action.**
+PostToolUse hook writes your progress to goals.md on every file edit. Context compaction doesn't lose your place.
 
 **Load only what you need.**
 A bug fix loads ~380 tokens of context. Not 21,000.
@@ -271,79 +298,65 @@ New capability = 1 file + 1 manifest row. Nothing else changes. No monolith to e
 
 ```
 azclaude/
-├── bin/cli.js                    ← installer (multi-CLI, path substitution)
+├── bin/cli.js                    ← installer + doctor + demo (multi-CLI, path substitution)
 ├── templates/
-│   ├── CLAUDE.md                 ← rules file template
+│   ├── CLAUDE.md                 ← rules file template (Quick Start + dispatch table)
+│   ├── hooks/                    ← Node.js hooks (cross-platform: Windows/macOS/Linux)
+│   │   ├── user-prompt.js        ← injects goals.md at session start, warns on interruption
+│   │   ├── post-tool-use.js      ← auto-saves file edits to goals.md (no user action)
+│   │   └── stop.js               ← migrates In progress → Done, writes friction stub
 │   ├── agents/orchestrator-init.md
 │   ├── capabilities/
 │   │   ├── manifest.md           ← capability index
-│   │   ├── shared/       (8)    ← tdd, completion, agents, vocabulary, quality...
-│   │   ├── evolution/    (6)    ← detect, generate, evaluate, knowledge, topology...
-│   │   ├── intelligence/ (5)    ← debate, pipeline, elo, opro, experiment
-│   │   └── level-builders/ (8)  ← levels 1–8
-│   ├── commands/         (11)   ← dream, setup, fix, ship, evolve, debate...
-│   └── scripts/env-scan.sh      ← environment scanner (one script, one JSON)
+│   │   ├── shared/       (10)    ← tdd, completion, agents, vocabulary, security, native-tools...
+│   │   ├── evolution/    (6)     ← detect, generate, evaluate, knowledge, topology...
+│   │   ├── intelligence/ (5)     ← debate, pipeline, elo, opro, experiment
+│   │   └── level-builders/ (8)   ← levels 1–8
+│   ├── commands/         (15)    ← dream, setup, fix, add, review, test, plan, ship, evolve...
+│   └── scripts/env-scan.sh       ← environment scanner (one script, one JSON)
+├── CONTRIBUTING.md
 ├── package.json
-└── test-features.sh              ← 376 tests
+└── test-features.sh              ← 548 tests
 ```
-
-**47 files. ~4,700 lines. 376 tests.**
 
 ---
 
 ## Verified End-to-End
 
-AZCLAUDE ships with a chain verification test suite — 376 tests that prove every link in the system is connected, not just assumed.
+548 tests verify every link in the system — content accuracy, not just file presence.
 
 ```bash
 bash test-features.sh
 ```
 
 ```
-[ File Structure — All Templates Present ]
-  ✓ manifest.md exists
-  ✓ shared/security.md exists
-  ✓ commands/fix.md exists
-  ... 43 file checks
-
-[ Manifest — Capability Index ]
-  ✓ shared/security.md in manifest
-  ✓ level6-hooks.md in manifest
-  ✓ intelligence/pipeline.md in manifest
-  ... 18 routing checks
-
-[ CLI Installer — bin/cli.js ]
-  ✓ detectCLI function
-  ✓ sanitizePath function
-  ✓ generateIntegrityHash exists
-  ✓ verifyIntegrity exists
-  ... 26 installer checks
-
-[ Security — shared/security.md ]
-  ✓ Hook integrity concept present
-  ✓ Path sanitization rules documented
-  ✓ Credential handling rules present
-  ... 12 security checks
-
 ════════════════════════════════════════════════════
-  Results: 376 passed, 0 failed, 376 total
+  Results: 548 passed, 0 failed, 548 total
 ════════════════════════════════════════════════════
 ```
 
-Each test checks that the right **concept** exists in the right **file** — not just that the file is present. If a future edit removes the path sanitization rules from `security.md`, test 317 fails and tells you exactly why.
+Verified live on March 14 2026: `/evolve` detected 3 real stale-documentation bugs in AZCLAUDE itself and fixed them in the same run. 505/505 tests before the fix, 548/548 after.
 
 ---
 
 ## Security
 
-AZCLAUDE executes code and modifies files. We built 6 layers of security to prevent common AI coding attack vectors:
+AZCLAUDE executes code and modifies files. 6 layers of protection:
 
-1. **Hook Integrity**: Global hooks (`~/.claude/settings.json`) run on every prompt. AZCLAUDE writes a SHA-256 integrity hash during setup and verifies it on subsequent runs, warning if hooks were modified externally.
-2. **Command Injection Protection**: Formatter hooks sanitize `$CLAUDE_FILE_PATH`, rejecting shell metacharacters (like `;`, `|`, `&`) to prevent command injection from malicious filenames.
-3. **Indirect Prompt Injection Defense**: The `UserPromptSubmit` hook strips injection patterns (`curl | bash`, `ignore previous instructions`) before injecting `goals.md` into Claude's context.
-4. **Skill Checksums**: Portable skills in `~/shared-skills/` are SHA-256 hashed. Imports fail loudly if a skill was tampered with.
-5. **Credential Auditing**: Agents log all credential handling to `security-events.md`. `/ship` rigorously scans for `.env` and plaintext keys before ever running `git stage`.
-6. **Agent Scoping**: Principle of least privilege. Review agents never get Write permissions. Experiment agents run entirely in isolated git worktrees.
+1. **Hook Integrity**: SHA-256 hash of `~/.claude/settings.json` hooks written at install, verified on every subsequent run.
+2. **Command Injection Protection**: Formatter hooks sanitize `$CLAUDE_FILE_PATH`, rejecting shell metacharacters before any formatter runs.
+3. **Indirect Prompt Injection Defense**: UserPromptSubmit hook strips `curl | bash`, `ignore previous instructions`, and similar patterns before injecting goals.md into context.
+4. **Skill Checksums**: Portable skills in `~/shared-skills/` are SHA-256 hashed. Imports fail loudly if tampered with.
+5. **Credential Auditing**: `/ship` scans for `.env` and plaintext keys before staging. Never ships secrets.
+6. **Agent Scoping**: Review agents never get Write permissions. Experiment agents run in isolated git worktrees.
+
+All hooks are pure Node.js — no bash required. Work on Windows PowerShell, CMD, Git Bash, macOS, and Linux.
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) — how to add a capability or command in 15 minutes.
 
 ---
 
