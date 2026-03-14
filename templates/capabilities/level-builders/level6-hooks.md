@@ -4,6 +4,7 @@ description: >
   Build Level 6: lifecycle hooks for automatic context injection.
   Triggers on: "build level 6", "add hooks", "automate session start".
 tokens: ~200
+requires: level5-agents
 ---
 
 ## Level 6: Lifecycle Hooks

@@ -16,21 +16,16 @@ It does NOT sit in memory between sessions. There is no persistent orchestrator.
 
 ## Step 1: Project Scale Detection
 
-Run as a single script to avoid 15 separate tool calls in context:
+Run the environment scanner — one script, one JSON result, ~200 tokens.
+Script output is what enters context, not the script code itself.
+
 ```bash
-echo "{
-  \"files\": $(find . -not -path './node_modules/*' -not -path './.git/*' -name '*.md' -o -name '*.json' -o -name '*.js' -o -name '*.ts' -o -name '*.py' 2>/dev/null | wc -l),
-  \"has_package_json\": $([ -f package.json ] && echo true || echo false),
-  \"has_requirements\": $([ -f requirements.txt ] && echo true || echo false),
-  \"has_cargo\": $([ -f Cargo.toml ] && echo true || echo false),
-  \"has_gomod\": $([ -f go.mod ] && echo true || echo false),
-  \"has_knowledge_dir\": $([ -d knowledge ] && echo true || echo false),
-  \"claude_md_count\": $(find . -name 'CLAUDE.md' 2>/dev/null | wc -l),
-  \"git_history\": $(git log --oneline -5 2>/dev/null | head -5 || echo 'none')
-}"
+bash .claude/scripts/env-scan.sh
 ```
 
-One script, one JSON result, ~200 tokens. Not 15 sequential bash calls.
+The script returns structured JSON covering: file count, scale mode, all signals
+(package.json, requirements, cargo, knowledge/, git, MCP, memory, commands, agents),
+git log, and README head. Parse the JSON object — do not re-run individual checks.
 
 Scale modes:
 | Files | Mode |

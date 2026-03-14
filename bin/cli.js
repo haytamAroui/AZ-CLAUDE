@@ -66,6 +66,13 @@ function installGlobalHooks() {
   fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
   ok('Global hooks installed (~/.claude/settings.json)');
   info('Why global: runs in every project — install once, covered everywhere');
+
+  // Windows compatibility warning
+  if (process.platform === 'win32') {
+    warn('Windows detected: hooks use bash syntax (mkdir -p, date -r, etc.)');
+    warn('Hooks require Git Bash or WSL — they will fail silently in PowerShell.');
+    warn('Claude Code on Windows typically uses Git Bash — if so, you are covered.');
+  }
 }
 
 // ─── Capabilities ─────────────────────────────────────────────────────────────
@@ -100,6 +107,24 @@ function installCommands(projectDir) {
       info(`/${cmd} already exists — skipping`);
     }
   }
+}
+
+// ─── Scripts ──────────────────────────────────────────────────────────────────
+
+function installScripts(projectDir) {
+  const src = path.join(TEMPLATE_DIR, 'scripts');
+  const dst = path.join(projectDir, '.claude', 'scripts');
+  if (!fs.existsSync(src)) return;
+  fs.mkdirSync(dst, { recursive: true });
+  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    const d = path.join(dst, entry.name);
+    if (!fs.existsSync(d)) {
+      fs.copyFileSync(path.join(src, entry.name), d);
+      // Make shell scripts executable on Unix
+      try { fs.chmodSync(d, '755'); } catch {}
+    }
+  }
+  ok('Scripts installed (.claude/scripts/) — env-scan.sh outputs JSON, not 15 tool calls');
 }
 
 // ─── Agents ───────────────────────────────────────────────────────────────────
@@ -143,6 +168,18 @@ function createDirectories(projectDir) {
     fs.mkdirSync(path.join(projectDir, dir), { recursive: true });
   }
   ok('Memory directories created');
+
+  // Create knowledge-index stub if knowledge/ directory already exists
+  const knowledgeDir   = path.join(projectDir, 'knowledge');
+  const knowledgeIndex = path.join(projectDir, 'knowledge-index.md');
+  if (fs.existsSync(knowledgeDir) && !fs.existsSync(knowledgeIndex)) {
+    fs.writeFileSync(knowledgeIndex,
+      '| file | summary | key_questions | tags |\n' +
+      '|------|---------|--------------|------|\n' +
+      '| (run /setup to populate this index) | | | |\n'
+    );
+    ok('knowledge-index.md stub created (run /setup to populate)');
+  }
 }
 
 // ─── Shared Skills ────────────────────────────────────────────────────────────
@@ -185,6 +222,7 @@ console.log('══════════════════════�
 installGlobalHooks();
 installCapabilities(projectDir);
 installCommands(projectDir);
+installScripts(projectDir);
 installAgents(projectDir);
 installClaudeMd(projectDir);
 createDirectories(projectDir);

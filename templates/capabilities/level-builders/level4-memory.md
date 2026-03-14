@@ -4,6 +4,7 @@ description: >
   Build Level 4: memory system with goals.md, session logs, friction logs.
   Triggers on: "build level 4", "add memory", "set up session tracking".
 tokens: ~200
+requires: level3-skills
 ---
 
 ## Level 4: Memory System

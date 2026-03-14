@@ -4,6 +4,7 @@ description: >
   Build Level 3: create project-specific skills and commands.
   Triggers on: "build level 3", "add skill", "create command", "automate workflow".
 tokens: ~250
+requires: level2-mcp
 ---
 
 ## Level 3: Skills and Commands

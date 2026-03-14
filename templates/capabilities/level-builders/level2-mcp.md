@@ -4,6 +4,7 @@ description: >
   Build Level 2: configure MCP servers for this project.
   Triggers on: "build level 2", "add MCP", "configure MCP servers".
 tokens: ~150
+requires: level1-claudemd
 ---
 
 ## Level 2: MCP Servers

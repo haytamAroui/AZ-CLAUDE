@@ -4,6 +4,7 @@ description: >
   Build Level 5: project-specific custom agents.
   Triggers on: "build level 5", "create agent", "add custom agent".
 tokens: ~300
+requires: level4-memory
 ---
 
 ## Level 5: Custom Agents

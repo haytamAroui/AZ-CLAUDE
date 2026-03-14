@@ -4,6 +4,7 @@ description: >
   Build Level 7: external MCP servers and advanced tool composition.
   Triggers on: "build level 7", "external MCP", "advanced tools".
 tokens: ~150
+requires: level6-hooks
 ---
 
 ## Level 7: External MCP Servers
