@@ -27,6 +27,10 @@ Quick dispatch:
 - /debate → commands/debate.md → intelligence/debate.md
 - /persist → commands/persist.md → shared/session-rhythm + friction-log
 - /level-up → commands/level-up.md → level-builders/{N}.md
+- /add → commands/add.md
+- /review → commands/review.md
+- /test → commands/test.md
+- /plan → commands/plan.md
 - /ship → commands/ship.md
 - /status → commands/status.md
 - /explain → commands/explain.md
@@ -40,4 +44,4 @@ When priorities conflict:
 3. {{PRIORITY_3}}
 
 ## Available Commands
-/dream · /setup · /fix · /evolve · /debate · /persist · /level-up · /ship · /status · /explain · /loop
+/dream · /setup · /fix · /add · /review · /test · /plan · /evolve · /debate · /persist · /level-up · /ship · /status · /explain · /loop
