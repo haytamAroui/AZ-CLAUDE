@@ -1,0 +1,27 @@
+{
+  "name": "azclaude",
+  "version": "1.0.0",
+  "description": "Claude Code architecture-native AI environment. Skills, not agents. Lazy loading, not monoliths. 55x less token overhead.",
+  "bin": {
+    "azclaude": "./bin/cli.js"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "ai",
+    "developer-tools",
+    "skills",
+    "automation",
+    "context-engineering",
+    "lazy-loading"
+  ],
+  "author": "haytamAroui",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16"
+  },
+  "files": [
+    "bin/",
+    "templates/"
+  ]
+}
