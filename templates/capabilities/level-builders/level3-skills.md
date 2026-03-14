@@ -207,11 +207,21 @@ This delegates work back to Claude with no constraints. Claude will ask clarifyi
 ```
 
 **Standard commands to always generate for developer projects:**
+
+These three exist as templates in `capabilities/templates/commands/`. Copy them:
+```bash
+cp .claude/capabilities/templates/commands/add.md .claude/commands/add.md
+cp .claude/capabilities/templates/commands/review.md .claude/commands/review.md
+cp .claude/capabilities/templates/commands/test.md .claude/commands/test.md
+```
+
+If this project is a **Code** category (has package.json / Cargo.toml / etc.) — copy all three. No exceptions.
+
 | Command | What it encodes |
 |---------|----------------|
-| `add.md` | How to add a feature (test-first if TDD active) |
-| `review.md` | Spec compliance check → code quality check (in that order) |
-| `test.md` | How to run tests, interpret output, fix failures |
+| `add.md` | Feature addition: scope intake → understand pattern → TDD → implement → verify |
+| `review.md` | Spec compliance first → code quality second — uses EnterPlanMode |
+| `test.md` | IDE diagnostics → run suite → interpret failures → apply /fix |
 
 **Stack-specific commands to generate when stack detected:**
 | Stack | Generate |
@@ -220,6 +230,20 @@ This delegates work back to Claude with no constraints. Claude will ask clarifyi
 | Express / FastAPI | `new-endpoint.md` |
 | Any DB | `migrate.md` |
 | Any deploy config | `deploy.md` |
+
+---
+
+### Native Tools in Skills
+
+Before writing any new skill: load `capabilities/shared/native-tools.md`.
+Every skill that collects user input, tracks progress, or runs commands must use the appropriate native tool — not simulate it with prose.
+
+Quick check before writing:
+- Does this skill ask questions? → `AskUserQuestion`
+- Does this skill have multiple steps? → `TaskCreate/TaskUpdate`
+- Does this skill do analysis before action? → `EnterPlanMode/ExitPlanMode`
+- Does this skill run risky changes? → `EnterWorktree`
+- Does this skill run a command and check result? → exit-code gate
 
 ---
 

@@ -94,6 +94,10 @@ check_file "commands/ship.md exists"                     "$CMD/ship.md"
 check_file "commands/status.md exists"                   "$CMD/status.md"
 check_file "commands/explain.md exists"                  "$CMD/explain.md"
 check_file "commands/loop.md exists"                     "$CMD/loop.md"
+check_file "commands/add.md exists"                      "$CMD/add.md"
+check_file "commands/review.md exists"                   "$CMD/review.md"
+check_file "commands/test.md exists"                     "$CMD/test.md"
+check_file "commands/plan.md exists"                     "$CMD/plan.md"
 
 # ─────────────────────────────────────────────
 echo ""
@@ -637,6 +641,53 @@ check "Context injection protection present"           "$SEC" "injection\|inject
 check "Credential handling rules present"              "$SEC" "Credential\|secret\|api key"
 check "Shared-skill verification concept present"      "$SEC" "checksum\|verify.*skill"
 check "Agent permission scoping present"               "$SEC" "least privilege\|permission"
+
+# ─────────────────────────────────────────────
+echo ""
+echo "[ Core Developer Commands — add / review / test / plan ]"
+# ─────────────────────────────────────────────
+ADD="$CMD/add.md"
+check "/add: AskUserQuestion for vague input"           "$ADD" "AskUserQuestion"
+check "/add: TaskCreate for step tracking"              "$ADD" "TaskCreate"
+check "/add: TDD — write failing test first"            "$ADD" "failing test"
+check "/add: exit-code gate on test run"                "$ADD" "EXIT"
+check "/add: pushy description (10+ triggers)"         "$ADD" "implement\|build\|create\|new endpoint\|new component"
+
+REV="$CMD/review.md"
+check "/review: EnterPlanMode at start"                 "$REV" "EnterPlanMode"
+check "/review: ExitPlanMode at end"                    "$REV" "ExitPlanMode"
+check "/review: spec compliance checked first"          "$REV" "Spec compliance"
+check "/review: STOP if spec fails"                     "$REV" "STOP if spec"
+check "/review: mcp__ide__getDiagnostics in quality"   "$REV" "mcp__ide__getDiagnostics"
+check "/review: blocking vs suggestion distinction"     "$REV" "blocking\|suggestion"
+
+TST="$CMD/test.md"
+check "/test: mcp__ide__getDiagnostics first"           "$TST" "mcp__ide__getDiagnostics"
+check "/test: detect test framework"                    "$TST" "Detect Test Framework\|test framework"
+check "/test: exit-code gate"                           "$TST" "EXIT"
+check "/test: paste full output (no summarize)"        "$TST" "full output\|never summarize"
+
+PLAN="$CMD/plan.md"
+check "/plan: EnterPlanMode at start"                   "$PLAN" "EnterPlanMode"
+check "/plan: ExitPlanMode before TaskCreate"          "$PLAN" "ExitPlanMode"
+check "/plan: AskUserQuestion if vague"                 "$PLAN" "AskUserQuestion"
+check "/plan: TaskCreate for each step"                 "$PLAN" "TaskCreate"
+check "/plan: no code written during plan"             "$PLAN" "Do not write any code\|no code written"
+
+SHIP="$CMD/ship.md"
+check "/ship: pre-ship gate mcp__ide__getDiagnostics"  "$SHIP" "mcp__ide__getDiagnostics"
+check "/ship: pre-ship gate tests must pass"           "$SHIP" "Pre-ship.*blocked\|tests.*pass\|test command.*EXIT"
+check "/ship: secret scan before staging"              "$SHIP" "Secret Scan\|secret\|credential"
+
+check "session-rhythm: mcp__ide__getDiagnostics ORIENT" "$SHARED/session-rhythm.md" "mcp__ide__getDiagnostics"
+check "session-rhythm: TaskCreate in ORIENT"           "$SHARED/session-rhythm.md" "TaskCreate"
+check "session-rhythm: TaskUpdate in WORK"             "$SHARED/session-rhythm.md" "TaskUpdate"
+
+check "orchestrator-init: TaskCreate for init steps"   "$ORCH" "TaskCreate"
+check "orchestrator-init: TaskUpdate per step"         "$ORCH" "TaskUpdate"
+
+check "level3-skills: references native-tools.md"      "$LVL/level3-skills.md" "native-tools"
+check "level3-skills: copy /add /review /test pattern" "$LVL/level3-skills.md" "add\.md.*review\.md.*test\.md\|add.md\|review.md"
 
 check "CLI installer: sanitizePath function exists"    "$CLI" "sanitizePath"
 check "CLI installer: generateIntegrityHash exists"    "$CLI" "generateIntegrityHash"

@@ -12,6 +12,16 @@ tokens: ~400
 This agent runs once. After setup is complete, it exits.
 It does NOT sit in memory between sessions. There is no persistent orchestrator.
 
+**TaskCreate** before starting — one per step, status `pending`:
+- `Scan project`
+- `Detect domain and stack`
+- `Write blueprint.json`
+- `Fill CLAUDE.md`
+- `Create goals.md`
+- `Create knowledge index` (only if knowledge/ detected)
+
+Update each task as you proceed: **TaskUpdate → in_progress** then **→ completed**.
+
 ---
 
 ## Step 1: Project Scale Detection

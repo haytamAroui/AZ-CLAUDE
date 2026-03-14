@@ -1,6 +1,9 @@
 ---
 name: ship
-description: Stage changes, generate a commit message, commit, and push. Skips .env and secrets automatically.
+description: >
+  Stage changes, commit, and push to GitHub. Pre-ship gate: IDE diagnostics + tests must pass.
+  Triggers on: "ship", "push", "commit and push", "deploy", "send to GitHub", "save and push".
+  Skips .env and secrets automatically. Never ships with failing tests or IDE errors.
 argument-hint: "[optional: commit message hint]"
 disable-model-invocation: true
 allowed-tools: Bash, Read
@@ -8,25 +11,79 @@ allowed-tools: Bash, Read
 
 # /ship — Save and Push to GitHub
 
-Steps:
+$ARGUMENTS
 
-1. Run `git status` — show what changed
-2. If not a git repo: run `git init`, create initial commit
-3. Stage changed files — NEVER stage `.env`, credentials, secrets, or API keys
-   - Check for sensitive files before staging: `git status --short | grep -E "\.env|secret|credential|key"`
-   - If found: warn and skip those files
-4. Generate a clear commit message:
-   - Lead with what changed and why (not just "update files")
-   - Format: `{type}: {what changed} — {why}`
-   - Types: feat / fix / refactor / docs / chore
-5. Commit the changes
-6. If a remote exists: push to current branch
-7. If no remote: show exactly how to connect to GitHub:
-   ```
-   git remote add origin https://github.com/{username}/{repo}.git
-   git push -u origin main
-   ```
+---
 
-If there are no changes: say "Nothing to ship — your code is already up to date."
+## Pre-Ship Gate (runs before any commit)
 
-Show a summary of what was shipped: files changed, commit hash, branch.
+**1. IDE diagnostics** — use `mcp__ide__getDiagnostics`
+If errors exist: STOP.
+```
+✗ Pre-ship blocked: {N} IDE errors. Fix with /fix before shipping.
+```
+
+**2. Tests**
+```bash
+{test command}; EXIT=$?
+echo "Exit: $EXIT"
+```
+If EXIT ≠ 0: STOP.
+```
+✗ Pre-ship blocked: tests failing. Run /test to fix.
+```
+
+If both pass: `✓ Pre-ship gate passed`
+
+---
+
+## Step 1: Show What Will Ship
+
+```bash
+git status --short
+git diff --stat HEAD
+```
+
+---
+
+## Step 2: Secret Scan
+
+```bash
+git status --short | grep -iE "\.env|secret|credential|\.key|token|password"
+```
+
+If found: warn and skip those files. Never stage secrets.
+
+---
+
+## Step 3: Stage and Commit
+
+Stage changed files — never `.env`, secrets, `node_modules`.
+
+Generate commit message:
+- Format: `{type}: {what changed} — {why}`
+- Types: `feat` / `fix` / `refactor` / `docs` / `chore`
+- Lead with impact ("add user auth" not "update auth.ts")
+- Use $ARGUMENTS hint if provided
+
+If not a git repo: run `git init` first.
+
+---
+
+## Step 4: Push
+
+If remote exists: `git push`
+
+If no remote:
+```
+git remote add origin https://github.com/{username}/{repo}.git
+git push -u origin main
+```
+
+---
+
+## Completion Rule
+
+Show: files changed, commit hash, branch, push status.
+If no changes: "Nothing to ship — working tree is clean."
+Do not say "shipped" without showing the push output.
