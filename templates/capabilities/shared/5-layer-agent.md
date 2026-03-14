@@ -58,7 +58,7 @@ Every agent definition must have all five layers. Missing layers = incomplete ag
 |-------|------|-----------------|
 | 1 | PERSONA | Who this agent is. Role, not personality. |
 | 2 | SCOPE | What it does and what it explicitly does NOT do. |
-| 3 | TOOLS & RESOURCES | Which tools it may use. Which files it reads. |
+| 3 | TOOLS & RESOURCES | Which tools it may use. Which files it reads. Load `shared/native-tools.md` to select the right native Claude Code tools. |
 | 4 | CONSTRAINTS | Hard limits. What it must never do. |
 | 5 | DOMAIN CONTEXT | Domain knowledge that shapes every decision. |
 

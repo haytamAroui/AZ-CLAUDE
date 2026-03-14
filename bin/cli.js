@@ -140,6 +140,8 @@ function installGlobalHooks(cli) {
 
   const stopCmd = [
     `if [ ! -f ${cfg}/memory/goals.md ]; then exit 0; fi`,
+    // Stamp goals.md with today's date so next session doesn't start with stale context
+    `sed -i "s/^Updated: .*/Updated: $(date +%Y-%m-%d)/" ${cfg}/memory/goals.md 2>/dev/null || true`,
     `STUB="ops/observations/$(date +%Y%m%d-%H%M%S)-friction.md"`,
     `if [ ! -f "$STUB" ]; then`,
     `  printf -- '---\\ndate: %s\\ntype: friction\\n---\\n\\n# Friction\\n\\n(session ended without /persist)\\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$STUB"`,

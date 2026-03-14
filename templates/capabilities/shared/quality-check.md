@@ -27,7 +27,7 @@ echo "--- Core files ---"
 [ -f .claude/capabilities/manifest.md ] && echo "✓ manifest.md" || echo "✗ manifest.md MISSING"
 
 echo "--- Commands ---"
-for cmd in dream setup fix evolve debate persist level-up ship status explain loop; do
+for cmd in dream setup fix add review test plan evolve debate persist level-up ship status explain loop; do
   [ -f ".claude/commands/$cmd.md" ] && echo "✓ /$cmd" || echo "✗ /$cmd MISSING"
 done
 
@@ -77,7 +77,7 @@ All checks must show ✓ before declaring setup complete.
 
 ```
 Bad: "Setup complete!"
-Good: "Environment check: 12/12 ✓. Content check: CLAUDE.md filled, goals.md dated. Skills: 3 created, all pass RECIPE test."
+Good: "Environment check: 15/15 ✓. Content check: CLAUDE.md filled, goals.md dated. Skills: 15 installed, all pass RECIPE test."
 ```
 
 Run this check automatically at the end of every `/setup` and `/level-up`.
