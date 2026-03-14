@@ -64,6 +64,12 @@ const CLI_TABLE = [
 ];
 
 function detectCLI() {
+  // 0. Env override (for testing / explicit selection)
+  if (process.env.AZCLAUDE_CLI) {
+    const forced = CLI_TABLE.find(c => c.name.toLowerCase().replace(/\s/g,'') === process.env.AZCLAUDE_CLI.toLowerCase());
+    if (forced) return forced;
+  }
+
   // 1. Check executable in PATH
   for (const cli of CLI_TABLE) {
     try {

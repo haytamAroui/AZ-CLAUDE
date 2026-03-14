@@ -692,6 +692,7 @@ check "orchestrator-init: TaskUpdate per step"         "$ORCH" "TaskUpdate"
 check "level3-skills: references native-tools.md"      "$LVL/level3-skills.md" "native-tools"
 check "level3-skills: copy /add /review /test pattern" "$LVL/level3-skills.md" "add\.md.*review\.md.*test\.md\|add.md\|review.md"
 
+check "CLI installer: AZCLAUDE_CLI env override"       "$CLI" "AZCLAUDE_CLI"
 check "CLI installer: add command registered"          "$CLI" "'add'"
 check "CLI installer: review command registered"       "$CLI" "'review'"
 check "CLI installer: test command registered"         "$CLI" "'test'"
@@ -762,6 +763,44 @@ DEBATE="$CMD/debate.md"
 check "/debate: AskUserQuestion if args vague"         "$DEBATE" "AskUserQuestion"
 check "/debate: EnterPlanMode during analysis"         "$DEBATE" "EnterPlanMode"
 check "/debate: ExitPlanMode before recording"         "$DEBATE" "ExitPlanMode"
+
+# ─────────────────────────────────────────────
+echo ""
+echo "[ Install Integration Test ]"
+# ─────────────────────────────────────────────
+IDIR="$(cd "$(dirname "$0")" && pwd)/.test-install-$$"
+rm -rf "$IDIR" && mkdir -p "$IDIR"
+(cd "$IDIR" && git init -q && AZCLAUDE_CLI=claudecode node "$CLI" > /dev/null 2>&1)
+
+check_file "install: CLAUDE.md created"                "$IDIR/CLAUDE.md"
+check_file "install: manifest.md present"              "$IDIR/.claude/capabilities/manifest.md"
+check_file "install: env-scan.sh present"              "$IDIR/.claude/scripts/env-scan.sh"
+check_file "install: orchestrator-init.md present"     "$IDIR/.claude/agents/orchestrator-init.md"
+check_file "install: /dream installed"                 "$IDIR/.claude/commands/dream.md"
+check_file "install: /add installed"                   "$IDIR/.claude/commands/add.md"
+check_file "install: /review installed"                "$IDIR/.claude/commands/review.md"
+check_file "install: /test installed"                  "$IDIR/.claude/commands/test.md"
+check_file "install: /plan installed"                  "$IDIR/.claude/commands/plan.md"
+check_file "install: /fix installed"                   "$IDIR/.claude/commands/fix.md"
+check_file "install: /ship installed"                  "$IDIR/.claude/commands/ship.md"
+check_file "install: /evolve installed"                "$IDIR/.claude/commands/evolve.md"
+check_file "install: /loop installed"                  "$IDIR/.claude/commands/loop.md"
+check_file "install: /persist installed"               "$IDIR/.claude/commands/persist.md"
+check_file "install: /status installed"                "$IDIR/.claude/commands/status.md"
+check_file "install: shared/tdd.md present"            "$IDIR/.claude/capabilities/shared/tdd.md"
+check_file "install: shared/native-tools.md present"   "$IDIR/.claude/capabilities/shared/native-tools.md"
+check_file "install: shared/security.md present"       "$IDIR/.claude/capabilities/shared/security.md"
+check      "install: CLAUDE.md has placeholders"       "$IDIR/CLAUDE.md" "{{PROJECT_NAME}}"
+INSTALLED=$(ls "$IDIR/.claude/commands/" | wc -l | tr -d ' ')
+if [ "$INSTALLED" -eq 15 ]; then
+  echo "  ✓ install: all 15 commands present"
+  PASS=$((PASS + 1))
+else
+  echo "  ✗ install: expected 15 commands, got $INSTALLED"
+  ERRORS="$ERRORS\n  FAILED: install: expected 15 commands, got $INSTALLED"
+  FAIL=$((FAIL + 1))
+fi
+rm -rf "$IDIR"
 
 echo ""
 echo "════════════════════════════════════════════════════"
