@@ -68,12 +68,26 @@ Build only when:
 - The project has 10+ sessions of history and active memory files
 - A loop controller would genuinely reduce friction
 
-What to add:
-- `evolution/re-derivation.md` for autonomous gap detection
-- A loop controller agent (if building one — see gap analysis)
-
 **Warning**: Level 10 adds autonomous capability. Only build when the previous levels
 are working correctly — a self-improving loop on a broken foundation improves nothing.
+
+**What to build:**
+
+Install the loop controller agent:
+```bash
+cp .claude/capabilities/../agents/loop-controller.md .claude/agents/loop-controller.md
+```
+
+Or instruct Claude to create `.claude/agents/loop-controller.md` by reading the template
+at `.claude/agents/loop-controller.md` (installed by `npx azclaude`).
+
+Once the loop controller exists, `/evolve` automatically delegates to it — no further
+configuration needed. The handoff is built into the `/evolve` command.
+
+**Level 10 complete when:**
+- `.claude/agents/loop-controller.md` exists
+- Running `/evolve` shows "Delegating to loop-controller…" instead of running manually
+- First autonomous cycle completes and shows the cycle report
 
 ---
 

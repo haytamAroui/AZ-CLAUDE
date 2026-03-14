@@ -9,7 +9,23 @@ tokens: ~80
 
 # /evolve — Environment Evolution
 
-Thin router. Loads only what each phase needs.
+## Step 0: Check for Loop Controller (Level 10)
+
+```bash
+ls .claude/agents/loop-controller.md 2>/dev/null
+```
+
+**If loop-controller.md exists**: delegate ALL evolution work to it via Agent tool:
+```
+Run a full evolution cycle: re-derivation check, then Cycle 1 (detect/generate/evaluate),
+Cycle 2 (knowledge consolidation if 3+ sessions), Cycle 3 (topology if friction detected).
+Show the full cycle report when done.
+```
+**STOP HERE** — do not run the steps below.
+
+---
+
+**If loop-controller.md does not exist** (Levels 3–9): run manually below.
 
 ---
 
