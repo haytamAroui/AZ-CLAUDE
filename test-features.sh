@@ -840,6 +840,31 @@ check      "tdd: developer opt-in check in /add"     "templates/commands/add.md"
 check      "tdd: orchestrator checks test files"     "templates/agents/orchestrator-init.md" "test files.*exist\|test files already"
 check      "tdd: orchestrator checks CLAUDE.md rule" "templates/agents/orchestrator-init.md" "grep.*tdd.*CLAUDE.md\|CLAUDE.md has.*TDD"
 
+# ─── /evolve quick mode ───────────────────────────────────────────────────────
+echo ""
+echo "─── /evolve quick mode ───"
+check      "evolve: scope gate present"             "templates/commands/evolve.md" "Scope Gate\|scope gate"
+check      "evolve: quick mode skips generate"      "templates/commands/evolve.md" "quick.*skip\|Skip GENERATE"
+check      "evolve: quick mode token estimate"      "templates/commands/evolve.md" "500 tokens\|~500"
+check      "evolve: description mentions quick"     "templates/commands/evolve.md" "quick"
+check      "evolve: full mode still runs all cycles" "templates/commands/evolve.md" "blank.*full\|full.*all cycles"
+
+# ─── /ship docs sync ──────────────────────────────────────────────────────────
+echo ""
+echo "─── /ship docs sync ───"
+check      "ship: docs sync step present"           "templates/commands/ship.md" "Docs Sync"
+check      "ship: version check vs package.json"    "templates/commands/ship.md" "package.json.*version\|version.*package.json"
+check      "ship: stale bash risk warning"          "templates/commands/ship.md" "bash.*Windows\|stale.*risk\|Node.js hooks"
+check      "ship: docs sync before commit"          "templates/commands/ship.md" "runs before commit\|before commit"
+
+# ─── CLAUDE.md Quick Start ────────────────────────────────────────────────────
+echo ""
+echo "─── CLAUDE.md onboarding ───"
+check      "CLAUDE.md: quick start block present"   "templates/CLAUDE.md" "Quick Start"
+check      "CLAUDE.md: /setup as first step"        "templates/CLAUDE.md" "1.*setup\|setup.*first"
+check      "CLAUDE.md: /persist mentioned"          "templates/CLAUDE.md" "persist"
+check      "CLAUDE.md: quick start before identity" "templates/CLAUDE.md" "Quick Start"
+
 echo ""
 echo "════════════════════════════════════════════════════"
 TOTAL=$((PASS + FAIL))

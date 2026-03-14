@@ -1,5 +1,13 @@
 # {{PROJECT_NAME}}
 
+## Quick Start
+1. Run `/setup` — scans this project, fills in the sections below, creates `goals.md`
+2. Run `/status` — shows current state of the project
+3. Run `/add [what to build]` to add features, `/fix [what's broken]` to fix bugs
+4. Run `/persist` before closing — saves session state so next session picks up where you left off
+
+---
+
 ## Identity
 {{PROJECT_DESCRIPTION}}
 Domain: {{DOMAIN}} | Stack: {{STACK}} | Scale: {{SCALE}}

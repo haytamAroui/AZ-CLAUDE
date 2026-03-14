@@ -38,6 +38,30 @@ If both pass: `✓ Pre-ship gate passed`
 
 ---
 
+## Step 0.5: Docs Sync (runs before commit)
+
+Check for stale documentation — 3 quick greps, no file reads required:
+
+```bash
+# 1. Version in README matches package.json?
+README_VER=$(grep -oE '[0-9]+\.[0-9]+\.[0-9]+' README.md 2>/dev/null | head -1)
+PKG_VER=$(node -p "require('./package.json').version" 2>/dev/null)
+[ "$README_VER" != "$PKG_VER" ] && echo "⚠ README version ($README_VER) ≠ package.json ($PKG_VER) — update README"
+
+# 2. Command count in README matches installed commands?
+README_CMDS=$(grep -oE '[0-9]+ commands?' README.md 2>/dev/null | grep -oE '[0-9]+' | head -1)
+ACTUAL_CMDS=$(ls .claude/commands/*.md 2>/dev/null | wc -l | tr -d ' ')
+[ -n "$README_CMDS" ] && [ "$README_CMDS" != "$ACTUAL_CMDS" ] && echo "⚠ README says $README_CMDS commands, found $ACTUAL_CMDS"
+
+# 3. Known stale risk section?
+grep -q "bash.*Windows\|Git Bash.*fail" README.md 2>/dev/null && echo "⚠ README still has stale bash/Windows risk — update to Node.js hooks"
+```
+
+If any warnings fire: update README before committing.
+If README does not exist or all checks pass: skip.
+
+---
+
 ## Step 1: Show What Will Ship
 
 ```bash

@@ -1,13 +1,32 @@
 ---
 name: evolve
-description: Scan environment for gaps, generate improvements, consolidate knowledge. Run after significant work or end of week.
+description: >
+  Scan environment for gaps, generate improvements, consolidate knowledge.
+  /evolve quick — detect only (~500 tokens, no fixes). Use after small sessions.
+  /evolve — full cycle with fixes. Run after significant work or end of week.
 disable-model-invocation: true
 context: fork
 ---
 
 # /evolve — Environment Evolution
 
-## Step 0: Check for Loop Controller (Level 10)
+$ARGUMENTS
+
+## Step 0: Scope Gate
+
+If $ARGUMENTS == "quick":
+- Run DETECT only (read detect.md, output PLAN)
+- Skip GENERATE, EVALUATE, Cycle 2, Cycle 3
+- Skip EnterWorktree
+- Output: gap list with file:line references — no fixes applied
+- Cost: ~500 tokens. Use after small sessions or quick checks.
+- Print: `PLAN (quick mode — gaps listed, not fixed):`
+
+If $ARGUMENTS is blank or "full": run all cycles below.
+
+---
+
+## Step 0b: Check for Loop Controller (Level 10)
 
 ```bash
 ls .claude/agents/loop-controller.md 2>/dev/null
