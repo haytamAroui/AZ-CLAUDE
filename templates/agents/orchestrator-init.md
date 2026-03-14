@@ -79,7 +79,7 @@ Instead: generate `write-chapter.md`, `outline.md`, `edit-draft.md` skills.
 
 ---
 
-## Step 3: Derive Domain Profile
+## Step 3: Derive Domain Profile + Write Blueprint
 
 Load `capabilities/shared/vocabulary-transform.md` — substitute domain vocabulary in all generated files.
 Build one structured object — do not output intermediate reasoning:
@@ -87,12 +87,25 @@ Build one structured object — do not output intermediate reasoning:
 {
   "project_name": "...",
   "domain": "developer|writer|researcher|compliance|medical|finance",
+  "category": "Code|Creative|Research|Business",
   "stack": ["..."],
   "scale": "STANDARD|SKIM|MINIMAL|STRUCTURE-ONLY",
   "tdd_active": true|false,
+  "complexity": "simple|moderate|complex",
   "personality": { "tone": "...", "style": "..." },
-  "constraints_applied": ["..."]
+  "constraints_applied": ["..."],
+  "skip_levels": ["..."]
 }
+```
+
+**Write this object to `.claude/blueprint.json`** — shared state for all level-builders.
+
+Level-builders read `blueprint.json` at the start to avoid re-scanning. They do not re-run env-scan.sh.
+
+```bash
+# Level-builders read it like this:
+cat .claude/blueprint.json
+# Use domain, stack, tdd_active, skip_levels to make decisions
 ```
 
 Personality derives from domain, not preference:
@@ -101,19 +114,31 @@ Personality derives from domain, not preference:
 - Researcher → evidence-first, sources cited
 - Compliance → formal, obligations-framed
 
+`complexity` derives from: file count (STANDARD=simple, SKIM=moderate, MINIMAL+=complex).
+
 ---
 
 ## Step 4: Constraint Cascade
 
-| # | Check |
-|---|-------|
-| 1 | Don't add agents for simple single-module projects |
-| 2 | TDD only for developer domain |
-| 3 | Don't add memory layers the user won't maintain |
-| 4 | Max agents = max parallel work streams needed |
-| 5 | goals.md always created — continuity is non-negotiable |
+| # | Check | Violation action |
+|---|-------|-----------------|
+| 1 | Don't add agents for simple single-module projects | complexity=simple → skip Level 5 |
+| 2 | TDD only for developer domain — never for Writer/Creative | tdd_active + domain≠developer → set tdd_active=false |
+| 3 | Memory intensity vs maintenance: does this user have a `goals.md` from a prior session? | No prior memory + complexity=simple → skip Level 4 |
+| 4 | Max agents = max parallel work streams needed | Count genuine parallel tasks before adding agents |
+| 5 | goals.md always created — continuity is non-negotiable | Never skip this regardless of category |
 
-VIOLATION: if TDD active but domain = Writer → fix before proceeding.
+**Check #2 in detail — the TDD-in-Writer trap:**
+If signals show prose/creative content but also have a `package.json` (e.g., a static site generator):
+- The code tooling is infrastructure, not the project itself
+- Ask: "Is the user writing code, or writing content that happens to be in a code repo?"
+- If writing content → domain = Writer, tdd_active = false, skip Level 6 hooks
+- If writing code → domain = Developer, tdd_active = true
+
+**Check #3 in detail — memory intensity:**
+High-maintenance memory (goals.md, sessions/, learnings/) only makes sense if the user returns to this project repeatedly.
+- Single-use / throwaway projects → goals.md only, skip session memory
+- Active ongoing projects → full memory structure
 
 ---
 

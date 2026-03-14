@@ -78,3 +78,49 @@ If 3+ agents chain (A → B → C):
 - Verify B receives only A's output, not A's full context
 - Verify C receives only B's output
 - Document the chain in `.claude/memory/pipeline-map.md`
+
+---
+
+### Topology Map Schema
+
+Write / update `.claude/memory/topology-map.json` after every Cycle 3 run:
+
+```json
+{
+  "last_updated": "YYYY-MM-DD",
+  "pipelines": [
+    {
+      "name": "{pipeline-name}",
+      "chain": ["agent-a", "agent-b", "agent-c"],
+      "uses": 0,
+      "quality_score": 0,
+      "influence_score": 0,
+      "last_used": "YYYY-MM-DD"
+    }
+  ],
+  "agents": [
+    {
+      "name": "{agent-name}",
+      "file": ".claude/agents/{name}.md",
+      "uses": 0,
+      "elo": 1000,
+      "last_used": "YYYY-MM-DD",
+      "status": "active|archived"
+    }
+  ],
+  "capabilities": [
+    {
+      "file": "capabilities/{path}.md",
+      "usage_score": 0,
+      "quality_score": 0,
+      "tokens": 0,
+      "status": "active|archived"
+    }
+  ]
+}
+```
+
+`influence_score` = how many other pipelines depend on this one's output.
+`elo` = updated from intelligence/elo.md pairwise comparisons when agents compete.
+
+After updating topology-map.json → also update the relevant rows in manifest.md token estimates.

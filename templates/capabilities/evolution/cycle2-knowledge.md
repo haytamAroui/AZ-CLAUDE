@@ -32,15 +32,33 @@ Rules:
 
 ---
 
-### PRUNE
-Remove stale knowledge that no longer reflects reality:
+### PRUNE — Importance Scoring
+
+Before archiving, score each memory file:
+
+```
+importance = (frequency × 3) + (recency × 2) + (impact × 5)
+```
+
+| Factor | How to measure | Scale |
+|--------|---------------|-------|
+| frequency | How many session logs reference this file | 0-10 |
+| recency | Days since last reference (0=today, 10=never) | 0-10 (inverted) |
+| impact | Did this file change a decision? (grep decisions.md) | 0-10 |
+
+**Thresholds:**
+- importance ≥ 30 → promote to core memory (load every session)
+- importance 15-29 → keep, load on demand
+- importance < 15 → archive candidate
+
+Check git history:
 ```bash
 git log --oneline -20 -- .claude/memory/
 ```
 
-If a memory file hasn't been referenced in the last 10 sessions AND friction
-logs don't mention its topic → archive it:
+If importance < 15 AND not referenced in last 10 sessions → archive:
 ```bash
+mkdir -p .claude/memory/archive
 mv .claude/memory/{file}.md .claude/memory/archive/{file}.md
 ```
 

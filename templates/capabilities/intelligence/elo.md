@@ -71,3 +71,52 @@ Do not rank on raw ELO alone. Adjust for fact-check quality:
 Rank candidates by final ELO descending.
 For the winner: state the one pairwise comparison that determined the rank.
 Record in `.claude/memory/decisions.md` with the full ranking table.
+
+---
+
+### Persistent ELO — elo-rankings.json
+
+Write rankings to `.claude/memory/elo-rankings.json` so scores accumulate across sessions:
+
+```json
+{
+  "last_updated": "YYYY-MM-DD",
+  "debate_elo": [
+    {
+      "position": "{argument-id}",
+      "context": "{decision-topic}",
+      "elo": 1000,
+      "wins": 0,
+      "losses": 0,
+      "adjusted_evidence_score": 0.0
+    }
+  ],
+  "agent_elo": [
+    {
+      "agent": "{agent-name}",
+      "elo": 1000,
+      "tasks_completed": 0,
+      "wins": 0,
+      "losses": 0,
+      "last_task": "YYYY-MM-DD"
+    }
+  ],
+  "pattern_elo": [
+    {
+      "pattern": "{pattern-description}",
+      "source": ".claude/memory/patterns.md",
+      "elo": 1000,
+      "times_applied": 0,
+      "times_succeeded": 0,
+      "times_failed": 0
+    }
+  ]
+}
+```
+
+**Update rules:**
+- `debate_elo`: updated after each `/debate` cycle — one entry per argued position
+- `agent_elo`: updated after each pipeline run — winner = agent whose output was accepted without revision
+- `pattern_elo`: updated after each task — pattern succeeded if the approach worked, failed if re-derivation was triggered
+
+Read `elo-rankings.json` at the start of each debate or agent spawn. Pass as context so prior performance informs the current run.

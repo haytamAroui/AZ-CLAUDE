@@ -1,6 +1,6 @@
 # AZCLAUDE Capabilities Manifest
 last_updated: 2026-03-14
-version: 1.2.0
+version: 1.3.0
 
 The model reads this file ONCE (~100 tokens) to know what exists.
 Load only the files that match the current task. Never load the full list.
@@ -27,6 +27,7 @@ Load only the files that match the current task. Never load the full list.
 | level-builders/level5-agents.md | Building Level 5 (custom agents) | ~300 |
 | level-builders/level6-hooks.md | Building Level 6 (lifecycle hooks) | ~200 |
 | level-builders/level7-extmcp.md | Building Level 7 (external MCP) | ~150 |
+| level-builders/level8-orchestrated.md | Building Level 8+ (intelligence/evolution), decision matrix for when | ~200 |
 
 ## Evolution — compose by what the cycle needs
 | File | When to load | Tokens |
