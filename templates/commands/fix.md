@@ -17,10 +17,10 @@ Load: shared/tdd.md + shared/completion-rule.md before starting.
 ## Phase 1: REPRODUCE
 
 **First: check IDE diagnostics (instant, no build needed)**
-Use `mcp__ide__getDiagnostics` — if it returns errors, treat those as the reproduction.
+Use `mcp__ide__getDiagnostics` — if available and returns errors, treat those as the reproduction.
 Map each diagnostic to `file:line:message` and carry it directly into Phase 2.
 
-**If no IDE diagnostics**: run the failing test or command exactly as described.
+**If IDE diagnostics unavailable or empty**: run the failing test or command exactly as described.
 - Paste the actual output — never summarize it
 - If you cannot reproduce it: stop. Use **AskUserQuestion** to ask for exact steps. Do not guess.
 

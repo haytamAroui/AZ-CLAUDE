@@ -208,14 +208,15 @@ This delegates work back to Claude with no constraints. Claude will ask clarifyi
 
 **Standard commands to always generate for developer projects:**
 
-These three exist as templates in `capabilities/templates/commands/`. Copy them:
+These three are installed by `npx azclaude` into `.claude/commands/` automatically.
+
+Check they exist — if not, the install is incomplete:
 ```bash
-cp .claude/capabilities/templates/commands/add.md .claude/commands/add.md
-cp .claude/capabilities/templates/commands/review.md .claude/commands/review.md
-cp .claude/capabilities/templates/commands/test.md .claude/commands/test.md
+ls .claude/commands/add.md .claude/commands/review.md .claude/commands/test.md 2>/dev/null \
+  || echo "Missing — re-run: npx azclaude"
 ```
 
-If this project is a **Code** category (has package.json / Cargo.toml / etc.) — copy all three. No exceptions.
+If this project is a **Code** category (has package.json / Cargo.toml / etc.) — all three must be present. No exceptions.
 
 | Command | What it encodes |
 |---------|----------------|

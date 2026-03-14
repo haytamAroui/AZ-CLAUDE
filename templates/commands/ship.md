@@ -17,7 +17,8 @@ $ARGUMENTS
 
 ## Pre-Ship Gate (runs before any commit)
 
-**1. IDE diagnostics** — use `mcp__ide__getDiagnostics`
+**1. IDE diagnostics** — use `mcp__ide__getDiagnostics` if available.
+If unavailable or empty: skip this check.
 If errors exist: STOP.
 ```
 ✗ Pre-ship blocked: {N} IDE errors. Fix with /fix before shipping.

@@ -1,6 +1,6 @@
 {
   "name": "azclaude",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "description": "Claude Code architecture-native AI environment. Skills, not agents. Lazy loading, not monoliths. 55x less token overhead.",
   "bin": {
     "azclaude": "./bin/cli.js"

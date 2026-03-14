@@ -18,14 +18,16 @@ $ARGUMENTS
 
 ## Step 1: IDE Diagnostics First
 
-Use **mcp__ide__getDiagnostics** before running any tests.
+Use `mcp__ide__getDiagnostics` if available.
 
-If errors exist:
+If it returns errors:
 ```
 IDE errors found — these will cause test failures. Fix first:
   file:line — message
 ```
-Type errors and import failures cause misleading test output. Clear IDE errors before running.
+If unavailable or returns empty: skip this step and proceed to Step 2.
+
+Type errors and import failures cause misleading test output — clear them before running.
 
 ---
 

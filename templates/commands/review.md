@@ -59,8 +59,9 @@ Report violations only — no code quality feedback until spec is clean.
 
 ## Step 3: Code Quality (only if Step 2 passes)
 
-**IDE diagnostics first**: use `mcp__ide__getDiagnostics`.
-Include any errors or warnings in the report.
+**IDE diagnostics**: use `mcp__ide__getDiagnostics` if available.
+If unavailable or empty: skip — proceed to manual checks.
+If returns results: include errors and warnings in the report.
 
 Check:
 - Follows project conventions from CLAUDE.md

@@ -669,10 +669,13 @@ check "/test: paste full output (no summarize)"        "$TST" "full output\|neve
 
 PLAN="$CMD/plan.md"
 check "/plan: EnterPlanMode at start"                   "$PLAN" "EnterPlanMode"
-check "/plan: ExitPlanMode before TaskCreate"          "$PLAN" "ExitPlanMode"
+check "/plan: ExitPlanMode before approval gate"        "$PLAN" "ExitPlanMode"
 check "/plan: AskUserQuestion if vague"                 "$PLAN" "AskUserQuestion"
 check "/plan: TaskCreate for each step"                 "$PLAN" "TaskCreate"
+check "/plan: approval gate before any code"           "$PLAN" "Approve this plan\|approval"
 check "/plan: no code written during plan"             "$PLAN" "Do not write any code\|no code written"
+check "/plan: risk level stated"                       "$PLAN" "Risk:.*low.*medium.*high\|risk level"
+check "/plan: 4+ files trigger guidance"               "$PLAN" "4+ files\|4\+"
 
 SHIP="$CMD/ship.md"
 check "/ship: pre-ship gate mcp__ide__getDiagnostics"  "$SHIP" "mcp__ide__getDiagnostics"
@@ -688,6 +691,17 @@ check "orchestrator-init: TaskUpdate per step"         "$ORCH" "TaskUpdate"
 
 check "level3-skills: references native-tools.md"      "$LVL/level3-skills.md" "native-tools"
 check "level3-skills: copy /add /review /test pattern" "$LVL/level3-skills.md" "add\.md.*review\.md.*test\.md\|add.md\|review.md"
+
+check "CLI installer: add command registered"          "$CLI" "'add'"
+check "CLI installer: review command registered"       "$CLI" "'review'"
+check "CLI installer: test command registered"         "$CLI" "'test'"
+check "CLI installer: plan command registered"         "$CLI" "'plan'"
+check "/fix: mcp__ide__getDiagnostics has fallback"   "$CMD/fix.md" "unavailable\|if available\|if.*empty"
+check "/test: mcp__ide__getDiagnostics has fallback"  "$CMD/test.md" "unavailable\|if available\|skip this step"
+check "/ship: mcp__ide__getDiagnostics has fallback"  "$CMD/ship.md" "unavailable\|if available\|skip"
+check "/status: mcp__ide__getDiagnostics has fallback" "$CMD/status.md" "unavailable\|if available\|skip"
+check "/review: mcp__ide__getDiagnostics has fallback" "$CMD/review.md" "unavailable\|if available\|skip"
+check "level3-skills: correct install path check"      "$LVL/level3-skills.md" "re-run.*npx azclaude\|npx azclaude"
 
 check "CLI installer: sanitizePath function exists"    "$CLI" "sanitizePath"
 check "CLI installer: generateIntegrityHash exists"    "$CLI" "generateIntegrityHash"

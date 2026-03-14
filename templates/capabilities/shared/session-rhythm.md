@@ -10,8 +10,9 @@ tokens: ~80
 
 ### ORIENT (first response of every session)
 
-1. **IDE diagnostics** — use `mcp__ide__getDiagnostics`
-   Report: `IDE: N errors, M warnings` — surface blockers before any work starts
+1. **IDE diagnostics** — use `mcp__ide__getDiagnostics` if available.
+   If available: report `IDE: N errors, M warnings` — surface blockers before any work starts.
+   If unavailable: skip.
 2. Read `.claude/memory/goals.md` — know what's active
 3. Read last 3 friction logs in `ops/observations/` if they exist
 4. State: current thread, next action, any blockers
