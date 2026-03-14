@@ -16,10 +16,13 @@ Load: shared/tdd.md + shared/completion-rule.md before starting.
 
 ## Phase 1: REPRODUCE
 
-Confirm the bug exists before touching anything.
-- Run the failing test or command exactly as described
+**First: check IDE diagnostics (instant, no build needed)**
+Use `mcp__ide__getDiagnostics` — if it returns errors, treat those as the reproduction.
+Map each diagnostic to `file:line:message` and carry it directly into Phase 2.
+
+**If no IDE diagnostics**: run the failing test or command exactly as described.
 - Paste the actual output — never summarize it
-- If you cannot reproduce it: stop. Ask for exact steps. Do not guess.
+- If you cannot reproduce it: stop. Use **AskUserQuestion** to ask for exact steps. Do not guess.
 
 No investigation before reproduction. No fix before root cause.
 
@@ -58,6 +61,10 @@ Confidence: [high / medium / low]
 **If confidence = low → do not proceed to Phase 4.**
 Go back to Phase 2. Read more code. You do not understand the problem yet.
 
+**If confidence = medium**: Use **EnterWorktree** before making any changes.
+The fix is uncertain — isolate it. Merge to main only if tests pass.
+If tests fail: ExitWorktree (discard), go back to Phase 2.
+
 If you have multiple hypotheses: pick the most likely one. Test it first.
 Do not write multiple fixes speculatively.
 
@@ -85,6 +92,9 @@ if [ $EXIT -ne 0 ]; then echo "FAILED — do not proceed"; fi
 Re-read the error. Classify it:
 - **Different error** → new failure point → go back to Phase 2 with the new `file:line`
 - **Same error** → wrong root cause → re-read the code at the failure point, find what you missed
+
+If the error references a third-party library and no local docs exist:
+**WebSearch** `"{library} {error message}"` — use the result to inform Attempt 2. One search, not a loop.
 
 Make one targeted change. Run the exit-code gate again. Paste the output.
 

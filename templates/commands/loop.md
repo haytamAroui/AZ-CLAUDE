@@ -1,8 +1,9 @@
 ---
 name: loop
-description: Run a command or prompt on a recurring interval.
-argument-hint: "[interval: 5m/10m/1h] [command or prompt]"
+description: Run a command or prompt on a recurring schedule using native Claude Code cron.
+argument-hint: "[interval: 5m/10m/30m/1h/daily/weekly] [command or prompt]"
 disable-model-invocation: true
+allowed-tools: Bash
 ---
 
 # /loop — Recurring Task
@@ -11,14 +12,51 @@ $ARGUMENTS
 
 ---
 
-Parse the arguments:
-- Interval: look for `5m`, `10m`, `30m`, `1h` — default to `10m` if not specified
-- Command: the rest of the arguments (e.g. `/status`, `/fix`, a prompt)
+## Step 1: Parse Arguments
 
-If arguments are blank, ask:
-"What should I run, and how often? Example: `/loop 5m /status` or `/loop 10m check if the deploy succeeded`"
+Extract from $ARGUMENTS:
+- **Interval**: `5m`, `10m`, `30m`, `1h`, `daily`, `weekly` — default `10m` if not specified
+- **Command**: everything after the interval token (e.g. `/status`, `/fix`, a prompt)
 
-Run the command or prompt now, then remind the user:
-"I'll repeat this every {interval}. Type /loop stop to cancel."
+If blank, use **AskUserQuestion**:
+- What should run? (e.g. `/status`, `/fix`, `check if the deploy succeeded`)
+- How often? (5m / 10m / 30m / 1h / daily / weekly)
 
-Note: Claude Code does not have a native timer — use the system cron or ask the user to re-invoke `/loop` manually for the next cycle. For automated recurring tasks, suggest setting up a cron job or GitHub Action instead.
+---
+
+## Step 2: Map Interval to Cron Expression
+
+| Argument | Cron expression |
+|----------|----------------|
+| `5m`     | `*/5 * * * *`  |
+| `10m`    | `*/10 * * * *` |
+| `30m`    | `*/30 * * * *` |
+| `1h`     | `0 * * * *`    |
+| `daily`  | `0 9 * * *`    |
+| `weekly` | `0 9 * * 1`    |
+
+---
+
+## Step 3: Create the Cron Job
+
+Use **CronCreate** with:
+- The mapped cron expression
+- The command or prompt from Step 1
+
+Run the command once immediately so the user sees it working.
+
+Then confirm:
+```
+Scheduled: {command} every {interval}
+Use CronList to view active schedules.
+Use CronDelete to cancel.
+```
+
+---
+
+## Stopping
+
+If $ARGUMENTS contains `stop` or `cancel`:
+1. **CronList** — show active schedules
+2. **CronDelete** the matching entry
+3. Confirm: "Cancelled: {command}"

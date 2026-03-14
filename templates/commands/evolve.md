@@ -27,6 +27,13 @@ Show the full cycle report when done.
 
 ---
 
+## Step 1: Isolate (Worktree)
+
+Use **EnterWorktree** — create branch `azclaude/evolve-{date}`.
+All cycle work happens here. Environment changes do not touch main until evaluated.
+
+---
+
 ## Cycle 1: Detect → Generate → Evaluate
 
 **Step 1**: Read `capabilities/evolution/detect.md` and run DETECT.
@@ -63,6 +70,21 @@ ls ops/observations/ | wc -l
 ```
 If ≥ 10 friction logs AND grep shows same pattern in ≥ 5:
 Read `capabilities/evolution/re-derivation.md` and run BEFORE any generate.
+
+---
+
+## Completion: Merge or Discard
+
+After Evaluate passes all quality gates:
+- **ExitWorktree** and merge to main
+- If evaluate failed: ExitWorktree (discard) — no partial improvements on main
+
+Then offer scheduling:
+```
+Schedule /evolve to run automatically?
+Use CronCreate — weekly (Sunday 9am) recommended.
+```
+Use **CronList** to check if a schedule already exists before creating a new one.
 
 ---
 

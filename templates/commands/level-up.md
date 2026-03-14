@@ -30,9 +30,13 @@ Show result as a visual checklist. State current level clearly:
 
 ## Step 2: Build Next Level
 
+**TaskCreate**: `Build Level {N+1} — {level name}` with status `in_progress`.
+
 Read `.claude/capabilities/manifest.md`, find the matching `level-builders/level{N+1}.md`, load it, and build that level.
 
 Load ONE level builder at a time — not all of them.
+
+**TaskUpdate → completed** when the level builder finishes.
 
 If already at Level 7: run `/evolve` instead. The environment is built — now improve what's inside it.
 

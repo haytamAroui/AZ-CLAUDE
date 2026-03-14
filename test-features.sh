@@ -644,6 +644,60 @@ check "CLI installer: verifyIntegrity exists"          "$CLI" "verifyIntegrity"
 check "level6-hooks.md: CLAUDE_FILE_PATH sanitization" "$L6" "case.*CLAUDE_FILE_PATH.*in"
 check "manifest.md: security.md listed"                "$MANIFEST" "shared/security.md"
 
+# ─────────────────────────────────────────────
+echo ""
+echo "[ Native Claude Code Tools Integration ]"
+# ─────────────────────────────────────────────
+NT="$CAP/shared/native-tools.md"
+check_file "native-tools.md exists"                    "$NT"
+check "native-tools: AskUserQuestion documented"       "$NT" "AskUserQuestion"
+check "native-tools: TaskCreate documented"            "$NT" "TaskCreate"
+check "native-tools: EnterPlanMode documented"         "$NT" "EnterPlanMode"
+check "native-tools: EnterWorktree documented"         "$NT" "EnterWorktree"
+check "native-tools: CronCreate documented"            "$NT" "CronCreate"
+check "native-tools: mcp__ide__getDiagnostics documented" "$NT" "mcp__ide__getDiagnostics"
+check "native-tools: WebSearch documented"             "$NT" "WebSearch"
+check "native-tools: tool→skill mapping table present" "$NT" "Wire into"
+check "manifest.md: native-tools.md listed"            "$MANIFEST" "shared/native-tools.md"
+
+DREAM="$CMD/dream.md"
+check "/dream: uses AskUserQuestion for intake"        "$DREAM" "AskUserQuestion"
+check "/dream: uses TaskCreate per level"              "$DREAM" "TaskCreate"
+check "/dream: uses EnterPlanMode for scan"            "$DREAM" "EnterPlanMode"
+check "/dream: uses WebSearch for unfamiliar stack"    "$DREAM" "WebSearch"
+
+LOOP="$CMD/loop.md"
+check "/loop: uses CronCreate (not prose timer)"       "$LOOP" "CronCreate"
+check "/loop: uses CronList"                           "$LOOP" "CronList"
+check "/loop: uses CronDelete for stop"                "$LOOP" "CronDelete"
+check "/loop: interval→cron mapping table"             "$LOOP" "Cron expression"
+
+FIX="$CMD/fix.md"
+check "/fix Phase 1: mcp__ide__getDiagnostics"         "$FIX" "mcp__ide__getDiagnostics"
+check "/fix Phase 3: EnterWorktree for medium confidence" "$FIX" "EnterWorktree"
+check "/fix self-correction: WebSearch for lib errors" "$FIX" "WebSearch"
+
+SETUP="$CMD/setup.md"
+check "/setup: AskUserQuestion if domain ambiguous"    "$SETUP" "AskUserQuestion"
+check "/setup: TaskCreate for step tracking"           "$SETUP" "TaskCreate"
+check "/setup: TaskUpdate to in_progress"              "$SETUP" "in_progress"
+
+EVOLVE="$CMD/evolve.md"
+check "/evolve: EnterWorktree for isolation"           "$EVOLVE" "EnterWorktree"
+check "/evolve: ExitWorktree after evaluate"           "$EVOLVE" "ExitWorktree"
+check "/evolve: CronCreate for scheduling"             "$EVOLVE" "CronCreate"
+
+LU="$CMD/level-up.md"
+check "/level-up: TaskCreate for level being built"    "$LU" "TaskCreate"
+
+STATUS="$CMD/status.md"
+check "/status: mcp__ide__getDiagnostics in health"   "$STATUS" "mcp__ide__getDiagnostics"
+
+DEBATE="$CMD/debate.md"
+check "/debate: AskUserQuestion if args vague"         "$DEBATE" "AskUserQuestion"
+check "/debate: EnterPlanMode during analysis"         "$DEBATE" "EnterPlanMode"
+check "/debate: ExitPlanMode before recording"         "$DEBATE" "ExitPlanMode"
+
 echo ""
 echo "════════════════════════════════════════════════════"
 TOTAL=$((PASS + FAIL))

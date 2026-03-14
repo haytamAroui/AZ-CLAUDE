@@ -17,7 +17,14 @@ Keep it short and visual. No walls of text.
 ---
 
 ## 1. Project Health
-Detect the start command and try running it:
+
+**IDE diagnostics first** — use `mcp__ide__getDiagnostics`.
+Report the count and severity:
+```
+✓ IDE: 0 errors, 0 warnings   or   ✗ IDE: 3 errors, 7 warnings — run /fix
+```
+
+Then detect the start command and try running it:
 - `package.json` → check `scripts.start` or `scripts.dev`
 - `pyproject.toml` / `Makefile` → detect equivalent
 - Check for missing dependencies, missing env vars, broken config
