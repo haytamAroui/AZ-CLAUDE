@@ -348,6 +348,114 @@ function ensureSharedSkillsDir() {
   }
 }
 
+// ─── Doctor ───────────────────────────────────────────────────────────────────
+
+function runDoctor() {
+  const cli        = detectCLI();
+  const projectDir = process.cwd();
+  const cfg        = cli.cfg;
+  let   pass = 0, fail = 0;
+
+  function chk(label, ok) {
+    if (ok) { console.log(`  ✓ ${label}`); pass++; }
+    else     { console.log(`  ✗ ${label}`); fail++; }
+  }
+
+  console.log('\n════════════════════════════════════════════════');
+  console.log('  AZCLAUDE doctor — environment health check');
+  console.log('════════════════════════════════════════════════\n');
+
+  // ── Node.js version ──────────────────────────────────────────────────────
+  console.log('[ Runtime ]');
+  const [major] = process.versions.node.split('.').map(Number);
+  chk(`Node.js ${process.versions.node} (need ≥ 16)`, major >= 16);
+  chk(`node binary: ${process.execPath}`, fs.existsSync(process.execPath));
+
+  // ── Global hooks ─────────────────────────────────────────────────────────
+  console.log('\n[ Global hooks — ~/.claude/ ]');
+  if (!cli.hooksDir) {
+    console.log(`  · hooks not supported for ${cli.name} — skipping`);
+  } else {
+    const settingsPath  = path.join(cli.hooksDir, 'settings.json');
+    const integrityPath = path.join(cli.hooksDir, '.azclaude-integrity');
+    const hooksDir      = path.join(cli.hooksDir, 'hooks');
+
+    chk(`settings.json exists (${settingsPath})`, fs.existsSync(settingsPath));
+
+    let settings = {};
+    if (fs.existsSync(settingsPath)) {
+      try { settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8')); } catch {}
+    }
+
+    chk('_azclaude marker present (hooks installed)',        !!settings._azclaude);
+    chk('UserPromptSubmit hook present',                     !!settings.hooks?.UserPromptSubmit);
+    chk('Stop hook present',                                 !!settings.hooks?.Stop);
+    chk('PostToolUse hook present (auto-save)',              !!settings.hooks?.PostToolUse);
+
+    // Check hooks use Node.js scripts, not bash
+    const upCmd = settings.hooks?.UserPromptSubmit?.[0]?.hooks?.[0]?.command || '';
+    chk('UserPromptSubmit uses Node.js (not bash)',          upCmd.includes('node') && !upCmd.includes('SESSION_MARKER'));
+
+    // Check hook scripts exist on disk
+    for (const script of ['user-prompt.js', 'stop.js', 'post-tool-use.js']) {
+      chk(`hook script exists: ${script}`,                   fs.existsSync(path.join(hooksDir, script)));
+    }
+
+    // Integrity check
+    if (fs.existsSync(integrityPath) && settings.hooks) {
+      const saved   = fs.readFileSync(integrityPath, 'utf8').trim();
+      const current = generateIntegrityHash(settings.hooks);
+      chk('hook integrity hash matches',                     saved === current);
+    }
+  }
+
+  // ── Project structure ────────────────────────────────────────────────────
+  console.log('\n[ Project structure ]');
+  chk(`${cfg}/ config directory`,                            fs.existsSync(path.join(projectDir, cfg)));
+  chk(`${cfg}/capabilities/manifest.md`,                    fs.existsSync(path.join(projectDir, cfg, 'capabilities', 'manifest.md')));
+  chk(`${cfg}/commands/ (skills)`,                          fs.existsSync(path.join(projectDir, cfg, 'commands')));
+  chk(`${cfg}/memory/ directory`,                           fs.existsSync(path.join(projectDir, cfg, 'memory')));
+  chk(`${cfg}/agents/ directory`,                           fs.existsSync(path.join(projectDir, cfg, 'agents')));
+  chk(`ops/observations/ directory`,                        fs.existsSync(path.join(projectDir, 'ops', 'observations')));
+
+  const goalsPath = path.join(projectDir, cfg, 'memory', 'goals.md');
+  chk(`goals.md exists`,                                    fs.existsSync(goalsPath));
+  if (fs.existsSync(goalsPath)) {
+    const g = fs.readFileSync(goalsPath, 'utf8');
+    chk('goals.md has an Updated date',                     /^Updated: \d{4}-\d{2}-\d{2}/m.test(g));
+    chk('goals.md has no unfilled placeholders',            !g.includes('{{'));
+  }
+
+  const rulesPath = path.join(projectDir, cli.rulesFile);
+  chk(`${cli.rulesFile} exists`,                            fs.existsSync(rulesPath));
+  if (fs.existsSync(rulesPath)) {
+    const r = fs.readFileSync(rulesPath, 'utf8');
+    chk(`${cli.rulesFile} filled (no {{placeholders}})`,    !r.includes('{{'));
+  }
+
+  // ── Commands ─────────────────────────────────────────────────────────────
+  console.log('\n[ Commands ]');
+  const cmdDir    = path.join(projectDir, cfg, 'commands');
+  const installed = fs.existsSync(cmdDir) ? fs.readdirSync(cmdDir).filter(f => f.endsWith('.md')) : [];
+  chk(`${installed.length}/15 commands installed`,          installed.length === 15);
+  const missing = COMMANDS.filter(c => !installed.includes(`${c}.md`));
+  if (missing.length) console.log(`  · missing: ${missing.join(', ')}`);
+
+  // ── Summary ──────────────────────────────────────────────────────────────
+  const total = pass + fail;
+  console.log('\n════════════════════════════════════════════════');
+  console.log(`  ${pass}/${total} checks passed`);
+  if (fail > 0) {
+    console.log(`\n  Fix: re-run  npx azclaude  in this project directory`);
+    console.log('  If hooks still fail: check that Node.js ≥ 16 is in PATH');
+  } else {
+    console.log('  Environment is healthy.');
+  }
+  console.log('════════════════════════════════════════════════\n');
+
+  process.exit(fail > 0 ? 1 : 0);
+}
+
 // ─── Utils ────────────────────────────────────────────────────────────────────
 
 function copyDir(src, dst) {
@@ -361,6 +469,8 @@ function copyDir(src, dst) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
+
+if (process.argv[2] === 'doctor') { runDoctor(); process.exit(0); }
 
 const projectDir = process.cwd();
 const cli        = detectCLI();

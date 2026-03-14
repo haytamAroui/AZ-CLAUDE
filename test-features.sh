@@ -874,6 +874,28 @@ check      "CLAUDE.md: /setup as first step"        "templates/CLAUDE.md" "1.*se
 check      "CLAUDE.md: /persist mentioned"          "templates/CLAUDE.md" "persist"
 check      "CLAUDE.md: quick start before identity" "templates/CLAUDE.md" "Quick Start"
 
+# ─── azclaude doctor ──────────────────────────────────────────────────────────
+echo ""
+echo "─── azclaude doctor ───"
+check      "doctor: runDoctor function exists"        "bin/cli.js" "function runDoctor"
+check      "doctor: intercepts argv before install"   "bin/cli.js" "argv.*doctor.*runDoctor\|process\.argv\[2\].*doctor"
+check      "doctor: checks Node.js version"           "bin/cli.js" "process\.versions\.node\|major >= 16"
+check      "doctor: checks hook scripts on disk"      "bin/cli.js" "user-prompt\.js.*stop\.js.*post-tool-use\|hook script exists"
+check      "doctor: checks goals.md filled"           "bin/cli.js" "goals\.md has.*unfilled\|goals\.md.*placeholder"
+check      "doctor: checks PostToolUse hook"          "bin/cli.js" "PostToolUse.*auto-save\|auto-save.*PostToolUse"
+check      "doctor: exits 1 on failures"              "bin/cli.js" "process\.exit.*fail.*0.*1\|exit.*1.*fail"
+check      "doctor: fix suggestion on failure"        "bin/cli.js" "npx azclaude\|re-run"
+
+# ─── CONTRIBUTING.md ──────────────────────────────────────────────────────────
+echo ""
+echo "─── CONTRIBUTING.md ───"
+check_file "contributing: CONTRIBUTING.md exists"      "CONTRIBUTING.md"
+check      "contributing: how to add capability"       "CONTRIBUTING.md" "capability\|frontmatter"
+check      "contributing: how to run tests"            "CONTRIBUTING.md" "test-features\.sh\|bash test"
+check      "contributing: no bash-only rule"           "CONTRIBUTING.md" "Windows\|cross-platform\|bash-only"
+check      "contributing: doctor command mentioned"    "CONTRIBUTING.md" "doctor"
+check      "contributing: PR checklist present"        "CONTRIBUTING.md" "checklist\|PR checklist"
+
 echo ""
 echo "════════════════════════════════════════════════════"
 TOTAL=$((PASS + FAIL))
