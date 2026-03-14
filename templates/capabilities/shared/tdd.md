@@ -27,3 +27,7 @@ Cargo.toml → cargo test
 go.mod → go test
 ```
 Use the framework already in the project. Never introduce a new one without asking.
+
+## Domain Scope
+TDD does not apply to non-developer domains (Writer, Creative, Research, Business).
+If domain ≠ developer: skip this file entirely. Do not enforce test-first for prose, documents, or research tasks.

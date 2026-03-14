@@ -24,7 +24,7 @@ Do NOT use generic system terms. Use the vocabulary of THIS project's domain.
 | Finance | positions, signals | risk decisions | validation | strategies |
 
 Apply to: agent descriptions, skill names, command names, memory content,
-and all generated text. An agent that speaks the project's language gets used.
+and all generated text. An agent that speaks the domain's language gets used.
 An agent that speaks generic system language gets ignored.
 
 ---

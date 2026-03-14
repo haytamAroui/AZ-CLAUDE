@@ -9,7 +9,8 @@ tokens: ~150
 
 ## RE-DERIVATION PROTOCOL
 
-This fires when patching has stopped working. The problem is architectural.
+This fires when patching has stopped working. This is an architectural problem — not a content problem.
+Adding more rules to a broken architecture makes it worse, not better.
 
 ### Trigger Threshold
 ```bash
