@@ -12,7 +12,7 @@ Load only the files that match the current task. Never load the full list.
 | shared/completion-rule.md | Every task | ~40 |
 | shared/session-rhythm.md | Session start or end | ~80 |
 | shared/friction-log.md | Persist phase only | ~60 |
-| shared/5-layer-agent.md | Creating or improving agents | ~150 |
+| shared/5-layer-agent.md | Creating or improving agents | ~300 |
 
 ## Level Builders — load ONE at a time
 | File | When to load | Tokens |
