@@ -1,0 +1,13 @@
+# Local Claude Code settings (machine-specific, never commit)
+.claude/settings.local.json
+
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
