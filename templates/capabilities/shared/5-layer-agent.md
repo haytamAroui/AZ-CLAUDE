@@ -142,6 +142,45 @@ Good: "Spec: ✓ pass (all 4 requirements met). Quality: 2 issues (lines 45, 78)
 
 ---
 
+## CE 2.0: Self-Correction Behavior
+
+Every agent handles its own failures before escalating to the user.
+The user is the last resort, not the first.
+
+**Standard retry pattern for every agent:**
+```
+Attempt 1: Try the primary approach
+→ If it fails: re-read the error, identify what was wrong, try one alternative
+→ After 2 attempts with no progress: STOP and report findings
+→ Never guess a third time
+```
+
+**What to report after 2 failed attempts:**
+- What you tried — attempt 1 and attempt 2, specific actions taken
+- What the error says now — exact output, not a summary
+- Where you are stuck — specific `file:line` or conceptual blocker
+- What would unblock you — specific info or decision needed from the user
+
+**Domain-specific self-correction before asking:**
+
+| Failure type | Try first |
+|---|---|
+| Build / compile error | Search codebase for similar patterns. Check antipatterns.md. |
+| Type error | Find the type definition in the codebase. Read the actual interface. |
+| Missing config | Grep for similar config in the project. Check .env.example. |
+| Test failure | Check antipatterns.md for known failure patterns. Re-read the test contract. |
+| API / integration error | Read the actual error response. Check docs/ or grep for prior usage. |
+
+**Write this behavioral pattern explicitly in the agent body:**
+```markdown
+## Self-Correction
+If the first attempt fails: re-read the error, try one alternative approach.
+After 2 attempts: stop. Present what was tried, what the error says, what is needed to proceed.
+Do not ask the user until 2 attempts have been made.
+```
+
+---
+
 ## Subagent Passing Rule
 When spawning this agent, pass ONLY the capability files it needs for this specific task.
 A detection agent gets `detect.md` (~100 lines). Not the full evolution module.

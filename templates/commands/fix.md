@@ -64,6 +64,30 @@ Do not write multiple fixes speculatively.
 3. Run the full test suite — show the result
 4. Reference every change as `file:line — what changed and why`
 
+---
+
+## Self-Correction Loop
+
+If tests still fail after the first fix:
+
+**Attempt 2 — before asking the user:**
+- Do NOT change more code speculatively
+- Re-read the new error — same error or different?
+  - Different error → new failure point → go back to Phase 2
+  - Same error → wrong root cause → re-read the code, find what you missed
+- Make one targeted change. Run tests. Show output.
+
+**After 2 failed attempts — stop:**
+Do not guess a third time. Present findings:
+- What you tried (attempt 1 + attempt 2, specific changes)
+- What the error says now (exact output)
+- Where you are stuck (`file:line`)
+- What specific information from the user would unblock you
+
+The user is the last resort, not the first.
+
+---
+
 **Completion Rule — NON-NEGOTIABLE:**
 Never say "this should be fixed", "probably works now", "I think this resolves it."
 Show the passing test output. If tests aren't passing: stay in progress.
