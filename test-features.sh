@@ -886,6 +886,17 @@ check      "doctor: checks PostToolUse hook"          "bin/cli.js" "PostToolUse.
 check      "doctor: exits 1 on failures"              "bin/cli.js" "process\.exit.*fail.*0.*1\|exit.*1.*fail"
 check      "doctor: fix suggestion on failure"        "bin/cli.js" "npx azclaude\|re-run"
 
+# ─── azclaude demo ────────────────────────────────────────────────────────────
+echo ""
+echo "─── azclaude demo ───"
+check      "demo: runDemo function exists"            "bin/cli.js" "function runDemo"
+check      "demo: intercepts argv"                   "bin/cli.js" "argv.*demo.*runDemo\|process\.argv\[2\].*demo"
+check      "demo: actually runs post-tool-use.js"    "bin/cli.js" "postToolScript\|post-tool-use.*spawnSync"
+check      "demo: actually runs user-prompt.js"      "bin/cli.js" "upScript\|user-prompt.*spawnSync"
+check      "demo: shows before and after goals.md"   "bin/cli.js" "In progress\|goals.*updated\|PostToolUse fired"
+check      "demo: cleans up temp dir"                "bin/cli.js" "rmSync.*tmpBase\|tmpBase.*rmSync"
+check      "demo: shows install command"             "bin/cli.js" "npx azclaude"
+
 # ─── CONTRIBUTING.md ──────────────────────────────────────────────────────────
 echo ""
 echo "─── CONTRIBUTING.md ───"

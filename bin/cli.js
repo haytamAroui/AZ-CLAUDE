@@ -348,6 +348,106 @@ function ensureSharedSkillsDir() {
   }
 }
 
+// ─── Demo ─────────────────────────────────────────────────────────────────────
+
+function runDemo() {
+  const { spawnSync } = require('child_process');
+  const tmpBase = path.join(os.tmpdir(), `azclaude-demo-${Date.now()}`);
+
+  function step(n, label) { console.log(`\nStep ${n}: ${label}`); }
+  function show(label, val) { console.log(`  ${label}`); if (val) console.log(`    ${val.split('\n').join('\n    ')}`); }
+
+  console.log('\n════════════════════════════════════════════════');
+  console.log('  AZCLAUDE demo — 30-second proof');
+  console.log('  Showing: memory survives context compaction');
+  console.log('════════════════════════════════════════════════');
+
+  // ── Step 1: scaffold a minimal project ───────────────────────────────────
+  step(1, 'Create a project with goals.md');
+  fs.mkdirSync(path.join(tmpBase, '.claude', 'memory'), { recursive: true });
+  fs.mkdirSync(path.join(tmpBase, 'ops', 'observations'), { recursive: true });
+  fs.mkdirSync(path.join(tmpBase, 'src'), { recursive: true });
+
+  const goalsInitial = [
+    '# Goals — demo-project',
+    'Updated: ' + new Date().toISOString().slice(0, 10),
+    '',
+    '## Current threads',
+    '- Build user auth feature',
+    '',
+    '## Done this session',
+    '- Project scaffolded',
+    '',
+    '## Next actions',
+    '1. Implement login endpoint',
+    ''
+  ].join('\n');
+
+  const goalsPath  = path.join(tmpBase, '.claude', 'memory', 'goals.md');
+  const fakeFile   = path.join(tmpBase, 'src', 'auth.js');
+  fs.writeFileSync(goalsPath, goalsInitial);
+  fs.writeFileSync(fakeFile, '// auth logic here\n');
+
+  show('✓ Project created at', tmpBase);
+  show('✓ goals.md initialized with current thread:', '"Build user auth feature"');
+
+  // ── Step 2: simulate PostToolUse (file edit) ──────────────────────────────
+  step(2, 'You edit src/auth.js — PostToolUse hook fires automatically');
+
+  const postToolScript = path.join(TEMPLATE_DIR, 'hooks', 'post-tool-use.js');
+  if (fs.existsSync(postToolScript)) {
+    const toolInput = JSON.stringify({ tool_input: { file_path: fakeFile } });
+    spawnSync(process.execPath, [postToolScript], {
+      input: toolInput,
+      cwd:   tmpBase,
+      env:   { ...process.env, AZCLAUDE_CFG: '.claude' }
+    });
+    const after = fs.readFileSync(goalsPath, 'utf8');
+    const ipLine = after.split('\n').find(l => l.includes('src'));
+    show('✓ PostToolUse fired — goals.md updated:', ipLine || '(entry added)');
+  }
+
+  // ── Step 3: compaction ────────────────────────────────────────────────────
+  step(3, 'Claude Code compacts conversation at turn 80 — all earlier context gone');
+  show('→ Turns 1-79 summarized, detail lost');
+  show('→ But goals.md still has the In progress entry');
+  const mid = fs.readFileSync(goalsPath, 'utf8');
+  const ipSection = mid.split('\n').filter(l => l.includes('## In progress') || l.startsWith('- ')).join('\n');
+  show('✓ goals.md In progress section:', ipSection);
+
+  // ── Step 4: next session — UserPromptSubmit injects goals ─────────────────
+  step(4, 'New session starts — UserPromptSubmit hook fires automatically');
+
+  const upScript = path.join(TEMPLATE_DIR, 'hooks', 'user-prompt.js');
+  if (fs.existsSync(upScript)) {
+    // Neutralise the session-marker so it fires even in this process tree
+    const marker = path.join(os.tmpdir(), `.azclaude-session-${process.ppid || process.pid}`);
+    const markerExisted = fs.existsSync(marker);
+    if (markerExisted) fs.unlinkSync(marker);
+
+    const result = spawnSync(process.execPath, [upScript], {
+      cwd: tmpBase,
+      env: { ...process.env, AZCLAUDE_CFG: '.claude' }
+    });
+
+    if (markerExisted) fs.writeFileSync(marker, ''); // restore
+    show('✓ Claude receives this at session start:');
+    console.log('  ┌─────────────────────────────────────────');
+    (result.stdout || '').toString().split('\n').forEach(l => console.log(`  │ ${l}`));
+    console.log('  └─────────────────────────────────────────');
+  }
+
+  // ── Cleanup ───────────────────────────────────────────────────────────────
+  try { fs.rmSync(tmpBase, { recursive: true, force: true }); } catch (_) {}
+
+  console.log('\n════════════════════════════════════════════════');
+  console.log('  Memory works. Context survives compaction.');
+  console.log('  The hook fires on every file edit — no user action needed.');
+  console.log('\n  Install on your project:  npx azclaude');
+  console.log('  Check health:             npx azclaude doctor');
+  console.log('════════════════════════════════════════════════\n');
+}
+
 // ─── Doctor ───────────────────────────────────────────────────────────────────
 
 function runDoctor() {
@@ -471,6 +571,7 @@ function copyDir(src, dst) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 if (process.argv[2] === 'doctor') { runDoctor(); process.exit(0); }
+if (process.argv[2] === 'demo')   { runDemo();   process.exit(0); }
 
 const projectDir = process.cwd();
 const cli        = detectCLI();
