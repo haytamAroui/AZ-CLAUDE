@@ -5,7 +5,7 @@ const path = require('path');
 const os   = require('os');
 
 const TEMPLATE_DIR = path.join(__dirname, '..', 'templates');
-const COMMANDS     = ['setup', 'fix', 'evolve', 'debate', 'persist'];
+const COMMANDS     = ['dream', 'setup', 'fix', 'evolve', 'debate', 'persist', 'level-up', 'ship', 'status', 'explain', 'loop'];
 
 function ok(msg)   { console.log(`  ✓ ${msg}`); }
 function warn(msg) { console.log(`  ⚠ ${msg}`); }

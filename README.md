@@ -120,6 +120,9 @@ No traversal. No index scan. O(1) dispatch by description match.
 
 ## Commands
 
+### `/dream` — Build From an Idea
+Describe your project idea and tech stack. Runs `orchestrator-init` to analyze the idea, scan the current environment level, and build everything progressively — CLAUDE.md, memory, skills, agents — level by level. If idea or stack is missing, asks one focused question before proceeding.
+
 ### `/setup` — Project Environment Setup
 Analyzes the project once. Detects domain (developer/writer/researcher/compliance), stack, and scale. Fills `CLAUDE.md`, creates `goals.md`, installs the capability index. Runs `orchestrator-init` as a focused subagent — passes only what it needs, not a 1752-line monolith.
 
@@ -136,6 +139,21 @@ Each cycle loads only its own micro-file. A detect-only run costs ~250 tokens, n
 
 ### `/debate` — Adversarial Decision Protocol
 Opt-in only. MAXIMALIST vs SKEPTIC advocates. Fact-check with VERIFIED/UNVERIFIED/FALSE tags. Second-order cognition check. Order-independence test (run synthesis twice if margin < 10 points). Evidence-density scoring, not word count. Use for hard architectural decisions — not for decisions Claude can answer directly.
+
+### `/level-up` — Scan and Build Next Level
+Detects current environment level (0-7) with a visual checklist, then loads only the matching `level-builders/{N}.md` capability file to build the next level. One level at a time — never loads all level builders at once.
+
+### `/ship` — Save and Push to GitHub
+Stages changed files (skips `.env` and secrets), generates a meaningful commit message, commits, and pushes. If no remote exists, gives exact instructions to connect to GitHub.
+
+### `/status` — Project Overview
+Quick visual health check: app starts or fails, recent git changes, current environment level, 2-3 specific next steps from `goals.md`.
+
+### `/explain` — Plain Language Explanation
+Explain code, errors, or concepts without jargon. Pass `$ARGUMENTS` — code, error message, file name, or concept question. 2-3 paragraphs max.
+
+### `/loop` — Recurring Task
+Run a command or prompt on an interval (e.g. `/loop 5m /status`). Defaults to 10 minutes. Explains how to set up a real cron job for automated recurring tasks.
 
 ### `/persist` — Session End
 Updates `goals.md`, writes friction log to `ops/observations/`, appends session summary. Shows both files as proof — never says "saved" without showing the content.
