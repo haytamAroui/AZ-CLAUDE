@@ -135,6 +135,52 @@ The `!`command`` syntax runs the shell command immediately. Claude only sees the
    - Direct executor: contains the full instruction (fix.md, persist.md)
 4. **Pushy description** — 3+ trigger variants listed
 5. **Completion Rule enforced** — every skill ends with a concrete output requirement
+6. **Self-correction wired in** — see CE 2.0 Self-Correction below
+
+---
+
+### CE 2.0 Self-Correction — Three Layers
+
+Written instructions alone drift. These three layers make self-correction structural:
+
+**Layer 1 — Bash exit-code gate (automatic, no judgment required)**
+```bash
+{command}; EXIT=$?
+if [ $EXIT -ne 0 ]; then echo "FAILED — do not proceed"; fi
+```
+Use in any skill that runs a command and must not proceed on failure.
+The gate catches the failure mechanically — Claude cannot "feel" that it passed.
+
+**Layer 2 — Structured checkpoint (forced self-assessment before proceeding)**
+```
+Root cause: [file:line]
+Mechanism:  [why it breaks]
+Fix:        [what will change]
+Confidence: [high / medium / low]
+```
+Placed at Phase 3 of diagnostic skills. If confidence = low → skill loops back.
+Forces Claude to commit to a hypothesis before writing code.
+
+**Layer 3 — Structured escalation after 2 attempts (not prose)**
+```
+Attempt 1: [file:line — what was changed]
+Result 1:  [exact error output]
+
+Attempt 2: [file:line — what was changed]
+Result 2:  [exact error output]
+
+Stuck at:  [file:line]
+Need:      [specific info or decision that would unblock this]
+```
+After 2 failed attempts, report this format — not "I'm sorry, I couldn't fix it."
+Structured output lets the user unblock the agent in one reply.
+
+**When to apply each layer:**
+| Layer | Apply when |
+|-------|-----------|
+| Exit-code gate | Any skill that runs bash and must not proceed on failure |
+| Structured checkpoint | Diagnostic skills (fix, debug, investigate) |
+| Structured escalation | Any skill with a retry loop |
 
 ---
 

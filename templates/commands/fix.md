@@ -47,10 +47,16 @@ Rules:
 
 One root cause. Not a list.
 
-State exactly:
-- What is broken: `file:line`
-- Why it breaks: the mechanism, not the symptom
-- What the fix is: described before writing any code
+Fill this checkpoint before writing any code:
+```
+Root cause: [file:line]
+Mechanism:  [why it breaks — the cause, not the symptom]
+Fix:        [what you will change — described before touching any file]
+Confidence: [high / medium / low]
+```
+
+**If confidence = low → do not proceed to Phase 4.**
+Go back to Phase 2. Read more code. You do not understand the problem yet.
 
 If you have multiple hypotheses: pick the most likely one. Test it first.
 Do not write multiple fixes speculatively.
@@ -60,29 +66,41 @@ Do not write multiple fixes speculatively.
 ## Phase 4: FIX
 
 1. Write the minimal change that addresses the root cause
-2. Run the test — show the actual output
-3. Run the full test suite — show the result
-4. Reference every change as `file:line — what changed and why`
+2. Run the test with an exit-code gate:
+```bash
+{test command}; EXIT=$?
+echo "Exit: $EXIT"
+if [ $EXIT -ne 0 ]; then echo "FAILED — do not proceed"; fi
+```
+3. If EXIT ≠ 0: do NOT say "should work" — go to Self-Correction Loop
+4. If EXIT = 0: run the full test suite — paste the output
+5. Reference every change as `file:line — what changed and why`
 
 ---
 
 ## Self-Correction Loop
 
-If tests still fail after the first fix:
+**Attempt 2 — gate before asking the user:**
 
-**Attempt 2 — before asking the user:**
-- Do NOT change more code speculatively
-- Re-read the new error — same error or different?
-  - Different error → new failure point → go back to Phase 2
-  - Same error → wrong root cause → re-read the code, find what you missed
-- Make one targeted change. Run tests. Show output.
+Re-read the error. Classify it:
+- **Different error** → new failure point → go back to Phase 2 with the new `file:line`
+- **Same error** → wrong root cause → re-read the code at the failure point, find what you missed
 
-**After 2 failed attempts — stop:**
-Do not guess a third time. Present findings:
-- What you tried (attempt 1 + attempt 2, specific changes)
-- What the error says now (exact output)
-- Where you are stuck (`file:line`)
-- What specific information from the user would unblock you
+Make one targeted change. Run the exit-code gate again. Paste the output.
+
+**After 2 failed attempts — structured escalation:**
+
+Do not guess a third time. Report exactly:
+```
+Attempt 1: [file:line — what was changed]
+Result 1:  [exact error output — not a summary]
+
+Attempt 2: [file:line — what was changed]
+Result 2:  [exact error output — not a summary]
+
+Stuck at:  [file:line]
+Need:      [specific information or decision that would unblock this]
+```
 
 The user is the last resort, not the first.
 
