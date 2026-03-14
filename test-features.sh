@@ -32,6 +32,20 @@ check_file() {
   fi
 }
 
+check_absent() {
+  local desc="$1"
+  local file="$2"
+  local pattern="$3"
+  if ! grep -qi "$pattern" "$file" 2>/dev/null; then
+    echo "  ✓ $desc"
+    PASS=$((PASS + 1))
+  else
+    echo "  ✗ $desc"
+    ERRORS="$ERRORS\n  FAILED: $desc\n    File: $file\n    Pattern present (should be absent): $pattern"
+    FAIL=$((FAIL + 1))
+  fi
+}
+
 ROOT="$(cd "$(dirname "$0")" && pwd)/templates"
 CAP="$ROOT/capabilities"
 SHARED="$CAP/shared"
@@ -124,13 +138,14 @@ check "Never load full list instruction"         "$MANIFEST" "Never load the ful
 
 # ─────────────────────────────────────────────
 echo ""
-echo "[ Shared — TDD Iron Law ]"
+echo "[ Shared — TDD opt-in protocol ]"
 # ─────────────────────────────────────────────
 TDD="$SHARED/tdd.md"
-check "Iron Law heading present"                 "$TDD" "Iron Law"
-check "No production code without failing test"  "$TDD" "NO PRODUCTION CODE"
+check "TDD is opt-in signal-based"               "$TDD" "opt-in\|signal"
+check "TDD check for test files signal"          "$TDD" "Signal 2\|test files"
+check "TDD check for CLAUDE.md signal"           "$TDD" "Signal 1\|CLAUDE.md"
 check "Test framework auto-detection"            "$TDD" "package.json"
-check "requirements.txt detection"              "$TDD" "requirements.txt"
+check "requirements.txt detection"               "$TDD" "requirements.txt"
 check "Cargo.toml detection"                     "$TDD" "Cargo.toml"
 check "TDD not for non-developer domains"        "$TDD" "Writer\|Creative\|non-code\|does not apply"
 
@@ -801,6 +816,29 @@ else
   FAIL=$((FAIL + 1))
 fi
 rm -rf "$IDIR"
+
+# ─── Shell Compatibility: Node.js hooks ──────────────────────────────────────
+echo ""
+echo "─── Shell compatibility: Node.js hooks ───"
+check_file "hooks: user-prompt.js template exists"  "templates/hooks/user-prompt.js"
+check_file "hooks: stop.js template exists"         "templates/hooks/stop.js"
+check      "hooks: user-prompt.js uses process.ppid" "templates/hooks/user-prompt.js" "process.ppid"
+check_absent "hooks: user-prompt.js no bash PPID"      "templates/hooks/user-prompt.js" "\$PPID\|mkdir -p"
+check      "hooks: stop.js uses fs.writeFileSync"   "templates/hooks/stop.js"         "writeFileSync"
+check_absent "hooks: stop.js no bash sed -i"          "templates/hooks/stop.js"         "sed -i\|date +"
+check      "hooks: cli installs hook scripts dir"         "bin/cli.js" "installHookScripts"
+check      "hooks: cli uses node + absolute path"         "bin/cli.js" "process.execPath"
+check_absent "hooks: cli no inline bash userPromptCmd"   "bin/cli.js" "SESSION_MARKER.*PPID\|mkdir -p.*memory ops"
+check      "hooks: cli upgrades existing bash installs"   "bin/cli.js" "SESSION_MARKER.*isBashHook\|isBashHook.*SESSION_MARKER"
+
+# ─── TDD opt-in signals ───────────────────────────────────────────────────────
+echo ""
+echo "─── TDD opt-in ───"
+check_absent "tdd: no Iron Law language"              "templates/capabilities/shared/tdd.md" "Iron Law\|NO EXCEPTIONS\|NO PRODUCTION CODE"
+check      "tdd: signal-based opt-in"                "templates/capabilities/shared/tdd.md" "Signal 1\|Signal 2\|Both signals"
+check      "tdd: developer opt-in check in /add"     "templates/commands/add.md"            "Signal 1\|both signals\|Both signals"
+check      "tdd: orchestrator checks test files"     "templates/agents/orchestrator-init.md" "test files.*exist\|test files already"
+check      "tdd: orchestrator checks CLAUDE.md rule" "templates/agents/orchestrator-init.md" "grep.*tdd.*CLAUDE.md\|CLAUDE.md has.*TDD"
 
 echo ""
 echo "════════════════════════════════════════════════════"

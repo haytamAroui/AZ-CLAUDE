@@ -2,21 +2,18 @@
 Updated: 2026-03-14
 
 ## Current threads
-- Framework building: v1.9.1 shipped — 15 commands, native tools wired, 468 tests
-- Dogfooding: AZCLAUDE just installed on itself — now using /persist and session-rhythm on own repo
-- Install integration test: gap identified — test-features.sh tests templates but not the `npx azclaude` install output
+- None — v2.0.0 shipped and clean
 
 ## Done this session
-- v1.7.0: CE 2.0 self-correction (exit-code gate, structured checkpoint, structured escalation)
-- v1.8.0: native Claude Code tools wired into all 11 commands (AskUserQuestion, TaskCreate, CronCreate, mcp__ide__getDiagnostics, EnterWorktree, etc.)
-- v1.9.0: core developer commands added (/add, /review, /test, /plan)
-- v1.9.1: fixed 4 real bugs (CLI missing commands, wrong copy path, no IDE fallback, /plan approval gate)
-- AZCLAUDE installed on itself — CLAUDE.md filled, goals.md created
+- v2.0.0: Node.js cross-platform hooks (user-prompt.js, stop.js) — no bash required
+- v2.0.0: TDD rewritten as signal-based opt-in — no more "Iron Law" mandate
+- bin/cli.js: installHookScripts(), uses process.execPath + absolute path in settings.json
+- 504 tests, 0 failures
 
 ## Next actions
-1. Add install integration test — run `npx azclaude` on a blank temp dir, verify installed files are correct
-2. Fix CLAUDE.md template dispatch table — /add, /review, /test, /plan are missing from quick dispatch
-3. Consider: what does /evolve produce on the AZCLAUDE repo itself? Run it and see.
+1. Commit v2.0.0 with message: "v2.0.0 — Node.js hooks (cross-platform), TDD opt-in protocol (504 tests)"
+2. Run /evolve after commit to check for new gaps introduced by v2.0.0
+3. Consider: update README Risks section — bash hook risk is now gone
 
 ## Open blockers
 - None

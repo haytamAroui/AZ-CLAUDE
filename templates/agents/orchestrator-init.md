@@ -59,7 +59,7 @@ Signal → Domain Profile:
 
 | Signal | Domain | Key implication |
 |--------|--------|----------------|
-| package.json / requirements.txt | Developer | TDD Iron Law active |
+| package.json / requirements.txt | Developer | TDD opt-in (check test files + CLAUDE.md) |
 | No code files | Writer or Researcher | TDD does not apply |
 | EU AI Act / GDPR in README | Compliance/Legal | Vocabulary: obligations, conformity review |
 | clinical / patient | Medical/Clinical | Vocabulary: patients, clinical outcomes |
@@ -133,17 +133,21 @@ Personality derives from domain, not preference:
 | # | Check | Violation action |
 |---|-------|-----------------|
 | 1 | Don't add agents for simple single-module projects | complexity=simple → skip Level 5 |
-| 2 | TDD only for developer domain — never for Writer/Creative | tdd_active + domain≠developer → set tdd_active=false |
+| 2 | TDD only when developer opts in — never forced, never for Writer/Creative | tdd_active = domain=developer AND test files exist AND CLAUDE.md has TDD rule |
 | 3 | Memory intensity vs maintenance: does this user have a `goals.md` from a prior session? | No prior memory + complexity=simple → skip Level 4 |
 | 4 | Max agents = max parallel work streams needed | Count genuine parallel tasks before adding agents |
 | 5 | goals.md always created — continuity is non-negotiable | Never skip this regardless of category |
 
-**Check #2 in detail — the TDD-in-Writer trap:**
-If signals show prose/creative content but also have a `package.json` (e.g., a static site generator):
-- The code tooling is infrastructure, not the project itself
+**Check #2 in detail — TDD is opt-in, not mandatory:**
+Set `tdd_active = true` only when ALL THREE signals are present:
+1. domain = Developer (has package.json / requirements / Cargo / go.mod)
+2. Test files already exist: `find . \( -name '*.test.*' -o -name '*.spec.*' -o -name 'test_*.py' \) | head -1`
+3. CLAUDE.md has an explicit TDD rule: `grep -qi 'tdd\|test.first\|failing test' CLAUDE.md`
+
+If domain = Developer but signals 2-3 absent → `tdd_active = false`. Suggest TDD, don't enforce.
+If signals show prose/creative content with a `package.json` (e.g., static site):
 - Ask: "Is the user writing code, or writing content that happens to be in a code repo?"
-- If writing content → domain = Writer, tdd_active = false, skip Level 6 hooks
-- If writing code → domain = Developer, tdd_active = true
+- Writing content → domain = Writer, tdd_active = false
 
 **Check #3 in detail — memory intensity:**
 High-maintenance memory (goals.md, sessions/, learnings/) only makes sense if the user returns to this project repeatedly.

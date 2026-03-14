@@ -4,7 +4,7 @@ description: >
   Add a new feature, endpoint, component, function, page, or capability.
   Triggers on: "add feature", "implement X", "build X", "create X", "new endpoint",
   "new component", "new page", "new function", "add support for", "I need X to do Y".
-  TDD-first if developer domain. Follows existing patterns — never invents new ones.
+  TDD opt-in (signal-based). Follows existing patterns — never invents new ones.
 argument-hint: "[what to add — be specific]"
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
@@ -51,11 +51,24 @@ grep -r "{keyword from $ARGUMENTS}" --include="*.ts" --include="*.py" --include=
 
 ---
 
-## Phase 3: Test First (developer domain only)
+## Phase 3: Test First (opt-in — check signals first)
 
 **Skip this phase for Writer / Research / Business domains.**
 
-Write the failing test following the exact pattern of nearby tests.
+For developer domain, check BOTH signals before enforcing test-first:
+
+```bash
+# Signal 1: CLAUDE.md has an explicit TDD rule
+grep -qi 'tdd\|test.first\|test-first\|failing test' CLAUDE.md && echo "TDD rule found" || echo "No TDD rule"
+
+# Signal 2: test files exist in the project
+find . \( -name '*.test.*' -o -name '*.spec.*' -o -name 'test_*.py' \) -not -path '*/node_modules/*' | head -1
+```
+
+**Both signals present → TDD protocol active. Write the failing test.**
+**Either missing → skip Phase 3. Suggest tests after implementation if none exist.**
+
+If TDD active: write the failing test following the exact pattern of nearby tests.
 Run it — confirm it fails for the RIGHT reason:
 
 ```bash
@@ -66,7 +79,7 @@ if [ $EXIT -eq 0 ]; then echo "TEST PASSES BEFORE IMPL — wrong test, rewrite i
 
 Show the failure output. Do not proceed until the test fails correctly.
 
-**TaskUpdate** `Write failing test` → completed
+**TaskUpdate** `Write failing test` → completed (or skipped with reason)
 
 ---
 

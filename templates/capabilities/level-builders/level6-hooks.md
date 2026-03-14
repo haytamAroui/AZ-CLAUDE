@@ -39,7 +39,7 @@ Layer 1: CLAUDE.md instruction
 
 Layer 2: UserPromptSubmit hook
   ↓ Injects goals.md content into every prompt automatically
-  Failure mode: hook command fails silently on Windows/misconfigured shell
+  Failure mode: Node.js not in PATH (rare — Node ≥ 16 required, same as npm)
   Coverage: PUSH-based, doesn't depend on Claude following instructions
 
 Layer 3: Stop hook
@@ -48,7 +48,7 @@ Layer 3: Stop hook
   Coverage: catches unclean exits that Layer 1+2 cannot
 ```
 
-**Why all 3 are required**: Layer 1 alone = broken when Claude is busy. Layer 2 alone = broken on Windows without Git Bash. Layer 3 alone = reactive not proactive. Together = session state survives all common failure modes.
+**Why all 3 are required**: Layer 1 alone = broken when Claude is busy. Layer 2 alone = broken if Node.js unavailable (extremely rare). Layer 3 alone = reactive not proactive. Together = session state survives all common failure modes.
 
 **Installing Layer 2+3**: `npx azclaude` installs global hooks to `~/.claude/settings.json`.
 **Installing Layer 1**: `/setup` writes the instruction into CLAUDE.md.
@@ -104,10 +104,11 @@ Only add if the formatter is confirmed installed (`which prettier` etc.).
 The exact hook commands are defined in `bin/cli.js` — that is the source of truth.
 Do not duplicate the hook code here; reference it instead.
 
-**UserPromptSubmit** — injects `goals.md` once at session start using a session-marker file (`/tmp/.azclaude-session-$PPID`). Fires on the first prompt only — not on every subsequent prompt.
+**UserPromptSubmit** — runs `~/.claude/hooks/user-prompt.js` (Node.js, cross-platform). Injects `goals.md` once at session start using `os.tmpdir()/.azclaude-session-{ppid}`. Fires on the first prompt only — not on every subsequent prompt.
 
-**Stop** — fires when session ends without /persist:
-- Creates friction stub in `ops/observations/`
+**Stop** — runs `~/.claude/hooks/stop.js` (Node.js, cross-platform). Fires when session ends:
+- Stamps `goals.md` with today's date
+- Creates friction stub in `ops/observations/` if `/persist` was not run
 - Warns: "session state not persisted — run /persist before closing"
 
 ---

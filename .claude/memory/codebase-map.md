@@ -5,7 +5,7 @@ Updated: 2026-03-14
 |------|---------|
 | `bin/cli.js` | CLI installer: detectCLI, substitutePaths, sanitizePath, generateIntegrityHash, verifyIntegrity, AZCLAUDE_CLI env override |
 | `package.json` | npm package metadata, version, bin entry, files list |
-| `test-features.sh` | 489-test suite: template content + install integration tests |
+| `test-features.sh` | 504-test suite: template content + install integration + Node.js hooks + TDD opt-in tests |
 | `CLAUDE.md` | Project rules, dispatch table, trade-off hierarchies |
 | `.claude/memory/goals.md` | Session state: current threads, done, next actions, blockers |
 | `.claude/memory/codebase-map.md` | This file |
@@ -29,3 +29,5 @@ Updated: 2026-03-14
 | `templates/capabilities/intelligence/` | debate, elo, experiment, opro, pipeline |
 | `templates/scripts/env-scan.sh` | Bash scanner: outputs JSON with project signals, scale, stack |
 | `ops/observations/` | Friction logs written by Stop hook and /persist |
+| `templates/hooks/user-prompt.js` | Node.js UserPromptSubmit hook: session marker, injection filter, goals.md injection |
+| `templates/hooks/stop.js` | Node.js Stop hook: stamps goals.md date, writes friction stub |

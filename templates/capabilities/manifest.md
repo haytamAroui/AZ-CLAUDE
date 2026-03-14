@@ -1,6 +1,6 @@
 # AZCLAUDE Capabilities Manifest
 last_updated: 2026-03-14
-version: 1.9.0
+version: 2.0.0
 
 The model reads this file ONCE (~100 tokens) to know what exists.
 Load only the files that match the current task. Never load the full list.

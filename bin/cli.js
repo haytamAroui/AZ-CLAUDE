@@ -97,6 +97,22 @@ function substitutePaths(content, cfg) {
 
 // ─── Global Hooks ─────────────────────────────────────────────────────────────
 
+function installHookScripts(hooksDir) {
+  const hooksScriptsDir = path.join(hooksDir, 'hooks');
+  fs.mkdirSync(hooksScriptsDir, { recursive: true });
+
+  const srcDir = path.join(TEMPLATE_DIR, 'hooks');
+  for (const name of ['user-prompt.js', 'stop.js']) {
+    const src = path.join(srcDir, name);
+    const dst = path.join(hooksScriptsDir, name);
+    if (fs.existsSync(src) && !fs.existsSync(dst)) {
+      fs.copyFileSync(src, dst);
+      try { fs.chmodSync(dst, '755'); } catch (_) {}
+    }
+  }
+  return hooksScriptsDir;
+}
+
 function installGlobalHooks(cli) {
   if (!cli.hooksDir) {
     warn(`Global hooks not supported for ${cli.name}`);
@@ -113,7 +129,27 @@ function installGlobalHooks(cli) {
   }
 
   if (settings._azclaude) {
-    ok('Global hooks already installed — skipping');
+    // Migrate: if hooks still use old bash syntax, upgrade to Node.js scripts
+    const existingCmd = settings.hooks?.UserPromptSubmit?.[0]?.hooks?.[0]?.command || '';
+    const isBashHook  = existingCmd.includes('SESSION_MARKER') || existingCmd.includes('mkdir -p');
+    if (isBashHook) {
+      warn('Upgrading hooks from bash to Node.js (cross-platform fix)...');
+      const hooksScriptsDir  = installHookScripts(cli.hooksDir);
+      const nodeExe          = process.execPath;
+      const userPromptScript = path.join(hooksScriptsDir, 'user-prompt.js');
+      const stopScript       = path.join(hooksScriptsDir, 'stop.js');
+      settings.hooks = {
+        UserPromptSubmit: [{ matcher: '', hooks: [{ type: 'command', command: `"${nodeExe}" "${userPromptScript}"` }] }],
+        Stop:             [{ matcher: '', hooks: [{ type: 'command', command: `"${nodeExe}" "${stopScript}"` }] }]
+      };
+      fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+      const integrityPath = path.join(cli.hooksDir, '.azclaude-integrity');
+      fs.writeFileSync(integrityPath, generateIntegrityHash(settings.hooks));
+      ok('Hooks upgraded to Node.js scripts (works on Windows/macOS/Linux without bash)');
+      ok(`Hook scripts: ${hooksScriptsDir}`);
+    } else {
+      ok('Global hooks already installed — skipping');
+    }
     return;
   }
 
@@ -124,30 +160,15 @@ function installGlobalHooks(cli) {
     return;
   }
 
-  const cfg = cli.cfg;
-  const userPromptCmd = [
-    `mkdir -p ${cfg}/memory ops/observations shared-skills`,
-    `SESSION_MARKER="/tmp/.azclaude-session-\${PPID}"`,
-    `if [ ! -f "$SESSION_MARKER" ]; then`,
-    `  touch "$SESSION_MARKER"`,
-    `  if [ -f ${cfg}/memory/goals.md ]; then`,
-    `    echo '--- ACTIVE GOALS ---'`,
-    `    grep -v -iE 'ignore.*previous.*instructions|curl.*\\|.*bash|wget.*\\|.*sh|you are now|system prompt' ${cfg}/memory/goals.md || cat ${cfg}/memory/goals.md`,
-    `    echo '--- END GOALS ---'`,
-    `  fi`,
-    `fi`
-  ].join('\n');
+  // Install Node.js hook scripts (cross-platform: Windows/macOS/Linux)
+  const hooksScriptsDir  = installHookScripts(cli.hooksDir);
+  const nodeExe          = process.execPath; // absolute path to node binary
+  const userPromptScript = path.join(hooksScriptsDir, 'user-prompt.js');
+  const stopScript       = path.join(hooksScriptsDir, 'stop.js');
 
-  const stopCmd = [
-    `if [ ! -f ${cfg}/memory/goals.md ]; then exit 0; fi`,
-    // Stamp goals.md with today's date so next session doesn't start with stale context
-    `sed -i "s/^Updated: .*/Updated: $(date +%Y-%m-%d)/" ${cfg}/memory/goals.md 2>/dev/null || true`,
-    `STUB="ops/observations/$(date +%Y%m%d-%H%M%S)-friction.md"`,
-    `if [ ! -f "$STUB" ]; then`,
-    `  printf -- '---\\ndate: %s\\ntype: friction\\n---\\n\\n# Friction\\n\\n(session ended without /persist)\\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$STUB"`,
-    `  echo '⚠ session state not persisted — run /persist before closing'`,
-    `fi`
-  ].join('\n');
+  // Use "node /absolute/path/script.js" — works on Windows PowerShell, CMD, Git Bash, macOS, Linux
+  const userPromptCmd = `"${nodeExe}" "${userPromptScript}"`;
+  const stopCmd       = `"${nodeExe}" "${stopScript}"`;
 
   settings._azclaude = true;
   settings.hooks = {
@@ -163,14 +184,10 @@ function installGlobalHooks(cli) {
   fs.writeFileSync(integrityPath, hash);
 
   ok(`Global hooks installed (${settingsPath})`);
+  ok(`Hook scripts installed (${hooksScriptsDir})`);
   ok(`Integrity hash written (${integrityPath})`);
   info('Why global: runs in every project — install once, covered everywhere');
-
-  if (process.platform === 'win32') {
-    warn('Windows detected: hooks use bash syntax (mkdir -p, date, etc.)');
-    warn('Hooks require Git Bash or WSL — they will fail silently in PowerShell.');
-    warn(`${cli.name} on Windows typically uses Git Bash — if so, you are covered.`);
-  }
+  info('Why Node.js: works on Windows PowerShell, CMD, Git Bash, macOS, Linux — no bash required');
 }
 
 // ─── Capabilities ─────────────────────────────────────────────────────────────
