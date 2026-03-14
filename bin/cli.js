@@ -102,7 +102,7 @@ function installHookScripts(hooksDir) {
   fs.mkdirSync(hooksScriptsDir, { recursive: true });
 
   const srcDir = path.join(TEMPLATE_DIR, 'hooks');
-  for (const name of ['user-prompt.js', 'stop.js']) {
+  for (const name of ['user-prompt.js', 'stop.js', 'post-tool-use.js']) {
     const src = path.join(srcDir, name);
     const dst = path.join(hooksScriptsDir, name);
     if (fs.existsSync(src) && !fs.existsSync(dst)) {
@@ -132,20 +132,24 @@ function installGlobalHooks(cli) {
     // Migrate: if hooks still use old bash syntax, upgrade to Node.js scripts
     const existingCmd = settings.hooks?.UserPromptSubmit?.[0]?.hooks?.[0]?.command || '';
     const isBashHook  = existingCmd.includes('SESSION_MARKER') || existingCmd.includes('mkdir -p');
-    if (isBashHook) {
-      warn('Upgrading hooks from bash to Node.js (cross-platform fix)...');
-      const hooksScriptsDir  = installHookScripts(cli.hooksDir);
-      const nodeExe          = process.execPath;
-      const userPromptScript = path.join(hooksScriptsDir, 'user-prompt.js');
-      const stopScript       = path.join(hooksScriptsDir, 'stop.js');
+    const hasPostToolUse = !!settings.hooks?.PostToolUse;
+    if (isBashHook || !hasPostToolUse) {
+      const reason = isBashHook ? 'bash→Node.js upgrade' : 'adding auto-save PostToolUse hook';
+      warn(`Upgrading hooks (${reason})...`);
+      const hooksScriptsDir   = installHookScripts(cli.hooksDir);
+      const nodeExe           = process.execPath;
+      const userPromptScript  = path.join(hooksScriptsDir, 'user-prompt.js');
+      const stopScript        = path.join(hooksScriptsDir, 'stop.js');
+      const postToolUseScript = path.join(hooksScriptsDir, 'post-tool-use.js');
       settings.hooks = {
-        UserPromptSubmit: [{ matcher: '', hooks: [{ type: 'command', command: `"${nodeExe}" "${userPromptScript}"` }] }],
-        Stop:             [{ matcher: '', hooks: [{ type: 'command', command: `"${nodeExe}" "${stopScript}"` }] }]
+        UserPromptSubmit: [{ matcher: '',           hooks: [{ type: 'command', command: `"${nodeExe}" "${userPromptScript}"` }]  }],
+        Stop:             [{ matcher: '',           hooks: [{ type: 'command', command: `"${nodeExe}" "${stopScript}"` }]        }],
+        PostToolUse:      [{ matcher: 'Write|Edit', hooks: [{ type: 'command', command: `"${nodeExe}" "${postToolUseScript}"` }] }]
       };
       fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
       const integrityPath = path.join(cli.hooksDir, '.azclaude-integrity');
       fs.writeFileSync(integrityPath, generateIntegrityHash(settings.hooks));
-      ok('Hooks upgraded to Node.js scripts (works on Windows/macOS/Linux without bash)');
+      ok('Hooks upgraded — auto-save active (PostToolUse writes progress to goals.md)');
       ok(`Hook scripts: ${hooksScriptsDir}`);
     } else {
       ok('Global hooks already installed — skipping');
@@ -161,19 +165,22 @@ function installGlobalHooks(cli) {
   }
 
   // Install Node.js hook scripts (cross-platform: Windows/macOS/Linux)
-  const hooksScriptsDir  = installHookScripts(cli.hooksDir);
-  const nodeExe          = process.execPath; // absolute path to node binary
-  const userPromptScript = path.join(hooksScriptsDir, 'user-prompt.js');
-  const stopScript       = path.join(hooksScriptsDir, 'stop.js');
+  const hooksScriptsDir   = installHookScripts(cli.hooksDir);
+  const nodeExe           = process.execPath; // absolute path to node binary
+  const userPromptScript  = path.join(hooksScriptsDir, 'user-prompt.js');
+  const stopScript        = path.join(hooksScriptsDir, 'stop.js');
+  const postToolUseScript = path.join(hooksScriptsDir, 'post-tool-use.js');
 
   // Use "node /absolute/path/script.js" — works on Windows PowerShell, CMD, Git Bash, macOS, Linux
-  const userPromptCmd = `"${nodeExe}" "${userPromptScript}"`;
-  const stopCmd       = `"${nodeExe}" "${stopScript}"`;
+  const userPromptCmd  = `"${nodeExe}" "${userPromptScript}"`;
+  const stopCmd        = `"${nodeExe}" "${stopScript}"`;
+  const postToolUseCmd = `"${nodeExe}" "${postToolUseScript}"`;
 
   settings._azclaude = true;
   settings.hooks = {
-    UserPromptSubmit: [{ matcher: '', hooks: [{ type: 'command', command: userPromptCmd }] }],
-    Stop:             [{ matcher: '', hooks: [{ type: 'command', command: stopCmd      }] }]
+    UserPromptSubmit: [{ matcher: '',         hooks: [{ type: 'command', command: userPromptCmd  }] }],
+    Stop:             [{ matcher: '',         hooks: [{ type: 'command', command: stopCmd        }] }],
+    PostToolUse:      [{ matcher: 'Write|Edit', hooks: [{ type: 'command', command: postToolUseCmd }] }]
   };
 
   fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));

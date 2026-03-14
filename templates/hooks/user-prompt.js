@@ -4,6 +4,7 @@
  * AZCLAUDE — UserPromptSubmit hook
  * Runs on every session's first prompt.
  * Injects goals.md into context so Claude always knows the current thread.
+ * If previous session was interrupted (In progress entries remain), warns Claude.
  * Works on: Windows (PowerShell/CMD/Git Bash), macOS, Linux.
  */
 const fs   = require('fs');
@@ -26,8 +27,17 @@ if (!fs.existsSync(goalsPath)) process.exit(0);
 
 // Strip prompt-injection attempts before outputting into context
 const INJECTION = /ignore.{0,20}previous.{0,20}instructions|curl.{0,10}\|.{0,10}bash|wget.{0,10}\|.{0,10}sh|you are now|system prompt/i;
-const content  = fs.readFileSync(goalsPath, 'utf8');
-const filtered = content.split('\n').filter(l => !INJECTION.test(l)).join('\n');
+const content   = fs.readFileSync(goalsPath, 'utf8');
+const filtered  = content.split('\n').filter(l => !INJECTION.test(l)).join('\n');
+
+// Warn if previous session was interrupted (In progress entries survived)
+const ipMatch = filtered.match(/^## In progress\n((?:- .+\n?)+)/m);
+if (ipMatch) {
+  console.log('⚠ PREVIOUS SESSION INTERRUPTED — files were being edited:');
+  console.log(ipMatch[1].trimEnd());
+  console.log('Resume or discard before starting new work.');
+  console.log('');
+}
 
 console.log('--- ACTIVE GOALS ---');
 console.log(filtered);
