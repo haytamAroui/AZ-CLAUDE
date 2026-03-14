@@ -1,15 +1,15 @@
 ---
 name: debate
-description: >
-  Adversarial debate for hard architectural decisions. Opt-in only.
-  Do NOT use for routine decisions — Claude's direct answer is faster and equally good.
-  Triggers on: /debate, "debate", "which is better", "should we", hard tradeoff.
-tokens: ~60
+description: Adversarial decision protocol for hard architectural choices. Opt-in only — not for routine decisions.
+argument-hint: "[decision or tradeoff to evaluate]"
+disable-model-invocation: true
 ---
 
 # /debate — Adversarial Decision Protocol
 
-Thin router. Opt-in only.
+$ARGUMENTS
+
+---
 
 ---
 

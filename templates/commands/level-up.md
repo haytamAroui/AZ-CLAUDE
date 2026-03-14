@@ -1,10 +1,7 @@
 ---
 name: level-up
-description: >
-  Scan current Claude Code environment level (0-10), show what exists and
-  what's missing, then build the next level.
-  Triggers on: /level-up, "what level am I", "improve environment", "next level".
-tokens: ~80
+description: Scan current environment level (0–10), show what exists and what's missing, then build the next level.
+disable-model-invocation: true
 ---
 
 # /level-up — Scan and Build Next Level

@@ -1,12 +1,16 @@
 ---
 name: status
-description: >
-  Quick project overview. Health check, recent changes, current level, next steps.
-  Triggers on: /status, "what's the status", "project overview", "how's it going".
-tokens: ~80
+description: Quick project overview — health check, recent changes, current level, next steps from goals.md.
+allowed-tools: Read, Bash, Grep
 ---
 
 # /status — Project Overview
+
+Recent git activity:
+!`git log --oneline -5 2>/dev/null || echo 'no git history'`
+
+Uncommitted changes:
+!`git status --short 2>/dev/null || echo 'not a git repo'`
 
 Keep it short and visual. No walls of text.
 

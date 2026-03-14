@@ -1,9 +1,9 @@
 ---
 name: ship
-description: >
-  Save work and push to GitHub. Stages changes, generates commit message, commits, pushes.
-  Triggers on: /ship, "push to github", "save and push", "commit and push".
-tokens: ~100
+description: Stage changes, generate a commit message, commit, and push. Skips .env and secrets automatically.
+argument-hint: "[optional: commit message hint]"
+disable-model-invocation: true
+allowed-tools: Bash, Read
 ---
 
 # /ship — Save and Push to GitHub

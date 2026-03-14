@@ -1,10 +1,9 @@
 ---
 name: fix
-description: >
-  4-phase debugging protocol. Reproduces, investigates root cause, hypothesizes,
-  fixes and verifies. Never guesses. Never says "should work".
-  Triggers on: /fix, bug, error, failing test, broken, exception, crash, not working.
-tokens: ~300
+description: Reproduce → investigate root cause → hypothesize → fix and verify. Never guesses. Never says "should work".
+argument-hint: "[error message, failing test, or bug description]"
+disable-model-invocation: true
+allowed-tools: Read, Grep, Bash, Edit, Write
 ---
 
 # /fix — 4-Phase Debugging Protocol

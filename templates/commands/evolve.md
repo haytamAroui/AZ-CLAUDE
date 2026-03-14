@@ -1,10 +1,8 @@
 ---
 name: evolve
-description: >
-  Evolution cycle. Scans environment for gaps, generates improvements, evaluates
-  quality, consolidates knowledge. Run after significant work or end of week.
-  Triggers on: /evolve, "improve environment", "evolve", "update agents".
-tokens: ~80
+description: Scan environment for gaps, generate improvements, consolidate knowledge. Run after significant work or end of week.
+disable-model-invocation: true
+context: fork
 ---
 
 # /evolve — Environment Evolution

@@ -1,10 +1,9 @@
 ---
 name: dream
-description: >
-  Build a new project from an idea. Analyzes the idea, detects the tech stack,
-  scans the current environment level, then builds everything progressively.
-  Triggers on: /dream, "I want to build", "new project idea", "create project".
-tokens: ~80
+description: Build a project from an idea — scaffolds rules file, memory, skills, and agents level by level.
+argument-hint: "[project idea and tech stack]"
+disable-model-invocation: true
+context: fork
 ---
 
 # /dream — Build a Project From an Idea

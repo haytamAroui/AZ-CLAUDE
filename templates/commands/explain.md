@@ -1,9 +1,8 @@
 ---
 name: explain
-description: >
-  Explain code, errors, or concepts in plain language — no jargon.
-  Triggers on: /explain, "explain this", "what does this mean", "I don't understand".
-tokens: ~60
+description: Explain code, errors, or concepts in plain language — no jargon, 2-3 paragraphs max.
+argument-hint: "[code snippet, error message, file name, or concept]"
+allowed-tools: Read, Grep
 ---
 
 # /explain — Plain Language Explanation

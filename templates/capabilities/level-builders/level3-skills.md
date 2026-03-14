@@ -81,16 +81,41 @@ Every skill file requires:
 ```yaml
 ---
 name: {skill-name}
-description: >
-  [Pushy description — 3+ trigger variants, specific scenarios]
-tokens: ~{estimate}
+description: [One clear sentence — what it does and when]
+argument-hint: "[what arguments it expects]"      # shows in autocomplete
+disable-model-invocation: true                    # omit for auto-triggered skills
+allowed-tools: Read, Grep, Bash                   # scoped permissions for this skill
 ---
 
 ## /{skill-name} — Title
 
+$ARGUMENTS
+
 [body — ≤ 500 lines]
 [reference pointers if needed: "For endpoint template, read references/endpoint-template.ts"]
 ```
+
+**All frontmatter fields:**
+
+| Field | Required | Use when |
+|-------|----------|----------|
+| `name` | No | Defaults to filename. Set to override. |
+| `description` | Yes | One sentence — what it does. Claude uses this for auto-triggering. |
+| `argument-hint` | Recommended | Skill takes arguments — shows in `/` autocomplete. |
+| `disable-model-invocation: true` | For manual commands | Prevents auto-triggering. Use for destructive or session-ending commands. |
+| `allowed-tools` | Recommended | Scope permissions. Read-only skills: `Read, Grep`. Build skills: `Read, Write, Edit, Bash`. |
+| `context: fork` | For heavy commands | Runs in isolated subagent. Use for long autonomous tasks (/evolve, /dream). |
+| `user-invocable: false` | For background knowledge | Hides from `/` menu. Use for internal reference-only skills. |
+
+**Dynamic injection** — inject real data before Claude reads the skill:
+```markdown
+## Current state
+!`git log --oneline -5`
+!`bash .claude/scripts/env-scan.sh 2>/dev/null`
+```
+The `!`command`` syntax runs the shell command immediately. Claude only sees the output — not the command. Use for `/status`, `/setup`, any skill that needs live project data.
+
+**`ultrathink`** — include this word anywhere in the skill body to enable extended thinking for that skill.
 
 **Body must include** (for RECIPE skills):
 - Step-by-step instructions with exact commands

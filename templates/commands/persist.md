@@ -1,10 +1,8 @@
 ---
 name: persist
-description: >
-  Session-end command. Updates goals.md, writes friction log, appends session summary.
-  Run before closing every session.
-  Triggers on: /persist, "save session", "end session", "before I go".
-tokens: ~100
+description: End the session — update goals.md, write friction log, append session summary. Run before closing.
+disable-model-invocation: true
+allowed-tools: Read, Write, Edit
 ---
 
 # /persist — Session End

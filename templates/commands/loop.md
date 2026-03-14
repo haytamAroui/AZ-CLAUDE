@@ -1,9 +1,8 @@
 ---
 name: loop
-description: >
-  Run a command or prompt on a recurring interval.
-  Triggers on: /loop, "check every X minutes", "run repeatedly", "keep watching".
-tokens: ~60
+description: Run a command or prompt on a recurring interval.
+argument-hint: "[interval: 5m/10m/1h] [command or prompt]"
+disable-model-invocation: true
 ---
 
 # /loop — Recurring Task

@@ -1,13 +1,14 @@
 ---
 name: setup
-description: >
-  Project environment setup. Analyzes project, fills CLAUDE.md, creates memory
-  structure, installs hooks. Run once at project start.
-  Triggers on: /setup, "set up project", "initialize", "configure Claude".
-tokens: ~80
+description: Analyze the project, fill CLAUDE.md, create memory structure. Run once at project start or to fill unfilled placeholders.
+disable-model-invocation: true
+allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
 ---
 
 # /setup — Project Environment Setup
+
+Current environment:
+!`bash .claude/scripts/env-scan.sh 2>/dev/null || echo '{"note": "run npx azclaude first to install scripts"}'`
 
 Spawn the initialization specialist for this project:
 
