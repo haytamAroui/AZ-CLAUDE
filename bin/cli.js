@@ -3,6 +3,7 @@
 const fs            = require('fs');
 const path          = require('path');
 const os            = require('os');
+const crypto        = require('crypto');
 const { execSync }  = require('child_process');
 
 const TEMPLATE_DIR = path.join(__dirname, '..', 'templates');
@@ -11,6 +12,46 @@ const COMMANDS     = ['dream', 'setup', 'fix', 'evolve', 'debate', 'persist', 'l
 function ok(msg)   { console.log(`  ✓ ${msg}`); }
 function warn(msg) { console.log(`  ⚠ ${msg}`); }
 function info(msg) { console.log(`  · ${msg}`); }
+
+// ─── Security ─────────────────────────────────────────────────────────────────
+
+const DANGEROUS_CHARS = /[;|&`$()><]/;
+
+function sanitizePath(filePath) {
+  if (DANGEROUS_CHARS.test(filePath)) {
+    warn(`Rejected path with shell metacharacters: ${filePath}`);
+    return false;
+  }
+  return true;
+}
+
+function generateIntegrityHash(hooksObj) {
+  const content = JSON.stringify(hooksObj, null, 2);
+  return crypto.createHash('sha256').update(content).digest('hex');
+}
+
+function verifyIntegrity(cli) {
+  if (!cli.hooksDir) return true;
+  const settingsPath  = path.join(cli.hooksDir, 'settings.json');
+  const integrityPath = path.join(cli.hooksDir, '.azclaude-integrity');
+
+  if (!fs.existsSync(integrityPath) || !fs.existsSync(settingsPath)) return true;
+
+  try {
+    const settings   = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+    const savedHash  = fs.readFileSync(integrityPath, 'utf8').trim();
+    const currentHash = generateIntegrityHash(settings.hooks || {});
+    if (savedHash !== currentHash) {
+      warn('Hook integrity mismatch — hooks in settings.json were modified since last AZCLAUDE install');
+      warn('Verify your hooks manually before continuing.');
+      return false;
+    }
+    ok('Hook integrity verified');
+  } catch {
+    warn('Could not verify hook integrity');
+  }
+  return true;
+}
 
 // ─── CLI Detection ────────────────────────────────────────────────────────────
 
@@ -85,7 +126,7 @@ function installGlobalHooks(cli) {
     `  touch "$SESSION_MARKER"`,
     `  if [ -f ${cfg}/memory/goals.md ]; then`,
     `    echo '--- ACTIVE GOALS ---'`,
-    `    cat ${cfg}/memory/goals.md`,
+    `    grep -v -iE 'ignore.*previous.*instructions|curl.*\\|.*bash|wget.*\\|.*sh|you are now|system prompt' ${cfg}/memory/goals.md || cat ${cfg}/memory/goals.md`,
     `    echo '--- END GOALS ---'`,
     `  fi`,
     `fi`
@@ -107,7 +148,14 @@ function installGlobalHooks(cli) {
   };
 
   fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+
+  // Write integrity hash
+  const integrityPath = path.join(cli.hooksDir, '.azclaude-integrity');
+  const hash = generateIntegrityHash(settings.hooks);
+  fs.writeFileSync(integrityPath, hash);
+
   ok(`Global hooks installed (${settingsPath})`);
+  ok(`Integrity hash written (${integrityPath})`);
   info('Why global: runs in every project — install once, covered everywhere');
 
   if (process.platform === 'win32') {
@@ -242,6 +290,28 @@ function ensureSharedSkillsDir() {
     if (skills.length > 0) {
       info(`  ${skills.length} portable skill(s) available: ${skills.join(', ')}`);
       info('  Run /setup to import skills that match this project\'s stack');
+
+      // Verify checksums if available
+      const checksumsPath = path.join(dir, '.checksums');
+      if (fs.existsSync(checksumsPath)) {
+        const checksums = fs.readFileSync(checksumsPath, 'utf8').split('\n').filter(Boolean);
+        const checksumMap = {};
+        for (const line of checksums) {
+          const [hash, file] = line.split('  ');
+          if (hash && file) checksumMap[file.trim()] = hash.trim();
+        }
+        for (const skill of skills) {
+          if (checksumMap[skill]) {
+            const content = fs.readFileSync(path.join(dir, skill), 'utf8');
+            const actual  = crypto.createHash('sha256').update(content).digest('hex');
+            if (actual !== checksumMap[skill]) {
+              warn(`Checksum mismatch for ${skill} — file may have been tampered with`);
+            } else {
+              ok(`${skill} checksum verified`);
+            }
+          }
+        }
+      }
     }
   }
 }
@@ -268,6 +338,7 @@ console.log('  AZCLAUDE — AI Coding Environment');
 console.log(`  CLI: ${cli.name} → installing to ${cli.cfg}/`);
 console.log('════════════════════════════════════════════════\n');
 
+verifyIntegrity(cli);
 installGlobalHooks(cli);
 installCapabilities(projectDir, cli.cfg);
 installCommands(projectDir, cli.cfg);

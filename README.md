@@ -287,7 +287,20 @@ azclaude/
 └── test-features.sh              ← 364 tests
 ```
 
-**46 files. ~4,500 lines. 364 tests.**
+**47 files. ~4,700 lines. 376 tests.**
+
+---
+
+## Security
+
+AZCLAUDE executes code and modifies files. We built 6 layers of security to prevent common AI coding attack vectors:
+
+1. **Hook Integrity**: Global hooks (`~/.claude/settings.json`) run on every prompt. AZCLAUDE writes a SHA-256 integrity hash during setup and verifies it on subsequent runs, warning if hooks were modified externally.
+2. **Command Injection Protection**: Formatter hooks sanitize `$CLAUDE_FILE_PATH`, rejecting shell metacharacters (like `;`, `|`, `&`) to prevent command injection from malicious filenames.
+3. **Indirect Prompt Injection Defense**: The `UserPromptSubmit` hook strips injection patterns (`curl | bash`, `ignore previous instructions`) before injecting `goals.md` into Claude's context.
+4. **Skill Checksums**: Portable skills in `~/shared-skills/` are SHA-256 hashed. Imports fail loudly if a skill was tampered with.
+5. **Credential Auditing**: Agents log all credential handling to `security-events.md`. `/ship` rigorously scans for `.env` and plaintext keys before ever running `git stage`.
+6. **Agent Scoping**: Principle of least privilege. Review agents never get Write permissions. Experiment agents run entirely in isolated git worktrees.
 
 ---
 

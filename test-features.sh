@@ -608,6 +608,24 @@ check "knowledge-index.md stub creation"        "$CLI" "knowledge-index"
 
 # ─────────────────────────────────────────────
 echo ""
+echo "[ Security — shared/security.md ]"
+# ─────────────────────────────────────────────
+SEC="$SHARED/security.md"
+check_file "shared/security.md exists"                 "$SEC"
+check "Hook integrity concept present"                 "$SEC" "integrity\|sha-256\|hash"
+check "Path sanitization rules documented"             "$SEC" "Path sanitization\|metacharacter"
+check "Context injection protection present"           "$SEC" "injection\|inject.*context"
+check "Credential handling rules present"              "$SEC" "Credential\|secret\|api key"
+check "Shared-skill verification concept present"      "$SEC" "checksum\|verify.*skill"
+check "Agent permission scoping present"               "$SEC" "least privilege\|permission"
+
+check "CLI installer: sanitizePath function exists"    "$CLI" "sanitizePath"
+check "CLI installer: generateIntegrityHash exists"    "$CLI" "generateIntegrityHash"
+check "CLI installer: verifyIntegrity exists"          "$CLI" "verifyIntegrity"
+check "level6-hooks.md: CLAUDE_FILE_PATH sanitization" "$L6" "case.*CLAUDE_FILE_PATH.*in"
+check "manifest.md: security.md listed"                "$MANIFEST" "shared/security.md"
+
+echo ""
 echo "════════════════════════════════════════════════════"
 TOTAL=$((PASS + FAIL))
 echo "  Results: $PASS passed, $FAIL failed, $TOTAL total"

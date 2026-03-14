@@ -16,6 +16,7 @@ Load only the files that match the current task. Never load the full list.
 | shared/vocabulary-transform.md | Domain detected during /setup, vocabulary mismatch | ~60 |
 | shared/multi-cli-paths.md | Non-Claude-Code CLI detected, path configuration needed | ~80 |
 | shared/quality-check.md | After /setup or /level-up, verify environment is correct | ~80 |
+| shared/security.md | Credential handling, hook integrity, untrusted project review | ~200 |
 
 ## Level Builders — load ONE at a time
 | File | When to load | Tokens |

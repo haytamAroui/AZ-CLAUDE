@@ -69,12 +69,16 @@ After detecting the project stack, generate a `.claude/settings.json` with auto-
     "PostToolUse": [
       {
         "matcher": "Write|Edit",
-        "hooks": [{ "type": "command", "command": "{stack-specific command from table above}" }]
+        "hooks": [{ "type": "command", "command": "case \"$CLAUDE_FILE_PATH\" in *[';''|''&''`''$''('')''>''<']*) exit 0 ;; esac && {stack-specific command}" }]
       }
     ]
   }
 }
 ```
+
+> **Security**: Sanitize `$CLAUDE_FILE_PATH` using a `case...in` guard — rejects paths
+> containing shell metacharacters before the formatter runs. A path like `; rm -rf /;.ts`
+> exits silently instead of executing. See `shared/security.md` for full details.
 
 **Format command by stack:**
 
