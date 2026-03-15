@@ -65,27 +65,14 @@ if (content.includes(IN_PROGRESS)) {
 content = content.replace(/^Updated: .*/m, `Updated: ${today}`);
 try { fs.writeFileSync(goalsPath, content); } catch (_) {}
 
-// ── Friction stub if /persist was not run ─────────────────────────────────────
+// ── Warn if /persist was not run (no empty stub — only real friction gets logged) ──
 const obsDir = 'ops/observations';
-try { fs.mkdirSync(obsDir, { recursive: true }); } catch (_) {}
-
-const ts   = new Date().toISOString().replace(/[:.]/g, '').slice(0, 15);
-const stub = path.join(obsDir, `${ts}-friction.md`);
-
-if (!fs.existsSync(stub)) {
-  const body = [
-    '---',
-    `date: ${new Date().toISOString()}`,
-    'type: friction',
-    '---',
-    '',
-    '# Friction',
-    '',
-    '(session ended without /persist)',
-    ''
-  ].join('\n');
-  try {
-    fs.writeFileSync(stub, body);
+const todayStamp = today.replace(/-/g, '');
+try {
+  const existing = fs.readdirSync(obsDir).filter(f => f.startsWith(todayStamp) && f.endsWith('-friction.md'));
+  if (existing.length === 0) {
     process.stdout.write('⚠ session state not persisted — run /persist before closing\n');
-  } catch (_) {}
+  }
+} catch (_) {
+  // obs dir doesn't exist yet — that's fine
 }

@@ -105,7 +105,7 @@ function installHookScripts(hooksDir) {
   for (const name of ['user-prompt.js', 'stop.js', 'post-tool-use.js']) {
     const src = path.join(srcDir, name);
     const dst = path.join(hooksScriptsDir, name);
-    if (fs.existsSync(src) && !fs.existsSync(dst)) {
+    if (fs.existsSync(src)) {
       fs.copyFileSync(src, dst);
       try { fs.chmodSync(dst, '755'); } catch (_) {}
     }
@@ -537,9 +537,56 @@ function runDoctor() {
   console.log('\n[ Commands ]');
   const cmdDir    = path.join(projectDir, cfg, 'commands');
   const installed = fs.existsSync(cmdDir) ? fs.readdirSync(cmdDir).filter(f => f.endsWith('.md')) : [];
-  chk(`${installed.length}/15 commands installed`,          installed.length === 15);
+  chk(`${installed.length}/${COMMANDS.length} commands installed`, installed.length === COMMANDS.length);
   const missing = COMMANDS.filter(c => !installed.includes(`${c}.md`));
   if (missing.length) console.log(`  · missing: ${missing.join(', ')}`);
+
+  // ── Memory health ──────────────────────────────────────────────────────
+  console.log('\n[ Memory ]');
+  const memDir = path.join(projectDir, cfg, 'memory');
+  chk('checkpoints/ directory exists',                fs.existsSync(path.join(memDir, 'checkpoints')));
+  chk('sessions/ directory exists',                   fs.existsSync(path.join(memDir, 'sessions')));
+  chk('codebase-map.md exists',                       fs.existsSync(path.join(memDir, 'codebase-map.md')));
+
+  // Stale goals warning (> 7 days)
+  if (fs.existsSync(goalsPath)) {
+    const goalsContent = fs.readFileSync(goalsPath, 'utf8');
+    const dateMatch = goalsContent.match(/^Updated: (\d{4}-\d{2}-\d{2})/m);
+    if (dateMatch) {
+      const updatedDate = new Date(dateMatch[1]);
+      const daysSince = Math.floor((Date.now() - updatedDate.getTime()) / 86400000);
+      chk(`goals.md is current (updated ${daysSince}d ago)`, daysSince <= 7);
+    }
+  }
+
+  // ── Git status ─────────────────────────────────────────────────────────
+  console.log('\n[ Git ]');
+  try {
+    const { spawnSync } = require('child_process');
+    const gitStatus = spawnSync('git', ['status', '--porcelain'], { cwd: projectDir, encoding: 'utf8', timeout: 5000 });
+    if (gitStatus.status === 0) {
+      const changes = gitStatus.stdout.trim().split('\n').filter(l => l.length > 0);
+      chk(`working tree clean (${changes.length} uncommitted)`, changes.length === 0);
+    }
+  } catch (_) {}
+
+  // ── Hook freshness ────────────────────────────────────────────────────
+  console.log('\n[ Hook freshness ]');
+  const installedHooksDir = cli.hooksDir ? path.join(cli.hooksDir, 'hooks') : null;
+  const templateHooksDir  = path.join(__dirname, '..', 'templates', 'hooks');
+  if (installedHooksDir) {
+    for (const script of ['user-prompt.js', 'stop.js', 'post-tool-use.js']) {
+      const installedPath = path.join(installedHooksDir, script);
+      const templatePath  = path.join(templateHooksDir, script);
+      if (fs.existsSync(installedPath) && fs.existsSync(templatePath)) {
+        const installedContent = fs.readFileSync(installedPath, 'utf8');
+        const templateContent  = fs.readFileSync(templatePath, 'utf8');
+        chk(`${script} is up to date`, installedContent === templateContent);
+      }
+    }
+  } else {
+    console.log('  · hooks not supported — skipping');
+  }
 
   // ── Summary ──────────────────────────────────────────────────────────────
   const total = pass + fail;

@@ -24,9 +24,9 @@ Write the updated file back. Do NOT skip even if the session was short.
 
 ---
 
-## Step 2: Write Friction Log
+## Step 2: Write Friction Log (only if there's real friction)
 
-Write `ops/observations/{YYYY-MM-DD}-{slug}-friction.md`:
+Review the session. If ANY of the four categories below apply, write `ops/observations/{YYYY-MM-DD}-{slug}-friction.md`:
 ```
 ---
 date: {ISO date}
@@ -34,20 +34,20 @@ type: friction
 ---
 
 ## Harder than it should be
-{or "None"}
+{what was harder}
 
 ## Repeated from last session
-{or "None"}
+{what repeated}
 
 ## Took longer than expected
-{or "None"}
+{what was slow}
 
 ## Environment is missing something
-{or "None"}
+{what's missing}
 ```
 
-Do NOT skip even if all answers are "None."
-None entries are signal too — they confirm what's working.
+If ALL four categories are "None" — skip this file entirely. No friction = no file.
+Only write when there's a real signal worth capturing.
 
 ---
 

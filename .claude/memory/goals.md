@@ -2,30 +2,34 @@
 Updated: 2026-03-15
 
 ## Current threads
-- None — v3.13.0 shipped and clean
+- [checkpoint] 00:36 — friction-cleanup → .claude/memory/checkpoints/2026-03-16-00-36.md
+- None — environment at 100/100, marketplace submission under review
 
 ## Done this session
-- v3.9.0 sync: cc- prefix protocol, STRUCTURE-ONLY confidence:low, article-level traceability
-- PostToolUse hook: git diff stat (+N/-M) + change summary from new_string
-- /checkpoint command: mid-session snapshot, auto-injected by UserPromptSubmit
-- README v4: 16 commands, memory system 3-layer table, "when to run what" timeline
-- Trigger engineering: all 11 capability descriptions rewritten to symptom/trigger language
-- /review: distrust-by-design added (assume implementation is incomplete/optimistic)
-- review-reception.md: ban sycophancy, YAGNI check, pushback guidance
-- pressure-test.md: 4 Cialdini adversarial scenarios for enforcement skills
-- completion-rule.md: Pressure Tests section with all 4 adversarial scenarios
-- generate.md: Step 4.5 — auto-apply pressure-test to new enforcement skills
-- Claude Code marketplace plugin: .claude-plugin/plugin.json + hooks/hooks.json
-- DOCS.md: 14-section professional user guide (all 16 commands, 27 capabilities, 10 levels)
-- 613 tests, 0 failures
+- Evolution cycle ran: scored 76/100 before, 96/100 after (+20)
+- codebase-map.md rewritten (was stale: wrong test count, missing 6 files)
+- goals.md cleaned (removed stale "In progress" timestamps)
+- package.json synced 2.0.0 -> 3.13.0
+- 18 empty friction log stubs pruned from ops/observations/
+- CLAUDE.md synced (16 commands, 624 tests, 67 files, added /checkpoint)
+- Hook test coverage added: 11 new tests (injection filter, dir creation, session-once, date stamp, AZCLAUDE_CFG, friction stub, outside-project guard, node_modules guard, git timeout, PostToolUse matcher)
+- Test count: 613 -> 624, all passing
 
 ## Next actions
-1. Submit to Claude Code marketplace (form partially filled — version 3.12.0)
-2. Run /evolve to check for gaps after all session changes
+1. Marketplace submission under review — follow up if needed
+2. Monitor friction logs for real content over next few sessions
+3. Explore new features or user requests as they come in
 
 ## Open blockers
 - None
 
 ## In progress
-- 02:05 — .gitignore
-- 02:03 — DOCS.md
+- 00:47 — bin\cli.js
+- 00:43 — CLAUDE.md
+- 00:43 — test-features.sh
+- 00:35 — .claude\memory\checkpoints\2026-03-16-00-36.md
+- 00:33 — templates\hooks\stop.js
+- 00:33 — templates\commands\persist.md
+- 00:31 — .claude\memory\checkpoints\2026-03-16-00-32.md
+- 00:30 — .claude\memory\sessions\2026-03-16-session.md
+- 00:30 — ops\observations\2026-03-16-hooks-friction.md

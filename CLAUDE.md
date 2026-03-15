@@ -3,7 +3,7 @@
 ## Identity
 Claude Code architecture-native AI environment. A template installer (`npx azclaude`) that scaffolds
 CLAUDE.md, skills, memory, agents, and hooks for any project — progressively, level by level.
-Domain: Developer tooling | Stack: Node.js CLI, Bash, Markdown templates | Scale: STANDARD (71 files)
+Domain: Developer tooling | Stack: Node.js CLI, Bash, Markdown templates | Scale: STANDARD (67 files)
 
 ## Rules
 1. **Completion** — Never say "should work" or "probably passes." Show the output or stay in progress.
@@ -19,11 +19,11 @@ Update it at the end of every session with /persist.
 ```
 bin/cli.js              — CLI installer (detectCLI, substitutePaths, sanitizePath, integrity hash)
 templates/CLAUDE.md     — template installed into user projects
-templates/commands/     — 15 skill files installed as .claude/commands/
+templates/commands/     — 16 command files installed as .claude/commands/
 templates/capabilities/ — manifest + shared + level-builders + evolution + intelligence
 templates/agents/       — orchestrator-init + loop-controller
 templates/scripts/      — env-scan.sh (JSON output, ~200 tokens)
-test-features.sh        — 468 grep-based tests, all must pass before commit
+test-features.sh        — 630 grep-based tests, all must pass before commit
 ```
 
 ## Task Routing
@@ -47,4 +47,4 @@ When priorities conflict:
 3. User clarity > framework elegance — the user is the last consumer, optimize for them
 
 ## Available Commands
-/dream · /setup · /fix · /add · /review · /test · /plan · /evolve · /debate · /persist · /level-up · /ship · /status · /explain · /loop
+/dream · /setup · /fix · /add · /review · /test · /plan · /evolve · /debate · /checkpoint · /persist · /level-up · /ship · /status · /explain · /loop

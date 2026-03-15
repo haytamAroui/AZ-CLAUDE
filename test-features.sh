@@ -844,6 +844,19 @@ check        "hooks: post-tool-use entry includes diffStat" "templates/hooks/pos
 check        "hooks: stop migrates In progress to Done"   "templates/hooks/stop.js"          "In progress\|ipEntries"
 check        "hooks: user-prompt warns interrupted"       "templates/hooks/user-prompt.js"   "INTERRUPTED\|interrupted"
 
+# Hook behavior coverage
+check        "hooks: user-prompt injection filter"          "templates/hooks/user-prompt.js"   "INJECTION\|ignore.*previous.*instructions"
+check        "hooks: user-prompt creates required dirs"     "templates/hooks/user-prompt.js"   "mkdirSync.*recursive"
+check        "hooks: user-prompt session-once marker"       "templates/hooks/user-prompt.js"   "azclaude-session\|marker.*existsSync"
+check        "hooks: stop stamps today's date"              "templates/hooks/stop.js"          "toISOString\|Updated:"
+check        "hooks: stop respects AZCLAUDE_CFG"            "templates/hooks/stop.js"          "AZCLAUDE_CFG"
+check        "hooks: stop warns if persist not run"          "templates/hooks/stop.js"          "not persisted\|run /persist"
+check        "hooks: post-tool-use guards outside project"  "templates/hooks/post-tool-use.js" "startsWith.*\.\.\|outside project"
+check        "hooks: post-tool-use guards node_modules"     "templates/hooks/post-tool-use.js" "node_modules"
+check        "hooks: post-tool-use respects AZCLAUDE_CFG"   "templates/hooks/post-tool-use.js" "AZCLAUDE_CFG"
+check        "hooks: post-tool-use git timeout"             "templates/hooks/post-tool-use.js" "timeout.*3000\|3000"
+check        "hooks: plugin PostToolUse matches Write|Edit" "hooks/hooks.json"                 "Write|Edit"
+
 # ─── TDD opt-in signals ───────────────────────────────────────────────────────
 echo ""
 echo "─── TDD opt-in ───"
@@ -889,6 +902,12 @@ check      "doctor: checks goals.md filled"           "bin/cli.js" "goals\.md ha
 check      "doctor: checks PostToolUse hook"          "bin/cli.js" "PostToolUse.*auto-save\|auto-save.*PostToolUse"
 check      "doctor: exits 1 on failures"              "bin/cli.js" "process\.exit.*fail.*0.*1\|exit.*1.*fail"
 check      "doctor: fix suggestion on failure"        "bin/cli.js" "npx azclaude\|re-run"
+check      "doctor: checks checkpoints dir"           "bin/cli.js" "checkpoints.*directory\|checkpoints.*exists"
+check      "doctor: checks sessions dir"              "bin/cli.js" "sessions.*directory\|sessions.*exists"
+check      "doctor: checks codebase-map"              "bin/cli.js" "codebase-map\.md"
+check      "doctor: stale goals warning"              "bin/cli.js" "daysSince\|days.*ago\|stale.*goals"
+check      "doctor: git uncommitted check"            "bin/cli.js" "porcelain\|uncommitted"
+check      "doctor: hook freshness check"             "bin/cli.js" "up to date\|templateContent\|Hook freshness"
 
 # ─── azclaude demo ────────────────────────────────────────────────────────────
 echo ""
