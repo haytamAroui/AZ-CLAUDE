@@ -9,17 +9,19 @@
 1. [What AZCLAUDE Is](#what-azclaude-is)
 2. [Installation](#installation)
 3. [First Steps After Install](#first-steps-after-install)
-4. [The Memory System](#the-memory-system)
-5. [All 16 Commands](#all-16-commands)
-6. [The Evolution System](#the-evolution-system)
-7. [The Intelligence System](#the-intelligence-system)
-8. [The 10 Levels](#the-10-levels)
-9. [Custom Agents](#custom-agents)
-10. [Domain Awareness](#domain-awareness)
+4. [The 10 Levels](#the-10-levels)
+5. [The Evolution System](#the-evolution-system)
+6. [The Intelligence System](#the-intelligence-system)
+7. [Domain Awareness](#domain-awareness)
+8. [Custom Agents](#custom-agents)
+9. [The Memory System](#the-memory-system)
+10. [Native Tool Orchestration (MCP)](#native-tool-orchestration-mcp)
 11. [The Hook System](#the-hook-system)
-12. [Multi-CLI Support](#multi-cli-support)
-13. [Security](#security)
-14. [Troubleshooting](#troubleshooting)
+12. [All 16 Commands](#all-16-commands)
+13. [Behavioral Defenses (Pressure Testing)](#behavioral-defenses-pressure-testing)
+14. [Multi-CLI Support](#multi-cli-support)
+15. [Security](#security)
+16. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -129,6 +131,215 @@ Creates `knowledge-index.md` with: file | summary | key_questions | tags. Files 
 
 ---
 
+## The 10 Levels
+
+AZCLAUDE builds progressively. You don't need all 10 levels. You need the right ones for your project.
+
+| Level | What you get | Context cost |
+|-------|-------------|-------------|
+| **1** | CLAUDE.md — project conventions in 30 lines | ~30 tokens |
+| **2** | MCP servers — database, browser, API tools | ~150 tokens |
+| **3** | 16 commands + lazy-loaded capabilities | ~380 tokens per task |
+| **4** | Memory — goals, checkpoints, sessions | ~200 tokens per session |
+| **5** | Custom agents — specialists with clear scope | ~400 tokens per agent |
+| **6** | Hooks — auto-save, injection, friction detection | ~0 tokens (global) |
+| **7** | External MCP — cross-project memory, monitoring | Varies |
+| **8** | Intelligence — debates, pipelines, decisions | ~400 tokens per decision |
+| **9** | Evolution — 3-cycle self-improvement | ~1000 tokens per cycle |
+| **10** | **Loop Controller** — A recursive Opus agent that runs 3 autonomous cycles in the background (Environment Evolution, Knowledge Consolidation, Topology Optimization). It actively prunes dead agents, enriches the knowledge index, and re-derives architecture. | ~1500 tokens per full cycle |
+
+Use `/level-up` to see your current level and build the next one.
+
+---
+
+## The Evolution System
+
+`/evolve` is the self-improvement engine. It reads your friction logs, patterns, and session history — then finds what's weak and fixes it.
+
+### When to run
+
+- After a week of work (weekly is the recommended schedule)
+- When the same pain keeps recurring
+- After building a new level
+- Quick check: `/evolve quick` (30 seconds, detect-only)
+
+### What it detects
+
+**Friction signals** — repetition (same fix 3+ times), correction (you keep overriding Claude's suggestions), speed (tasks take unexpectedly long), missing (something you reach for that doesn't exist).
+
+**Context Engineering 2.0 (The CE Pyramid):**
+Before AZCLAUDE fixes a context problem, it classifies the "Context Rot" type using the CE Pyramid:
+- **Poisoning** — Agent believes wrong facts (Fix: Remove or correct the false source)
+- **Distraction** — Irrelevant context consuming the window (Fix: Filter or summarize)
+- **Confusion** — Contradictory instructions in the same file (Fix: Resolve conflict)
+- **Clash** — Multi-source conflicts, like global vs project rules (Fix: Establish priority order)
+
+**Sequence candidates** — if you do steps A→B→C in 3+ sessions, that's a skill waiting to be created.
+
+**Intention-outcome mismatches** — if a capability says "triggers on X" but friction logs show it's not helping with X, the description needs rewriting.
+
+### What the quality gate checks
+
+Before any generated file is promoted:
+- Syntax correct, frontmatter complete
+- Description uses symptom/trigger language (not workflow summary)
+- Self-applicability: can an unfamiliar agent apply this without reading other files?
+- Pressure test resilience (enforcement skills only)
+
+### Scheduling
+
+At the end of `/evolve`, you'll be offered a weekly CronCreate schedule.
+Recommended: Sunday 9am `0 9 * * 0`.
+
+---
+
+## The Intelligence System
+
+Three tools for decisions that are too important for a quick answer.
+
+### /debate — Structured adversarial debate (AceMAD Protocol)
+
+Use when: hard architectural decision, genuine uncertainty, wrong choice costs real time.
+
+The **AceMAD protocol** goes far beyond simple prompting. It enforces:
+
+- **Strict Evidence Tagging**: Every claim must be tagged `[VERIFIED]`, `[PARTIAL]`, `[UNVERIFIED]`, or `[FALSE]`.
+- **Disqualified Language**: Any argument containing "should work", "probably", or "I believe" is immediately marked `[UNVERIFIED]` and loses weight. Truth wins, not volume.
+- **Second-Order Cognition Check**: The synthesized conclusion *must* explicitly address the strongest *verified* claim from the *losing* side, or the confidence rating remains LOW.
+- **Order-Independence (PeerRank)**: Position bias has a known 0.39 statistical correlation. If the margin of victory is < 10 points, AZCLAUDE automatically re-runs the debate with the advocates in *reversed order*. If the result flips, the synthesis is marked INCONCLUSIVE to prevent hallucinated confidence.
+- **Length-Independence (Elo-Evolve)**: Scoring is strictly based on *evidence-density* (verified claims per 100 words), mathematically punishing verbosity and hallucinated length.
+
+Output goes to `decisions.md` with the deciding claim and the strongest counter-argument.
+
+### ELO — Pairwise ranking (PeerRank + Elo-Evolve)
+
+When ranking 3+ options, `/debate` loads ELO automatically. This uses mathematically modeled precision:
+
+- **Comparative Binary Framing**: Uses continuous N×(N-1)/2 pairwise comparisons ("Is A better than B?") rather than absolute scoring ("Rate A from 1-10"). This definitively reduces statistical noise from σ_abs=35.65 to σ_comp=7.85.
+- **Authoritative Ownership**: Subagents are never allowed to self-evaluate. The Loop Controller owns the authoritative ELO score reconciliation, increasing reliability from r=0.538 to r=0.905.
+- **Adjusted Evidence Score Formula**: Calculated as `verified_claims / (verified + unverified + false)`. If this ratio falls below 0.5, the ELO score is mathematically hard-capped at 1100 regardless of how many "wins" the candidate has. Volume cannot defeat evidence.
+
+Rankings persist in `.claude/memory/elo-rankings.json` across sessions. Three tracks:
+- `debate_elo` — tracks which specific architectural approaches win debates
+- `agent_elo` — updated after pipelines; winner is the agent whose output was accepted without revision
+- `pattern_elo` — succeeded if the approach worked, failed if `/evolve` re-derivation was later triggered
+
+### OPRO — Optimization by Prompting
+
+AZCLAUDE generates 3 variants of its own system instructions (Variant A, B, C), tests their performance, and writes the winning prompt architecture back to its internal `prompt-history.json`. This makes the system self-optimizing over time.
+
+### Pipeline — Agent composition
+
+Load `intelligence/pipeline.md` when you need 3+ agents chaining output to input.
+
+**Pre-built templates:**
+- Feature pipeline: planner → implementer → reviewer
+- Fix pipeline: investigator → hypothesizer → fixer
+- Review pipeline: spec-checker → quality-checker (hard gate between stages)
+- Architecture pipeline: analyst → maximalist → skeptic → synthesizer
+
+Each agent receives ONLY the previous agent's output + its own capability file. No context bleed. Agent 3 never inherits Agent 1's 50,000-token conversation.
+
+---
+
+## Domain Awareness
+
+AZCLAUDE detects your project domain from signals in your codebase and adapts everything.
+
+| Domain | Detection signal | What changes |
+|--------|-----------------|-------------|
+| **Developer** | package.json, Cargo.toml, requirements.txt | TDD opt-in, code conventions, test framework detection |
+| **Compliance** | EU AI Act, GDPR, obligations in README | Vocabulary: obligations, conformity review, article-level traceability, audit trail |
+| **Medical/Clinical** | clinical, patient, FHIR in README | Vocabulary: patient, clinical findings, outcomes. FHIR-aware agent naming |
+| **Finance/Trading** | positions, exposure, P&L, trading in README | Vocabulary: positions, risk decisions, exposure. Full code stack |
+| **Writer** | No code files, prose/markdown content | Skills: write-chapter.md, edit-draft.md. No MCP, no agents |
+| **Researcher** | knowledge/ directory, citations | **Insight Researcher**: Spawns specialized agents (literature-reviewer, summarizer). Uses retrieval patterns rather than code execution. |
+| **Business** | Docs, reports, no code | Skills: workflow templates, report.md, deck.md |
+
+Detection is automatic. Vocabulary flows into CLAUDE.md, agent definitions, command files, and skill descriptions.
+
+---
+
+## Custom Agents
+
+AZCLAUDE creates agents from evidence, not guessing.
+
+### How agent boundaries are determined
+
+```bash
+git log --name-only --format="" --diff-filter=M | sort | uniq -c | sort -rn
+```
+
+Files that change together in git history → same agent. If `auth.js` and `auth.test.js` always change together, one agent owns both.
+
+**Rule: Testing is a responsibility, not a role.** The agent that writes the code writes the tests. AZCLAUDE explicitly forbids creating a separate "tester agent" unless tests are genuinely independent.
+
+**When NOT to create an agent:**
+- Do not use agents for routing (routing belongs in `CLAUDE.md`).
+- Do not create an agent if a simple skill with direct tool calls can do the work.
+- Do not create an agent to just read a file and return its content.
+
+### The 5-layer agent structure
+
+Every AZCLAUDE agent has exactly 5 layers. Missing one = incomplete agent.
+
+```yaml
+---
+name: auth-agent
+description: >
+  Handles all authentication work. Triggers on: login, logout, JWT,
+  session, token, OAuth, password, register, permissions.
+model: sonnet
+permissionMode: acceptEdits
+---
+
+Layer 1 — PERSONA:      "Authentication specialist for this Express project"
+Layer 2 — SCOPE:        "Owns src/auth/ and tests/auth/. Does NOT touch frontend."
+Layer 3 — TOOLS:        "Read, Write, Edit, Bash, Grep"
+Layer 4 — CONSTRAINTS:  "Never store plaintext credentials. Never skip token expiry."
+Layer 5 — DOMAIN:       "Uses Passport.js, JWT (RS256), bcrypt, Redis sessions."
+```
+
+**Rule: Layer 5 matters more than Layer 1.** Domain knowledge drives correct decisions; the persona just drives the tone.
+
+**Rule: Use Positive Directives, not negative instructions.** Instead of "Don't generate vague output" (which activates the negative behavior in the model's mind), AZCLAUDE enforces positive framing: "Every output includes file:line reference and actual test result."
+
+### CE 2.0: Self-Correction Behavior
+
+Every AZCLAUDE agent is programmed with a strict self-correction protocol before it is allowed to escalate to the user:
+```
+Attempt 1 → Primary approach
+If it fails → Re-read error, identify what was wrong, try ONE alternative
+If Attempt 2 fails → STOP. Report what was tried, the exact error, and what decision is needed.
+Never guess a third time.
+```
+
+### Spec-First Code Review Rule
+Reviewer agents enforce a rigid, non-negotiable step order:
+- **Step 1:** Spec Compliance Check (Does it meet requirements?)
+- **Step 2:** Code Quality Check (Style, tests, conventions)
+**Rule:** An agent must NEVER begin Step 2 if Step 1 has violations. Reviewing the quality of code that doesn't solve the problem is a waste of tokens.
+
+### What agents learn automatically
+
+After every task:
+- Succeeded → appends approach to `patterns.md`
+- Failed → appends what didn't work to `antipatterns.md`
+- Made a decision → appends to `decisions.md`
+- Changed significant files → appends to `codebase-map.md`
+
+Next run, the agent reads these files. It doesn't repeat the same mistake twice.
+
+### Framework collision handling
+
+If your project uses langgraph, crewai, autogen, or langchain:
+All Claude Code agents are prefixed `cc-` (e.g., `cc-frontend.md`, `cc-backend.md`)
+Each gets a comment: `# Claude Code Development Agent (not a {framework} application agent)`
+
+This prevents naming collision between "the agent helping you code" and "the agent that IS the product."
+
+---
+
 ## The Memory System
 
 AZCLAUDE solves context compaction with 3 layers. Each has a different job.
@@ -165,42 +376,81 @@ This survives context compaction. UserPromptSubmit injects it on the next sessio
 Run every 15–20 turns on complex work. Creates `.claude/memory/checkpoints/{date}-{HH:MM}.md`:
 
 ```markdown
-## What I'm doing right now
-Adding JWT refresh token rotation to the auth module.
+## What I'm doing now
+Implementing JWT refresh token rotation in src/auth.js
 
-## Why — key decisions made this session
-- Used httpOnly cookies: XSS protection requirement from security audit
-- Refresh token TTL 7 days: matches existing session policy in compliance doc
+## WHY — decisions made this session
+- Chose RS256 over HS256: asymmetric keys safer for multi-service
+- Redis for token blacklist: O(1) lookup vs DB query
 
-## What I know not yet written down
-Redis token blacklist needs a TTL sweep — current impl leaks memory on logout.
+## What I know that isn't written yet
+- Old refresh flow in auth.js:180 has a race condition — fix next task
 
 ## What's next
-1. Write the token rotation endpoint
-2. Add Redis TTL sweep
-3. Update auth flow diagram in docs/
+1. Add token blacklist check to middleware
+2. Write expiry tests
+3. Update API docs
+
+## Open risks
+- Redis connection timeout not handled — could leak tokens
 ```
 
-UserPromptSubmit injects the latest checkpoint at every session start, right after goals.md.
+UserPromptSubmit injects the latest checkpoint on the next session. This is what survives compaction — not just which files changed, but why.
 
 ### Layer 3: Session narrative (`/persist`)
 
-Run before closing a session. Writes:
+Run at end of session. Writes `.claude/memory/sessions/{date}-session.md` — 2–3 sentences covering what was accomplished, what was left open, and any key decisions. Read by `/evolve` Cycle 2 (knowledge consolidation).
 
-- `.claude/memory/goals.md` — updated: current threads, done this session, next actions, open blockers
-- `ops/observations/{date}-{slug}-friction.md` — what was hard, repeated, slow, or missing
-- `.claude/memory/sessions/{date}-session.md` — 2–3 sentence summary
+---
 
-### Support memory files
+## Native Tool Orchestration (MCP)
 
-| File | Written by | Contains |
-|------|-----------|---------|
-| `patterns.md` | Agents (auto) | Successful approaches |
-| `antipatterns.md` | Agents (auto) | Failed approaches |
-| `decisions.md` | `/debate`, agents | Decisions + reasoning |
-| `codebase-map.md` | Agents (auto) | File → purpose mapping |
-| `elo-rankings.json` | `/debate` + pipelines | ELO scores for arguments, agents, patterns |
-| `blueprint.json` | `/setup` | Project metadata |
+AZCLAUDE doesn't just use text prompts; it hardwires its logic directly into the host CLI's built-in MCP (Model Context Protocol) capabilities:
+
+- **`AskUserQuestion`**: Wrapped into `/add`, `/plan`, and `/setup` to force the AI to halt and clarify vague requirements instead of hallucinating.
+- **`EnterPlanMode`**: Called natively during `/plan` and `/review` for forced read-only analysis.
+- **`EnterWorktree`**: Called natively to safely isolate state during `/evolve` and `/fix`.
+- **`CronCreate` / `CronList`**: Natively tied to the `/loop` command for actual autonomous background execution.
+- **`mcp__ide__getDiagnostics`**: Hard-gated before `/test` and `/ship` to ensure no syntax errors exist before running bash commands.
+
+---
+
+## The Hook System
+
+Three hooks run silently in the background. All pure Node.js — no bash required. Cross-platform: Windows PowerShell, CMD, Git Bash, macOS, Linux.
+
+### UserPromptSubmit hook
+**When**: Every session's first prompt
+**What**:
+1. Checks for prompt injection patterns (strips `curl | bash`, `ignore previous instructions`, `you are now`)
+2. Reads `.claude/memory/goals.md`
+3. If "In progress" entries remain from last session → warns: `⚠ PREVIOUS SESSION INTERRUPTED`
+4. Injects goals.md: `--- ACTIVE GOALS --- ... --- END GOALS ---`
+5. Finds latest checkpoint in `.claude/memory/checkpoints/`
+6. Injects checkpoint: `--- LAST CHECKPOINT ({filename}) --- ... --- END CHECKPOINT ---`
+
+**Result**: Claude reads both before your first message. Zero re-explanation needed.
+
+### PostToolUse hook
+**When**: After every Write or Edit operation
+**What**:
+1. Reads file path from tool input (stdin JSON)
+2. Skips: goals.md (prevent loop), node_modules/, .git/, files outside project
+3. Runs `git diff HEAD --numstat -- {file}` to get +N/-M
+4. Extracts first meaningful line of new_string as change summary
+5. Deduplicates: removes old entry for same file, inserts new entry at top
+
+**Result in goals.md**:
+```
+## In progress
+- 22:10 — src/auth.js (+8/-2) — added JWT validation
+- 22:13 — test/auth.test.js (+15/-0) — added token expiry tests
+- 22:18 — README.md (+3/-1) — updated auth section
+```
+
+### Stop hook
+**When**: Session ends
+**What**: Reads goals.md "In progress" entries → moves them to "Done this session" — clears stale state for the next session.
 
 ---
 
@@ -263,7 +513,7 @@ TDD activates only if: developer domain + test files exist + CLAUDE.md has TDD r
 ---
 
 ### /review
-**Spec-first code review. Read-only.**
+**Spec-first code review with Distrust-in-Review. Read-only.**
 
 ```
 /review
@@ -271,7 +521,11 @@ TDD activates only if: developer domain + test files exist + CLAUDE.md has TDD r
 /review src/auth.js  # specific file
 ```
 
-Read-only mode (no modifications). Two stages:
+Read-only mode (no modifications). This command enforces **Distrust-in-Review**: it assumes the implementer was optimistic or incomplete. The reviewer *must* independently verify success by reading actual file diffs or running tests, rather than taking the implementer's word for it.
+
+**Review Reception:** AZCLAUDE explicitly bans sycophantic "You're absolutely right!" responses. It prioritizes technical evaluation, enforces YAGNI checks on user feedback, and provides concrete pushback wording for bad suggestions.
+
+Two stages:
 
 **Stage 1 — Spec compliance (required first):** Find requirements → verify each in the actual code → show compliance result. STOPS here if spec violations found.
 
@@ -498,219 +752,16 @@ Use `/loop stop` to cancel.
 
 ---
 
-## The Evolution System
+## Behavioral Defenses (Pressure Testing)
 
-`/evolve` is the self-improvement engine. It reads your friction logs, patterns, and session history — then finds what's weak and fixes it.
+AZCLAUDE is trained to handle bad human behavior and cognitive biases via the `pressure-test.md` capability. It intercepts scenarios where the user applies negative framing:
 
-### When to run
+- **Time Pressure**: Rushing tasks ("We are behind schedule, just ship it").
+- **Sunk Cost Fallacy**: Continuing bad architecture ("We already spent a week on this").
+- **Authority Framing**: Pulling rank ("I'm a senior engineer, just do what I say").
+- **False Confidence**: "This is obviously right, no need to test."
 
-- After a week of work (weekly is the recommended schedule)
-- When the same pain keeps recurring
-- After building a new level
-- Quick check: `/evolve quick` (30 seconds, detect-only)
-
-### What it detects
-
-**Friction signals** — repetition (same fix 3+ times), correction (you keep overriding Claude's suggestions), speed (tasks take unexpectedly long), missing (something you reach for that doesn't exist).
-
-**Context rot types:**
-- **Poisoning** — wrong facts in capability files
-- **Distraction** — irrelevant context loading unnecessarily
-- **Confusion** — contradictory instructions in the same file
-- **Clash** — multi-source conflicts (global vs project rules)
-
-**Sequence candidates** — if you do steps A→B→C in 3+ sessions, that's a skill waiting to be created.
-
-**Intention-outcome mismatches** — if a capability says "triggers on X" but friction logs show it's not helping with X, the description needs rewriting.
-
-### What the quality gate checks
-
-Before any generated file is promoted:
-- Syntax correct, frontmatter complete
-- Description uses symptom/trigger language (not workflow summary)
-- Self-applicability: can an unfamiliar agent apply this without reading other files?
-- Pressure test resilience (enforcement skills only)
-
-### Scheduling
-
-At the end of `/evolve`, you'll be offered a weekly CronCreate schedule.
-Recommended: Sunday 9am `0 9 * * 0`.
-
----
-
-## The Intelligence System
-
-Three tools for decisions that are too important for a quick answer.
-
-### /debate — Structured adversarial debate
-
-Use when: hard architectural decision, genuine uncertainty, wrong choice costs real time.
-
-The AceMAD protocol forces every claim to be evidence-tagged. Claims with "should", "probably", or "I believe" are disqualified. The winner is decided by evidence quality, not argument volume.
-
-Confidence is low if ≥30% of a side's claims are unverified — regardless of score.
-
-Output goes to `decisions.md` with the deciding claim and the strongest counter-argument.
-
-### ELO — Pairwise ranking
-
-When ranking 3+ options, `/debate` loads ELO automatically. Pairwise comparison (which is better: A or B?) reduces statistical noise by 4.5× compared to absolute ratings.
-
-Rankings persist in `.claude/memory/elo-rankings.json` across sessions. Three tracks:
-- `debate_elo` — which approaches win debates
-- `agent_elo` — which agents' outputs are accepted without revision
-- `pattern_elo` — which patterns succeed when applied
-
-### Pipeline — Agent composition
-
-Load `intelligence/pipeline.md` when you need 3+ agents chaining output to input.
-
-**Pre-built templates:**
-- Feature pipeline: planner → implementer → reviewer
-- Fix pipeline: investigator → hypothesizer → fixer
-- Review pipeline: spec-checker → quality-checker (hard gate between stages)
-- Architecture pipeline: analyst → maximalist → skeptic → synthesizer
-
-Each agent receives ONLY the previous agent's output + its own capability file. No context bleed. Agent 3 never inherits Agent 1's 50,000-token conversation.
-
----
-
-## The 10 Levels
-
-AZCLAUDE builds progressively. You don't need all 10 levels. You need the right ones for your project.
-
-| Level | What you get | Context cost |
-|-------|-------------|-------------|
-| **1** | CLAUDE.md — project conventions in 30 lines | ~30 tokens |
-| **2** | MCP servers — database, browser, API tools | ~150 tokens |
-| **3** | 16 commands + lazy-loaded capabilities | ~380 tokens per task |
-| **4** | Memory — goals, checkpoints, sessions | ~200 tokens per session |
-| **5** | Custom agents — specialists with clear scope | ~400 tokens per agent |
-| **6** | Hooks — auto-save, injection, friction detection | ~0 tokens (global) |
-| **7** | External MCP — cross-project memory, monitoring | Varies |
-| **8** | Intelligence — debates, pipelines, decisions | ~400 tokens per decision |
-| **9** | Evolution — 3-cycle self-improvement | ~1000 tokens per cycle |
-| **10** | Loop controller — autonomous weekly evolution | ~1500 tokens per full cycle |
-
-Use `/level-up` to see your current level and build the next one.
-
----
-
-## Custom Agents
-
-AZCLAUDE creates agents from evidence, not guessing.
-
-### How agent boundaries are determined
-
-```bash
-git log --name-only --format="" --diff-filter=M | sort | uniq -c | sort -rn
-```
-
-Files that change together in git history → same agent. If `auth.js` and `auth.test.js` always change together, one agent owns both.
-
-3 agents with clear boundaries > 6 overlapping agents.
-
-### The 5-layer agent structure
-
-Every AZCLAUDE agent has exactly 5 layers. Missing one = incomplete agent.
-
-```yaml
----
-name: auth-agent
-description: >
-  Handles all authentication work. Triggers on: login, logout, JWT,
-  session, token, OAuth, password, register, permissions.
-model: sonnet
-permissionMode: acceptEdits
----
-
-Layer 1 — PERSONA:      "Authentication specialist for this Express project"
-Layer 2 — SCOPE:        "Owns src/auth/ and tests/auth/. Does NOT touch frontend."
-Layer 3 — TOOLS:        "Read, Write, Edit, Bash, Grep"
-Layer 4 — CONSTRAINTS:  "Never store plaintext credentials. Never skip token expiry."
-Layer 5 — DOMAIN:       "Uses Passport.js, JWT (RS256), bcrypt, Redis sessions."
-```
-
-Knowledge > Persona. Positive directives > negative instructions.
-
-### What agents learn automatically
-
-After every task:
-- Succeeded → appends approach to `patterns.md`
-- Failed → appends what didn't work to `antipatterns.md`
-- Made a decision → appends to `decisions.md`
-- Changed significant files → appends to `codebase-map.md`
-
-Next run, the agent reads these files. It doesn't repeat the same mistake twice.
-
-### Framework collision handling
-
-If your project uses langgraph, crewai, autogen, or langchain:
-All Claude Code agents are prefixed `cc-` (e.g., `cc-frontend.md`, `cc-backend.md`)
-Each gets a comment: `# Claude Code Development Agent (not a {framework} application agent)`
-
-This prevents naming collision between "the agent helping you code" and "the agent that IS the product."
-
----
-
-## Domain Awareness
-
-AZCLAUDE detects your project domain from signals in your codebase and adapts everything.
-
-| Domain | Detection signal | What changes |
-|--------|-----------------|-------------|
-| **Developer** | package.json, Cargo.toml, requirements.txt | TDD opt-in, code conventions, test framework detection |
-| **Compliance** | EU AI Act, GDPR, obligations in README | Vocabulary: obligations, conformity review, article-level traceability, audit trail |
-| **Medical/Clinical** | clinical, patient, FHIR in README | Vocabulary: patient, clinical findings, outcomes. FHIR-aware agent naming |
-| **Finance/Trading** | positions, exposure, P&L, trading in README | Vocabulary: positions, risk decisions, exposure. Full code stack |
-| **Writer** | No code files, prose/markdown content | Skills: write-chapter.md, edit-draft.md. No MCP, no agents |
-| **Researcher** | knowledge/ directory, citations | Skills: literature-review, retrieval patterns. Agents: role specialists |
-| **Business** | Docs, reports, no code | Skills: workflow templates, report.md, deck.md |
-
-Detection is automatic. Vocabulary flows into CLAUDE.md, agent definitions, command files, and skill descriptions.
-
----
-
-## The Hook System
-
-Three hooks run silently in the background. All pure Node.js — no bash required. Cross-platform: Windows PowerShell, CMD, Git Bash, macOS, Linux.
-
-### UserPromptSubmit hook
-**When**: Every session's first prompt
-**What**:
-1. Checks for prompt injection patterns (strips `curl | bash`, `ignore previous instructions`, `you are now`)
-2. Reads `.claude/memory/goals.md`
-3. If "In progress" entries remain from last session → warns: `⚠ PREVIOUS SESSION INTERRUPTED`
-4. Injects goals.md: `--- ACTIVE GOALS --- ... --- END GOALS ---`
-5. Finds latest checkpoint in `.claude/memory/checkpoints/`
-6. Injects checkpoint: `--- LAST CHECKPOINT ({filename}) --- ... --- END CHECKPOINT ---`
-
-**Result**: Claude reads both before your first message. Zero re-explanation needed.
-
-### PostToolUse hook
-**When**: After every Write or Edit operation
-**What**:
-1. Reads file path from tool input (stdin JSON)
-2. Skips: goals.md (prevent loop), node_modules/, .git/, files outside project
-3. Runs `git diff HEAD --numstat -- {file}` to get +N/-M
-4. Extracts first meaningful line of new_string as change summary
-5. Deduplicates: removes old entry for same file, inserts new entry at top
-
-**Result in goals.md**:
-```
-## In progress
-- 22:10 — src/auth.js (+8/-2) — added JWT validation
-- 22:13 — test/auth.test.js (+15/-0) — added token expiry tests
-```
-
-### Stop hook
-**When**: End of every session
-**What**:
-1. Reads goals.md "In progress" section
-2. Moves all entries to "Done this session"
-3. Updates the `Updated:` date field
-4. If /persist was not run → writes a friction stub to ops/observations/
-5. Warns if session ended without /persist
+In these scenarios, AZCLAUDE will politely but firmly halt, re-frame the risk, and suggest the technically correct path (e.g., demanding tests or root-cause analysis) rather than blindly executing dangerous commands.
 
 ---
 
@@ -739,20 +790,22 @@ AZCLAUDE executes code and modifies files. 6 layers of protection.
 SHA-256 hash of `~/.claude/settings.json` hooks written at install. Verified on every subsequent run. If hooks are modified, doctor reports the mismatch.
 
 **2. Command Injection Protection**
-Formatter hooks sanitize `$CLAUDE_FILE_PATH`. Shell metacharacters (`; | & $ ( )`) are rejected before any formatter runs.
+Formatter hooks sanitize `$CLAUDE_FILE_PATH`. Shell metacharacters (` ; | & $ ( ) < > `) are rejected before any formatter runs, preventing malicious paths from executing arbitrary commands.
 
 **3. Indirect Prompt Injection Defense**
 UserPromptSubmit hook strips injection patterns from goals.md before injecting into context:
-- `curl | bash` patterns
+- `curl.*|.*bash` or `wget.*|.*sh` patterns
 - `ignore previous instructions`
-- `you are now`
-- `system prompt`
+- `you are now` or `system prompt`
+- `<script>` or HTML injection attempts
+- Base64-encoded blocks longer than 500 characters
 
 **4. Skill Checksums**
 Portable skills in `~/shared-skills/` are SHA-256 hashed. Imports fail loudly if tampered with.
 
 **5. Credential Auditing**
-`/ship` scans staged files for `.env`, plaintext keys, tokens, secrets. Blocks the commit if found.
+`/ship` scans staged files for `.env`, plaintext keys, tokens, secrets (`AKIA`, `sk-`, `ghp_`, etc.). Blocks the commit if found.
+**Audit Trail:** If an agent must handle credentials, it is required to log the action to `.claude/memory/security-events.md`.
 
 **6. Agent Scoping**
 - Review agents: read-only (`EnterPlanMode`, no Write permissions)
@@ -805,23 +858,3 @@ If you just installed and haven't run many sessions, there's nothing to evolve y
 
 ---
 
-## What Makes It Different
-
-| | AZCLAUDE | Generic prompts | Static skill packs |
-|---|---|---|---|
-| Remembers between sessions | ✅ | ❌ | ❌ |
-| Auto-saves while you work | ✅ | ❌ | ❌ |
-| Domain vocabulary | ✅ | ❌ | ❌ |
-| Agents from git evidence | ✅ | ❌ | ❌ |
-| Self-improves | ✅ | ❌ | ❌ |
-| Lazy-loaded context | ✅ (~380 tokens) | ❌ (~21k) | ❌ |
-| Evidence-based decisions | ✅ (AceMAD + ELO) | ❌ | ❌ |
-| 10-level progression | ✅ | ❌ | ❌ |
-| Works on 5 CLIs | ✅ | Varies | Varies |
-| Process gates | Flexible (opt-in) | ❌ | Fixed |
-
----
-
-## License
-
-MIT — [haytamAroui](https://github.com/haytamAroui)
