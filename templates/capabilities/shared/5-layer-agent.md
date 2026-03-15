@@ -1,8 +1,10 @@
 ---
 name: 5-layer-agent
 description: >
-  5-layer agent structure. Use when creating or improving a custom agent.
-  Triggers on: create agent, improve agent, add agent, agent definition.
+  Load when writing a new agent definition. Load when an existing agent is
+  making mistakes, missing context, or producing inconsistent results.
+  Load when an agent file feels incomplete — missing persona, scope, constraints,
+  or domain knowledge. Load when asked to add an agent to the project.
 tokens: ~300
 ---
 

@@ -1,8 +1,10 @@
 ---
 name: completion-rule
 description: >
-  Completion Rule. Prevents premature task closure with vague language.
-  Inject into every task. Never skip.
+  Load when about to say "should work", "probably passes", "looks correct",
+  "I think this is done", or "it should be fine". Load before closing any task.
+  Load before showing a code change without running it first.
+  If there is even a 1% chance you are about to claim completion — load this.
 tokens: ~40
 ---
 

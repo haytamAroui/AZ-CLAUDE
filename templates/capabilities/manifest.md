@@ -8,44 +8,45 @@ Load only the files that match the current task. Never load the full list.
 ## Shared — inject alongside any task
 | File | When to load | Tokens |
 |------|-------------|--------|
-| shared/tdd.md | Any code task | ~50 |
-| shared/completion-rule.md | Every task | ~40 |
-| shared/session-rhythm.md | Session start or end | ~80 |
-| shared/friction-log.md | Persist phase only | ~60 |
-| shared/5-layer-agent.md | Creating or improving agents | ~500 |
-| shared/vocabulary-transform.md | Domain detected during /setup, vocabulary mismatch | ~60 |
-| shared/multi-cli-paths.md | Non-Claude-Code CLI detected, path configuration needed | ~80 |
-| shared/quality-check.md | After /setup or /level-up, verify environment is correct | ~80 |
-| shared/security.md | Credential handling, hook integrity, untrusted project review | ~200 |
-| shared/native-tools.md | Writing or improving skills — which native Claude Code tools to use and when | ~200 |
+| shared/tdd.md | About to write, implement, fix, or refactor code — check signals first | ~50 |
+| shared/completion-rule.md | About to say "should work", "probably passes", or claim done without proof | ~40 |
+| shared/session-rhythm.md | Session just started, context was reset, or about to close | ~80 |
+| shared/friction-log.md | Something was hard, slow, repeated, or frustrating this session | ~60 |
+| shared/5-layer-agent.md | Writing a new agent or an existing agent is incomplete / making mistakes | ~500 |
+| shared/vocabulary-transform.md | Generating files for compliance, medical, legal, finance, or creative domain | ~60 |
+| shared/multi-cli-paths.md | CLI is not Claude Code, or path configuration is wrong for the platform | ~80 |
+| shared/quality-check.md | /setup or /level-up just ran — verify it actually worked correctly | ~80 |
+| shared/security.md | Handling credentials, modifying hooks, reviewing untrusted project, deploying | ~200 |
+| shared/native-tools.md | Writing or improving a skill — which Claude Code tools to use and when | ~200 |
+| shared/review-reception.md | Receiving review feedback — before responding, implementing, or pushing back | ~80 |
 
 ## Level Builders — load ONE at a time
 | File | When to load | Tokens |
 |------|-------------|--------|
-| level-builders/level1-claudemd.md | Building Level 1 (CLAUDE.md) | ~200 |
-| level-builders/level2-mcp.md | Building Level 2 (MCP servers) | ~150 |
-| level-builders/level3-skills.md | Building Level 3 (skills/commands) | ~600 |
-| level-builders/level4-memory.md | Building Level 4 (memory system) | ~200 |
-| level-builders/level5-agents.md | Building Level 5 (custom agents) | ~400 |
-| level-builders/level6-hooks.md | Building Level 6 (lifecycle hooks) | ~400 |
-| level-builders/level7-extmcp.md | Building Level 7 (external MCP) | ~150 |
-| level-builders/level8-orchestrated.md | Building Level 8+ (intelligence/evolution), decision matrix for when | ~200 |
+| level-builders/level1-claudemd.md | Project has no CLAUDE.md or rules file needs to be built/rebuilt | ~200 |
+| level-builders/level2-mcp.md | Project needs database, browser, or API tool access via MCP | ~150 |
+| level-builders/level3-skills.md | Project has repeated workflows with no command for them yet | ~600 |
+| level-builders/level4-memory.md | No goals.md exists, or session context keeps getting lost | ~200 |
+| level-builders/level5-agents.md | Project has parallel workstreams with no specialized agents yet | ~400 |
+| level-builders/level6-hooks.md | No PostToolUse / UserPromptSubmit hooks, or hooks are bash-based | ~400 |
+| level-builders/level7-extmcp.md | Project needs cross-project memory or production monitoring | ~150 |
+| level-builders/level8-orchestrated.md | Considering pipelines, debates, or self-improvement — unsure which | ~200 |
 
 ## Evolution — compose by what the cycle needs
 | File | When to load | Tokens |
 |------|-------------|--------|
-| evolution/detect.md | /evolve — scanning gaps, rot, friction | ~250 |
-| evolution/generate.md | /evolve — writing new skills or agents | ~250 |
-| evolution/evaluate.md | /evolve — quality gate on generated output | ~200 |
-| evolution/cycle2-knowledge.md | /evolve — knowledge consolidation pass | ~200 |
-| evolution/cycle3-topology.md | /level-up — pipeline and topology work | ~250 |
-| evolution/re-derivation.md | Friction > 10 logs, same pattern > 5 times | ~150 |
+| evolution/detect.md | Starting /evolve, environment feels stale, skills misfiring, friction repeating | ~250 |
+| evolution/generate.md | detect.md produced a PLAN — about to write a fix or new skill | ~250 |
+| evolution/evaluate.md | Just generated a skill or agent — before promoting or committing it | ~200 |
+| evolution/cycle2-knowledge.md | patterns.md bloated, stale sessions, learning not consolidated | ~200 |
+| evolution/cycle3-topology.md | Agents overlap, pipeline slow, manifest has dead entries | ~250 |
+| evolution/re-derivation.md | Same friction pattern 5+ times, 10+ friction logs, patches aren't sticking | ~150 |
 
 ## Intelligence — opt-in only
 | File | When to load | Tokens |
 |------|-------------|--------|
-| intelligence/debate.md | "debate", "tradeoff", hard architectural decision | ~400 |
-| intelligence/opro.md | "optimize prompts", improving skill instructions | ~300 |
-| intelligence/elo.md | Quality ranking across options or agents | ~200 |
-| intelligence/pipeline.md | 3+ agents that chain output to input | ~350 |
-| intelligence/experiment.md | Risky approach needing worktree isolation, "try this safely" | ~80 |
+| intelligence/debate.md | Hard decision between two real options — "debate", "tradeoff", "which is better" | ~400 |
+| intelligence/opro.md | A skill keeps underperforming or producing wrong output after 10+ uses | ~300 |
+| intelligence/elo.md | Need a defensible rank order across multiple options, agents, or skills | ~200 |
+| intelligence/pipeline.md | 3+ agents must chain output — context bleed is a risk | ~350 |
+| intelligence/experiment.md | Trying a risky approach that must not touch main branch — "try this safely" | ~80 |

@@ -1,9 +1,10 @@
 ---
 name: evolution-cycle2-knowledge
 description: >
-  Cycle 2: Knowledge Consolidation. Harvests session memory, consolidates
-  patterns, prunes stale knowledge, enriches knowledge-index.md.
-  Run as part of /evolve after detect+generate+evaluate.
+  Load when patterns.md has 10+ entries that haven't been reviewed. Load when
+  goals.md has stale sessions older than 2 weeks. Load when the same pattern
+  appears in multiple session files and hasn't been consolidated. Load after
+  detect+generate+evaluate as part of /evolve to close the learning loop.
 tokens: ~200
 ---
 

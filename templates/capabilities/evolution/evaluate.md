@@ -1,9 +1,10 @@
 ---
 name: evolution-evaluate
 description: >
-  EVALUATE phase of the evolution cycle. Quality gates for generated output.
-  Applies Five Quality Criteria and Pass-k Thresholds before promoting any skill.
-  Run after generate.md.
+  Load after generate.md has produced a new skill, agent, or capability.
+  Load before promoting, committing, or merging any generated file.
+  Load when a new skill was just written and you are unsure if it is good enough.
+  Never promote generated output without running this — generated files fail silently.
 tokens: ~200
 ---
 

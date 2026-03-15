@@ -1,8 +1,10 @@
 ---
 name: tdd
 description: >
-  TDD protocol — signal-based opt-in. Check project signals before enforcing test-first.
-  Triggers on: write code, implement, add feature, fix bug, refactor.
+  Load when about to write, implement, fix, or refactor code. Load before writing
+  production code to check whether TDD is active for this project. Load when
+  unsure whether to write the test first or the implementation first.
+  Do NOT enforce TDD blindly — check the 3 signals first.
 tokens: ~60
 ---
 

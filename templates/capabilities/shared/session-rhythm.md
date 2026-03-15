@@ -1,8 +1,10 @@
 ---
 name: session-rhythm
 description: >
-  Session Rhythm: ORIENT → WORK → PERSIST. Structures every session.
-  Triggers on: session start, new conversation, beginning of work.
+  Load when starting a new session and unsure where to begin. Load when context
+  was just reset or compacted. Load when the user says "let's get started" or
+  "where were we". Load when goals.md exists but you haven't read it yet.
+  Load before closing a session to ensure state is saved.
 tokens: ~80
 ---
 

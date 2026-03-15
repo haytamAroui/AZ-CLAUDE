@@ -35,21 +35,30 @@ git diff HEAD
 
 ## Step 2: Spec Compliance (REQUIRED FIRST)
 
+**Assume the implementation may be incomplete or optimistic. Verify independently.**
+Do not trust any description of what was implemented — read the actual code.
+
 Find the spec before touching code quality:
 - Check $ARGUMENTS for acceptance criteria
 - Read `goals.md` for the current session's requirements
 - Check linked issue or PR description if available
 - Read CLAUDE.md for project-level requirements
 
+Verify independently — do not accept "I implemented X" — check that X is actually there:
+- Read the files listed in the diff, not just the diff summary
+- Run the relevant tests if possible: `bash -c "npm test 2>&1 | tail -20"` or equivalent
+- Check edge cases the implementer may have skipped
+
 Answer:
-- Does this solve the stated problem?
-- Are all acceptance criteria met?
+- Does this solve the stated problem? (verified, not assumed)
+- Are all acceptance criteria met? (checked in code, not in description)
 - Are edge cases handled?
 
 Output:
 ```
 Spec compliance: ✓ pass   or   ✗ fail
 Violations: [specific — file:line — or "none"]
+Verification method: [what you ran or read to confirm]
 ```
 
 **STOP if spec compliance fails.** Do not review code quality when spec is violated.

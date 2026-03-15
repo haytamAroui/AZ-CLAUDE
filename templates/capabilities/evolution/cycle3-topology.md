@@ -1,8 +1,10 @@
 ---
 name: evolution-cycle3-topology
 description: >
-  Cycle 3: Topology Optimization. Reviews agent structure, pipeline efficiency,
-  manifest accuracy. Run during /level-up or when pipeline friction is high.
+  Load when agents overlap in scope and you're not sure which handles what. Load
+  when a pipeline feels slow or agents are passing too much context to each other.
+  Load when manifest.md has capabilities that never get loaded. Load during /level-up
+  or when the user says "too many agents" or "agents are getting confused".
 tokens: ~250
 ---
 

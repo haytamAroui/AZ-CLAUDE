@@ -1,9 +1,10 @@
 ---
 name: evolution-detect
 description: >
-  DETECT phase of the evolution cycle. Scans environment for gaps, context rot,
-  friction patterns, sequence candidates, intention-outcome mismatches.
-  Run at the start of /evolve.
+  Load at the start of /evolve. Load when the environment feels stale or broken.
+  Load when skills aren't triggering correctly, agents are making repeated mistakes,
+  or friction logs mention the same pain 3+ times. Load when you suspect something
+  was built weeks ago and may no longer match how the project actually works.
 tokens: ~250
 ---
 

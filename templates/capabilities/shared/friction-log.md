@@ -1,8 +1,10 @@
 ---
 name: friction-log
 description: >
-  Friction log format and signals. Used during PERSIST phase to capture
-  what was hard, repeated, or slow. Feeds the evolution cycle.
+  Load when the session had something hard, slow, or frustrating. Load when
+  you hit the same problem twice. Load when a task took longer than expected.
+  Load when about to close a session and want to record what was painful.
+  Load when the user says "that was annoying" or "why is this so hard".
 tokens: ~60
 ---
 

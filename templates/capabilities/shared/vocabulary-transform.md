@@ -1,9 +1,10 @@
 ---
 name: vocabulary-transform
 description: >
-  Domain-native vocabulary mapping. Transforms generic system language
-  into the vocabulary of the project's domain. Load when creating agents,
-  skills, or commands for a specific domain.
+  Load when the project domain is compliance, legal, medical, finance, or creative
+  and you are about to write an agent, skill, or command. Load when you catch
+  yourself writing "tasks" for a compliance project or "bugs" for a clinical project.
+  Load when domain vocabulary should flow into generated files but isn't.
 tokens: ~80
 ---
 

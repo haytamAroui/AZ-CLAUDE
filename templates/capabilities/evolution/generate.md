@@ -1,9 +1,10 @@
 ---
 name: evolution-generate
 description: >
-  GENERATE phase of the evolution cycle. Writes new skills, agents, or context files.
-  Applies Contract-First, Doc-Quality, and Self-Applicability before generating.
-  Run after detect.md produces a PLAN.
+  Load after detect.md has produced a PLAN with specific gaps listed. Load when
+  about to write a new skill, agent, or capability file. Load when detect found
+  a stale doc, a missing capability, or a broken skill and you are about to fix it.
+  Do NOT load before detect — generate without a PLAN produces noise.
 tokens: ~250
 ---
 
