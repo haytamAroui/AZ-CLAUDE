@@ -6,6 +6,15 @@ Updated: 2026-03-15
 - None — environment at 100/100, marketplace submission under review
 
 ## Done this session
+- 00:50 — bin\cli.js
+- 00:43 — CLAUDE.md
+- 00:43 — test-features.sh
+- 00:35 — .claude\memory\checkpoints\2026-03-16-00-36.md
+- 00:33 — templates\hooks\stop.js
+- 00:33 — templates\commands\persist.md
+- 00:31 — .claude\memory\checkpoints\2026-03-16-00-32.md
+- 00:30 — .claude\memory\sessions\2026-03-16-session.md
+- 00:30 — ops\observations\2026-03-16-hooks-friction.md
 - Evolution cycle ran: scored 76/100 before, 96/100 after (+20)
 - codebase-map.md rewritten (was stale: wrong test count, missing 6 files)
 - goals.md cleaned (removed stale "In progress" timestamps)
@@ -22,14 +31,3 @@ Updated: 2026-03-15
 
 ## Open blockers
 - None
-
-## In progress
-- 00:47 — bin\cli.js
-- 00:43 — CLAUDE.md
-- 00:43 — test-features.sh
-- 00:35 — .claude\memory\checkpoints\2026-03-16-00-36.md
-- 00:33 — templates\hooks\stop.js
-- 00:33 — templates\commands\persist.md
-- 00:31 — .claude\memory\checkpoints\2026-03-16-00-32.md
-- 00:30 — .claude\memory\sessions\2026-03-16-session.md
-- 00:30 — ops\observations\2026-03-16-hooks-friction.md
