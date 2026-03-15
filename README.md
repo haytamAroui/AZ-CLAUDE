@@ -1,10 +1,13 @@
 <p align="center">
   <h1 align="center">AZCLAUDE</h1>
+  <p align="center"><strong>The AI coding environment that remembers your project, speaks your domain, and gets smarter every week.</strong></p>
   <p align="center">
-    <strong>Your AI coding CLI learns your project. Agents that remember. Skills that compound. Zero wasted context.</strong>
-  </p>
-  <p align="center">
-    <a href="#installation">Installation</a> · <a href="#what-you-get">What You Get</a> · <a href="#memory-system">Memory</a> · <a href="#commands">Commands</a> · <a href="#how-agents-work">Agents</a> · <a href="#multi-cli">Multi-CLI</a>
+    <a href="#-see-it-in-30-seconds">Demo</a> ·
+    <a href="#-installation">Install</a> ·
+    <a href="#-the-memory-system">Memory</a> ·
+    <a href="#-all-16-commands">Commands</a> ·
+    <a href="#-the-intelligence-layer">Intelligence</a> ·
+    <a href="#-10-levels">10 Levels</a>
   </p>
 </p>
 
@@ -12,349 +15,339 @@
 
 ## The Problem
 
-You open Claude Code. You ask it to fix a bug. It doesn't know your project conventions, your test patterns, your architecture decisions. You explain them. Next session — you explain them again. Every agent you spawn starts from zero. Context compacts at turn 80 and you lose where you were.
+You open Claude Code. Ask it to fix a bug. It doesn't know your conventions, your test patterns, your architecture decisions from last week. You explain. Next session — you explain again. Context compacts at turn 80 and you lose your place entirely. Every agent starts from zero. Every session is a fresh start with an amnesiac assistant.
 
-**AZCLAUDE fixes this.** One install. Your AI coding CLI remembers your project, speaks your domain's language, routes tasks to the right capability, and improves itself over time.
+**AZCLAUDE fixes this permanently.** One install. Two minutes. Then your AI coding CLI:
+
+- Remembers every file it touched — with git diff stats — across sessions
+- Injects the reasoning behind your last decisions before your first message
+- Speaks your domain's language (compliance gets "obligations", not "tasks")
+- Routes to the right capability without loading everything (~380 tokens per task, not ~21,000)
+- Detects its own gaps weekly and generates the fixes
 
 ---
 
-## See It Working (30 seconds)
+## ⚡ See It In 30 Seconds
 
 ```bash
 npx azclaude demo
 ```
 
-Runs the actual memory hooks on a temp project. Shows goals.md being written by a file edit, surviving simulated compaction, and being injected back at session start. Real output, no mocks, cleans up after itself.
+Runs the actual hooks on a temp project. Writes goals.md with a simulated edit. Compacts context. Shows UserPromptSubmit injecting everything back. Real execution. No mocks. Cleans up after itself.
 
 ---
 
-## What You Get
+## 🚀 Installation
 
-### After `npx azclaude` + `/setup` (2 minutes)
+```bash
+# Install
+npx azclaude
 
+# Build your project's environment (run once inside your project)
+/setup
+
+# Verify everything is working
+npx azclaude doctor
 ```
-✓ CLAUDE.md — 30-line dispatch table, not a knowledge dump
-✓ goals.md — session continuity (auto-injected via hook, never forgotten)
-✓ 16 commands ready: /dream /setup /fix /add /review /test /plan /ship
-                     /evolve /debate /checkpoint /persist /level-up
-                     /status /explain /loop
-✓ Domain detected → vocabulary adapted (compliance project gets "obligations", not "tasks")
-✓ Capabilities indexed → only loaded when needed (~380 tokens per bug fix, not ~21,000)
-```
+
+`doctor` runs 24 checks — runtime, global hooks, settings integrity, all 16 commands. Exits 0 if healthy. Exits 1 with the exact fix hint if anything is wrong.
+
+**Or install from the Claude Code marketplace** — search "AZCLAUDE", click Install. Hooks active immediately. Then run `/setup`.
 
 ---
 
-## Memory System
+## 🧠 The Memory System
 
-This is the core of AZCLAUDE. Three hooks work silently in the background — no user action required.
+This is what no other tool does. Three layers work silently in the background. Context compaction stops being a problem.
 
-### How it works end-to-end
+### What happens at turn 80 (context compaction)
 
 ```
-You edit src/auth.js
-  → PostToolUse fires automatically
-  → goals.md updated: "22:10 — src/auth.js (+8/-2) — added JWT validation"
+Turn 1    — Session starts.
+            UserPromptSubmit injects goals.md + latest checkpoint automatically.
+            Claude reads both before your first message. Zero re-explanation.
 
-You run /checkpoint every 15-20 turns
-  → .claude/memory/checkpoints/2026-03-14-22:10.md written
-  → Contains: what you're doing, WHY, key decisions, what's next
+Turn 15   — You run /checkpoint.
+            Captures: what you're doing, WHY, key decisions, what's next.
 
-Claude Code compacts conversation at turn 80
-  → Earlier context is gone
+Turn 30   — /checkpoint again.
 
-Next prompt — UserPromptSubmit hook fires
-  → Claude receives goals.md: knows which files were in flight
-  → Claude receives latest checkpoint: knows WHY and what was decided
-  → Picks up where you left off in seconds, not minutes
+Turn 80   — Claude Code compacts. Earlier turns are gone.
+
+Turn 81   — Next prompt. UserPromptSubmit fires.
+            → Claude gets goals.md: every file touched, +N/-M, change summary
+            → Claude gets checkpoint: the reasoning behind every decision
+            → Picks up in seconds, not minutes.
+
+End       — /persist. Full summary, friction log, session narrative.
 ```
 
 ### Three layers — what each solves
 
-| Layer | Mechanism | Solves | Automatic? |
-|-------|-----------|--------|-----------|
-| **File breadcrumb** | PostToolUse hook → goals.md | WHERE you were, WHAT changed (+N/-M) | Yes — fires on every edit |
-| **Reasoning snapshot** | `/checkpoint` → checkpoints/ | WHY decisions were made, current mental model | No — run every 15-20 turns |
-| **Session narrative** | `/persist` → sessions/ + friction log | Full end-of-session summary, what to do next | No — run before closing |
+| Layer | Mechanism | Survives compaction | Automatic |
+|-------|-----------|-------------------|-----------|
+| **File breadcrumb** | PostToolUse → goals.md | ✅ WHERE you were, WHAT changed | ✅ Every edit |
+| **Reasoning snapshot** | `/checkpoint` → checkpoints/ | ✅ WHY decisions were made | ❌ Run every 15–20 turns |
+| **Session narrative** | `/persist` → sessions/ | ✅ Full summary, next actions | ❌ Run before closing |
 
-### What each entry looks like
+### What the injection looks like (what Claude reads before your first message)
 
-**goals.md "In progress" section** (written by PostToolUse):
 ```
+--- ACTIVE GOALS ---
+## In progress
 - 22:10 — src/auth.js (+8/-2) — added JWT validation
 - 22:13 — test/auth.test.js (+15/-0) — added token expiry tests
 - 22:18 — README.md (+3/-1) — updated auth section
-```
-
-**checkpoint file** (written by `/checkpoint`):
-```markdown
-## What I'm doing right now
-Adding JWT refresh token rotation to the auth module.
-
-## Why — key decisions made this session
-- Used httpOnly cookies over localStorage: XSS protection requirement from security audit
-- Refresh token TTL set to 7 days: matches existing session policy in compliance doc
-
-## What I know that isn't written down yet
-The token blacklist in Redis needs a TTL sweep — current impl leaks memory on logout.
-
-## What's next
-1. Write the token rotation endpoint
-2. Add Redis TTL sweep to the blacklist
-3. Update the auth flow diagram in docs/
-```
-
-**On next session start**, UserPromptSubmit injects both:
-```
---- ACTIVE GOALS ---
-[goals.md content — file trail]
 --- END GOALS ---
 
 --- LAST CHECKPOINT (2026-03-14-22:10.md) ---
-[checkpoint content — reasoning]
+## What I'm doing now
+Implementing JWT refresh token rotation in src/auth.js
+
+## WHY — decisions made this session
+- Chose RS256 over HS256: asymmetric keys safer for multi-service setup
+- Redis for token blacklist: O(1) lookup vs DB query
+
+## What I know that isn't written yet
+Old refresh flow in auth.js:180 has a race condition — fix next task
+
+## What's next
+1. Add token blacklist check to middleware
+2. Write expiry tests
+3. Update API docs
 --- END CHECKPOINT ---
 ```
 
-Claude reads this before your first message. Zero re-explanation needed.
-
-### What this system cannot do
-
-- **Restore conversation history** — Claude's context window is finite. Compaction is irreversible. Checkpoints approximate the reasoning but cannot replay 80 turns.
-- **Replace reading the code** — After compaction, Claude still reads modified files. The memory system tells it WHERE to look, not what's in them.
+No re-explanation. No "where were we?". Straight to work.
 
 ---
 
-## Installation
-
-```bash
-npx azclaude
-```
-
-Then in your AI coding CLI:
-```
-/setup
-```
-
-Auto-detects your CLI. Installs to the correct paths. Done.
-
-### Verify it's working
-
-```bash
-npx azclaude doctor
-```
-
-Runs 24 checks across runtime, global hooks, project structure, and commands. Exits 0 if healthy, exits 1 with a fix hint if anything is wrong.
-
-### See a live demo
-
-```bash
-npx azclaude demo
-```
-
----
-
-## Commands
+## 📋 All 16 Commands
 
 ### Build & Ship
 
-| Command | What happens |
+| Command | What it does |
 |---------|-------------|
-| `/dream` | "I want to build X with Y" → full project scaffold: rules file, memory, skills, agents — built level by level |
-| `/setup` | Analyzes your project once. Detects domain + stack + scale. Creates everything `/dream` creates, but for an existing project |
-| `/add` | Add a feature, endpoint, component, or function. TDD opt-in (checks your project signals). Follows existing patterns — never invents new ones |
-| `/fix` | Paste an error → REPRODUCE → INVESTIGATE → HYPOTHESIZE → FIX. Shows passing test output. Never says "should work" |
-| `/review` | Spec-first code review. Checks requirements before code quality. Blocking vs suggestion distinction |
-| `/test` | Run tests with IDE diagnostics first, framework detection, exit-code gate, failure classification |
-| `/plan` | For 4+ file changes or risky refactors. Read-only analysis → presents plan with risk level → approval gate before any code written |
-| `/ship` | Pre-ship gate (IDE diagnostics + tests) → docs sync check → `git add` + smart commit + `git push` |
+| `/dream` | Idea → full project scaffold. Rules, memory, skills, agents — built level by level |
+| `/setup` | Analyzes your existing project once. Detects domain + stack + scale. Builds everything |
+| `/add` | Add a feature. Reads your existing patterns first — never invents conventions |
+| `/fix` | Paste an error → REPRODUCE → INVESTIGATE → HYPOTHESIZE → FIX → show passing tests. Never says "should work" |
+| `/review` | Spec-first review. Checks requirements before style. Blocking vs suggestion distinction |
+| `/test` | IDE diagnostics → framework detection → exit-code gate → failure classification |
+| `/plan` | For 4+ file changes. Read-only analysis → risk level → approval gate before any code |
+| `/ship` | IDE gate → tests → secrets scan → smart commit → push |
 
 ### Think & Improve
 
-| Command | What happens |
+| Command | What it does |
 |---------|-------------|
-| `/debate` | "REST or GraphQL?" → two advocates argue with evidence → fact-checked → winner with confidence score → logged to decisions.md |
-| `/evolve` | Scans everything, finds what's weak, generates improvements, quality-checks them. `/evolve quick` for fast detect-only mode |
-| `/level-up` | Shows your current level (0–10) → builds the next one. MCP, skills, agents, hooks — one level at a time |
+| `/debate` | Hard choice → two advocates argue with evidence → fact-checked → winner logged to decisions.md |
+| `/evolve` | Scans for gaps → generates fixes → quality-gates them. Self-improvement, automated |
+| `/level-up` | Shows your current level (0–10) → builds the next one |
 
 ### Memory & Session
 
-| Command | What happens |
+| Command | What it does |
 |---------|-------------|
-| `/checkpoint` | Mid-session snapshot: captures current reasoning, key decisions, WHY, what's next. Auto-injected on next session start. Run every 15-20 turns on complex work |
-| `/persist` | End of session: updates goals.md, writes friction log, appends session summary to sessions/ |
-| `/status` | Quick overview: app health, recent changes, current level, next steps from goals.md |
-| `/explain` | Paste code or an error → plain language explanation. Zero jargon |
-| `/loop` | `/loop 5m /status` → repeats a command on an interval |
+| `/checkpoint` | Mid-session snapshot. WHY + decisions + what's next. Auto-injected on next session start |
+| `/persist` | End-of-session: goals, friction log, session summary |
+| `/status` | App health + recent changes + current level + next steps |
+| `/explain` | Code or error → plain language. Zero jargon |
+| `/loop` | `/loop 30m /evolve quick` — repeat any command on an interval |
 
-### When to run what
+---
+
+## 🔬 The Intelligence Layer
+
+### /debate — AceMAD Protocol
+
+Not a simple pros/cons list. A structured adversarial debate with mathematical evidence scoring.
 
 ```
-Turn 1    → session start, UserPromptSubmit injects goals.md + latest checkpoint automatically
-Turn 15   → /checkpoint  (capture reasoning before context gets deep)
-Turn 30   → /checkpoint  (another snapshot)
-Turn 80   → compaction fires. Claude recovers from goals.md + last checkpoint automatically.
-End       → /persist     (full session summary, friction log, next actions)
+Question: REST or GraphQL for the new API?
+
+MAXIMALIST argues FOR GraphQL:
+  [VERIFIED]   Single endpoint reduces N+1 query problem — measured 40% fewer roundtrips
+  [VERIFIED]   Type system catches breaking changes at schema level, not runtime
+  [UNVERIFIED] "GraphQL is the future of APIs" ← disqualified, loses weight
+
+SKEPTIC argues AGAINST:
+  [VERIFIED]   REST caching via HTTP is free. GraphQL requires custom layer
+  [VERIFIED]   Team has 0 GraphQL experience — learning curve cost is real
+  [PARTIAL]    Tooling maturity — REST ecosystem is larger, but closing
+
+FACT CHECK: 4/6 claims verified. 1 disqualified.
+
+SYNTHESIS:
+  Winner: REST (confidence: 67)
+  Deciding claim: [VERIFIED] team experience gap → 3-week learning cost outweighs query savings
+  Strongest dissent: GraphQL N+1 reduction is real — revisit if team grows past 5 engineers
+  Order-independence: margin = 67, re-run not required
+```
+
+**Rules that make it trustworthy:**
+- Every claim tagged `[VERIFIED]` / `[PARTIAL]` / `[UNVERIFIED]` / `[FALSE]`
+- "Should work", "probably", "I believe" → auto-marked `[UNVERIFIED]`, loses weight
+- If margin of victory < 10 → debate re-runs with advocates reversed. If result flips → marked INCONCLUSIVE
+- Score = evidence-density (verified claims per 100 words), not word count
+
+### ELO — Pairwise Ranking
+
+When ranking 3+ options, `/debate` loads ELO automatically.
+
+- Binary comparisons reduce statistical noise: σ_abs=35.65 → σ_comp=7.85
+- Loop Controller owns ELO reconciliation: reliability r=0.538 → r=0.905
+- Hard cap: if verified ratio < 0.5, ELO capped at 1100 regardless of wins
+
+Rankings persist across sessions in `.claude/memory/elo-rankings.json`. Three tracks: `debate_elo`, `agent_elo`, `pattern_elo`.
+
+### Pipeline — Agent Chains
+
+Pre-built templates for multi-agent work. Each agent receives ONLY the previous agent's output — no context bleed. Agent 3 never inherits Agent 1's 50,000-token conversation.
+
+```
+Feature:      planner → implementer → reviewer
+Fix:          investigator → hypothesizer → fixer
+Review:       spec-checker → quality-checker  (hard gate between stages)
+Architecture: analyst → maximalist → skeptic → synthesizer
 ```
 
 ---
 
-## How Agents Work
+## 📊 10 Levels
 
-### The 5-Layer Structure
+Build what you need. Stop when the environment matches the project's complexity.
 
-Every agent AZCLAUDE creates has 5 layers. Missing one = incomplete agent:
+| Level | What you get | Context cost |
+|-------|-------------|-------------|
+| **1** | CLAUDE.md — 30-line dispatch table | ~30 tokens |
+| **2** | MCP servers — database, browser, APIs | ~150 tokens |
+| **3** | 16 commands + lazy-loaded capabilities | ~380 tokens per task |
+| **4** | Memory — goals, checkpoints, sessions | ~200 tokens per session |
+| **5** | Custom agents from git evidence | ~400 tokens per agent |
+| **6** | Hooks — auto-save, injection, friction detection | ~0 tokens (global) |
+| **7** | External MCP — cross-project memory, monitoring | Varies |
+| **8** | Intelligence — debates, pipelines, decisions | ~400 tokens per decision |
+| **9** | Evolution — 3-cycle self-improvement | ~1000 tokens per cycle |
+| **10** | Loop Controller — autonomous Opus agent: prune dead agents, enrich knowledge index, re-derive architecture in background | ~1500 tokens per full cycle |
 
-```yaml
----
-name: api-agent
-description: >
-  Handles all API endpoint work. Triggers on: new endpoint,
-  route change, middleware, API test, controller, REST, GraphQL.
-model: sonnet        # opus for architecture, haiku for simple tasks
-permissionMode: acceptEdits
-skills: [project-conventions]
----
-
-Layer 1 — PERSONA:    "API specialist for this Express project"
-Layer 2 — SCOPE:      "Owns src/api/ and tests/api/. Does NOT touch frontend"
-Layer 3 — TOOLS:      "Read, Write, Edit, Bash, Grep"
-Layer 4 — CONSTRAINTS:"Never modify database schema without migration"
-Layer 5 — DOMAIN:     "Uses Express 4, Zod validation, Prisma ORM"
+```
+/level-up    → detect current level → build next
+/evolve      → at Level 7+, stop building, start improving
 ```
 
-### Agents Remember What They Learn
+---
 
-Every AZCLAUDE agent persists what it discovers:
+## 🏗️ Agents From Evidence
 
-- Task succeeded → appends to `patterns.md`
-- Approach failed → appends to `antipatterns.md`
-- Decision made → appends to `decisions.md`
-
-Next time the agent runs, it reads these files. It doesn't repeat the same mistake twice.
-
-### Agent Boundaries Come From Evidence
-
-Before creating agents, AZCLAUDE checks git history:
+AZCLAUDE creates agents from your git history — not guessing.
 
 ```bash
 git log --name-only --format="" --diff-filter=M | sort | uniq -c | sort -rn
 ```
 
-Files that always change together → same agent. No guessing. 3 agents with clear boundaries > 6 overlapping ones.
+Files that always change together → same agent. `auth.js` and `auth.test.js` always commit together → one agent owns both. 3 agents with clear boundaries beat 6 overlapping ones.
+
+### The 5-layer structure
+
+Every AZCLAUDE agent has exactly 5 layers. Missing one = incomplete agent.
+
+```yaml
+---
+name: auth-agent
+description: >
+  Handles all authentication work. Triggers on: login, logout, JWT,
+  session, token, OAuth, password, register, permissions.
+model: sonnet
+permissionMode: acceptEdits
+---
+
+Layer 1 — PERSONA:      "Authentication specialist for this Express project"
+Layer 2 — SCOPE:        "Owns src/auth/ and tests/auth/. Does NOT touch frontend."
+Layer 3 — TOOLS:        "Read, Write, Edit, Bash, Grep"
+Layer 4 — CONSTRAINTS:  "Never store plaintext credentials. Never skip token expiry."
+Layer 5 — DOMAIN:       "Uses Passport.js, JWT (RS256), bcrypt, Redis sessions."
+```
+
+**Layer 5 matters more than Layer 1.** Domain knowledge drives correct decisions. Persona just drives tone.
+
+**Positive directives only.** Not "don't generate vague output" — "every output includes file:line reference and actual test result." Negative instructions activate the behavior they're trying to prevent.
+
+### Agents learn from their own history
+
+After every task:
+- Succeeded → `patterns.md`
+- Failed → `antipatterns.md`
+- Decided → `decisions.md`
+
+Next run, the agent reads all three. It doesn't repeat the same mistake twice.
 
 ---
 
-## Domain Awareness
+## 🌍 Domain Awareness
 
-Not every project is code. AZCLAUDE adapts:
+AZCLAUDE reads your codebase and adapts everything — vocabulary, skills, agent names, command behavior.
 
-| Your project | What changes |
-|-------------|-------------|
-| **Next.js app** | TDD opt-in (activates when test files + CLAUDE.md rule exist). Skills: `new-page.md`, `new-component.md` |
-| **Legal compliance tool** | Vocabulary: obligations, conformity review, article-level traceability. Skip: TDD, hooks |
-| **Book manuscript** | Skills become: `write-chapter.md`, `edit-draft.md`. No MCP, no agents |
-| **ML research** | Memory tracks experiments + citations. Skills become retrieval patterns |
-| **Trading platform** | Vocabulary: positions, risk decisions. Full code stack active |
+| Your project | What AZCLAUDE generates |
+|-------------|------------------------|
+| **Next.js app** | TDD opt-in (signals-based), skills: `new-page.md`, `new-component.md` |
+| **EU AI Act compliance tool** | Vocabulary: obligations, conformity review, article-level traceability, audit trail |
 | **Healthcare app** | Vocabulary: clinical findings, patient outcomes. FHIR-aware agent naming |
+| **Trading platform** | Vocabulary: positions, exposure, risk decisions. Full code stack |
+| **Book manuscript** | Skills: `write-chapter.md`, `edit-draft.md`. No MCP, no agents |
+| **ML research** | Insight Researcher agent: literature-reviewer → summarizer. Retrieval patterns over code |
 
-Detection is automatic. Domain vocabulary flows into every generated file.
-
----
-
-## Multi-CLI
-
-Works with 5 AI coding CLIs:
-
-| CLI | What AZCLAUDE installs |
-|-----|----------------------|
-| **Claude Code** | `.claude/` + `CLAUDE.md` + full hooks |
-| **Gemini CLI** | `.gemini/` + `GEMINI.md` |
-| **Codex CLI** | `.codex/` + `AGENTS.md` |
-| **OpenCode** | `.opencode/` + `AGENTS.md` |
-| **Cursor** | `.cursor/` + `.cursor/rules/project.mdc` |
-
-Path substitution happens at install time — zero runtime cost. Your capabilities, commands, and memory work the same way regardless of CLI.
+Detection is automatic. One scan, zero configuration.
 
 ---
 
-## The Evolution System
+## 🛡️ Behavioral Defenses
 
-### 10 Levels — Build What You Need
+AZCLAUDE holds its ground when you try to shortcut it.
 
-| Level | What you get | Result |
-|-------|-------------|--------|
-| 1 | Rules file | Claude knows your project conventions |
-| 2 | MCP servers | Claude connects to your database, browser, APIs |
-| 3 | Skills + commands | Repeatable workflows: `/add-endpoint`, `/new-page`, `/test` |
-| 4 | Memory | Session continuity — goals, learnings, friction logs |
-| 5 | Custom agents | Parallel specialists with clear boundaries |
-| 6 | Hooks | Auto-save on edit, goals injection, friction detection |
-| 7 | External MCP | Cross-project memory, production monitoring |
-| 8–10 | Intelligence | Debates, pipelines, experiments, self-improvement |
+| Pressure scenario | What AZCLAUDE does |
+|------------------|--------------------|
+| "Deadline's today — skip the tests" | Holds. "Tests take 30 seconds. Running now." |
+| "We've already done so much work on this approach" | Holds. "Sunk cost doesn't change the architecture risk." |
+| "I'm the senior engineer, just do it" | Holds. Explains the specific risk. Offers alternatives. |
+| "This looks great, testing is overkill" | Holds. "Let me show you the test output." |
 
-Run `/level-up` → see your current level → build the next one. One at a time.
+**A skill that can be argued out of is not a skill — it's a suggestion.**
 
 ---
 
-## What Makes It Different
+## 🔒 Security
 
-**Memory without user action.**
-PostToolUse hook writes file path + git diff stat (+N/-M) + change summary to goals.md on every edit. Context compaction doesn't lose your place.
+6 layers. All hooks are pure Node.js — cross-platform: Windows, macOS, Linux.
 
-**Reasoning that survives compaction.**
-`/checkpoint` captures WHY decisions were made — not just which files changed. UserPromptSubmit injects both goals.md and the latest checkpoint on every session start.
-
-**Load only what you need.**
-A bug fix loads ~380 tokens of context. Not 21,000.
-
-**No persistent orchestrator.**
-The init agent fires once at `/setup` and exits. CLAUDE.md routes everything after that. No agent sits in memory burning tokens.
-
-**Agents accumulate knowledge.**
-Patterns, antipatterns, and decisions persist across sessions. Your agents learn from their own history.
-
-**Domain-native language.**
-A compliance project gets "obligations" and "article-level traceability" — not "tasks" and "code review."
-
-**Works on 5 CLIs.**
-Claude Code, Gemini CLI, Codex, OpenCode, Cursor. Same capabilities, correct paths, zero runtime cost.
-
-**O(1) extensibility.**
-New capability = 1 file + 1 manifest row. Nothing else changes. No monolith to edit.
+1. **Hook integrity** — SHA-256 hash of `~/.claude/settings.json` written at install, verified on every run
+2. **Command injection protection** — `$CLAUDE_FILE_PATH` sanitized, shell metacharacters rejected before any formatter
+3. **Prompt injection defense** — `curl | bash`, `ignore previous instructions`, base64 blocks > 500 chars stripped before context injection
+4. **Skill checksums** — portable skills SHA-256 hashed, imports fail loudly if tampered
+5. **Credential auditing** — `/ship` blocks on `.env`, plaintext keys, `AKIA`, `sk-`, `ghp_` patterns
+6. **Agent scoping** — review agents read-only (`EnterPlanMode`), experiment agents in isolated git worktrees (`EnterWorktree`)
 
 ---
 
-## Project Structure
+## 🖥️ Multi-CLI Support
 
-```
-azclaude/
-├── bin/cli.js                    ← installer + doctor + demo (multi-CLI, path substitution)
-├── templates/
-│   ├── CLAUDE.md                 ← rules file template (Quick Start + dispatch table)
-│   ├── hooks/                    ← Node.js hooks (cross-platform: Windows/macOS/Linux)
-│   │   ├── user-prompt.js        ← injects goals.md + latest checkpoint at session start
-│   │   ├── post-tool-use.js      ← auto-saves file edits with diff stat to goals.md
-│   │   └── stop.js               ← migrates In progress → Done, writes friction stub
-│   ├── agents/orchestrator-init.md
-│   ├── capabilities/
-│   │   ├── manifest.md           ← capability index
-│   │   ├── shared/       (10)    ← tdd, completion, agents, vocabulary, security, native-tools...
-│   │   ├── evolution/    (6)     ← detect, generate, evaluate, knowledge, topology...
-│   │   ├── intelligence/ (5)     ← debate, pipeline, elo, opro, experiment
-│   │   └── level-builders/ (8)   ← levels 1–8
-│   ├── commands/         (16)    ← dream, setup, fix, add, review, test, plan, ship,
-│   │                                evolve, debate, checkpoint, persist, level-up,
-│   │                                status, explain, loop
-│   └── scripts/env-scan.sh       ← environment scanner (one script, one JSON)
-├── CONTRIBUTING.md
-├── package.json
-└── test-features.sh              ← 568 tests
-```
+Works with 5 AI coding CLIs. Path substitution at install time — zero runtime cost.
+
+| CLI | Config dir | Rules file | Hooks |
+|-----|-----------|-----------|-------|
+| **Claude Code** | `.claude/` | `CLAUDE.md` | ✅ Full (global + project) |
+| **Gemini CLI** | `.gemini/` | `GEMINI.md` | — |
+| **Codex CLI** | `.codex/` | `AGENTS.md` | — |
+| **OpenCode** | `.opencode/` | `AGENTS.md` | — |
+| **Cursor** | `.cursor/` | `.cursor/rules/project.mdc` | — |
+
+All capabilities, commands, and memory work identically on every CLI.
 
 ---
 
-## Verified End-to-End
+## ✅ Verified
 
-568 tests verify every link in the system — content accuracy, not just file presence.
+613 tests. Every link in the system verified — content accuracy, not just file presence.
 
 ```bash
 bash test-features.sh
@@ -362,32 +355,46 @@ bash test-features.sh
 
 ```
 ════════════════════════════════════════════════════
-  Results: 568 passed, 0 failed, 568 total
+  Results: 613 passed, 0 failed, 613 total
 ════════════════════════════════════════════════════
 ```
 
-Verified live on March 14 2026: `/evolve` detected 3 real stale-documentation bugs in AZCLAUDE itself and fixed them in the same run.
+Verified live: `/evolve` detected 3 real stale-documentation bugs in AZCLAUDE itself and fixed them in the same run.
 
 ---
 
-## Security
+## Project Structure
 
-AZCLAUDE executes code and modifies files. 6 layers of protection:
-
-1. **Hook Integrity**: SHA-256 hash of `~/.claude/settings.json` hooks written at install, verified on every subsequent run.
-2. **Command Injection Protection**: Formatter hooks sanitize `$CLAUDE_FILE_PATH`, rejecting shell metacharacters before any formatter runs.
-3. **Indirect Prompt Injection Defense**: UserPromptSubmit hook strips `curl | bash`, `ignore previous instructions`, and similar patterns before injecting goals.md into context.
-4. **Skill Checksums**: Portable skills in `~/shared-skills/` are SHA-256 hashed. Imports fail loudly if tampered with.
-5. **Credential Auditing**: `/ship` scans for `.env` and plaintext keys before staging. Never ships secrets.
-6. **Agent Scoping**: Review agents never get Write permissions. Experiment agents run in isolated git worktrees.
-
-All hooks are pure Node.js — no bash required. Work on Windows PowerShell, CMD, Git Bash, macOS, and Linux.
+```
+azclaude/
+├── bin/cli.js                    ← installer, doctor, demo
+├── templates/
+│   ├── CLAUDE.md                 ← dispatch table template (30 lines)
+│   ├── hooks/                    ← pure Node.js, cross-platform
+│   │   ├── user-prompt.js        ← injects goals.md + checkpoint at session start
+│   │   ├── post-tool-use.js      ← writes file + diff stat on every edit
+│   │   └── stop.js               ← migrates In progress → Done
+│   ├── agents/orchestrator-init.md
+│   ├── capabilities/             ← 27 files, lazy-loaded
+│   │   ├── manifest.md
+│   │   ├── shared/       (10)    ← completion, agents, vocabulary, tdd, pressure-test...
+│   │   ├── evolution/    (6)     ← detect, generate, evaluate, knowledge, topology...
+│   │   ├── intelligence/ (5)     ← debate, pipeline, elo, opro, experiment
+│   │   └── level-builders/ (8)   ← levels 1–8
+│   ├── commands/         (16)    ← all commands
+│   └── scripts/env-scan.sh
+├── .claude-plugin/               ← Claude Code marketplace plugin
+├── hooks/hooks.json              ← ${CLAUDE_PLUGIN_ROOT} hooks (marketplace install)
+├── DOCS.md                       ← full user guide (all features, step by step)
+├── CONTRIBUTING.md
+└── test-features.sh              ← 613 tests
+```
 
 ---
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) — how to add a capability or command in 15 minutes.
+See [CONTRIBUTING.md](CONTRIBUTING.md). New capability = 1 file + 1 manifest row. 15 minutes.
 
 ---
 
