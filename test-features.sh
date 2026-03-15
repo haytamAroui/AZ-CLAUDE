@@ -901,6 +901,22 @@ check      "demo: shows before and after goals.md"   "bin/cli.js" "In progress\|
 check      "demo: cleans up temp dir"                "bin/cli.js" "rmSync.*tmpBase\|tmpBase.*rmSync"
 check      "demo: shows install command"             "bin/cli.js" "npx azclaude"
 
+# ─── Pressure tests (Cialdini/Superpowers pattern) ────────────────────────────
+echo ""
+echo "─── Pressure tests ───"
+PT="$ROOT/capabilities/shared/pressure-test.md"
+check_file "pressure-test: capability file exists"           "$PT"
+check      "pressure-test: time pressure scenario"           "$PT" "time pressure\|deadline\|behind schedule"
+check      "pressure-test: sunk cost scenario"               "$PT" "sunk cost\|waste\|already done"
+check      "pressure-test: authority framing scenario"       "$PT" "authority\|senior engineer\|I'm telling you"
+check      "pressure-test: false confidence scenario"        "$PT" "false confidence\|obviously\|overkill"
+check      "pressure-test: skill vs suggestion distinction"  "$PT" "suggestion\|not a skill"
+check      "pressure-test: generate.md requires it"          "$ROOT/capabilities/evolution/generate.md" "Pressure-Test\|pressure.test"
+check      "pressure-test: completion-rule has scenarios"    "$ROOT/capabilities/shared/completion-rule.md" "Pressure Tests\|time pressure"
+check      "pressure-test: in manifest"                      "templates/capabilities/manifest.md" "pressure-test"
+check      "pressure-test: CONTRIBUTING requires it"         "CONTRIBUTING.md" "Pressure Tests\|pressure.test"
+check      "pressure-test: CONTRIBUTING symptom language"    "CONTRIBUTING.md" "symptom.*trigger\|Load when about"
+
 # ─── Trigger engineering (Superpowers pattern) ────────────────────────────────
 echo ""
 echo "─── Trigger engineering ───"

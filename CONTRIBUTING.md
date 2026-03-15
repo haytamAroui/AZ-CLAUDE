@@ -9,21 +9,28 @@ A capability is a markdown file in `templates/capabilities/`. It gets lazy-loade
 ---
 name: your-capability
 description: >
-  What this does. List 5+ trigger scenarios so Claude knows when to load it.
+  Symptom language — describe the situation the developer is in, not what the
+  skill does. "Load when about to..." not "This skill provides...".
+  List 5+ trigger scenarios.
 tokens: ~100
 ---
 ```
 
-2. Add it to `templates/capabilities/manifest.md` under the right section with a `When to load` description.
+2. If the capability enforces a process gate (completion, review, TDD, etc.):
+   Add a `## Pressure Tests` section with 4 scenarios (time pressure, sunk cost, authority, false confidence).
+   See `shared/pressure-test.md` for the format. A skill that can be argued out of is a suggestion, not a skill.
 
-3. Add tests in `test-features.sh`:
+3. Add it to `templates/capabilities/manifest.md` under the right section.
+   Use symptom language in the "When to load" column — not a workflow summary.
+
+4. Add tests in `test-features.sh`:
 ```bash
 check "your-capability: key behavior" "$SHARED/your-capability.md" "pattern to grep"
 ```
 
-4. Run `bash test-features.sh` — all must pass.
+5. Run `bash test-features.sh` — all must pass.
 
-5. Open a PR.
+6. Open a PR.
 
 ## How to add a new command (/skill)
 
@@ -66,7 +73,9 @@ Shows exactly which checks pass or fail and what to fix.
 
 - [ ] `bash test-features.sh` passes (0 failures)
 - [ ] New capability/command has frontmatter with `description` and `tokens`
-- [ ] New capability is listed in `manifest.md`
+- [ ] Description uses symptom/trigger language ("Load when about to..."), not workflow summary
+- [ ] Enforcement skills have a `## Pressure Tests` section (4 scenarios)
+- [ ] New capability is listed in `manifest.md` with symptom language
 - [ ] Commit message format: `type: what changed — why`
 
 ## What we don't accept

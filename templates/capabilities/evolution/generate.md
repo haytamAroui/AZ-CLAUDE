@@ -73,6 +73,18 @@ If it fails: revise until it passes. Do not ship a file that fails self-applicab
 
 ---
 
+### Step 4.5: Pressure-Test Scenarios (enforcement skills only)
+
+If the skill enforces a process gate (completion, review, TDD, checkpoint):
+Load `shared/pressure-test.md` and add a `## Pressure Tests` section to the skill.
+
+Write one scenario per pressure type: time pressure, sunk cost, authority, false confidence.
+A skill that can be argued out of is not a skill — it's a suggestion.
+
+Skip this step only if the skill is purely guidance (vocabulary, patterns, reference material).
+
+---
+
 ### Step 5: Add to Manifest
 
 After generating a new capability file, add one row to `capabilities/manifest.md`:
