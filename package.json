@@ -30,6 +30,8 @@
   },
   "files": [
     "bin/",
-    "templates/"
+    "templates/",
+    ".claude-plugin/",
+    "hooks/"
   ]
 }

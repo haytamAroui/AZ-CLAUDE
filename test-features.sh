@@ -901,6 +901,24 @@ check      "demo: shows before and after goals.md"   "bin/cli.js" "In progress\|
 check      "demo: cleans up temp dir"                "bin/cli.js" "rmSync.*tmpBase\|tmpBase.*rmSync"
 check      "demo: shows install command"             "bin/cli.js" "npx azclaude"
 
+# ─── Claude Code Marketplace Plugin ──────────────────────────────────────────
+echo ""
+echo "─── Marketplace plugin ───"
+check_file "plugin: .claude-plugin/plugin.json exists"    ".claude-plugin/plugin.json"
+check_file "plugin: .claude-plugin/marketplace.json exists" ".claude-plugin/marketplace.json"
+check_file "plugin: hooks/hooks.json exists"              "hooks/hooks.json"
+check      "plugin: name is azclaude"                     ".claude-plugin/plugin.json" "\"azclaude\""
+check      "plugin: version present"                      ".claude-plugin/plugin.json" "version"
+check      "plugin: commands path set"                    ".claude-plugin/plugin.json" "templates/commands"
+check      "plugin: hooks path set"                       ".claude-plugin/plugin.json" "hooks/hooks.json"
+check      "plugin: UserPromptSubmit hook wired"          "hooks/hooks.json" "UserPromptSubmit"
+check      "plugin: PostToolUse hook wired"               "hooks/hooks.json" "PostToolUse"
+check      "plugin: Stop hook wired"                      "hooks/hooks.json" "Stop"
+check      "plugin: hooks use CLAUDE_PLUGIN_ROOT"         "hooks/hooks.json" "CLAUDE_PLUGIN_ROOT"
+check      "plugin: PostToolUse async"                    "hooks/hooks.json" "async.*true"
+check      "plugin: marketplace has github source"        ".claude-plugin/marketplace.json" "github\|haytamAroui"
+check      "plugin: package.json includes plugin files"   "package.json" "\.claude-plugin"
+
 # ─── Pressure tests (Cialdini/Superpowers pattern) ────────────────────────────
 echo ""
 echo "─── Pressure tests ───"

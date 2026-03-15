@@ -1,0 +1,27 @@
+{
+  "name": "azclaude-marketplace",
+  "description": "AZCLAUDE — project-aware AI environment for Claude Code",
+  "owner": {
+    "name": "haytamAroui",
+    "url": "https://github.com/haytamAroui"
+  },
+  "plugins": [
+    {
+      "name": "azclaude",
+      "description": "Project-aware AI environment: auto-save memory, 16 commands, domain vocabulary, custom agents from git evidence. /setup builds everything for your project in 2 minutes.",
+      "version": "3.12.0",
+      "source": {
+        "source": "github",
+        "repo": "haytamAroui/AZ-CLAUDE",
+        "ref": "main"
+      },
+      "author": {
+        "name": "haytamAroui",
+        "url": "https://github.com/haytamAroui"
+      },
+      "homepage": "https://github.com/haytamAroui/AZ-CLAUDE",
+      "license": "MIT",
+      "keywords": ["memory", "setup", "agents", "commands", "hooks", "domain-aware"]
+    }
+  ]
+}
