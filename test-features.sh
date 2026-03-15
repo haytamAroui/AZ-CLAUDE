@@ -919,7 +919,7 @@ check      "plugin: PostToolUse async"                    "hooks/hooks.json" "as
 check      "plugin: marketplace has github source"        ".claude-plugin/marketplace.json" "github\|haytamAroui"
 check      "plugin: package.json includes plugin files"   "package.json" "\.claude-plugin"
 
-# ─── Pressure tests (Cialdini/Superpowers pattern) ────────────────────────────
+# ─── Pressure tests ────────────────────────────────────────────────────────────
 echo ""
 echo "─── Pressure tests ───"
 PT="$ROOT/capabilities/shared/pressure-test.md"
@@ -935,7 +935,7 @@ check      "pressure-test: in manifest"                      "templates/capabili
 check      "pressure-test: CONTRIBUTING requires it"         "CONTRIBUTING.md" "Pressure Tests\|pressure.test"
 check      "pressure-test: CONTRIBUTING symptom language"    "CONTRIBUTING.md" "symptom.*trigger\|Load when about"
 
-# ─── Trigger engineering (Superpowers pattern) ────────────────────────────────
+# ─── Trigger engineering ───────────────────────────────────────────────────────
 echo ""
 echo "─── Trigger engineering ───"
 SHARED="$ROOT/capabilities/shared"
@@ -953,7 +953,7 @@ check "trigger: cycle2 uses concrete thresholds"          "$EVOL/cycle2-knowledg
 check "trigger: cycle3 uses symptom language"             "$EVOL/cycle3-topology.md"     "overlap\|slow\|dead entries\|confused"
 check "trigger: manifest uses symptom language for shared" "templates/capabilities/manifest.md" "About to\|about to\|just started"
 
-# ─── Distrust-in-review + review reception (Superpowers pattern) ──────────────
+# ─── Distrust-in-review + review reception ─────────────────────────────────────
 echo ""
 echo "─── Distrust-in-review ───"
 check "review: distrust implementer warning"              "templates/commands/review.md" "incomplete or optimistic\|Verify independently\|Do not trust"
