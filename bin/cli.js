@@ -152,7 +152,9 @@ function installGlobalHooks(cli) {
       ok('Hooks upgraded — auto-save active (PostToolUse writes progress to goals.md)');
       ok(`Hook scripts: ${hooksScriptsDir}`);
     } else {
-      ok('Global hooks already installed — skipping');
+      // Always refresh hook scripts to latest template versions
+      installHookScripts(cli.hooksDir);
+      ok('Global hooks already installed — scripts refreshed');
     }
     return;
   }
