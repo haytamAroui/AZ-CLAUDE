@@ -807,7 +807,7 @@ If you just installed and haven't run many sessions, there's nothing to evolve y
 
 ## What Makes It Different
 
-| | AZCLAUDE | Generic prompts | Superpowers |
+| | AZCLAUDE | Generic prompts | Static skill packs |
 |---|---|---|---|
 | Remembers between sessions | ✅ | ❌ | ❌ |
 | Auto-saves while you work | ✅ | ❌ | ❌ |
@@ -817,8 +817,8 @@ If you just installed and haven't run many sessions, there's nothing to evolve y
 | Lazy-loaded context | ✅ (~380 tokens) | ❌ (~21k) | ❌ |
 | Evidence-based decisions | ✅ (AceMAD + ELO) | ❌ | ❌ |
 | 10-level progression | ✅ | ❌ | ❌ |
-| Works on 5 CLIs | ✅ | Varies | ✅ |
-| Hard process gates | Flexible (opt-in) | ❌ | ✅ (mandatory) |
+| Works on 5 CLIs | ✅ | Varies | Varies |
+| Process gates | Flexible (opt-in) | ❌ | Fixed |
 
 ---
 
