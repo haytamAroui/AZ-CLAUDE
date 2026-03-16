@@ -5,7 +5,7 @@
     <a href="#-see-it-in-30-seconds">Demo</a> ·
     <a href="#-installation">Install</a> ·
     <a href="#-the-memory-system">Memory</a> ·
-    <a href="#-all-16-commands">Commands</a> ·
+    <a href="#-all-22-commands">Commands</a> ·
     <a href="#-the-intelligence-layer">Intelligence</a> ·
     <a href="#-10-levels">10 Levels</a>
   </p>
@@ -50,7 +50,7 @@ npx azclaude
 npx azclaude doctor
 ```
 
-`doctor` runs 24 checks — runtime, global hooks, settings integrity, all 16 commands. Exits 0 if healthy. Exits 1 with the exact fix hint if anything is wrong.
+`doctor` runs 32 checks — runtime, global hooks, settings integrity, all 22 commands. Exits 0 if healthy. Exits 1 with the exact fix hint if anything is wrong.
 
 **Or install from the Claude Code marketplace** — search "AZCLAUDE", click Install. Hooks active immediately. Then run `/setup`.
 
@@ -122,7 +122,7 @@ No re-explanation. No "where were we?". Straight to work.
 
 ---
 
-## 📋 All 16 Commands
+## 📋 All 22 Commands
 
 ### Build & Ship
 
@@ -136,6 +136,10 @@ No re-explanation. No "where were we?". Straight to work.
 | `/test` | IDE diagnostics → framework detection → exit-code gate → failure classification |
 | `/plan` | For 4+ file changes. Read-only analysis → risk level → approval gate before any code |
 | `/ship` | IDE gate → tests → secrets scan → smart commit → push |
+| `/refactor` | Restructure code safely. Tests before + after. Worktree isolation for risky changes |
+| `/doc` | Generate docs from code. Matches existing style (JSDoc, docstrings). Verifies examples |
+| `/migrate` | Upgrade deps/frameworks. Researches breaking changes. Tests before + after |
+| `/deps` | Audit: outdated, vulnerable, unused packages. Structured report |
 
 ### Think & Improve
 
@@ -144,6 +148,8 @@ No re-explanation. No "where were we?". Straight to work.
 | `/debate` | Hard choice → two advocates argue with evidence → fact-checked → winner logged to decisions.md |
 | `/evolve` | Scans for gaps → generates fixes → quality-gates them. Self-improvement, automated |
 | `/level-up` | Shows your current level (0–10) → builds the next one |
+| `/find` | Search for skills across project commands, ~/shared-skills/, and capabilities |
+| `/create` | Build a new command with proper frontmatter, test cases, and guided workflow |
 
 ### Memory & Session
 
@@ -222,7 +228,7 @@ Build what you need. Stop when the environment matches the project's complexity.
 |-------|-------------|-------------|
 | **1** | CLAUDE.md — 30-line dispatch table | ~30 tokens |
 | **2** | MCP servers — database, browser, APIs | ~150 tokens |
-| **3** | 16 commands + lazy-loaded capabilities | ~380 tokens per task |
+| **3** | 22 commands + lazy-loaded capabilities | ~380 tokens per task |
 | **4** | Memory — goals, checkpoints, sessions | ~200 tokens per session |
 | **5** | Custom agents from git evidence | ~400 tokens per agent |
 | **6** | Hooks — auto-save, injection, friction detection | ~0 tokens (global) |
@@ -347,7 +353,7 @@ All capabilities, commands, and memory work identically on every CLI.
 
 ## ✅ Verified
 
-613 tests. Every link in the system verified — content accuracy, not just file presence.
+691 tests. Every link in the system verified — content accuracy, not just file presence.
 
 ```bash
 bash test-features.sh
@@ -355,7 +361,7 @@ bash test-features.sh
 
 ```
 ════════════════════════════════════════════════════
-  Results: 613 passed, 0 failed, 613 total
+  Results: 691 passed, 0 failed, 691 total
 ════════════════════════════════════════════════════
 ```
 
@@ -374,20 +380,20 @@ azclaude/
 │   │   ├── user-prompt.js        ← injects goals.md + checkpoint at session start
 │   │   ├── post-tool-use.js      ← writes file + diff stat on every edit
 │   │   └── stop.js               ← migrates In progress → Done
-│   ├── agents/orchestrator-init.md
+│   ├── agents/             (4)  ← orchestrator-init, loop-controller, code-reviewer, test-writer
 │   ├── capabilities/             ← 27 files, lazy-loaded
 │   │   ├── manifest.md
 │   │   ├── shared/       (10)    ← completion, agents, vocabulary, tdd, pressure-test...
 │   │   ├── evolution/    (6)     ← detect, generate, evaluate, knowledge, topology...
 │   │   ├── intelligence/ (5)     ← debate, pipeline, elo, opro, experiment
 │   │   └── level-builders/ (8)   ← levels 1–8
-│   ├── commands/         (16)    ← all commands
+│   ├── commands/         (22)    ← all commands
 │   └── scripts/env-scan.sh
 ├── .claude-plugin/               ← Claude Code marketplace plugin
 ├── hooks/hooks.json              ← ${CLAUDE_PLUGIN_ROOT} hooks (marketplace install)
 ├── DOCS.md                       ← full user guide (all features, step by step)
 ├── CONTRIBUTING.md
-└── test-features.sh              ← 613 tests
+└── test-features.sh              ← 691 tests
 ```
 
 ---

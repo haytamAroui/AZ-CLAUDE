@@ -1,6 +1,6 @@
 # AZCLAUDE — Complete User Guide
 
-> Version 3.13.0 · 613 tests passing · Claude Code marketplace plugin
+> Version 3.13.0 · 691 tests passing · Claude Code marketplace plugin
 
 ---
 
@@ -17,7 +17,7 @@
 9. [The Memory System](#the-memory-system)
 10. [Native Tool Orchestration (MCP)](#native-tool-orchestration-mcp)
 11. [The Hook System](#the-hook-system)
-12. [All 16 Commands](#all-16-commands)
+12. [All 22 Commands](#all-22-commands)
 13. [Behavioral Defenses (Pressure Testing)](#behavioral-defenses-pressure-testing)
 14. [Multi-CLI Support](#multi-cli-support)
 15. [Security](#security)
@@ -40,7 +40,7 @@ After `npx azclaude` + `/setup` you have:
 ```
 ✓ CLAUDE.md — 30-line dispatch table filled with your project's details
 ✓ goals.md — session memory, auto-injected before your first message every session
-✓ 16 commands — /fix, /add, /review, /plan, /ship, /evolve, /debate, /checkpoint...
+✓ 22 commands — /fix, /add, /review, /plan, /ship, /evolve, /debate, /checkpoint...
 ✓ 3 hooks — auto-save on every edit, goals injection on session start, migration on stop
 ✓ Project-specific agents — built from your git history
 ✓ 27 capabilities — lazy-loaded, only what the task needs
@@ -72,7 +72,7 @@ Auto-detects your CLI and installs to the correct paths.
 npx azclaude doctor
 ```
 
-Runs 24 checks: Node.js version, global hooks, settings.json integrity, project structure, all 16 commands present. Exits 0 if healthy. Exits 1 with a specific fix hint if anything is wrong.
+Runs 32 checks: Node.js version, global hooks, settings.json integrity, project structure, all 22 commands present. Exits 0 if healthy. Exits 1 with a specific fix hint if anything is wrong.
 
 ### See it working before committing
 
@@ -139,7 +139,7 @@ AZCLAUDE builds progressively. You don't need all 10 levels. You need the right 
 |-------|-------------|-------------|
 | **1** | CLAUDE.md — project conventions in 30 lines | ~30 tokens |
 | **2** | MCP servers — database, browser, API tools | ~150 tokens |
-| **3** | 16 commands + lazy-loaded capabilities | ~380 tokens per task |
+| **3** | 22 commands + lazy-loaded capabilities | ~380 tokens per task |
 | **4** | Memory — goals, checkpoints, sessions | ~200 tokens per session |
 | **5** | Custom agents — specialists with clear scope | ~400 tokens per agent |
 | **6** | Hooks — auto-save, injection, friction detection | ~0 tokens (global) |
@@ -454,7 +454,7 @@ Three hooks run silently in the background. All pure Node.js — no bash require
 
 ---
 
-## All 16 Commands
+## All 22 Commands
 
 ### /dream
 **New project from idea.**
@@ -657,7 +657,7 @@ Detects current level from what exists in your project → shows visual checklis
 |-------|----------------|
 | 1 | CLAUDE.md rules file |
 | 2 | MCP servers (database, browser, APIs) |
-| 3 | 16 commands + lazy-loaded capabilities |
+| 3 | 22 commands + lazy-loaded capabilities |
 | 4 | Memory system (goals, checkpoints, sessions) |
 | 5 | Custom agents from git evidence |
 | 6 | Hooks (auto-save, injection, friction detection) |
@@ -698,10 +698,10 @@ UserPromptSubmit automatically injects the latest checkpoint on the next session
 
 Run before closing. Writes:
 1. Updated `goals.md` — current threads, done this session, next actions, open blockers
-2. `ops/observations/{date}-{slug}-friction.md` — what was hard, repeated, slow, missing
+2. `ops/observations/{date}-{slug}-friction.md` — only written when there's actual friction (something hard, repeated, slow, or missing). Skipped for smooth sessions.
 3. `.claude/memory/sessions/{date}-session.md` — 2–3 sentence narrative
 
-Never skip even for short sessions. "None" entries confirm what's working.
+Never skip even for short sessions.
 
 ---
 
@@ -749,6 +749,68 @@ Schedules via CronCreate. Runs immediately once so you see it working.
 | weekly | `0 9 * * 1` |
 
 Use `/loop stop` to cancel.
+
+---
+
+### /refactor
+**Safe code restructuring with test safety net.**
+```
+/refactor rename UserService to AuthService
+/refactor extract validation logic from auth.js
+```
+Tests before AND after. Maps all references. High-risk changes use worktree isolation.
+Never changes behavior — only structure.
+
+---
+
+### /doc
+**Generate documentation from code.**
+```
+/doc src/auth.js
+/doc readme
+```
+Detects existing doc style (JSDoc, docstrings, Go doc). Reads actual code — never guesses signatures. Verifies examples run.
+
+---
+
+### /migrate
+**Upgrade dependencies and frameworks safely.**
+```
+/migrate react 19
+/migrate update all packages
+```
+Tests before + after. Researches breaking changes via WebSearch. Major version upgrades run in worktree.
+
+---
+
+### /deps
+**Dependency audit: outdated, vulnerable, unused.**
+```
+/deps
+/deps security
+/deps unused
+```
+Runs npm audit / pip audit. Classifies by risk (patch/minor/major). Detects unused packages.
+
+---
+
+### /find
+**Search for skills across the ecosystem.**
+```
+/find testing
+/find deploy
+```
+Searches project commands, ~/shared-skills/, and capabilities manifest. Suggests /create if nothing matches.
+
+---
+
+### /create
+**Build a new command with guided workflow.**
+```
+/create deploy-to-staging
+/create weekly-report
+```
+Intent capture → duplicate check → frontmatter template → test cases → validation. Ensures 5+ trigger phrases for reliable invocation.
 
 ---
 

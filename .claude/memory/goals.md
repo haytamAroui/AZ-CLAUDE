@@ -6,6 +6,11 @@ Updated: 2026-03-16
 - None — environment at 100/100, marketplace submission under review
 
 ## Done this session
+- 01:35 — CLAUDE.md (+3/-3) — test-features.sh        — 691 grep-based tests, all must pas
+- 01:34 — test-features.sh (+24/-1) — EXPECTED_CMDS=22
+- 01:33 — bin\cli.js (+1/-1)
+- 01:33 — templates\commands\create.md
+- 01:33 — templates\commands\find.md
 - 01:24 — bin\cli.js (+3/-2)
 - 01:22 — bin\cli.js (+11/-3) — if (fail > 0) {
 - 01:19 — test-features.sh (+1/-0)
@@ -53,8 +58,5 @@ Updated: 2026-03-16
 - None
 
 ## In progress
-- 01:35 — CLAUDE.md (+3/-3) — test-features.sh        — 691 grep-based tests, all must pas
-- 01:34 — test-features.sh (+24/-1) — EXPECTED_CMDS=22
-- 01:33 — bin\cli.js (+1/-1)
-- 01:33 — templates\commands\create.md
-- 01:33 — templates\commands\find.md
+- 01:39 — DOCS.md (+71/-9) — Use `/loop stop` to cancel.
+- 01:38 — README.md (+15/-9) — └── test-features.sh              ← 691 tests
