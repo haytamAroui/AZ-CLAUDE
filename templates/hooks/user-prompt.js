@@ -11,19 +11,19 @@ const fs   = require('fs');
 const path = require('path');
 const os   = require('os');
 
-// Ensure required directories exist (safe on all platforms)
-for (const d of ['.claude/memory', 'ops/observations', 'shared-skills']) {
-  try { fs.mkdirSync(d, { recursive: true }); } catch (_) {}
-}
-
 // Fire once per session only — keyed by parent PID
 const marker = path.join(os.tmpdir(), `.azclaude-session-${process.ppid || process.pid}`);
 if (fs.existsSync(marker)) process.exit(0);
 try { fs.writeFileSync(marker, ''); } catch (_) {}
 
-// Inject goals.md if it exists
+// Only proceed if this is an AZCLAUDE project (goals.md exists)
 const goalsPath = path.join('.claude', 'memory', 'goals.md');
 if (!fs.existsSync(goalsPath)) process.exit(0);
+
+// Ensure required directories exist — only in AZCLAUDE projects
+for (const d of ['.claude/memory', '.claude/memory/checkpoints']) {
+  try { fs.mkdirSync(d, { recursive: true }); } catch (_) {}
+}
 
 // Strip prompt-injection attempts before outputting into context
 const INJECTION = /ignore.{0,20}previous.{0,20}instructions|curl.{0,10}\|.{0,10}bash|wget.{0,10}\|.{0,10}sh|you are now|system prompt/i;
@@ -53,9 +53,10 @@ if (fs.existsSync(checkpointDir)) {
   if (files.length > 0) {
     const latest = path.join(checkpointDir, files[0]);
     const cpContent = fs.readFileSync(latest, 'utf8');
+    const cpFiltered = cpContent.split('\n').filter(l => !INJECTION.test(l)).join('\n');
     console.log('');
     console.log(`--- LAST CHECKPOINT (${files[0]}) ---`);
-    console.log(cpContent.trim());
+    console.log(cpFiltered.trim());
     console.log('--- END CHECKPOINT ---');
   }
 }

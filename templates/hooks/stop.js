@@ -12,6 +12,8 @@ const fs   = require('fs');
 const path = require('path');
 
 const cfg       = process.env.AZCLAUDE_CFG || '.claude';
+// Guard: cfg must resolve inside the project root
+if (path.resolve(cfg).indexOf(process.cwd()) !== 0) process.exit(0);
 const goalsPath = path.join(cfg, 'memory', 'goals.md');
 
 if (!fs.existsSync(goalsPath)) process.exit(0);
@@ -65,8 +67,9 @@ if (content.includes(IN_PROGRESS)) {
 content = content.replace(/^Updated: .*/m, `Updated: ${today}`);
 try { fs.writeFileSync(goalsPath, content); } catch (_) {}
 
-// ── Warn if /persist was not run (no empty stub — only real friction gets logged) ──
-const obsDir = 'ops/observations';
+// ── Warn if /persist was not run (only in AZCLAUDE projects with obs dir) ──
+const obsDir = path.join('ops', 'observations');
+if (!fs.existsSync(obsDir)) process.exit(0);
 const todayStamp = today.replace(/-/g, '');
 try {
   const existing = fs.readdirSync(obsDir).filter(f => f.startsWith(todayStamp) && f.endsWith('-friction.md'));

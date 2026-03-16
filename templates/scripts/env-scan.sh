@@ -40,7 +40,7 @@ cat <<EOF
     "commands_count":      $(count_files .claude/commands 2>/dev/null),
     "agents_count":        $(count_files .claude/agents 2>/dev/null)
   },
-  "git_log": "$(git log --oneline -5 2>/dev/null | head -5 | tr '\n' '|' || echo 'none')",
-  "readme_head": "$(head -10 README.md 2>/dev/null | tr '\n' '|' || echo 'none')"
+  "git_log": "$(git log --oneline -5 2>/dev/null | head -5 | tr '\n' '|' | sed 's/"/\\"/g' || echo 'none')",
+  "readme_head": "$(head -10 README.md 2>/dev/null | tr '\n' '|' | sed 's/"/\\"/g' || echo 'none')"
 }
 EOF

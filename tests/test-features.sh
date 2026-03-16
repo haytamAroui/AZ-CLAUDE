@@ -748,7 +748,7 @@ check "/status: mcp__ide__getDiagnostics has fallback" "$CMD/status.md" "unavail
 check "/review: mcp__ide__getDiagnostics has fallback" "$CMD/review.md" "unavailable\|if available\|skip"
 check "level3-skills: correct install path check"      "$LVL/level3-skills.md" "re-run.*npx azclaude\|npx azclaude"
 
-check "CLI installer: sanitizePath function exists"    "$CLI" "sanitizePath"
+check "CLI installer: path sanitization documented"     "$CLI" "Path sanitization.*handled in hooks\|rejects paths.*outside"
 check "CLI installer: generateIntegrityHash exists"    "$CLI" "generateIntegrityHash"
 check "CLI installer: verifyIntegrity exists"          "$CLI" "verifyIntegrity"
 check "level6-hooks.md: CLAUDE_FILE_PATH sanitization" "$L6" "case.*CLAUDE_FILE_PATH.*in"

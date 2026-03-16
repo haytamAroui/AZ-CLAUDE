@@ -30,7 +30,7 @@ Load only the files that match the current task. Never load the full list.
 | level-builders/level4-memory.md | No goals.md exists, or session context keeps getting lost | ~200 |
 | level-builders/level5-agents.md | Project has parallel workstreams with no specialized agents yet | ~400 |
 | level-builders/level6-hooks.md | No PostToolUse / UserPromptSubmit hooks, or hooks are bash-based | ~400 |
-| level-builders/level7-extmcp.md | Project needs cross-project memory or production monitoring | ~150 |
+| level-builders/level7-extmcp.md | Project needs external MCP servers — databases, browsers, APIs | ~150 |
 | level-builders/level8-orchestrated.md | Considering pipelines, debates, or self-improvement — unsure which | ~200 |
 
 ## Evolution — compose by what the cycle needs

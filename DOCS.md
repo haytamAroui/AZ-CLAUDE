@@ -655,7 +655,9 @@ Five mechanisms. Three files. Zero databases. Zero servers. Zero dependencies.
 Three design decisions keep the hooks dependable:
 
 - **Always overwrite on install.** Running `npx azclaude` always writes fresh hook scripts, even if the hooks directory already exists. This fixes stale hooks left behind by older versions — the most common support issue before this change.
-- **Checkpoint reminder.** PostToolUse counts edits per session. Every 15 edits, it prints a reminder: `⚠ 15 edits since last checkpoint — consider running /checkpoint`. This prevents forgotten checkpoints on long sessions.
+- **Merge, never replace.** The installer merges AZCLAUDE hooks into `~/.claude/settings.json` per-key — it never replaces the entire hooks object. Other plugins' hooks are preserved.
+- **Project-scoped side effects.** Hooks only create directories and write files when they detect an AZCLAUDE project (goals.md exists). Non-AZCLAUDE directories are never modified.
+- **Checkpoint reminder.** PostToolUse counts edits per session. Every 15 edits, it prints: `⚠ 15 edits — run /checkpoint before context compaction loses your reasoning`. This prevents forgotten checkpoints on long sessions.
 - **Stop hook warns, never stubs.** The Stop hook migrates "In progress" → "Done" and warns if no `/persist` was run. It does NOT create empty friction log files. Friction logs are only written when there's actual friction to record — empty stubs were noise that polluted `ops/observations/`.
 
 ---
@@ -1073,7 +1075,7 @@ SHA-256 hash of `~/.claude/settings.json` hooks written at install. Verified on 
 Formatter hooks sanitize `$CLAUDE_FILE_PATH`. Shell metacharacters (` ; | & $ ( ) < > `) are rejected before any formatter runs, preventing malicious paths from executing arbitrary commands.
 
 **3. Indirect Prompt Injection Defense**
-UserPromptSubmit hook strips injection patterns from goals.md before injecting into context:
+UserPromptSubmit hook strips injection patterns from goals.md and checkpoint files before injecting into context:
 - `curl.*|.*bash` or `wget.*|.*sh` patterns
 - `ignore previous instructions`
 - `you are now` or `system prompt`

@@ -382,7 +382,7 @@ AZCLAUDE holds its ground when you try to shortcut it.
 
 1. **Hook integrity** — SHA-256 hash of `~/.claude/settings.json` written at install, verified on every run
 2. **Command injection protection** — `$CLAUDE_FILE_PATH` sanitized, shell metacharacters rejected before any formatter
-3. **Prompt injection defense** — `curl | bash`, `ignore previous instructions`, base64 blocks > 500 chars stripped before context injection
+3. **Prompt injection defense** — `curl | bash`, `ignore previous instructions`, base64 blocks > 500 chars stripped from goals.md and checkpoints before context injection
 4. **Skill checksums** — portable skills SHA-256 hashed, imports fail loudly if tampered
 5. **Credential auditing** — `/ship` blocks on `.env`, plaintext keys, `AKIA`, `sk-`, `ghp_` patterns
 6. **Agent scoping** — review agents read-only (`EnterPlanMode`), experiment agents in isolated git worktrees (`EnterWorktree`)

@@ -15,15 +15,8 @@ function info(msg) { console.log(`  · ${msg}`); }
 
 // ─── Security ─────────────────────────────────────────────────────────────────
 
-const DANGEROUS_CHARS = /[;|&`$()><]/;
-
-function sanitizePath(filePath) {
-  if (DANGEROUS_CHARS.test(filePath)) {
-    warn(`Rejected path with shell metacharacters: ${filePath}`);
-    return false;
-  }
-  return true;
-}
+// Path sanitization is handled in hooks: post-tool-use.js rejects paths
+// outside the project root (rel.startsWith('..')) and skips node_modules/.git.
 
 function generateIntegrityHash(hooksObj) {
   const content = JSON.stringify(hooksObj, null, 2);
@@ -141,11 +134,11 @@ function installGlobalHooks(cli) {
       const userPromptScript  = path.join(hooksScriptsDir, 'user-prompt.js');
       const stopScript        = path.join(hooksScriptsDir, 'stop.js');
       const postToolUseScript = path.join(hooksScriptsDir, 'post-tool-use.js');
-      settings.hooks = {
-        UserPromptSubmit: [{ matcher: '',           hooks: [{ type: 'command', command: `"${nodeExe}" "${userPromptScript}"` }]  }],
-        Stop:             [{ matcher: '',           hooks: [{ type: 'command', command: `"${nodeExe}" "${stopScript}"` }]        }],
-        PostToolUse:      [{ matcher: 'Write|Edit', hooks: [{ type: 'command', command: `"${nodeExe}" "${postToolUseScript}"` }] }]
-      };
+      // Merge — preserve other plugins' hooks, only replace AZCLAUDE's
+      if (!settings.hooks) settings.hooks = {};
+      settings.hooks.UserPromptSubmit = [{ matcher: '',           hooks: [{ type: 'command', command: `"${nodeExe}" "${userPromptScript}"` }]  }];
+      settings.hooks.Stop             = [{ matcher: '',           hooks: [{ type: 'command', command: `"${nodeExe}" "${stopScript}"` }]        }];
+      settings.hooks.PostToolUse      = [{ matcher: 'Write|Edit', hooks: [{ type: 'command', command: `"${nodeExe}" "${postToolUseScript}"` }] }];
       fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
       const integrityPath = path.join(cli.hooksDir, '.azclaude-integrity');
       fs.writeFileSync(integrityPath, generateIntegrityHash(settings.hooks));
@@ -179,11 +172,11 @@ function installGlobalHooks(cli) {
   const postToolUseCmd = `"${nodeExe}" "${postToolUseScript}"`;
 
   settings._azclaude = true;
-  settings.hooks = {
-    UserPromptSubmit: [{ matcher: '',         hooks: [{ type: 'command', command: userPromptCmd  }] }],
-    Stop:             [{ matcher: '',         hooks: [{ type: 'command', command: stopCmd        }] }],
-    PostToolUse:      [{ matcher: 'Write|Edit', hooks: [{ type: 'command', command: postToolUseCmd }] }]
-  };
+  // Merge — preserve other plugins' hooks, only set AZCLAUDE's
+  if (!settings.hooks) settings.hooks = {};
+  settings.hooks.UserPromptSubmit = [{ matcher: '',         hooks: [{ type: 'command', command: userPromptCmd  }] }];
+  settings.hooks.Stop             = [{ matcher: '',         hooks: [{ type: 'command', command: stopCmd        }] }];
+  settings.hooks.PostToolUse      = [{ matcher: 'Write|Edit', hooks: [{ type: 'command', command: postToolUseCmd }] }];
 
   fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
 

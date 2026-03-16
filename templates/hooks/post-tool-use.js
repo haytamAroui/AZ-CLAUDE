@@ -42,6 +42,8 @@ if (/goals\.md$/.test(rel))                         process.exit(0); // prevent 
 if (/node_modules[\\/]|\.git[\\/]/.test(rel))       process.exit(0); // noise
 
 const cfg       = process.env.AZCLAUDE_CFG || '.claude';
+// Guard: cfg must resolve inside the project root
+if (path.resolve(cfg).indexOf(process.cwd()) !== 0) process.exit(0);
 const goalsPath = path.join(cfg, 'memory', 'goals.md');
 if (!fs.existsSync(goalsPath)) process.exit(0); // not an AZCLAUDE project
 
