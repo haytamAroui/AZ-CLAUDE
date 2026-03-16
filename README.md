@@ -410,7 +410,7 @@ All capabilities, commands, and memory work identically on every CLI.
 691 tests. Every link in the system verified — content accuracy, not just file presence.
 
 ```bash
-bash test-features.sh
+bash tests/test-features.sh
 ```
 
 ```
@@ -447,7 +447,8 @@ azclaude/
 ├── hooks/hooks.json              ← ${CLAUDE_PLUGIN_ROOT} hooks (marketplace install)
 ├── DOCS.md                       ← full user guide (all features, step by step)
 ├── CONTRIBUTING.md
-└── test-features.sh              ← 691 tests
+├── tests/
+│   └── test-features.sh          ← 691 tests
 ```
 
 ---

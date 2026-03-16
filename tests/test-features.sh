@@ -46,7 +46,7 @@ check_absent() {
   fi
 }
 
-ROOT="$(cd "$(dirname "$0")" && pwd)/templates"
+ROOT="$(cd "$(dirname "$0")/.." && pwd)/templates"
 CAP="$ROOT/capabilities"
 SHARED="$CAP/shared"
 LVL="$CAP/level-builders"
@@ -607,7 +607,7 @@ check "Loads ONE level-builder"                  "$LU" "ONE\|one level"
 echo ""
 echo "[ CLI Installer — bin/cli.js ]"
 # ─────────────────────────────────────────────
-CLI="$(cd "$(dirname "$0")" && pwd)/bin/cli.js"
+CLI="$(cd "$(dirname "$0")/.." && pwd)/bin/cli.js"
 check_file "bin/cli.js exists"                   "$CLI"
 check "All 11 commands in COMMANDS array"        "$CLI" "dream.*setup.*fix.*evolve.*debate\|loop.*ship.*status"
 check "CLI_TABLE with 5 entries"                 "$CLI" "CLI_TABLE"
@@ -812,7 +812,7 @@ check "/debate: ExitPlanMode before recording"         "$DEBATE" "ExitPlanMode"
 echo ""
 echo "[ Install Integration Test ]"
 # ─────────────────────────────────────────────
-IDIR="$(cd "$(dirname "$0")" && pwd)/.test-install-$$"
+IDIR="$(cd "$(dirname "$0")/.." && pwd)/.test-install-$$"
 rm -rf "$IDIR" && mkdir -p "$IDIR"
 (cd "$IDIR" && git init -q && AZCLAUDE_CLI=claudecode node "$CLI" > /dev/null 2>&1)
 

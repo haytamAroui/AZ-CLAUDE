@@ -139,7 +139,7 @@ ls .claude/commands/{name}.md
 If this is a command that should ship with azclaude (not just this project):
 - Add to `COMMANDS` array in `bin/cli.js`
 - Add to `templates/commands/`
-- Add tests to `test-features.sh`
+- Add tests to `tests/test-features.sh`
 - Add dispatch entry to `templates/CLAUDE.md`
 
 For project-only skills: no registration needed — it's already in `.claude/commands/`.

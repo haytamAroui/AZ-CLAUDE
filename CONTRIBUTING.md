@@ -23,12 +23,12 @@ tokens: ~100
 3. Add it to `templates/capabilities/manifest.md` under the right section.
    Use symptom language in the "When to load" column — not a workflow summary.
 
-4. Add tests in `test-features.sh`:
+4. Add tests in `tests/test-features.sh`:
 ```bash
 check "your-capability: key behavior" "$SHARED/your-capability.md" "pattern to grep"
 ```
 
-5. Run `bash test-features.sh` — all must pass.
+5. Run `bash tests/test-features.sh` — all must pass.
 
 6. Open a PR.
 
@@ -49,14 +49,14 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 
 3. Add it to the dispatch table in `templates/CLAUDE.md`.
 
-4. Add tests in `test-features.sh`.
+4. Add tests in `tests/test-features.sh`.
 
-5. Run `bash test-features.sh` — all must pass.
+5. Run `bash tests/test-features.sh` — all must pass.
 
 ## Running tests
 
 ```bash
-bash test-features.sh
+bash tests/test-features.sh
 ```
 
 527+ tests. All must pass before any PR is merged. No exceptions.
@@ -71,7 +71,7 @@ Shows exactly which checks pass or fail and what to fix.
 
 ## PR checklist
 
-- [ ] `bash test-features.sh` passes (0 failures)
+- [ ] `bash tests/test-features.sh` passes (0 failures)
 - [ ] New capability/command has frontmatter with `description` and `tokens`
 - [ ] Description uses symptom/trigger language ("Load when about to..."), not workflow summary
 - [ ] Enforcement skills have a `## Pressure Tests` section (4 scenarios)
