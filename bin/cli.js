@@ -460,10 +460,11 @@ function runDoctor() {
   const projectDir = process.cwd();
   const cfg        = cli.cfg;
   let   pass = 0, fail = 0;
+  const failures = [];
 
   function chk(label, ok) {
     if (ok) { console.log(`  ✓ ${label}`); pass++; }
-    else     { console.log(`  ✗ ${label}`); fail++; }
+    else     { console.log(`  ✗ ${label}`); fail++; failures.push(label); }
   }
 
   console.log('\n════════════════════════════════════════════════');
@@ -598,8 +599,15 @@ function runDoctor() {
   console.log('\n════════════════════════════════════════════════');
   console.log(`  ${pass}/${total} checks passed`);
   if (fail > 0) {
-    console.log(`\n  Fix: re-run  npx azclaude  in this project directory`);
-    console.log('  If hooks still fail: check that Node.js ≥ 16 is in PATH');
+    const hasCommandFail = failures.some(f => /commands installed/.test(f));
+    const hasHookFail    = failures.some(f => /hook|Hook|integrity/.test(f));
+    const hasGitFail     = failures.some(f => /uncommitted/.test(f));
+    const hasMemoryFail  = failures.some(f => /checkpoints|sessions|codebase-map|goals/.test(f));
+    console.log('');
+    if (hasCommandFail || hasHookFail) console.log('  Fix: re-run  npx azclaude  to install missing files');
+    if (hasHookFail)                   console.log('  If hooks still fail: check that Node.js ≥ 16 is in PATH');
+    if (hasGitFail)                    console.log('  Git: commit or stash uncommitted changes');
+    if (hasMemoryFail)                 console.log('  Memory: run /setup or /persist to create missing files');
   } else {
     console.log('  Environment is healthy.');
   }

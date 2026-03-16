@@ -6,6 +6,7 @@ Updated: 2026-03-16
 - None — environment at 100/100, marketplace submission under review
 
 ## Done this session
+- 01:22 — bin\cli.js (+11/-3) — if (fail > 0) {
 - 01:19 — test-features.sh (+1/-0)
 - 01:19 — templates\hooks\post-tool-use.js (+10/-0) — const fs            = require('fs');
 - 01:17 — CLAUDE.md (+4/-4) — test-features.sh        — 677 grep-based tests, all must pas
