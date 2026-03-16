@@ -1,7 +1,7 @@
 {
   "name": "azclaude",
   "version": "3.13.0",
-  "description": "Project-aware AI environment: auto-save memory, 16 commands, domain vocabulary, custom agents from git evidence. /setup builds everything for your project in 2 minutes.",
+  "description": "Project-aware AI environment: auto-save memory, 22 commands, 4 agents, domain vocabulary, evolution system. /setup builds everything for your project in 2 minutes.",
   "author": {
     "name": "haytamAroui",
     "url": "https://github.com/haytamAroui"

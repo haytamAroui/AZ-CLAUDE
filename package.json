@@ -1,7 +1,7 @@
 {
   "name": "azclaude",
   "version": "3.13.0",
-  "description": "Claude Code architecture-native AI environment. Skills, not agents. Lazy loading, not monoliths. 55x less token overhead.",
+  "description": "Project-aware AI coding environment: 22 commands, 4 agents, auto-save memory, domain vocabulary, evolution system. One install, two minutes.",
   "bin": {
     "azclaude": "./bin/cli.js"
   },

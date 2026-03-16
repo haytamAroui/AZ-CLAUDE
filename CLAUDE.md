@@ -3,7 +3,7 @@
 ## Identity
 Claude Code architecture-native AI environment. A template installer (`npx azclaude`) that scaffolds
 CLAUDE.md, skills, memory, agents, and hooks for any project — progressively, level by level.
-Domain: Developer tooling | Stack: Node.js CLI, Bash, Markdown templates | Scale: STANDARD (67 files)
+Domain: Developer tooling | Stack: Node.js CLI, Bash, Markdown templates | Scale: STANDARD (75 files)
 
 ## Rules
 1. **Completion** — Never say "should work" or "probably passes." Show the output or stay in progress.
