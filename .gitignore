@@ -7,6 +7,11 @@
 .claude/commands/
 .claude/scripts/
 
+# Session state — local working memory, not for public repo
+.claude/memory/checkpoints/
+.claude/memory/sessions/
+.claude/memory/goals.md
+
 # Dependencies
 node_modules/
 
