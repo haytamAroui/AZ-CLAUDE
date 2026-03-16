@@ -1,7 +1,7 @@
 {
   "name": "azclaude",
-  "version": "3.13.0",
-  "description": "Project-aware AI coding environment: 22 commands, 4 agents, auto-save memory, domain vocabulary, evolution system. One install, two minutes.",
+  "version": "1.0.0",
+  "description": "The operating system for Claude Code. Memory, agents, skills, intelligence, evolution — orchestrating Claude Code's native architecture. Zero external dependencies. One command to set up.",
   "bin": {
     "azclaude": "./bin/cli.js"
   },

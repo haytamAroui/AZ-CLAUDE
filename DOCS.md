@@ -1,6 +1,6 @@
 # AZCLAUDE — Complete User Guide
 
-> Version 3.13.0 · 691 tests passing · Claude Code marketplace plugin
+> Version 1.0.0 · 691 tests passing · Claude Code marketplace plugin
 
 ---
 
@@ -14,14 +14,13 @@
 6. [The Intelligence System](#the-intelligence-system)
 7. [Domain Awareness](#domain-awareness)
 8. [Custom Agents](#custom-agents)
-9. [The Memory System](#the-memory-system)
+9. [The Memory System](#the-memory-system) (includes all 3 hooks, commands, flow diagrams, token cost)
 10. [Native Tool Orchestration (MCP)](#native-tool-orchestration-mcp)
-11. [The Hook System](#the-hook-system)
-12. [All 22 Commands](#all-22-commands)
-13. [Behavioral Defenses (Pressure Testing)](#behavioral-defenses-pressure-testing)
-14. [Multi-CLI Support](#multi-cli-support)
-15. [Security](#security)
-16. [Troubleshooting](#troubleshooting)
+11. [All 22 Commands](#all-22-commands)
+12. [Behavioral Defenses (Pressure Testing)](#behavioral-defenses-pressure-testing)
+13. [Multi-CLI Support](#multi-cli-support)
+14. [Security](#security)
+15. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -186,6 +185,12 @@ Before any generated file is promoted:
 - Self-applicability: can an unfamiliar agent apply this without reading other files?
 - Pressure test resilience (enforcement skills only)
 
+### Evolution History and Skill Promotion
+
+Every `/evolve` run logs its results to `ops/evolution-log.md` — what was detected, what was fixed, score before and after. This creates a traceable audit trail of self-improvement over time.
+
+When `/evolve` generates a skill or pattern that is **not project-specific** (tagged GENERAL), it promotes a copy to `~/shared-skills/`. This means improvements discovered in one project become available to all your projects automatically. Project-specific skills stay local.
+
 ### Scheduling
 
 At the end of `/evolve`, you'll be offered a weekly CronCreate schedule.
@@ -338,68 +343,320 @@ Each gets a comment: `# Claude Code Development Agent (not a {framework} applica
 
 This prevents naming collision between "the agent helping you code" and "the agent that IS the product."
 
+### Built-in Agents
+
+AZCLAUDE ships with 4 agent templates. Two handle infrastructure, two handle daily work.
+
+| Agent | Model | Mode | Purpose |
+|-------|-------|------|---------|
+| **orchestrator-init** | opus | full access | Runs once during `/setup`. Scans project, fills CLAUDE.md, creates goals.md, builds agents. Exits permanently after. |
+| **loop-controller** | opus | full access | Level 10 autonomous agent. Runs 3 cycles: environment evolution, knowledge consolidation, topology optimization. |
+| **code-reviewer** | opus | read-only (`EnterPlanMode`) | Spec-first review. Stage 1: spec compliance. Stage 2: code quality. Never modifies files. Issues classified as BLOCKING or SUGGESTION. |
+| **test-writer** | sonnet | `acceptEdits` | Reads existing test patterns in your project. Matches framework, style, naming. Writes tests, runs them, verifies they pass. All 5 agent layers present. |
+
+The code-reviewer is deliberately read-only — it uses `EnterPlanMode` so it cannot accidentally modify files during review. The test-writer uses Sonnet for cost efficiency on high-volume test generation.
+
 ---
 
 ## The Memory System
 
-AZCLAUDE solves context compaction with 3 layers. Each has a different job.
+**Three hooks. Three commands. One rule: goals.md is always read first.**
 
-### What happens when context compacts at turn 80
+No databases. No servers. No vector search. Just markdown files — written by hooks, injected by hooks, read by Claude natively.
+
+### The Core Insight
+
+Every other memory system asks: *"How do we store more and search better?"*
+
+AZCLAUDE asks: *"What does Claude actually need to see at the moment it starts working?"*
+
+The answer is two things:
+
+1. **What files changed** — the mechanical record
+2. **Why decisions were made** — the human reasoning
+
+500 tokens. Injected before your first message. That's complete session continuity.
+
+### Two Layers — Automatic and Manual
 
 ```
-Turn 1      — Session starts. UserPromptSubmit injects goals.md + latest checkpoint.
-Turn 15     — Run /checkpoint. Captures: what you're doing, WHY, key decisions, what's next.
-Turn 30     — Run /checkpoint again.
-Turn 80     — Claude Code compacts. Earlier context is gone.
-Turn 81     — Next prompt. UserPromptSubmit fires again automatically.
-             → Claude receives goals.md: which files were in flight, +N/-M stats
-             → Claude receives latest checkpoint: WHY decisions were made
-             → Picks up in seconds, not minutes.
-End of work — Run /persist. Full summary, friction log, session narrative.
+┌─────────────────────────────────────────────────────────────┐
+│                    AUTOMATIC LAYER                           │
+│              (zero user input required)                      │
+│                                                             │
+│   PostToolUse hook  ──→  goals.md  ──→  UserPromptSubmit   │
+│   (fires on every edit)  (rolling ledger)  (injects before │
+│                                            your message)    │
+│                                                             │
+│   Stop hook  ──→  migrates "In progress" to "Done"         │
+├─────────────────────────────────────────────────────────────┤
+│                     MANUAL LAYER                            │
+│              (user triggers when ready)                      │
+│                                                             │
+│   /checkpoint  ──→  checkpoints/{timestamp}.md              │
+│   (WHY you made decisions — every 15-20 turns)              │
+│                                                             │
+│   /persist  ──→  sessions/{date}-{topic}.md                 │
+│   (full session narrative — before closing)                  │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### Layer 1: File breadcrumb (automatic)
+Machines track WHAT happened. Humans record WHY. Neither layer tries to do the other's job.
 
-PostToolUse hook fires after every Write or Edit. No user action.
+### Hook 1: PostToolUse → goals.md
 
-```
-goals.md "In progress" section:
+**When:** Every time Claude writes, edits, or creates a file.
+
+**What it does:** Appends a breadcrumb to `.claude/memory/goals.md` with timestamp, file path, git diff stats, and a one-line summary.
+
+**What goals.md looks like:**
+
+```markdown
+## In progress
 - 22:10 — src/auth.js (+8/-2) — added JWT validation
 - 22:13 — test/auth.test.js (+15/-0) — added token expiry tests
 - 22:18 — README.md (+3/-1) — updated auth section
+
+## Done
+- 21:45 — package.json (+1/-1) — bumped express version
+- 21:30 — .env.example (+2/-0) — added JWT_SECRET placeholder
 ```
 
-This survives context compaction. UserPromptSubmit injects it on the next session.
+**Why it matters:** Every edit leaves a trace. The user does nothing. No file change is ever forgotten, even after context compaction wipes the conversation history.
 
-### Layer 2: Reasoning snapshot (`/checkpoint`)
+### Hook 2: UserPromptSubmit → Context Injection
 
-Run every 15–20 turns on complex work. Creates `.claude/memory/checkpoints/{date}-{HH:MM}.md`:
+**When:** Before Claude processes the user's first message — every session, every time.
 
-```markdown
+**What it does:**
+1. Reads `goals.md` (what you were working on)
+2. Reads the latest file from `checkpoints/` (why you made decisions)
+3. Prints both to stdout
+
+**What Claude sees before your message:**
+
+```
+--- ACTIVE GOALS ---
+## In progress
+- 22:10 — src/auth.js (+8/-2) — added JWT validation
+- 22:13 — test/auth.test.js (+15/-0) — added token expiry tests
+- 22:18 — README.md (+3/-1) — updated auth section
+--- END GOALS ---
+
+--- LAST CHECKPOINT (2026-03-14-22:10.md) ---
 ## What I'm doing now
 Implementing JWT refresh token rotation in src/auth.js
 
 ## WHY — decisions made this session
-- Chose RS256 over HS256: asymmetric keys safer for multi-service
+- Chose RS256 over HS256: asymmetric keys safer for multi-service setup
 - Redis for token blacklist: O(1) lookup vs DB query
 
 ## What I know that isn't written yet
-- Old refresh flow in auth.js:180 has a race condition — fix next task
+Old refresh flow in auth.js:180 has a race condition — fix next task
 
 ## What's next
 1. Add token blacklist check to middleware
 2. Write expiry tests
 3. Update API docs
-
-## Open risks
-- Redis connection timeout not handled — could leak tokens
+--- END CHECKPOINT ---
 ```
 
-UserPromptSubmit injects the latest checkpoint on the next session. This is what survives compaction — not just which files changed, but why.
+**Why it matters:** This is the critical architectural decision. Claude doesn't choose to read memory. Memory is physically injected into the context window before Claude sees your prompt. The difference between "tell Claude to read memory" and "inject memory before Claude reads anything" is the difference between a suggestion and a mechanism. Suggestions get ignored under pressure. Mechanisms can't be.
 
-### Layer 3: Session narrative (`/persist`)
+### Hook 3: Stop → Migration
 
-Run at end of session. Writes `.claude/memory/sessions/{date}-session.md` — 2–3 sentences covering what was accomplished, what was left open, and any key decisions. Read by `/evolve` Cycle 2 (knowledge consolidation).
+**When:** When Claude stops responding.
+
+**What it does:** Migrates "In progress" items in goals.md to "Done."
+
+**Why it matters:** Goals.md stays clean. Active work on top. Completed work archived below. It's a rolling ledger, not an unbounded log. Token cost stays fixed regardless of how many sessions you've run.
+
+### /checkpoint — Mid-Session Reasoning Snapshot
+
+**When to use:** Every 15-20 turns, or before a major decision.
+
+**What it captures:** What you're doing, WHY, key decisions, what you know that isn't in the code yet, and what's next.
+
+**Where it saves:** `.claude/memory/checkpoints/{timestamp}.md`
+
+**Why it matters:** No automatic system can capture reasoning. PostToolUse knows you edited `auth.js` — it doesn't know you chose RS256 over HS256 because asymmetric keys are safer for multi-service architectures. Only you know that. /checkpoint captures it so Claude knows it next session.
+
+The UserPromptSubmit hook automatically picks up the LATEST checkpoint and injects it alongside goals.md.
+
+### /persist — End-of-Session Narrative
+
+**When to use:** Before closing a session.
+
+**What it captures:** Full session summary — what was accomplished, what friction was encountered, what decisions were made, what's next.
+
+**Where it saves:** `.claude/memory/sessions/{date}-{topic}.md`
+
+**Why it matters:** Session narratives feed the evolution loop. When you run `/evolve`, the evolution module reads past sessions to detect patterns and antipatterns across your project's history. A pattern that appears in 3 sessions gets promoted to `patterns.md`. A mistake that recurs gets logged to `antipatterns.md`. Sessions are the raw material for self-improvement.
+
+### The Full Flow — Turn by Turn
+
+```
+SESSION 1
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Turn 1:    User types "fix the auth bug"
+           ┌─ UserPromptSubmit fires
+           │  Reads goals.md → (empty first time)
+           │  Reads checkpoints/ → (none yet)
+           └─ Claude sees: empty context + user's message
+
+Turn 5:    Claude edits src/auth.js
+           ┌─ PostToolUse fires
+           └─ goals.md gets: "14:05 — src/auth.js (+12/-3) — fixed race condition"
+
+Turn 12:   Claude edits test/auth.test.js
+           ┌─ PostToolUse fires
+           └─ goals.md gets another line
+
+Turn 15:   User runs /checkpoint
+           ┌─ Captures: "Fixing auth. Chose RS256 over HS256.
+           │  Race condition in auth.js:180 still needs fix."
+           └─ Saved to checkpoints/2026-03-16-14:15.md
+
+Turn 30:   User runs /checkpoint again
+           └─ New snapshot with updated progress
+
+Turn 80:   ⚠️  CONTEXT COMPACTION — earlier turns are gone
+
+Turn 81:   User types next prompt
+           ┌─ UserPromptSubmit fires
+           │  Reads goals.md → has ALL edit history from turns 5-79
+           │  Reads latest checkpoint → has reasoning from turn 30
+           └─ Claude sees both BEFORE the user's message
+              → picks up in seconds, not minutes
+
+End:       User runs /persist
+           ┌─ Full narrative saved to sessions/
+           └─ Stop hook migrates In progress → Done
+
+
+SESSION 2
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Turn 1:    User types "continue the auth work"
+           ┌─ UserPromptSubmit fires
+           │  Reads goals.md → has Session 1's edit history
+           │  Reads latest checkpoint → has Session 1's reasoning
+           └─ Claude knows:
+              • Which files were touched and what changed
+              • Why RS256 was chosen over HS256
+              • That auth.js:180 still needs the race condition fix
+              → zero re-explanation needed
+```
+
+### How Memory Connects to the Rest of AZCLAUDE
+
+```
+                         AUTOMATIC
+                            │
+        PostToolUse ────→ goals.md ────→ UserPromptSubmit ────→ Claude
+        (every edit)     (rolling        (every session         (sees it
+                          ledger)         start)                 first)
+
+                          MANUAL
+                            │
+        /checkpoint ────→ checkpoints/ ──→ UserPromptSubmit ────→ Claude
+        (every 15-20      (reasoning       (picks latest
+         turns)            snapshots)       automatically)
+
+        /persist ───────→ sessions/ ─────→ /evolve ─────→ patterns.md
+        (end of session)  (narratives)     (reads sessions,   antipatterns.md
+                                            extracts what      decisions.md
+                                            worked/failed)
+
+                         AGENTS READ
+                            │
+        patterns.md ──────────────────→ Agent instructions (what works)
+        antipatterns.md ──────────────→ Agent instructions (what broke)
+        decisions.md ─────────────────→ Agent instructions (what was decided)
+```
+
+The automatic layer feeds the session start.
+The manual layer feeds both the session start AND the evolution loop.
+The evolution loop feeds the agents.
+The agents produce better work.
+Better work produces better sessions.
+Better sessions feed better evolution.
+
+**The system improves itself through its own memory.**
+
+### Why Markdown — Not a Database
+
+```
+Database approach (Claude-Mem, Ruflo):
+
+  Hook fires → HTTP request to worker service →
+  Worker queries SQLite → FTS5 search → ChromaDB vector lookup →
+  Format results → Return via MCP protocol → Inject into context
+
+  Failure points: worker not running, port occupied, SQLite locked,
+  ChromaDB not installed, MCP protocol error, HTTP timeout
+  Token cost: ~30,000 tokens protocol overhead before results
+
+  Dependencies: Node.js + Bun + uv + SQLite + ChromaDB + MCP server
+
+
+Markdown approach (AZCLAUDE):
+
+  Hook fires → read goals.md → print to stdout → Claude sees it
+
+  Failure points: file doesn't exist
+  Token cost: ~500 tokens total (goals + checkpoint)
+
+  Dependencies: Node.js (which Claude Code already requires)
+```
+
+Claude Code's native operation is reading files. It does this thousands of times per session. Reading goals.md is the same operation Claude already does constantly — zero new infrastructure, zero new protocols, zero new failure modes.
+
+### Token Cost — Fixed, Not Variable
+
+```
+AZCLAUDE memory cost per session:
+
+  goals.md injection:        ~200 tokens
+  checkpoint injection:      ~300 tokens
+  ─────────────────────────────────────
+  Total:                     ~500 tokens (fixed)
+
+
+Claude-Mem memory cost per session:
+
+  MCP protocol overhead:     ~30,000 tokens
+  Search query + results:    variable
+  Vector search overhead:    variable
+  ─────────────────────────────────────
+  Total:                     30,000+ tokens (grows with history)
+```
+
+AZCLAUDE's memory cost is the same whether your project has 5 sessions or 500 — because goals.md is a rolling ledger (Stop hook archives completed items) and only the latest checkpoint is injected.
+
+### Memory Summary
+
+| Layer | Mechanism | What It Captures | Automatic | Survives Compaction |
+|-------|-----------|-----------------|-----------|-------------------|
+| File breadcrumb | PostToolUse → goals.md | WHERE you were, WHAT changed | Yes | Yes |
+| Reasoning snapshot | /checkpoint → checkpoints/ | WHY decisions were made | Manual | Yes |
+| Session narrative | /persist → sessions/ | Full summary, friction, next steps | Manual | Yes |
+| Context injection | UserPromptSubmit | Delivers goals + checkpoint to Claude | Yes | Yes |
+| Ledger cleanup | Stop → migration | Keeps goals.md current | Yes | Yes |
+
+Five mechanisms. Three files. Zero databases. Zero servers. Zero dependencies.
+
+**Pure Claude Code. Fully orchestrated.**
+
+### Hook Reliability
+
+Three design decisions keep the hooks dependable:
+
+- **Always overwrite on install.** Running `npx azclaude` always writes fresh hook scripts, even if the hooks directory already exists. This fixes stale hooks left behind by older versions — the most common support issue before this change.
+- **Checkpoint reminder.** PostToolUse counts edits per session. Every 15 edits, it prints a reminder: `⚠ 15 edits since last checkpoint — consider running /checkpoint`. This prevents forgotten checkpoints on long sessions.
+- **Stop hook warns, never stubs.** The Stop hook migrates "In progress" → "Done" and warns if no `/persist` was run. It does NOT create empty friction log files. Friction logs are only written when there's actual friction to record — empty stubs were noise that polluted `ops/observations/`.
 
 ---
 
@@ -412,45 +669,6 @@ AZCLAUDE doesn't just use text prompts; it hardwires its logic directly into the
 - **`EnterWorktree`**: Called natively to safely isolate state during `/evolve` and `/fix`.
 - **`CronCreate` / `CronList`**: Natively tied to the `/loop` command for actual autonomous background execution.
 - **`mcp__ide__getDiagnostics`**: Hard-gated before `/test` and `/ship` to ensure no syntax errors exist before running bash commands.
-
----
-
-## The Hook System
-
-Three hooks run silently in the background. All pure Node.js — no bash required. Cross-platform: Windows PowerShell, CMD, Git Bash, macOS, Linux.
-
-### UserPromptSubmit hook
-**When**: Every session's first prompt
-**What**:
-1. Checks for prompt injection patterns (strips `curl | bash`, `ignore previous instructions`, `you are now`)
-2. Reads `.claude/memory/goals.md`
-3. If "In progress" entries remain from last session → warns: `⚠ PREVIOUS SESSION INTERRUPTED`
-4. Injects goals.md: `--- ACTIVE GOALS --- ... --- END GOALS ---`
-5. Finds latest checkpoint in `.claude/memory/checkpoints/`
-6. Injects checkpoint: `--- LAST CHECKPOINT ({filename}) --- ... --- END CHECKPOINT ---`
-
-**Result**: Claude reads both before your first message. Zero re-explanation needed.
-
-### PostToolUse hook
-**When**: After every Write or Edit operation
-**What**:
-1. Reads file path from tool input (stdin JSON)
-2. Skips: goals.md (prevent loop), node_modules/, .git/, files outside project
-3. Runs `git diff HEAD --numstat -- {file}` to get +N/-M
-4. Extracts first meaningful line of new_string as change summary
-5. Deduplicates: removes old entry for same file, inserts new entry at top
-
-**Result in goals.md**:
-```
-## In progress
-- 22:10 — src/auth.js (+8/-2) — added JWT validation
-- 22:13 — test/auth.test.js (+15/-0) — added token expiry tests
-- 22:18 — README.md (+3/-1) — updated auth section
-```
-
-### Stop hook
-**When**: Session ends
-**What**: Reads goals.md "In progress" entries → moves them to "Done this session" — clears stale state for the next session.
 
 ---
 
@@ -880,11 +1098,23 @@ Portable skills in `~/shared-skills/` are SHA-256 hashed. Imports fail loudly if
 
 ### `npx azclaude doctor` shows failures
 
-Doctor exits 1 with a specific fix hint for each failure. Follow the hint exactly.
+Doctor runs 32 checks across 6 categories and exits 1 with a specific fix hint for each failure.
+
+**What doctor checks:**
+- **Runtime** — Node.js version, git available, CLI detected
+- **Global hooks** — UserPromptSubmit, PostToolUse, Stop hooks wired in `~/.claude/settings.json`
+- **Hook freshness** — hook scripts match the latest version shipped with AZCLAUDE (catches stale hooks)
+- **Settings integrity** — SHA-256 hash of settings.json matches install-time hash
+- **Commands** — all 22 commands present (dynamically derived from `COMMANDS` array in cli.js)
+- **Memory** — goals.md exists, checkpoints directory exists, git repo initialized
+- **Project** — CLAUDE.md exists and has no unfilled `{{placeholders}}`
+
+Each failure includes the exact fix command. For example: `FIX: re-run 'npx azclaude' to refresh hook scripts`.
 
 Common fixes:
 - **Node.js not in PATH** → install Node.js ≥16 from nodejs.org
 - **Hook not wired** → re-run `npx azclaude` to upgrade
+- **Stale hooks** → re-run `npx azclaude` (always overwrites with fresh scripts)
 - **Placeholders in CLAUDE.md** → run `/setup` to fill them
 - **Missing commands** → re-run `npx azclaude`
 

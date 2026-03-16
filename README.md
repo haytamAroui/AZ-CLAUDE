@@ -27,6 +27,60 @@ You open Claude Code. Ask it to fix a bug. It doesn't know your conventions, you
 
 ---
 
+## Why AZCLAUDE Exists
+
+Claude Code is smarter than any tool someone will build on top of it.
+
+Think about what Claude Code already ships with:
+
+- **Hooks** — code that fires on every edit, every prompt, every session start
+- **Agents** — markdown files with persona, scope, tools, constraints, loaded automatically
+- **Skills** — recipes Claude reads on demand, zero preloading
+- **Commands** — slash commands that trigger multi-step workflows
+- **Subagents** — isolated context windows per task, fresh every time
+- **Memory directories** — persistent files that survive across sessions
+- **UserPromptSubmit** — inject content into Claude's context before it reads your message
+
+All the ingredients are there. The architecture is already built. Nobody needs to build a database, a daemon, a vector store, or an MCP server to make Claude Code remember things or coordinate agents. Claude Code can already do all of it — natively, cross-platform, with zero dependencies.
+
+The problem isn't missing features. The problem is that nobody orchestrates them.
+
+**That's what AZCLAUDE does.** It's the first tool built entirely inside Claude Code's own architecture — not around it, not on top of it, not fighting it.
+
+```
+What other tools do:                    What AZCLAUDE does:
+
+Add SQLite for memory                   Write to .claude/memory/ (Claude reads it natively)
+Add ChromaDB for search                 Use grep + file structure (Claude already does this)
+Add MCP server for tools                Use hooks (Claude already has them)
+Add Bun/Python runtime                  Use Node.js (Claude Code already requires it)
+Add worker service on port 37777        Use UserPromptSubmit (Claude injects it automatically)
+Add background daemon                   Use PostToolUse (fires on every edit, zero config)
+
+Result: 5+ external dependencies         Result: zero external dependencies
+Breaks when Claude Code updates          Works when Claude Code updates
+Fails on Windows                         Works everywhere Claude Code works
+```
+
+When Anthropic improves Claude Code — and they will — tools built around it break. AZCLAUDE gets better for free, because it uses the native features that Anthropic is actively improving.
+
+**AZCLAUDE doesn't extend Claude Code. It unlocks it.**
+
+Every capability in AZCLAUDE is Claude Code doing what it was designed to do — orchestrated so that the right file lands in the right place at the right time:
+
+- Memory that survives context compaction? That's `UserPromptSubmit` injecting `goals.md` — a hook writing to a file Claude already reads.
+- Agents tailored to your project? That's markdown in `.claude/agents/` — the directory Claude already loads from.
+- Skills loaded on demand? That's files in `.claude/skills/` — the system Claude already lazy-loads.
+- Debate engine with fact-checking? That's a subagent with a structured prompt — the tool Claude already spawns.
+- Self-improvement loop? That's `/evolve` reading session files and rewriting agents — using Read, Write, Edit tools Claude already has.
+
+No databases. No servers. No runtimes. No protocols.
+Just Claude Code, doing what Claude Code does — with the right instructions in the right files.
+
+**Zero dependencies beyond Node.js. Pure Claude Code, fully orchestrated.**
+
+---
+
 ## ⚡ See It In 30 Seconds
 
 ```bash
