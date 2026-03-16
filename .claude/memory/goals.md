@@ -6,6 +6,15 @@ Updated: 2026-03-16
 - None — environment at 100/100, marketplace submission under review
 
 ## Done this session
+- 01:19 — test-features.sh (+1/-0)
+- 01:19 — templates\hooks\post-tool-use.js (+10/-0) — const fs            = require('fs');
+- 01:17 — CLAUDE.md (+4/-4) — test-features.sh        — 677 grep-based tests, all must pas
+- 01:16 — test-features.sh (+48/-4) — EXPECTED_CMDS=20
+- 01:14 — bin\cli.js (+1/-1)
+- 01:14 — templates\commands\deps.md
+- 01:14 — templates\commands\migrate.md
+- 01:14 — templates\commands\doc.md
+- 01:13 — templates\commands\refactor.md
 - 01:09 — CLAUDE.md (+1/-1) — test-features.sh        — 654 grep-based tests, all must pas
 - 01:08 — test-features.sh (+23/-0) — "test-writer: has all 5 layers"              "$TW" "Layer 5"
 - 01:07 — bin\cli.js (+10/-7) — const AGENTS = ['orchestrator-init', 'code-reviewer', 'test-
@@ -40,12 +49,3 @@ Updated: 2026-03-16
 
 ## Open blockers
 - None
-
-## In progress
-- 01:17 — CLAUDE.md (+4/-4) — test-features.sh        — 677 grep-based tests, all must pas
-- 01:16 — test-features.sh (+48/-4) — EXPECTED_CMDS=20
-- 01:14 — bin\cli.js (+1/-1)
-- 01:14 — templates\commands\deps.md
-- 01:14 — templates\commands\migrate.md
-- 01:14 — templates\commands\doc.md
-- 01:13 — templates\commands\refactor.md

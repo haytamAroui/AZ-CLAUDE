@@ -869,6 +869,7 @@ check        "hooks: cli upgrades missing PostToolUse"    "bin/cli.js"          
 check        "hooks: post-tool-use captures git diff stat"  "templates/hooks/post-tool-use.js" "numstat\|diffStat\|added.*deleted"
 check        "hooks: post-tool-use captures change summary" "templates/hooks/post-tool-use.js" "changeSummary\|old_string\|new_string"
 check        "hooks: post-tool-use entry includes diffStat" "templates/hooks/post-tool-use.js" "diffStat.*changeSummary\|diffStat\}.*changeSummary"
+check        "hooks: post-tool-use checkpoint reminder"  "templates/hooks/post-tool-use.js" "checkpoint\|edit-count\|15"
 check        "hooks: stop migrates In progress to Done"   "templates/hooks/stop.js"          "In progress\|ipEntries"
 check        "hooks: user-prompt warns interrupted"       "templates/hooks/user-prompt.js"   "INTERRUPTED\|interrupted"
 

@@ -9,6 +9,7 @@
  */
 const fs            = require('fs');
 const path          = require('path');
+const os            = require('os');
 const { spawnSync } = require('child_process');
 
 // Read tool input + response from stdin — Claude Code sends JSON and closes stdin
@@ -89,3 +90,12 @@ if (!content.includes(HEADING)) {
 }
 
 try { fs.writeFileSync(goalsPath, content); } catch (_) {}
+
+// ── Checkpoint reminder every 15 edits ──────────────────────────────────────
+const counterPath = path.join(os.tmpdir(), `.azclaude-edit-count-${process.ppid || process.pid}`);
+let editCount = 1;
+try { editCount = parseInt(fs.readFileSync(counterPath, 'utf8'), 10) + 1; } catch (_) {}
+try { fs.writeFileSync(counterPath, String(editCount)); } catch (_) {}
+if (editCount > 0 && editCount % 15 === 0) {
+  process.stdout.write(`\n💡 ${editCount} edits this session — consider running /checkpoint to save your reasoning\n`);
+}
