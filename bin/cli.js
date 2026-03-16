@@ -252,17 +252,20 @@ function installScripts(projectDir, cfg) {
 
 // ─── Agents ───────────────────────────────────────────────────────────────────
 
+const AGENTS = ['orchestrator-init', 'code-reviewer', 'test-writer'];
+
 function installAgents(projectDir, cfg) {
   const agentsDir = path.join(projectDir, cfg, 'agents');
   fs.mkdirSync(agentsDir, { recursive: true });
 
-  const src = path.join(TEMPLATE_DIR, 'agents', 'orchestrator-init.md');
-  const dst = path.join(agentsDir, 'orchestrator-init.md');
-  if (!fs.existsSync(dst) && fs.existsSync(src)) {
-    const content = substitutePaths(fs.readFileSync(src, 'utf8'), cfg);
-    fs.writeFileSync(dst, content);
-    ok('orchestrator-init agent installed');
-    info('Fires once during /setup, then exits — not a persistent routing agent');
+  for (const agent of AGENTS) {
+    const src = path.join(TEMPLATE_DIR, 'agents', `${agent}.md`);
+    const dst = path.join(agentsDir, `${agent}.md`);
+    if (!fs.existsSync(dst) && fs.existsSync(src)) {
+      const content = substitutePaths(fs.readFileSync(src, 'utf8'), cfg);
+      fs.writeFileSync(dst, content);
+      ok(`${agent} agent installed`);
+    }
   }
 }
 

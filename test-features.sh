@@ -69,6 +69,8 @@ check_file "manifest.md exists"                          "$MANIFEST"
 check_file "CLAUDE.md template exists"                   "$ROOT/CLAUDE.md"
 check_file "orchestrator-init.md exists"                 "$ORCH"
 check_file "loop-controller.md exists"                   "$ROOT/agents/loop-controller.md"
+check_file "code-reviewer.md exists"                     "$ROOT/agents/code-reviewer.md"
+check_file "test-writer.md exists"                       "$ROOT/agents/test-writer.md"
 check_file "env-scan.sh script exists"                   "$ROOT/scripts/env-scan.sh"
 check_file "shared/tdd.md exists"                        "$SHARED/tdd.md"
 check_file "shared/completion-rule.md exists"            "$SHARED/completion-rule.md"
@@ -703,6 +705,27 @@ check "session-rhythm: TaskUpdate in WORK"             "$SHARED/session-rhythm.m
 
 check "orchestrator-init: TaskCreate for init steps"   "$ORCH" "TaskCreate"
 check "orchestrator-init: TaskUpdate per step"         "$ORCH" "TaskUpdate"
+
+# ─── code-reviewer agent ─────────────────────────────────────────────────────
+CR="$ROOT/agents/code-reviewer.md"
+check      "code-reviewer: has all 5 layers"            "$CR" "Layer 5"
+check      "code-reviewer: read-only permissions"      "$CR" "plan\|disallowedTools.*Write"
+check      "code-reviewer: uses git diff"              "$CR" "git diff"
+check      "code-reviewer: security checks"            "$CR" "injection\|XSS\|OWASP\|secrets"
+check      "code-reviewer: runs tests"                 "$CR" "npm test\|pytest\|run.*test"
+check      "code-reviewer: structured output format"   "$CR" "BLOCKING\|APPROVE\|REQUEST_CHANGES"
+check      "code-reviewer: self-correction"            "$CR" "Self-Correction\|2 attempts"
+
+# ─── test-writer agent ───────────────────────────────────────────────────────
+TW="$ROOT/agents/test-writer.md"
+check      "test-writer: has all 5 layers"              "$TW" "Layer 5"
+check      "test-writer: detects test framework"       "$TW" "jest\|vitest\|pytest"
+check      "test-writer: matches existing patterns"    "$TW" "existing test\|match.*style\|follow"
+check      "test-writer: covers edge cases"            "$TW" "null\|empty\|boundary\|error"
+check      "test-writer: runs tests after writing"     "$TW" "Run and Verify\|run.*verify"
+check      "test-writer: never modifies source"        "$TW" "Never modify source\|test files only"
+check      "test-writer: self-correction"              "$TW" "Self-Correction\|2 attempts"
+check      "cli: AGENTS array includes all agents"     "bin/cli.js" "code-reviewer.*test-writer\|AGENTS.*code-reviewer"
 
 check "level3-skills: references native-tools.md"      "$LVL/level3-skills.md" "native-tools"
 check "level3-skills: copy /add /review /test pattern" "$LVL/level3-skills.md" "add\.md.*review\.md.*test\.md\|add.md\|review.md"

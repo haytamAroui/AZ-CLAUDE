@@ -23,7 +23,7 @@ templates/commands/     — 16 command files installed as .claude/commands/
 templates/capabilities/ — manifest + shared + level-builders + evolution + intelligence
 templates/agents/       — orchestrator-init + loop-controller
 templates/scripts/      — env-scan.sh (JSON output, ~200 tokens)
-test-features.sh        — 637 grep-based tests, all must pass before commit
+test-features.sh        — 654 grep-based tests, all must pass before commit
 ```
 
 ## Task Routing

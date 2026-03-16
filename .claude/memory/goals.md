@@ -35,3 +35,10 @@ Updated: 2026-03-16
 
 ## Open blockers
 - None
+
+## In progress
+- 01:09 — CLAUDE.md (+1/-1) — test-features.sh        — 654 grep-based tests, all must pas
+- 01:08 — test-features.sh (+23/-0) — "test-writer: has all 5 layers"              "$TW" "Layer 5"
+- 01:07 — bin\cli.js (+10/-7) — const AGENTS = ['orchestrator-init', 'code-reviewer', 'test-
+- 01:07 — templates\agents\test-writer.md
+- 01:06 — templates\agents\code-reviewer.md
