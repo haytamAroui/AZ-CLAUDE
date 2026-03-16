@@ -874,6 +874,13 @@ check      "evolve: quick mode skips generate"      "templates/commands/evolve.m
 check      "evolve: quick mode token estimate"      "templates/commands/evolve.md" "500 tokens\|~500"
 check      "evolve: description mentions quick"     "templates/commands/evolve.md" "quick"
 check      "evolve: full mode still runs all cycles" "templates/commands/evolve.md" "blank.*full\|full.*all cycles"
+check      "evolve: evolution history log step"     "templates/commands/evolve.md" "evolution-log\.md\|Evolution History"
+check      "evolve: logs before/after score"        "templates/commands/evolve.md" "before score\|after score\|delta"
+check      "evolve: promotes GENERAL to shared-skills" "templates/commands/evolve.md" "shared-skills\|GENERAL.*promote\|Promoted to"
+check      "evolve: adds discovered_in on promote"  "templates/commands/evolve.md" "discovered_in"
+check      "evolve: checksums on promote"            "templates/commands/evolve.md" "checksums\|sha256"
+check      "cli: creates evolution-log.md"           "bin/cli.js" "evolution-log\.md"
+check      "cli: evolve tip in install output"       "bin/cli.js" "run /evolve\|auto-improve"
 
 # ─── /ship docs sync ──────────────────────────────────────────────────────────
 echo ""

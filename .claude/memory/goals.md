@@ -1,11 +1,15 @@
 # Goals — AZCLAUDE
-Updated: 2026-03-15
+Updated: 2026-03-16
 
 ## Current threads
 - [checkpoint] 00:36 — friction-cleanup → .claude/memory/checkpoints/2026-03-16-00-36.md
 - None — environment at 100/100, marketplace submission under review
 
 ## Done this session
+- 01:00 — CLAUDE.md (+1/-1) — test-features.sh        — 637 grep-based tests, all must pas
+- 01:00 — test-features.sh (+7/-0)
+- 00:59 — bin\cli.js (+10/-0)
+- 00:59 — templates\commands\evolve.md (+30/-0) — Step 6: Log Evolution History
 - 00:50 — bin\cli.js
 - 00:43 — CLAUDE.md
 - 00:43 — test-features.sh

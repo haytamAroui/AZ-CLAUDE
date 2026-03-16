@@ -107,8 +107,38 @@ Use **CronList** to check if a schedule already exists before creating a new one
 
 ---
 
+## Step 6: Log Evolution History
+
+Append to `ops/evolution-log.md` (create if missing):
+```
+| {date} | {before score}/100 | {after score}/100 | {+delta} | {1-line summary of what changed} |
+```
+
+If the file doesn't exist, create it with this header:
+```
+# Evolution History
+
+| Date | Before | After | Delta | Summary |
+|------|--------|-------|-------|---------|
+```
+
+---
+
+## Step 7: Promote GENERAL Skills
+
+For any fix tagged GENERAL in EVALUATE:
+1. Copy to `~/shared-skills/{name}.md`
+2. Add `discovered_in: {project}` to frontmatter
+3. Update `~/shared-skills/.checksums` with sha256 hash
+4. Print: `Promoted to ~/shared-skills/{name}.md`
+
+Skip this step if all fixes were tagged NARROW.
+
+---
+
 ## Completion Rule
 Print the PLAN that was detected.
 Print the list of files created or updated.
 Print the updated goals.md.
+Print the evolution-log.md entry.
 Show the files — do not say "evolution complete" without showing output.

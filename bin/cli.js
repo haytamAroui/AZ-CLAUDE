@@ -640,8 +640,18 @@ installRulesFile(projectDir, cli.cfg, cli.rulesFile);
 createDirectories(projectDir, cli.cfg);
 ensureSharedSkillsDir();
 
+// ── Evolution log directory ───────────────────────────────────────────────────
+const evolLogPath = path.join(projectDir, 'ops', 'evolution-log.md');
+if (!fs.existsSync(evolLogPath)) {
+  const header = '# Evolution History\n\n| Date | Before | After | Delta | Summary |\n|------|--------|-------|-------|---------|\n';
+  try { fs.writeFileSync(evolLogPath, header); } catch (_) {}
+}
+
 console.log('\n════════════════════════════════════════════════');
 console.log('  Architecture: lazy-loaded, manifest-driven');
 console.log('  Token cost per task: ~200-600 (vs ~21,000 monolith)');
 console.log(`  Next step: run /setup to configure this project`);
+console.log('');
+console.log('  Tip: run /evolve in Claude Code to scan for gaps');
+console.log('  and auto-improve your environment.');
 console.log('════════════════════════════════════════════════\n');
