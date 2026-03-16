@@ -285,8 +285,8 @@ Build what you need. Stop when the environment matches the project's complexity.
 | **3** | 22 commands + lazy-loaded capabilities | ~380 tokens per task |
 | **4** | Memory — goals, checkpoints, sessions | ~200 tokens per session |
 | **5** | Custom agents from git evidence | ~400 tokens per agent |
-| **6** | Hooks — auto-save, injection, friction detection | ~0 tokens (global) |
-| **7** | External MCP — cross-project memory, monitoring | Varies |
+| **6** | Hooks — auto-tracking, injection, friction detection | ~0 tokens (global) |
+| **7** | External MCP — guide for connecting databases, browsers, APIs | Varies |
 | **8** | Intelligence — debates, pipelines, decisions | ~400 tokens per decision |
 | **9** | Evolution — 3-cycle self-improvement | ~1000 tokens per cycle |
 | **10** | Loop Controller — autonomous Opus agent: prune dead agents, enrich knowledge index, re-derive architecture in background | ~1500 tokens per full cycle |

@@ -1,7 +1,7 @@
 {
   "name": "azclaude",
   "version": "1.0.0",
-  "description": "The operating system for Claude Code. Memory, agents, skills, intelligence, evolution — orchestrating Claude Code's native architecture. Zero external dependencies. One command to set up.",
+  "description": "The operating system for Claude Code. Memory, auto-tracking, agents, skills, intelligence, evolution — orchestrating Claude Code's native architecture. Zero external dependencies. One command to set up.",
   "bin": {
     "azclaude": "./bin/cli.js"
   },

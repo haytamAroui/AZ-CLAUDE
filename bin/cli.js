@@ -134,7 +134,7 @@ function installGlobalHooks(cli) {
     const isBashHook  = existingCmd.includes('SESSION_MARKER') || existingCmd.includes('mkdir -p');
     const hasPostToolUse = !!settings.hooks?.PostToolUse;
     if (isBashHook || !hasPostToolUse) {
-      const reason = isBashHook ? 'bash→Node.js upgrade' : 'adding auto-save PostToolUse hook';
+      const reason = isBashHook ? 'bash→Node.js upgrade' : 'adding PostToolUse edit-tracking hook';
       warn(`Upgrading hooks (${reason})...`);
       const hooksScriptsDir   = installHookScripts(cli.hooksDir);
       const nodeExe           = process.execPath;
@@ -149,7 +149,7 @@ function installGlobalHooks(cli) {
       fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
       const integrityPath = path.join(cli.hooksDir, '.azclaude-integrity');
       fs.writeFileSync(integrityPath, generateIntegrityHash(settings.hooks));
-      ok('Hooks upgraded — auto-save active (PostToolUse writes progress to goals.md)');
+      ok('Hooks upgraded — edit tracking active (PostToolUse writes progress to goals.md)');
       ok(`Hook scripts: ${hooksScriptsDir}`);
     } else {
       // Always refresh hook scripts to latest template versions
@@ -496,7 +496,7 @@ function runDoctor() {
     chk('_azclaude marker present (hooks installed)',        !!settings._azclaude);
     chk('UserPromptSubmit hook present',                     !!settings.hooks?.UserPromptSubmit);
     chk('Stop hook present',                                 !!settings.hooks?.Stop);
-    chk('PostToolUse hook present (auto-save)',              !!settings.hooks?.PostToolUse);
+    chk('PostToolUse hook present (edit tracking)',           !!settings.hooks?.PostToolUse);
 
     // Check hooks use Node.js scripts, not bash
     const upCmd = settings.hooks?.UserPromptSubmit?.[0]?.hooks?.[0]?.command || '';

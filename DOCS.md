@@ -28,7 +28,7 @@
 
 AZCLAUDE is a complete AI coding environment — not a set of prompts, not a rules file, not a plugin that does one thing. It installs a system that:
 
-- **Remembers your project** across sessions (auto-save, checkpoints, goals injection)
+- **Remembers your project** across sessions (auto-tracking, checkpoints, goals injection)
 - **Speaks your domain** (compliance gets "obligations", medical gets "clinical outcomes")
 - **Builds agents for your actual codebase** (from git co-change evidence, not guessing)
 - **Improves itself** (`/evolve` finds and fixes gaps in the environment)
@@ -40,7 +40,7 @@ After `npx azclaude` + `/setup` you have:
 ✓ CLAUDE.md — 30-line dispatch table filled with your project's details
 ✓ goals.md — session memory, auto-injected before your first message every session
 ✓ 22 commands — /fix, /add, /review, /plan, /ship, /evolve, /debate, /checkpoint...
-✓ 3 hooks — auto-save on every edit, goals injection on session start, migration on stop
+✓ 3 hooks — auto-track every edit to goals.md, inject context on session start, migrate on stop
 ✓ Project-specific agents — built from your git history
 ✓ 27 capabilities — lazy-loaded, only what the task needs
 ✓ Evolution system — scans for gaps, generates fixes, quality-gates them
@@ -141,8 +141,8 @@ AZCLAUDE builds progressively. You don't need all 10 levels. You need the right 
 | **3** | 22 commands + lazy-loaded capabilities | ~380 tokens per task |
 | **4** | Memory — goals, checkpoints, sessions | ~200 tokens per session |
 | **5** | Custom agents — specialists with clear scope | ~400 tokens per agent |
-| **6** | Hooks — auto-save, injection, friction detection | ~0 tokens (global) |
-| **7** | External MCP — cross-project memory, monitoring | Varies |
+| **6** | Hooks — auto-tracking, injection, friction detection | ~0 tokens (global) |
+| **7** | External MCP — guide for connecting databases, browsers, APIs | Varies |
 | **8** | Intelligence — debates, pipelines, decisions | ~400 tokens per decision |
 | **9** | Evolution — 3-cycle self-improvement | ~1000 tokens per cycle |
 | **10** | **Loop Controller** — A recursive Opus agent that runs 3 autonomous cycles in the background (Environment Evolution, Knowledge Consolidation, Topology Optimization). It actively prunes dead agents, enriches the knowledge index, and re-derives architecture. | ~1500 tokens per full cycle |
@@ -878,8 +878,8 @@ Detects current level from what exists in your project → shows visual checklis
 | 3 | 22 commands + lazy-loaded capabilities |
 | 4 | Memory system (goals, checkpoints, sessions) |
 | 5 | Custom agents from git evidence |
-| 6 | Hooks (auto-save, injection, friction detection) |
-| 7 | External MCP (cross-project memory, monitoring) |
+| 6 | Hooks (auto-tracking, injection, friction detection) |
+| 7 | External MCP (guide for connecting databases, browsers, APIs) |
 | 8+ | Intelligence (debates, pipelines, experiments) |
 | 9 | Evolution cycles (self-improvement) |
 | 10 | Loop controller (autonomous evolution) |

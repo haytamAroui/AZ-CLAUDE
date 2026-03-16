@@ -2,7 +2,7 @@
 'use strict';
 /**
  * AZCLAUDE — PostToolUse hook
- * Auto-saves work progress to goals.md after every Write/Edit.
+ * Tracks edits to goals.md after every Write/Edit.
  * Captures: timestamp, file path, git diff stat (+N/-N), and change summary.
  * Survives Claude Code context compaction — goals.md is the external memory.
  * No user action required. Silent. Works on Windows/macOS/Linux.
