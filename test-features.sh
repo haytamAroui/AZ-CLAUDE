@@ -118,6 +118,8 @@ check_file "commands/refactor.md exists"                 "$CMD/refactor.md"
 check_file "commands/doc.md exists"                      "$CMD/doc.md"
 check_file "commands/migrate.md exists"                  "$CMD/migrate.md"
 check_file "commands/deps.md exists"                     "$CMD/deps.md"
+check_file "commands/find.md exists"                     "$CMD/find.md"
+check_file "commands/create.md exists"                   "$CMD/create.md"
 
 # ─────────────────────────────────────────────
 echo ""
@@ -835,7 +837,7 @@ check_file "install: shared/native-tools.md present"   "$IDIR/.claude/capabiliti
 check_file "install: shared/security.md present"       "$IDIR/.claude/capabilities/shared/security.md"
 check      "install: CLAUDE.md has placeholders"       "$IDIR/CLAUDE.md" "{{PROJECT_NAME}}"
 INSTALLED=$(ls "$IDIR/.claude/commands/" | wc -l | tr -d ' ')
-EXPECTED_CMDS=20
+EXPECTED_CMDS=22
 if [ "$INSTALLED" -eq "$EXPECTED_CMDS" ]; then
   echo "  ✓ install: all $EXPECTED_CMDS commands present"
   PASS=$((PASS + 1))
@@ -1083,6 +1085,27 @@ check      "deps: security audit"                        "$DEP" "npm audit\|pip 
 check      "deps: unused detection"                      "$DEP" "UNUSED\|unused"
 check      "deps: structured output format"              "$DEP" "Package.*Current.*Latest\|Severity.*CVE"
 check      "deps: cli registers new commands"            "bin/cli.js" "'refactor'.*'doc'.*'migrate'.*'deps'\|refactor.*doc.*migrate.*deps"
+
+# ─── /find command ───────────────────────────────────────────────────────────
+echo ""
+echo "─── /find ───"
+FND="$CMD/find.md"
+check      "find: searches project commands"             "$FND" "commands/\*.md\|project commands"
+check      "find: searches shared-skills"                "$FND" "shared-skills"
+check      "find: searches capabilities manifest"        "$FND" "manifest\.md"
+check      "find: shows results table"                   "$FND" "Command.*Description\|Skill.*Description"
+check      "find: suggests /create on no results"        "$FND" "/create\|build a new"
+
+# ─── /create command ─────────────────────────────────────────────────────────
+echo ""
+echo "─── /create ───"
+CRT="$CMD/create.md"
+check      "create: intent capture phase"                "$CRT" "Intent Capture\|AskUserQuestion"
+check      "create: duplicate check"                     "$CRT" "Check for Duplicates\|duplicate"
+check      "create: generates frontmatter template"      "$CRT" "disable-model-invocation\|allowed-tools"
+check      "create: requires 5+ trigger phrases"         "$CRT" "5.*trigger\|trigger phrases"
+check      "create: generates test cases"                "$CRT" "Test Cases\|evals"
+check      "create: completion rule required"            "$CRT" "Completion Rule\|completion rule"
 
 # ─── AZROLE sync: v3.9.0 stress test signals ──────────────────────────────────
 echo ""
