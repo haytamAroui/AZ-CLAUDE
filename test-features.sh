@@ -114,6 +114,10 @@ check_file "commands/add.md exists"                      "$CMD/add.md"
 check_file "commands/review.md exists"                   "$CMD/review.md"
 check_file "commands/test.md exists"                     "$CMD/test.md"
 check_file "commands/plan.md exists"                     "$CMD/plan.md"
+check_file "commands/refactor.md exists"                 "$CMD/refactor.md"
+check_file "commands/doc.md exists"                      "$CMD/doc.md"
+check_file "commands/migrate.md exists"                  "$CMD/migrate.md"
+check_file "commands/deps.md exists"                     "$CMD/deps.md"
 
 # ─────────────────────────────────────────────
 echo ""
@@ -831,12 +835,13 @@ check_file "install: shared/native-tools.md present"   "$IDIR/.claude/capabiliti
 check_file "install: shared/security.md present"       "$IDIR/.claude/capabilities/shared/security.md"
 check      "install: CLAUDE.md has placeholders"       "$IDIR/CLAUDE.md" "{{PROJECT_NAME}}"
 INSTALLED=$(ls "$IDIR/.claude/commands/" | wc -l | tr -d ' ')
-if [ "$INSTALLED" -eq 16 ]; then
-  echo "  ✓ install: all 16 commands present"
+EXPECTED_CMDS=20
+if [ "$INSTALLED" -eq "$EXPECTED_CMDS" ]; then
+  echo "  ✓ install: all $EXPECTED_CMDS commands present"
   PASS=$((PASS + 1))
 else
-  echo "  ✗ install: expected 16 commands, got $INSTALLED"
-  ERRORS="$ERRORS\n  FAILED: install: expected 16 commands, got $INSTALLED"
+  echo "  ✗ install: expected $EXPECTED_CMDS commands, got $INSTALLED"
+  ERRORS="$ERRORS\n  FAILED: install: expected $EXPECTED_CMDS commands, got $INSTALLED"
   FAIL=$((FAIL + 1))
 fi
 rm -rf "$IDIR"
@@ -1038,6 +1043,45 @@ check      "contributing: how to run tests"            "CONTRIBUTING.md" "test-f
 check      "contributing: no bash-only rule"           "CONTRIBUTING.md" "Windows\|cross-platform\|bash-only"
 check      "contributing: doctor command mentioned"    "CONTRIBUTING.md" "doctor"
 check      "contributing: PR checklist present"        "CONTRIBUTING.md" "checklist\|PR checklist"
+
+# ─── /refactor command ────────────────────────────────────────────────────────
+echo ""
+echo "─── /refactor ───"
+REF="$CMD/refactor.md"
+check      "refactor: tests before and after"            "$REF" "BEFORE refactor\|AFTER refactor"
+check      "refactor: maps all references"               "$REF" "grep.*references\|all files"
+check      "refactor: completion rule shows both runs"   "$REF" "both test runs\|Before.*After"
+check      "refactor: high risk uses worktree"           "$REF" "EnterWorktree\|worktree"
+check      "refactor: never changes behavior"            "$REF" "never behavior\|never chang.*behavior\|Change structure"
+
+# ─── /doc command ────────────────────────────────────────────────────────────
+echo ""
+echo "─── /doc ───"
+DOC="$CMD/doc.md"
+check      "doc: detects existing doc style"             "$DOC" "existing doc\|match.*style\|JSDoc.*docstring"
+check      "doc: reads code before documenting"          "$DOC" "Read the code\|read the implementation\|Never document from memory"
+check      "doc: verifies examples work"                 "$DOC" "run.*verify\|Verify example"
+check      "doc: completion rule"                        "$DOC" "Do not say.*docs updated"
+
+# ─── /migrate command ───────────────────────────────────────────────────────
+echo ""
+echo "─── /migrate ───"
+MIG="$CMD/migrate.md"
+check      "migrate: tests before and after"             "$MIG" "BEFORE migration\|AFTER migration"
+check      "migrate: researches breaking changes"        "$MIG" "breaking change\|changelog\|migration guide"
+check      "migrate: uses WebSearch for major versions"  "$MIG" "WebSearch"
+check      "migrate: worktree for major upgrades"        "$MIG" "EnterWorktree\|worktree"
+check      "migrate: checks lock file"                   "$MIG" "lock file\|package-lock\|poetry.lock"
+
+# ─── /deps command ───────────────────────────────────────────────────────────
+echo ""
+echo "─── /deps ───"
+DEP="$CMD/deps.md"
+check      "deps: outdated check"                        "$DEP" "npm outdated\|pip list.*outdated"
+check      "deps: security audit"                        "$DEP" "npm audit\|pip audit\|govulncheck"
+check      "deps: unused detection"                      "$DEP" "UNUSED\|unused"
+check      "deps: structured output format"              "$DEP" "Package.*Current.*Latest\|Severity.*CVE"
+check      "deps: cli registers new commands"            "bin/cli.js" "'refactor'.*'doc'.*'migrate'.*'deps'\|refactor.*doc.*migrate.*deps"
 
 # ─── AZROLE sync: v3.9.0 stress test signals ──────────────────────────────────
 echo ""

@@ -44,6 +44,10 @@ Quick dispatch:
 - /status → commands/status.md
 - /explain → commands/explain.md
 - /loop → commands/loop.md
+- /refactor → commands/refactor.md (tests before + after, safe restructuring)
+- /doc → commands/doc.md (generate docs from code, match existing style)
+- /migrate → commands/migrate.md (upgrade deps/frameworks, fix breaking changes)
+- /deps → commands/deps.md (audit outdated, vulnerable, unused packages)
 - Unknown capability → grep manifest.md by description, load match
 
 ## Trade-Off Hierarchies
@@ -53,4 +57,4 @@ When priorities conflict:
 3. {{PRIORITY_3}}
 
 ## Available Commands
-/dream · /setup · /fix · /add · /review · /test · /plan · /evolve · /debate · /checkpoint · /persist · /level-up · /ship · /status · /explain · /loop
+/dream · /setup · /fix · /add · /review · /test · /plan · /evolve · /debate · /checkpoint · /persist · /level-up · /ship · /status · /explain · /loop · /refactor · /doc · /migrate · /deps

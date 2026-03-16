@@ -7,7 +7,7 @@ const crypto        = require('crypto');
 const { execSync }  = require('child_process');
 
 const TEMPLATE_DIR = path.join(__dirname, '..', 'templates');
-const COMMANDS     = ['dream', 'setup', 'fix', 'evolve', 'debate', 'checkpoint', 'persist', 'level-up', 'ship', 'status', 'explain', 'loop', 'add', 'review', 'test', 'plan'];
+const COMMANDS     = ['dream', 'setup', 'fix', 'evolve', 'debate', 'checkpoint', 'persist', 'level-up', 'ship', 'status', 'explain', 'loop', 'add', 'review', 'test', 'plan', 'refactor', 'doc', 'migrate', 'deps'];
 
 function ok(msg)   { console.log(`  ✓ ${msg}`); }
 function warn(msg) { console.log(`  ⚠ ${msg}`); }

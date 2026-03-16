@@ -40,3 +40,12 @@ Updated: 2026-03-16
 
 ## Open blockers
 - None
+
+## In progress
+- 01:17 — CLAUDE.md (+4/-4) — test-features.sh        — 677 grep-based tests, all must pas
+- 01:16 — test-features.sh (+48/-4) — EXPECTED_CMDS=20
+- 01:14 — bin\cli.js (+1/-1)
+- 01:14 — templates\commands\deps.md
+- 01:14 — templates\commands\migrate.md
+- 01:14 — templates\commands\doc.md
+- 01:13 — templates\commands\refactor.md
