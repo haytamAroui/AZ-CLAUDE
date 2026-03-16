@@ -571,8 +571,9 @@ function runDoctor() {
     const { spawnSync } = require('child_process');
     const gitStatus = spawnSync('git', ['status', '--porcelain'], { cwd: projectDir, encoding: 'utf8', timeout: 5000 });
     if (gitStatus.status === 0) {
-      const changes = gitStatus.stdout.trim().split('\n').filter(l => l.length > 0);
-      chk(`working tree clean (${changes.length} uncommitted)`, changes.length === 0);
+      // Exclude goals.md from count — PostToolUse hook auto-modifies it during sessions
+      const changes = gitStatus.stdout.trim().split('\n').filter(l => l.length > 0 && !l.includes('goals.md'));
+      chk(`working tree clean (${changes.length} uncommitted, goals.md excluded)`, changes.length === 0);
     }
   } catch (_) {}
 
