@@ -1315,11 +1315,27 @@ else
     fi
   }
 
-  # Update all 4 docs files with the current test count
+  # ── Count commands and skills dynamically ──
+  CMD_COUNT=$(ls "$ROOT/templates/commands/" 2>/dev/null | wc -l | tr -d ' ')
+  SKILL_COUNT=$(ls -d "$ROOT/templates/skills/"*/SKILL.md 2>/dev/null | wc -l | tr -d ' ')
+
+  # ── Update test counts ──
   update_count "$ROOT/CLAUDE.md"        "[0-9]\+ grep-based tests"              "$TOTAL grep-based tests"
   update_count "$ROOT/README.md"        "[0-9]\+ tests\. Every"                 "$TOTAL tests. Every"
   update_count "$ROOT/README.md"        "[0-9]\+ passed, 0 failed, [0-9]\+ total"  "$TOTAL passed, 0 failed, $TOTAL total"
   update_count "$ROOT/README.md"        "test-features\.sh.*[0-9]\+ tests"      "test-features.sh          ← $TOTAL tests"
   update_count "$ROOT/DOCS.md"          "[0-9]\+ tests passing"                 "$TOTAL tests passing"
   update_count "$ROOT/CONTRIBUTING.md"  "[0-9]\+ tests\. All must"              "$TOTAL tests. All must"
+
+  # ── Update command counts ──
+  update_count "$ROOT/CLAUDE.md"        "[0-9]\+ command files installed"       "$CMD_COUNT command files installed"
+  update_count "$ROOT/README.md"        "all [0-9]\+ commands"                  "all $CMD_COUNT commands"
+  update_count "$ROOT/README.md"        "[0-9]\+ commands + lazy"               "$CMD_COUNT commands + lazy"
+  update_count "$ROOT/DOCS.md"          "[0-9]\+ commands —"                    "$CMD_COUNT commands —"
+  update_count "$ROOT/DOCS.md"          "all [0-9]\+ commands"                  "all $CMD_COUNT commands"
+  update_count "$ROOT/DOCS.md"          "[0-9]\+ commands + lazy"               "$CMD_COUNT commands + lazy"
+  update_count "$ROOT/DOCS.md"          "[0-9]\+ commands present"              "$CMD_COUNT commands present"
+
+  # ── Update skill counts ──
+  update_count "$ROOT/CLAUDE.md"        "[0-9]\+ SKILL\.md files"               "$SKILL_COUNT SKILL.md files"
 fi

@@ -39,7 +39,7 @@ After `npx azclaude` + `/setup` you have:
 ```
 ✓ CLAUDE.md — 30-line dispatch table filled with your project's details
 ✓ goals.md — session memory, auto-injected before your first message every session
-✓ 22 commands — /fix, /add, /review, /plan, /ship, /evolve, /debate, /checkpoint...
+✓ 24 commands — /fix, /add, /review, /plan, /ship, /evolve, /debate, /checkpoint...
 ✓ 3 hooks — auto-track every edit to goals.md, inject context on session start, migrate on stop
 ✓ Project-specific agents — built from your git history
 ✓ 27 capabilities — lazy-loaded, only what the task needs
@@ -71,7 +71,7 @@ Auto-detects your CLI and installs to the correct paths.
 npx azclaude doctor
 ```
 
-Runs 32 checks: Node.js version, global hooks, settings.json integrity, project structure, all 22 commands present. Exits 0 if healthy. Exits 1 with a specific fix hint if anything is wrong.
+Runs 32 checks: Node.js version, global hooks, settings.json integrity, project structure, all 24 commands present. Exits 0 if healthy. Exits 1 with a specific fix hint if anything is wrong.
 
 ### See it working before committing
 
@@ -138,7 +138,7 @@ AZCLAUDE builds progressively. You don't need all 10 levels. You need the right 
 |-------|-------------|-------------|
 | **1** | CLAUDE.md — project conventions in 30 lines | ~30 tokens |
 | **2** | MCP servers — database, browser, API tools | ~150 tokens |
-| **3** | 22 commands + lazy-loaded capabilities | ~380 tokens per task |
+| **3** | 24 commands + lazy-loaded capabilities | ~380 tokens per task |
 | **4** | Memory — goals, checkpoints, sessions | ~200 tokens per session |
 | **5** | Custom agents — specialists with clear scope | ~400 tokens per agent |
 | **6** | Hooks — auto-tracking, injection, friction detection | ~0 tokens (global) |
@@ -877,7 +877,7 @@ Detects current level from what exists in your project → shows visual checklis
 |-------|----------------|
 | 1 | CLAUDE.md rules file |
 | 2 | MCP servers (database, browser, APIs) |
-| 3 | 22 commands + lazy-loaded capabilities |
+| 3 | 24 commands + lazy-loaded capabilities |
 | 4 | Memory system (goals, checkpoints, sessions) |
 | 5 | Custom agents from git evidence |
 | 6 | Hooks (auto-tracking, injection, friction detection) |
@@ -1107,7 +1107,7 @@ Doctor runs 32 checks across 6 categories and exits 1 with a specific fix hint f
 - **Global hooks** — UserPromptSubmit, PostToolUse, Stop hooks wired in `~/.claude/settings.json`
 - **Hook freshness** — hook scripts match the latest version shipped with AZCLAUDE (catches stale hooks)
 - **Settings integrity** — SHA-256 hash of settings.json matches install-time hash
-- **Commands** — all 22 commands present (dynamically derived from `COMMANDS` array in cli.js)
+- **Commands** — all 24 commands present (dynamically derived from `COMMANDS` array in cli.js)
 - **Memory** — goals.md exists, checkpoints directory exists, git repo initialized
 - **Project** — CLAUDE.md exists and has no unfilled `{{placeholders}}`
 

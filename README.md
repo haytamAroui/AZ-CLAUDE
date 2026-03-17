@@ -104,7 +104,7 @@ npx azclaude
 npx azclaude doctor
 ```
 
-`doctor` runs 32 checks — runtime, global hooks, settings integrity, all 22 commands. Exits 0 if healthy. Exits 1 with the exact fix hint if anything is wrong.
+`doctor` runs 32 checks — runtime, global hooks, settings integrity, all 24 commands. Exits 0 if healthy. Exits 1 with the exact fix hint if anything is wrong.
 
 **Or install from the Claude Code marketplace** — search "AZCLAUDE", click Install. Hooks active immediately. Then run `/setup`.
 
@@ -282,7 +282,7 @@ Build what you need. Stop when the environment matches the project's complexity.
 |-------|-------------|-------------|
 | **1** | CLAUDE.md — 30-line dispatch table | ~30 tokens |
 | **2** | MCP servers — database, browser, APIs | ~150 tokens |
-| **3** | 22 commands + lazy-loaded capabilities | ~380 tokens per task |
+| **3** | 24 commands + lazy-loaded capabilities | ~380 tokens per task |
 | **4** | Memory — goals, checkpoints, sessions | ~200 tokens per session |
 | **5** | Custom agents from git evidence | ~400 tokens per agent |
 | **6** | Hooks — auto-tracking, injection, friction detection | ~0 tokens (global) |
