@@ -1,6 +1,6 @@
 # AZCLAUDE — Complete User Guide
 
-> Version 1.0.0 · 811 tests passing · Claude Code marketplace plugin
+> Version 1.0.0 · 817 tests passing · Claude Code marketplace plugin
 
 ---
 

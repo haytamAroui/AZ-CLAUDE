@@ -19,12 +19,12 @@ Update it at the end of every session with /persist.
 ```
 bin/cli.js              — CLI installer (detectCLI, substitutePaths, integrity hash, --full flag)
 templates/CLAUDE.md     — template installed into user projects
-templates/commands/     — 23 command files installed as .claude/commands/
+templates/commands/     — 24 command files installed as .claude/commands/
 templates/skills/       — 7 SKILL.md files with references/ (model-auto-invoked)
 templates/capabilities/ — manifest + shared + level-builders + evolution + intelligence
 templates/agents/       — orchestrator-init + loop-controller + code-reviewer + test-writer
 templates/scripts/      — env-scan.sh (JSON output, ~200 tokens)
-tests/test-features.sh        — 811 grep-based tests, all must pass before commit
+tests/test-features.sh        — 817 grep-based tests, all must pass before commit
 ```
 
 ## Task Routing
@@ -49,4 +49,4 @@ When priorities conflict:
 3. User clarity > framework elegance — the user is the last consumer, optimize for them
 
 ## Available Commands
-/dream · /setup · /fix · /add · /review · /test · /plan · /evolve · /debate · /checkpoint · /persist · /level-up · /ship · /status · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect
+/dream · /setup · /fix · /add · /review · /test · /plan · /evolve · /debate · /checkpoint · /persist · /level-up · /ship · /status · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect · /hookify

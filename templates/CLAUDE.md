@@ -34,7 +34,7 @@ Quick dispatch (core — used most sessions):
 
 Extended (load command file on use):
 - /setup · /dream · /checkpoint · /persist · /refactor · /doc · /loop
-- /migrate · /deps · /find · /create · /reflect
+- /migrate · /deps · /find · /create · /reflect · /hookify
 
 Advanced (Level 5+):
 - /evolve · /debate · /level-up
@@ -48,4 +48,4 @@ When priorities conflict:
 3. {{PRIORITY_3}}
 
 ## Available Commands
-/dream · /setup · /fix · /add · /review · /test · /plan · /evolve · /debate · /checkpoint · /persist · /level-up · /ship · /status · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect
+/dream · /setup · /fix · /add · /review · /test · /plan · /evolve · /debate · /checkpoint · /persist · /level-up · /ship · /status · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect · /hookify

@@ -8,7 +8,7 @@ const { execSync }  = require('child_process');
 
 const TEMPLATE_DIR = path.join(__dirname, '..', 'templates');
 const CORE_COMMANDS     = ['setup', 'fix', 'add', 'review', 'test', 'plan', 'ship', 'status', 'explain', 'checkpoint', 'persist'];
-const EXTENDED_COMMANDS = ['dream', 'refactor', 'doc', 'loop', 'migrate', 'deps', 'find', 'create', 'reflect'];
+const EXTENDED_COMMANDS = ['dream', 'refactor', 'doc', 'loop', 'migrate', 'deps', 'find', 'create', 'reflect', 'hookify'];
 const ADVANCED_COMMANDS = ['evolve', 'debate', 'level-up'];
 const COMMANDS          = [...CORE_COMMANDS, ...EXTENDED_COMMANDS, ...ADVANCED_COMMANDS];
 

@@ -121,6 +121,7 @@ check_file "commands/deps.md exists"                     "$CMD/deps.md"
 check_file "commands/find.md exists"                     "$CMD/find.md"
 check_file "commands/create.md exists"                   "$CMD/create.md"
 check_file "commands/reflect.md exists"                  "$CMD/reflect.md"
+check_file "commands/hookify.md exists"                  "$CMD/hookify.md"
 
 # ─────────────────────────────────────────────
 echo ""
@@ -232,6 +233,13 @@ REFLECT="$CMD/reflect.md"
 check "reflect: reads friction logs"                     "$REFLECT" "friction"
 check "reflect: reads goals.md"                          "$REFLECT" "goals.md"
 check "reflect: proposes CLAUDE.md edits"                "$REFLECT" "CLAUDE.md"
+
+HOOKIFY="$CMD/hookify.md"
+check "hookify: conversation friction scan"             "$HOOKIFY" "friction\|conversation\|corrections"
+check "hookify: PreToolUse/PostToolUse classification"  "$HOOKIFY" "PreToolUse\|PostToolUse"
+check "hookify: hook script generation"                 "$HOOKIFY" "hooks/\|\.sh"
+check "hookify: warn vs block decision"                 "$HOOKIFY" "Warn.*block\|warn.*Block\|Block.*warn"
+check "hookify: settings.json registration"             "$HOOKIFY" "settings.json\|hooks config"
 check "reflect: categorizes findings"                    "$REFLECT" "Missing rule\|Vague rule\|Dead rule"
 check "reflect: waits for user approval"                 "$REFLECT" "approval\|Apply which"
 check "reflect: logs to observations"                    "$REFLECT" "observations"
@@ -725,7 +733,7 @@ echo "[ CLI Installer — bin/cli.js ]"
 CLI="$(cd "$(dirname "$0")/.." && pwd)/bin/cli.js"
 check_file "bin/cli.js exists"                   "$CLI"
 check "CORE_COMMANDS array defined"              "$CLI" "CORE_COMMANDS.*=.*setup.*fix.*add.*review"
-check "EXTENDED_COMMANDS array defined"          "$CLI" "EXTENDED_COMMANDS.*=.*dream.*refactor.*doc"
+check "EXTENDED_COMMANDS array defined"          "$CLI" "EXTENDED_COMMANDS.*=.*dream.*refactor.*doc.*hookify"
 check "ADVANCED_COMMANDS array defined"          "$CLI" "ADVANCED_COMMANDS.*=.*evolve.*debate"
 check "CLI_TABLE with 5 entries"                 "$CLI" "CLI_TABLE"
 check "Claude Code entry in CLI_TABLE"           "$CLI" "Claude Code"
@@ -985,7 +993,7 @@ check_file "install: agent-creator scaffold script"      "$IDIR/.claude/skills/a
 check_file "install: agent-creator references"           "$IDIR/.claude/skills/agent-creator/references/agent-engineering-guide.md"
 check_file "install: agent-creator examples"             "$IDIR/.claude/skills/agent-creator/examples/sample-agent.md"
 INSTALLED=$(ls "$IDIR/.claude/commands/" | wc -l | tr -d ' ')
-EXPECTED_CMDS=23
+EXPECTED_CMDS=24
 if [ "$INSTALLED" -eq "$EXPECTED_CMDS" ]; then
   echo "  ✓ install: all $EXPECTED_CMDS commands present"
   PASS=$((PASS + 1))
