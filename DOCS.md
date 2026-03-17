@@ -1032,6 +1032,39 @@ Searches project commands, ~/shared-skills/, and capabilities manifest. Suggests
 ```
 Intent capture → duplicate check → frontmatter template → test cases → validation. Ensures 5+ trigger phrases for reliable invocation.
 
+### /reflect
+**Self-improve CLAUDE.md from conversation friction.**
+```
+/reflect
+```
+Reads friction logs and session history, identifies patterns where Claude's behavior didn't match expectations, and proposes targeted edits to CLAUDE.md rules, routing, or trade-off hierarchies.
+
+### /hookify
+**Generate hooks from conversation friction.**
+```
+/hookify block rm -rf commands
+/hookify
+```
+Analyzes recent conversation patterns (corrections, repeated undos, frustration signals) and generates PreToolUse or PostToolUse hooks to prevent unwanted behaviors. With arguments: generates a specific hook. Without arguments: scans conversation for friction and asks which patterns to hookify. Classifies into 5 hook types: dangerous commands (block), unsafe code patterns (warn), file protection (block), missing steps (remind), session behavior (inject).
+
+---
+
+## Skills (Auto-Invoked)
+
+Skills are model-invoked capabilities that fire automatically based on context — no slash command needed. AZCLAUDE installs 7 skills:
+
+| Skill | Triggers on |
+|---|---|
+| session-guard | Session start, context reset, idle detection |
+| test-first | Writing, implementing, fixing code in TDD projects |
+| env-scanner | Project setup, environment detection, stack analysis |
+| debate | Decisions, trade-offs, "which is better", comparing options |
+| security | Credentials, auth, payments, .env files, secrets |
+| skill-creator | "Create a skill", "add capability", repeated workflows |
+| agent-creator | "Create an agent", agent boundaries, 5-layer structure |
+
+Each skill has: `SKILL.md` (lean workflow), `references/` (deep content), `examples/` (concrete output), `scripts/` (deterministic work).
+
 ---
 
 ## Behavioral Defenses (Pressure Testing)

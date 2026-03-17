@@ -184,9 +184,9 @@ No re-explanation. No "where were we?". Straight to work.
 |---------|-------------|
 | `/dream` | Idea → full project scaffold. Rules, memory, skills, agents — built level by level |
 | `/setup` | Analyzes your existing project once. Detects domain + stack + scale. Builds everything |
-| `/add` | Add a feature. Reads your existing patterns first — never invents conventions |
+| `/add` | Add a feature. Complexity gate: 4+ files → asks clarifying questions + presents competing approaches before building |
 | `/fix` | Paste an error → REPRODUCE → INVESTIGATE → HYPOTHESIZE → FIX → show passing tests. Never says "should work" |
-| `/review` | Spec-first review. Checks requirements before style. Blocking vs suggestion distinction |
+| `/review` | Spec-first review. False-positive filter + validation step. HIGH SIGNAL findings only |
 | `/test` | IDE diagnostics → framework detection → exit-code gate → failure classification |
 | `/plan` | For 4+ file changes. Read-only analysis → risk level → approval gate before any code |
 | `/ship` | IDE gate → tests → secrets scan → smart commit → push |
@@ -204,6 +204,22 @@ No re-explanation. No "where were we?". Straight to work.
 | `/level-up` | Shows your current level (0–10) → builds the next one |
 | `/find` | Search for skills across project commands, ~/shared-skills/, and capabilities |
 | `/create` | Build a new command with proper frontmatter, test cases, and guided workflow |
+| `/reflect` | Self-improve CLAUDE.md from conversation friction — reads session history, proposes targeted edits |
+| `/hookify` | Generate hooks from friction patterns — scans conversations, creates PreToolUse/PostToolUse hooks |
+
+### Skills (Auto-Invoked)
+
+7 skills fire automatically based on context — no command needed:
+
+| Skill | Triggers on |
+|---|---|
+| session-guard | Session start, context reset |
+| test-first | Writing/fixing code in TDD projects |
+| env-scanner | Project setup, stack detection |
+| debate | Decisions, trade-offs, comparisons |
+| security | Credentials, auth, payments, secrets |
+| skill-creator | "Create a skill", repeated workflows |
+| agent-creator | "Create an agent", agent boundaries |
 
 ### Memory & Session
 
@@ -441,7 +457,8 @@ azclaude/
 │   │   ├── evolution/    (6)     ← detect, generate, evaluate, knowledge, topology...
 │   │   ├── intelligence/ (5)     ← debate, pipeline, elo, opro, experiment
 │   │   └── level-builders/ (8)   ← levels 1–8
-│   ├── commands/         (22)    ← all commands
+│   ├── commands/         (24)    ← all commands (+/hookify, /reflect)
+│   ├── skills/            (7)    ← auto-invoked SKILL.md + references + scripts
 │   └── scripts/env-scan.sh
 ├── .claude-plugin/               ← Claude Code marketplace plugin
 ├── hooks/hooks.json              ← ${CLAUDE_PLUGIN_ROOT} hooks (marketplace install)

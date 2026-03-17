@@ -1331,6 +1331,8 @@ else
   update_count "$ROOT/CLAUDE.md"        "[0-9]\+ command files installed"       "$CMD_COUNT command files installed"
   update_count "$ROOT/README.md"        "all [0-9]\+ commands"                  "all $CMD_COUNT commands"
   update_count "$ROOT/README.md"        "[0-9]\+ commands + lazy"               "$CMD_COUNT commands + lazy"
+  update_count "$ROOT/README.md"        "commands/.*([0-9]\+)"                  "commands/         ($CMD_COUNT)"
+  update_count "$ROOT/README.md"        "skills/.*([0-9]\+)"                    "skills/            ($SKILL_COUNT)"
   update_count "$ROOT/DOCS.md"          "[0-9]\+ commands —"                    "$CMD_COUNT commands —"
   update_count "$ROOT/DOCS.md"          "all [0-9]\+ commands"                  "all $CMD_COUNT commands"
   update_count "$ROOT/DOCS.md"          "[0-9]\+ commands + lazy"               "$CMD_COUNT commands + lazy"
