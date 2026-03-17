@@ -120,6 +120,117 @@ check_file "commands/migrate.md exists"                  "$CMD/migrate.md"
 check_file "commands/deps.md exists"                     "$CMD/deps.md"
 check_file "commands/find.md exists"                     "$CMD/find.md"
 check_file "commands/create.md exists"                   "$CMD/create.md"
+check_file "commands/reflect.md exists"                  "$CMD/reflect.md"
+
+# ─────────────────────────────────────────────
+echo ""
+echo "[ Skills — Model-Auto-Invoked ]"
+# ─────────────────────────────────────────────
+SKILLS_DIR="$(cd "$(dirname "$0")/.." && pwd)/templates/skills"
+check_file "skills/session-guard/SKILL.md exists"        "$SKILLS_DIR/session-guard/SKILL.md"
+check_file "skills/test-first/SKILL.md exists"           "$SKILLS_DIR/test-first/SKILL.md"
+check_file "skills/env-scanner/SKILL.md exists"          "$SKILLS_DIR/env-scanner/SKILL.md"
+
+SG="$SKILLS_DIR/session-guard/SKILL.md"
+TF="$SKILLS_DIR/test-first/SKILL.md"
+ES="$SKILLS_DIR/env-scanner/SKILL.md"
+
+check "session-guard: has name field"                    "$SG" "name: session-guard"
+check "session-guard: mentions /checkpoint"              "$SG" "/checkpoint"
+check "session-guard: mentions /persist"                 "$SG" "/persist"
+check "session-guard: mentions goals.md"                 "$SG" "goals.md"
+
+check "test-first: has name field"                       "$TF" "name: test-first"
+check "test-first: checks CLAUDE.md for TDD rule"        "$TF" "CLAUDE.md"
+check "test-first: framework detection"                  "$TF" "package.json\|pyproject.toml\|Cargo.toml\|go.mod"
+
+check "env-scanner: has name field"                      "$ES" "name: env-scanner"
+check "env-scanner: references env-scan.sh"              "$ES" "env-scan.sh"
+check "env-scanner: mentions JSON output"                "$ES" "JSON"
+
+DB="$SKILLS_DIR/debate/SKILL.md"
+SC="$SKILLS_DIR/security/SKILL.md"
+check_file "skills/debate/SKILL.md exists"               "$DB"
+check_file "skills/security/SKILL.md exists"             "$SC"
+check_file "skills/debate/references/ exists"            "$SKILLS_DIR/debate/references/acemad-protocol.md"
+check_file "skills/security/references/ exists"          "$SKILLS_DIR/security/references/security-details.md"
+
+SKC="$SKILLS_DIR/skill-creator/SKILL.md"
+check_file "skills/skill-creator/SKILL.md exists"        "$SKC"
+check_file "skill-creator: scaffold script"              "$SKILLS_DIR/skill-creator/scripts/scaffold.sh"
+check_file "skill-creator: engineering guide"            "$SKILLS_DIR/skill-creator/references/skill-engineering-guide.md"
+check_file "skill-creator: quality checklist"            "$SKILLS_DIR/skill-creator/references/quality-checklist.md"
+check_file "skill-creator: sample output"                "$SKILLS_DIR/skill-creator/examples/sample-skill.md"
+
+check "skill-creator: pushy description"                 "$SKC" "create a skill\|add a skill\|new skill\|build a skill\|teach Claude"
+check "skill-creator: 30+ keywords formula"              "$SKC" "30.*trigger\|trigger.*30\|30.*keyword"
+check "skill-creator: imperative form rule"              "$SKC" "imperative\|Run the script.*not.*should"
+check "skill-creator: references progressive disclosure" "$SKC" "references/skill-engineering-guide\|references/quality-checklist"
+check "skill-creator: script invocation"                 "$SKC" "scaffold.sh"
+check "skill-creator: disable-model-invocation guidance" "$SKC" "disable-model-invocation"
+
+check "engineering guide: pushy description formula"     "$SKILLS_DIR/skill-creator/references/skill-engineering-guide.md" "ACTIONS.*trigger\|OBJECTS.*applies\|CONTEXTS.*fire"
+check "engineering guide: 2000 word limit"               "$SKILLS_DIR/skill-creator/references/skill-engineering-guide.md" "2.000 words\|2,000 words"
+check "engineering guide: script pattern"                "$SKILLS_DIR/skill-creator/references/skill-engineering-guide.md" "deterministic\|black box"
+check "engineering guide: evolution section"              "$SKILLS_DIR/skill-creator/references/skill-engineering-guide.md" "Track triggers\|Track quality\|Prune failures"
+
+check "quality checklist: 30+ keywords check"            "$SKILLS_DIR/skill-creator/references/quality-checklist.md" "30.*trigger\|trigger.*keyword"
+check "quality checklist: behavior test"                 "$SKILLS_DIR/skill-creator/references/quality-checklist.md" "Removing the skill changes"
+check "quality checklist: scripts deterministic"         "$SKILLS_DIR/skill-creator/references/quality-checklist.md" "deterministic work only"
+
+# ── agent-creator skill ──────────────────────────────────────────────────────
+AGC="$SKILLS_DIR/agent-creator/SKILL.md"
+check_file "skills/agent-creator/SKILL.md exists"        "$AGC"
+check_file "agent-creator: scaffold script"              "$SKILLS_DIR/agent-creator/scripts/scaffold.sh"
+check_file "agent-creator: engineering guide"             "$SKILLS_DIR/agent-creator/references/agent-engineering-guide.md"
+check_file "agent-creator: quality checklist"             "$SKILLS_DIR/agent-creator/references/quality-checklist.md"
+check_file "agent-creator: sample output"                "$SKILLS_DIR/agent-creator/examples/sample-agent.md"
+
+check "agent-creator: pushy description"                 "$AGC" "create an agent\|add an agent\|new agent\|build an agent\|custom agent"
+check "agent-creator: 5-layer structure"                 "$AGC" "Layer 1.*PERSONA\|Layer 2.*SCOPE\|Layer 3.*TOOLS\|Layer 4.*CONSTRAINTS\|Layer 5.*DOMAIN"
+check "agent-creator: ownership boundary rule"           "$AGC" "OWNERSHIP BOUNDARY"
+check "agent-creator: 30+ keywords"                      "$AGC" "30.*trigger\|trigger.*30\|30.*keyword"
+check "agent-creator: references progressive disclosure" "$AGC" "references/agent-engineering-guide\|references/quality-checklist"
+check "agent-creator: script invocation"                 "$AGC" "scaffold.sh"
+check "agent-creator: framework collision"               "$AGC" "collision\|cc-\|prefix"
+check "agent-creator: agent sizing guide"                "$AGC" "20 files\|100 files\|500 files"
+
+check "agent eng guide: 5-layer structure"               "$SKILLS_DIR/agent-creator/references/agent-engineering-guide.md" "PERSONA.*SCOPE\|5-Layer\|5 layers"
+check "agent eng guide: co-change analysis"              "$SKILLS_DIR/agent-creator/references/agent-engineering-guide.md" "co-change\|Co-Change"
+check "agent eng guide: layer 5 > layer 1"               "$SKILLS_DIR/agent-creator/references/agent-engineering-guide.md" "Layer 5.*Layer 1\|Domain.*Persona"
+check "agent eng guide: agent + skill pairing"           "$SKILLS_DIR/agent-creator/references/agent-engineering-guide.md" "Skill Pairing\|skill check\|Skill Check"
+check "agent eng guide: evolution section"               "$SKILLS_DIR/agent-creator/references/agent-engineering-guide.md" "patterns.md\|antipatterns.md\|decisions.md"
+check "agent eng guide: self-correction"                 "$SKILLS_DIR/agent-creator/references/agent-engineering-guide.md" "Self-Correction\|2 attempts\|re-read the error"
+
+check "agent quality checklist: 30+ keywords"            "$SKILLS_DIR/agent-creator/references/quality-checklist.md" "30.*trigger\|trigger.*keyword"
+check "agent quality checklist: 5 layers"                "$SKILLS_DIR/agent-creator/references/quality-checklist.md" "5 layers\|persona.*scope.*tools.*constraints.*domain"
+check "agent quality checklist: DOES NOT TOUCH"          "$SKILLS_DIR/agent-creator/references/quality-checklist.md" "DOES NOT TOUCH"
+check "agent quality checklist: behavior test"           "$SKILLS_DIR/agent-creator/references/quality-checklist.md" "Removing the agent changes"
+
+check "debate: has pushy description"                    "$DB" "should I\|which is better\|pros and cons\|trade-offs\|help me decide"
+check "debate: disable-model-invocation"                 "$DB" "disable-model-invocation: true"
+check "debate: AceMAD protocol"                          "$DB" "AceMAD"
+check "debate: evidence tagging"                         "$DB" "VERIFIED.*PARTIAL.*UNVERIFIED\|UNVERIFIED.*VERIFIED"
+check "debate: references progressive disclosure"        "$DB" "references/acemad-protocol"
+
+check "security: has pushy description"                  "$SC" "credentials\|API keys\|secrets\|\.env\|vulnerabilities"
+check "security: hook integrity"                         "$SC" "integrity\|SHA-256\|sha256"
+check "security: injection protection"                   "$SC" "injection\|ignore.*previous"
+check "security: credential handling"                    "$SC" "\.gitignore\|never.*committed\|ENV_VAR"
+check "security: agent permissions"                      "$SC" "Reviewer\|Implementer\|Orchestrator"
+check "security: references progressive disclosure"      "$SC" "references/security-details"
+
+# ─────────────────────────────────────────────
+echo ""
+echo "[ /reflect — Self-Improving CLAUDE.md ]"
+# ─────────────────────────────────────────────
+REFLECT="$CMD/reflect.md"
+check "reflect: reads friction logs"                     "$REFLECT" "friction"
+check "reflect: reads goals.md"                          "$REFLECT" "goals.md"
+check "reflect: proposes CLAUDE.md edits"                "$REFLECT" "CLAUDE.md"
+check "reflect: categorizes findings"                    "$REFLECT" "Missing rule\|Vague rule\|Dead rule"
+check "reflect: waits for user approval"                 "$REFLECT" "approval\|Apply which"
+check "reflect: logs to observations"                    "$REFLECT" "observations"
 
 # ─────────────────────────────────────────────
 echo ""
@@ -609,7 +720,9 @@ echo "[ CLI Installer — bin/cli.js ]"
 # ─────────────────────────────────────────────
 CLI="$(cd "$(dirname "$0")/.." && pwd)/bin/cli.js"
 check_file "bin/cli.js exists"                   "$CLI"
-check "All 11 commands in COMMANDS array"        "$CLI" "dream.*setup.*fix.*evolve.*debate\|loop.*ship.*status"
+check "CORE_COMMANDS array defined"              "$CLI" "CORE_COMMANDS.*=.*setup.*fix.*add.*review"
+check "EXTENDED_COMMANDS array defined"          "$CLI" "EXTENDED_COMMANDS.*=.*dream.*refactor.*doc"
+check "ADVANCED_COMMANDS array defined"          "$CLI" "ADVANCED_COMMANDS.*=.*evolve.*debate"
 check "CLI_TABLE with 5 entries"                 "$CLI" "CLI_TABLE"
 check "Claude Code entry in CLI_TABLE"           "$CLI" "Claude Code"
 check "Gemini CLI entry in CLI_TABLE"            "$CLI" "Gemini CLI"
@@ -631,6 +744,8 @@ check "Stop hook installed"                      "$CLI" "Stop"
 check "Windows compatibility warning"            "$CLI" "Windows\|win32"
 check "installCapabilities function"             "$CLI" "installCapabilities"
 check "installCommands function"                 "$CLI" "installCommands"
+check "installSkills function"                   "$CLI" "installSkills"
+check "SKILLS array defined"                     "$CLI" "SKILLS.*=.*session-guard.*test-first.*env-scanner.*debate.*security.*skill-creator.*agent-creator"
 check "installAgents function"                   "$CLI" "installAgents"
 check "createDirectories function"               "$CLI" "createDirectories"
 check "ensureSharedSkillsDir function"           "$CLI" "ensureSharedSkillsDir"
@@ -836,8 +951,24 @@ check_file "install: shared/tdd.md present"            "$IDIR/.claude/capabiliti
 check_file "install: shared/native-tools.md present"   "$IDIR/.claude/capabilities/shared/native-tools.md"
 check_file "install: shared/security.md present"       "$IDIR/.claude/capabilities/shared/security.md"
 check      "install: CLAUDE.md has placeholders"       "$IDIR/CLAUDE.md" "{{PROJECT_NAME}}"
+check_file "install: /reflect installed"                "$IDIR/.claude/commands/reflect.md"
+check_file "install: session-guard skill installed"     "$IDIR/.claude/skills/session-guard/SKILL.md"
+check_file "install: test-first skill installed"        "$IDIR/.claude/skills/test-first/SKILL.md"
+check_file "install: env-scanner skill installed"       "$IDIR/.claude/skills/env-scanner/SKILL.md"
+check_file "install: debate skill installed"            "$IDIR/.claude/skills/debate/SKILL.md"
+check_file "install: debate references installed"       "$IDIR/.claude/skills/debate/references/acemad-protocol.md"
+check_file "install: security skill installed"          "$IDIR/.claude/skills/security/SKILL.md"
+check_file "install: security references installed"     "$IDIR/.claude/skills/security/references/security-details.md"
+check_file "install: skill-creator installed"           "$IDIR/.claude/skills/skill-creator/SKILL.md"
+check_file "install: skill-creator scaffold script"     "$IDIR/.claude/skills/skill-creator/scripts/scaffold.sh"
+check_file "install: skill-creator references"          "$IDIR/.claude/skills/skill-creator/references/skill-engineering-guide.md"
+check_file "install: skill-creator examples"            "$IDIR/.claude/skills/skill-creator/examples/sample-skill.md"
+check_file "install: agent-creator installed"            "$IDIR/.claude/skills/agent-creator/SKILL.md"
+check_file "install: agent-creator scaffold script"      "$IDIR/.claude/skills/agent-creator/scripts/scaffold.sh"
+check_file "install: agent-creator references"           "$IDIR/.claude/skills/agent-creator/references/agent-engineering-guide.md"
+check_file "install: agent-creator examples"             "$IDIR/.claude/skills/agent-creator/examples/sample-agent.md"
 INSTALLED=$(ls "$IDIR/.claude/commands/" | wc -l | tr -d ' ')
-EXPECTED_CMDS=22
+EXPECTED_CMDS=23
 if [ "$INSTALLED" -eq "$EXPECTED_CMDS" ]; then
   echo "  ✓ install: all $EXPECTED_CMDS commands present"
   PASS=$((PASS + 1))
@@ -888,6 +1019,13 @@ check        "hooks: post-tool-use respects AZCLAUDE_CFG"   "templates/hooks/pos
 check        "hooks: post-tool-use git timeout"             "templates/hooks/post-tool-use.js" "timeout.*3000\|3000"
 check        "hooks: plugin PostToolUse matches Write|Edit" "hooks/hooks.json"                 "Write|Edit"
 
+# Performance hooks
+check        "hooks: user-prompt caps Done to 20"         "templates/hooks/user-prompt.js"   "MAX_DONE.*20\|MAX_DONE = 20"
+check        "hooks: user-prompt caps checkpoint to 50"   "templates/hooks/user-prompt.js"   "MAX_CP.*50\|MAX_CP = 50"
+check        "hooks: post-tool-use caches git diff 5s"    "templates/hooks/post-tool-use.js" "diffCache\|cacheAge.*5000\|5000"
+check        "hooks: tiered install --full flag"          "bin/cli.js"                       "fullInstall\|--full"
+check        "hooks: CORE_CAP_DIRS vs FULL_CAP_DIRS"      "bin/cli.js"                       "CORE_CAP_DIRS\|FULL_CAP_DIRS"
+
 # ─── TDD opt-in signals ───────────────────────────────────────────────────────
 echo ""
 echo "─── TDD opt-in ───"
@@ -911,7 +1049,7 @@ check      "evolve: promotes GENERAL to shared-skills" "templates/commands/evolv
 check      "evolve: adds discovered_in on promote"  "templates/commands/evolve.md" "discovered_in"
 check      "evolve: checksums on promote"            "templates/commands/evolve.md" "checksums\|sha256"
 check      "cli: creates evolution-log.md"           "bin/cli.js" "evolution-log\.md"
-check      "cli: evolve tip in install output"       "bin/cli.js" "run /evolve\|auto-improve"
+check      "cli: --full flag for advanced install"    "bin/cli.js" "npx azclaude --full\|fullInstall\|--full"
 
 # ─── /ship docs sync ──────────────────────────────────────────────────────────
 echo ""
@@ -967,6 +1105,8 @@ check_file "plugin: hooks/hooks.json exists"              "hooks/hooks.json"
 check      "plugin: name is azclaude"                     ".claude-plugin/plugin.json" "\"azclaude\""
 check      "plugin: version present"                      ".claude-plugin/plugin.json" "version"
 check      "plugin: commands path set"                    ".claude-plugin/plugin.json" "templates/commands"
+check      "plugin: skills path set"                     ".claude-plugin/plugin.json" "templates/skills"
+check      "plugin: agents path set"                     ".claude-plugin/plugin.json" "templates/agents"
 check      "plugin: hooks path set"                       ".claude-plugin/plugin.json" "hooks/hooks.json"
 check      "plugin: UserPromptSubmit hook wired"          "hooks/hooks.json" "UserPromptSubmit"
 check      "plugin: PostToolUse hook wired"               "hooks/hooks.json" "PostToolUse"

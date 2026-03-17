@@ -69,7 +69,7 @@ Append topology report to `.claude/memory/sessions/{date}-cycle3.md`.
 
 ### PRUNE AGENTS
 For any custom agent in `.claude/agents/`:
-- Does it have all 5 layers? (see shared/5-layer-agent.md)
+- Does it have all 5 layers? (see agent-creator skill or shared/5-layer-agent.md)
 - Is it still needed, or has a skill replaced it?
 - If obsolete: archive to `.claude/agents/archive/`
 

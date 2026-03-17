@@ -7,7 +7,10 @@ const crypto        = require('crypto');
 const { execSync }  = require('child_process');
 
 const TEMPLATE_DIR = path.join(__dirname, '..', 'templates');
-const COMMANDS     = ['dream', 'setup', 'fix', 'evolve', 'debate', 'checkpoint', 'persist', 'level-up', 'ship', 'status', 'explain', 'loop', 'add', 'review', 'test', 'plan', 'refactor', 'doc', 'migrate', 'deps', 'find', 'create'];
+const CORE_COMMANDS     = ['setup', 'fix', 'add', 'review', 'test', 'plan', 'ship', 'status', 'explain', 'checkpoint', 'persist'];
+const EXTENDED_COMMANDS = ['dream', 'refactor', 'doc', 'loop', 'migrate', 'deps', 'find', 'create', 'reflect'];
+const ADVANCED_COMMANDS = ['evolve', 'debate', 'level-up'];
+const COMMANDS          = [...CORE_COMMANDS, ...EXTENDED_COMMANDS, ...ADVANCED_COMMANDS];
 
 function ok(msg)   { console.log(`  ✓ ${msg}`); }
 function warn(msg) { console.log(`  ⚠ ${msg}`); }
@@ -194,17 +197,38 @@ function installGlobalHooks(cli) {
 
 // ─── Capabilities ─────────────────────────────────────────────────────────────
 
-function installCapabilities(projectDir, cfg) {
+// Core capability dirs installed by default; advanced dirs only with --full
+const CORE_CAP_DIRS  = ['shared', 'level-builders'];
+const FULL_CAP_DIRS  = ['shared', 'level-builders', 'evolution', 'intelligence'];
+
+function installCapabilities(projectDir, cfg, full) {
   const src = path.join(TEMPLATE_DIR, 'capabilities');
   const dst = path.join(projectDir, cfg, 'capabilities');
 
   if (fs.existsSync(dst)) {
-    ok('Capabilities already installed — skipping');
+    // If upgrading to --full, install missing dirs
+    if (full) {
+      for (const dir of FULL_CAP_DIRS) {
+        const dstSub = path.join(dst, dir);
+        if (!fs.existsSync(dstSub)) {
+          copyDir(path.join(src, dir), dstSub);
+          ok(`${dir}/ capabilities added (--full)`);
+        }
+      }
+    }
+    ok('Capabilities already installed — checked');
     return;
   }
 
-  copyDir(src, dst);
-  ok(`Capabilities installed (${cfg}/capabilities/)`);
+  const dirs = full ? FULL_CAP_DIRS : CORE_CAP_DIRS;
+  fs.mkdirSync(dst, { recursive: true });
+  // Always install manifest.md
+  fs.copyFileSync(path.join(src, 'manifest.md'), path.join(dst, 'manifest.md'));
+  for (const dir of dirs) {
+    copyDir(path.join(src, dir), path.join(dst, dir));
+  }
+  ok(`Capabilities installed (${cfg}/capabilities/) — ${full ? 'full' : 'core'}`);
+  if (!full) info('Run npx azclaude --full to add evolution + intelligence capabilities');
   info('manifest.md is your capability index — read it to find what to load');
 }
 
@@ -222,6 +246,36 @@ function installCommands(projectDir, cfg) {
       ok(`/${cmd} installed`);
     } else if (fs.existsSync(dst)) {
       info(`/${cmd} already exists — skipping`);
+    }
+  }
+}
+
+// ─── Skills (SKILL.md — model-auto-invoked) ──────────────────────────────────
+
+const SKILLS = ['session-guard', 'test-first', 'env-scanner', 'debate', 'security', 'skill-creator', 'agent-creator'];
+
+function installSkills(projectDir, cfg) {
+  const skillsDir = path.join(projectDir, cfg, 'skills');
+  fs.mkdirSync(skillsDir, { recursive: true });
+
+  for (const skill of SKILLS) {
+    const srcDir = path.join(TEMPLATE_DIR, 'skills', skill);
+    const src    = path.join(srcDir, 'SKILL.md');
+    const dstDir = path.join(skillsDir, skill);
+    const dst    = path.join(dstDir, 'SKILL.md');
+    if (!fs.existsSync(dst) && fs.existsSync(src)) {
+      // Copy SKILL.md + references/ + examples/ (progressive disclosure)
+      fs.mkdirSync(dstDir, { recursive: true });
+      const content = substitutePaths(fs.readFileSync(src, 'utf8'), cfg);
+      fs.writeFileSync(dst, content);
+      // Copy subdirectories (references/, examples/, scripts/)
+      for (const sub of ['references', 'examples', 'scripts']) {
+        const subSrc = path.join(srcDir, sub);
+        if (fs.existsSync(subSrc)) copyDir(subSrc, path.join(dstDir, sub));
+      }
+      ok(`${skill} skill installed (auto-invoked by model)`);
+    } else if (fs.existsSync(dst)) {
+      info(`${skill} skill already exists — skipping`);
     }
   }
 }
@@ -540,6 +594,16 @@ function runDoctor() {
   const missing = COMMANDS.filter(c => !installed.includes(`${c}.md`));
   if (missing.length) console.log(`  · missing: ${missing.join(', ')}`);
 
+  // ── Skills ──────────────────────────────────────────────────────────────
+  console.log('\n[ Skills ]');
+  const skillsDir      = path.join(projectDir, cfg, 'skills');
+  const installedSkills = fs.existsSync(skillsDir) ? fs.readdirSync(skillsDir).filter(s => {
+    return fs.existsSync(path.join(skillsDir, s, 'SKILL.md'));
+  }) : [];
+  chk(`${installedSkills.length}/${SKILLS.length} skills installed`, installedSkills.length === SKILLS.length);
+  const missingSkills = SKILLS.filter(s => !installedSkills.includes(s));
+  if (missingSkills.length) console.log(`  · missing: ${missingSkills.join(', ')}`);
+
   // ── Memory health ──────────────────────────────────────────────────────
   console.log('\n[ Memory ]');
   const memDir = path.join(projectDir, cfg, 'memory');
@@ -627,8 +691,9 @@ function copyDir(src, dst) {
 if (process.argv[2] === 'doctor') { runDoctor(); process.exit(0); }
 if (process.argv[2] === 'demo')   { runDemo();   process.exit(0); }
 
-const projectDir = process.cwd();
-const cli        = detectCLI();
+const fullInstall = process.argv.includes('--full');
+const projectDir  = process.cwd();
+const cli         = detectCLI();
 
 console.log('\n════════════════════════════════════════════════');
 console.log('  AZCLAUDE — AI Coding Environment');
@@ -637,8 +702,9 @@ console.log('══════════════════════�
 
 verifyIntegrity(cli);
 installGlobalHooks(cli);
-installCapabilities(projectDir, cli.cfg);
+installCapabilities(projectDir, cli.cfg, fullInstall);
 installCommands(projectDir, cli.cfg);
+installSkills(projectDir, cli.cfg);
 installScripts(projectDir, cli.cfg);
 installAgents(projectDir, cli.cfg);
 installRulesFile(projectDir, cli.cfg, cli.rulesFile);
@@ -653,10 +719,12 @@ if (!fs.existsSync(evolLogPath)) {
 }
 
 console.log('\n════════════════════════════════════════════════');
+console.log(`  Install mode: ${fullInstall ? 'full (all capabilities)' : 'core (shared + level-builders)'}`);
 console.log('  Architecture: lazy-loaded, manifest-driven');
 console.log('  Token cost per task: ~200-600 (vs ~21,000 monolith)');
 console.log(`  Next step: run /setup to configure this project`);
-console.log('');
-console.log('  Tip: run /evolve in Claude Code to scan for gaps');
-console.log('  and auto-improve your environment.');
+if (!fullInstall) {
+  console.log('');
+  console.log('  When ready for Level 5+: npx azclaude --full');
+}
 console.log('════════════════════════════════════════════════\n');

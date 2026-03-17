@@ -17,13 +17,14 @@ Update it at the end of every session with /persist.
 
 ## Project Structure
 ```
-bin/cli.js              — CLI installer (detectCLI, substitutePaths, sanitizePath, integrity hash)
+bin/cli.js              — CLI installer (detectCLI, substitutePaths, integrity hash, --full flag)
 templates/CLAUDE.md     — template installed into user projects
-templates/commands/     — 22 command files installed as .claude/commands/
+templates/commands/     — 23 command files installed as .claude/commands/
+templates/skills/       — 5 SKILL.md files with references/ (model-auto-invoked)
 templates/capabilities/ — manifest + shared + level-builders + evolution + intelligence
 templates/agents/       — orchestrator-init + loop-controller + code-reviewer + test-writer
 templates/scripts/      — env-scan.sh (JSON output, ~200 tokens)
-tests/test-features.sh        — 691 grep-based tests, all must pass before commit
+tests/test-features.sh        — 794 grep-based tests, all must pass before commit
 ```
 
 ## Task Routing
@@ -32,7 +33,8 @@ Load ONLY files relevant to the current task.
 
 Quick dispatch:
 - Template change → read the file, edit, run tests/test-features.sh, commit
-- New command → templates/commands/{name}.md, add to COMMANDS in bin/cli.js, add tests
+- New command → templates/commands/{name}.md, add to CORE/EXTENDED/ADVANCED_COMMANDS in bin/cli.js, add tests
+- New skill → templates/skills/{name}/SKILL.md, add to SKILLS in bin/cli.js, add tests
 - New capability → templates/capabilities/shared/{name}.md, add to manifest.md
 - CLI change → bin/cli.js, add tests in tests/test-features.sh
 - /fix bug → commands/fix.md protocol
@@ -47,4 +49,4 @@ When priorities conflict:
 3. User clarity > framework elegance — the user is the last consumer, optimize for them
 
 ## Available Commands
-/dream · /setup · /fix · /add · /review · /test · /plan · /evolve · /debate · /checkpoint · /persist · /level-up · /ship · /status · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create
+/dream · /setup · /fix · /add · /review · /test · /plan · /evolve · /debate · /checkpoint · /persist · /level-up · /ship · /status · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect

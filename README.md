@@ -407,7 +407,7 @@ All capabilities, commands, and memory work identically on every CLI.
 
 ## ✅ Verified
 
-691 tests. Every link in the system verified — content accuracy, not just file presence.
+794 tests. Every link in the system verified — content accuracy, not just file presence.
 
 ```bash
 bash tests/test-features.sh
@@ -415,7 +415,7 @@ bash tests/test-features.sh
 
 ```
 ════════════════════════════════════════════════════
-  Results: 691 passed, 0 failed, 691 total
+  Results: 794 passed, 0 failed, 794 total
 ════════════════════════════════════════════════════
 ```
 
@@ -448,7 +448,7 @@ azclaude/
 ├── DOCS.md                       ← full user guide (all features, step by step)
 ├── CONTRIBUTING.md
 ├── tests/
-│   └── test-features.sh          ← 691 tests
+│   └── test-features.sh          ← 794 tests
 ```
 
 ---

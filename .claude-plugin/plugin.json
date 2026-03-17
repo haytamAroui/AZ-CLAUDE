@@ -11,5 +11,7 @@
   "license": "MIT",
   "keywords": ["memory", "setup", "agents", "commands", "context", "lazy-loading", "hooks", "domain-aware"],
   "commands": "./templates/commands/",
+  "skills": "./templates/skills/",
+  "agents": "./templates/agents/",
   "hooks": "./hooks/hooks.json"
 }

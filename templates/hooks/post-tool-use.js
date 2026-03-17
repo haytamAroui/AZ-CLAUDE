@@ -51,20 +51,34 @@ if (!fs.existsSync(goalsPath)) process.exit(0); // not an AZCLAUDE project
 const now = new Date();
 const ts  = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-// Git diff stat: "+N/-M" — tells WHAT changed in size
+// Git diff stat: "+N/-M" — cached for 5s to avoid repeated git calls on consecutive edits
 let diffStat = '';
-try {
-  const r = spawnSync('git', ['diff', 'HEAD', '--numstat', '--', rel],
-    { encoding: 'utf8', cwd: process.cwd(), timeout: 3000 });
-  if (r.status === 0 && r.stdout.trim()) {
-    const [added, deleted] = r.stdout.trim().split('\t');
-    const a = parseInt(added, 10);
-    const d = parseInt(deleted, 10);
-    if (!isNaN(a) && !isNaN(d) && (a > 0 || d > 0)) {
-      diffStat = ` (+${a}/-${d})`;
+const diffCachePath = path.join(os.tmpdir(), `.azclaude-diff-${process.ppid || process.pid}`);
+let diffCache = {};
+try { diffCache = JSON.parse(fs.readFileSync(diffCachePath, 'utf8')); } catch (_) {}
+const cacheAge = Date.now() - (diffCache._ts || 0);
+const cached   = diffCache[rel];
+if (cached && cacheAge < 5000) {
+  diffStat = cached;
+} else {
+  try {
+    const r = spawnSync('git', ['diff', 'HEAD', '--numstat', '--', rel],
+      { encoding: 'utf8', cwd: process.cwd(), timeout: 3000 });
+    if (r.status === 0 && r.stdout.trim()) {
+      const [added, deleted] = r.stdout.trim().split('\t');
+      const a = parseInt(added, 10);
+      const d = parseInt(deleted, 10);
+      if (!isNaN(a) && !isNaN(d) && (a > 0 || d > 0)) {
+        diffStat = ` (+${a}/-${d})`;
+      }
     }
-  }
-} catch (_) {}
+  } catch (_) {}
+  // Update cache
+  if (cacheAge >= 5000) diffCache = {};
+  diffCache[rel] = diffStat;
+  diffCache._ts  = Date.now();
+  try { fs.writeFileSync(diffCachePath, JSON.stringify(diffCache)); } catch (_) {}
+}
 
 const entry = `- ${ts} — ${rel}${diffStat}${changeSummary}`;
 

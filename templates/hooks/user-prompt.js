@@ -39,8 +39,34 @@ if (ipMatch) {
   console.log('');
 }
 
+// Cap "Done this session" to last 20 entries — older entries are still on disk
+const doneHeading = '## Done this session';
+const doneIdx     = filtered.indexOf(doneHeading);
+let output = filtered;
+if (doneIdx !== -1) {
+  const before    = filtered.slice(0, doneIdx);
+  const afterDone = filtered.slice(doneIdx + doneHeading.length);
+  const doneLines = afterDone.split('\n');
+  const entries   = [];
+  const rest      = [];
+  let   pastDone  = false;
+  for (const line of doneLines) {
+    if (pastDone) { rest.push(line); continue; }
+    if (line.startsWith('## ') && line.trim() !== '') { pastDone = true; rest.push(line); continue; }
+    entries.push(line);
+  }
+  const MAX_DONE = 20;
+  const entryLines = entries.filter(l => l.startsWith('- '));
+  if (entryLines.length > MAX_DONE) {
+    const trimmed = entryLines.slice(0, MAX_DONE);
+    const nonEntries = entries.filter(l => !l.startsWith('- '));
+    const omitted = entryLines.length - MAX_DONE;
+    output = before + doneHeading + '\n' + trimmed.join('\n') + `\n- ... ${omitted} earlier entries (on disk)\n` + nonEntries.filter(l => l.trim()).join('\n') + '\n' + rest.join('\n');
+  }
+}
+
 console.log('--- ACTIVE GOALS ---');
-console.log(filtered);
+console.log(output);
 console.log('--- END GOALS ---');
 
 // Inject latest checkpoint if one exists — captures mid-session reasoning
@@ -53,10 +79,14 @@ if (fs.existsSync(checkpointDir)) {
   if (files.length > 0) {
     const latest = path.join(checkpointDir, files[0]);
     const cpContent = fs.readFileSync(latest, 'utf8');
-    const cpFiltered = cpContent.split('\n').filter(l => !INJECTION.test(l)).join('\n');
+    const cpLines    = cpContent.split('\n').filter(l => !INJECTION.test(l));
+    const MAX_CP     = 50;
+    const cpTrimmed  = cpLines.length > MAX_CP
+      ? cpLines.slice(0, MAX_CP).concat([`... ${cpLines.length - MAX_CP} more lines (on disk)`])
+      : cpLines;
     console.log('');
     console.log(`--- LAST CHECKPOINT (${files[0]}) ---`);
-    console.log(cpFiltered.trim());
+    console.log(cpTrimmed.join('\n').trim());
     console.log('--- END CHECKPOINT ---');
   }
 }

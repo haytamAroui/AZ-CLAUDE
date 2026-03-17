@@ -12,7 +12,7 @@ Load only the files that match the current task. Never load the full list.
 | shared/completion-rule.md | About to say "should work", "probably passes", or claim done without proof | ~40 |
 | shared/session-rhythm.md | Session just started, context was reset, or about to close | ~80 |
 | shared/friction-log.md | Something was hard, slow, repeated, or frustrating this session | ~60 |
-| shared/5-layer-agent.md | Writing a new agent or an existing agent is incomplete / making mistakes | ~500 |
+| shared/5-layer-agent.md | Writing a new agent or an existing agent is incomplete / making mistakes (see also: agent-creator skill) | ~500 |
 | shared/vocabulary-transform.md | Generating files for compliance, medical, legal, finance, or creative domain | ~60 |
 | shared/multi-cli-paths.md | CLI is not Claude Code, or path configuration is wrong for the platform | ~80 |
 | shared/quality-check.md | /setup or /level-up just ran — verify it actually worked correctly | ~80 |

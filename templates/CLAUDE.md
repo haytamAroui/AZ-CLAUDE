@@ -26,31 +26,20 @@ Update it at the end of every session.
 Read `.claude/capabilities/manifest.md` to find what to load.
 Load ONLY the files relevant to the current task — nothing else.
 
-Quick dispatch:
+Quick dispatch (core — used most sessions):
+- /add → commands/add.md · /fix → commands/fix.md · /test → commands/test.md
+- /review → commands/review.md · /plan → commands/plan.md · /ship → commands/ship.md
+- /status → commands/status.md · /explain → commands/explain.md
 - Any code task → shared/tdd.md + shared/completion-rule.md
-- /dream → commands/dream.md → agents/orchestrator-init.md
-- /setup → commands/setup.md → agents/orchestrator-init.md
-- /fix → commands/fix.md
-- /evolve → commands/evolve.md → evolution/detect + generate + evaluate
-- /debate → commands/debate.md → intelligence/debate.md
-- /checkpoint → commands/checkpoint.md (mid-session snapshot, survives compaction)
-- /persist → commands/persist.md → shared/session-rhythm + friction-log
-- /level-up → commands/level-up.md → level-builders/{N}.md
-- /add → commands/add.md
-- /review → commands/review.md
-- /test → commands/test.md
-- /plan → commands/plan.md
-- /ship → commands/ship.md
-- /status → commands/status.md
-- /explain → commands/explain.md
-- /loop → commands/loop.md
-- /refactor → commands/refactor.md (tests before + after, safe restructuring)
-- /doc → commands/doc.md (generate docs from code, match existing style)
-- /migrate → commands/migrate.md (upgrade deps/frameworks, fix breaking changes)
-- /deps → commands/deps.md (audit outdated, vulnerable, unused packages)
-- /find → commands/find.md (search for skills across project + shared-skills)
-- /create → commands/create.md (build a new command with tests)
-- Unknown capability → grep manifest.md by description, load match
+
+Extended (load command file on use):
+- /setup · /dream · /checkpoint · /persist · /refactor · /doc · /loop
+- /migrate · /deps · /find · /create · /reflect
+
+Advanced (Level 5+):
+- /evolve · /debate · /level-up
+
+Unknown capability → grep manifest.md by description, load match
 
 ## Trade-Off Hierarchies
 When priorities conflict:
@@ -59,4 +48,4 @@ When priorities conflict:
 3. {{PRIORITY_3}}
 
 ## Available Commands
-/dream · /setup · /fix · /add · /review · /test · /plan · /evolve · /debate · /checkpoint · /persist · /level-up · /ship · /status · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create
+/dream · /setup · /fix · /add · /review · /test · /plan · /evolve · /debate · /checkpoint · /persist · /level-up · /ship · /status · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect
