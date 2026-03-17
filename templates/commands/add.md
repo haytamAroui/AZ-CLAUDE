@@ -27,6 +27,21 @@ If $ARGUMENTS is blank or vague, use **AskUserQuestion**:
 
 Do not proceed with a vague request. Scope creep starts at intake.
 
+### Complexity Gate
+Estimate how many files this feature will touch. If 4+ files:
+1. Ask 2-3 clarifying questions BEFORE designing anything:
+   - Edge cases: "What happens when X fails?"
+   - Integration: "Should this work with existing Y?"
+   - Constraints: "Any performance/security requirements?"
+2. Explore the codebase first (Phase 2) — then ask informed questions
+3. For complex features, present 2 approaches with trade-offs:
+   - **Minimal**: smallest change, maximum reuse of existing patterns
+   - **Clean**: better architecture, more files, easier to extend later
+   - Ask which approach the user prefers before implementing
+
+Do NOT skip the complexity gate for multi-file features. Building the wrong
+thing fast is slower than asking 3 questions first.
+
 **TaskCreate** before starting:
 - `Understand existing pattern`
 - `Write failing test` (if TDD active — skip otherwise)
@@ -46,6 +61,8 @@ grep -r "{keyword from $ARGUMENTS}" --include="*.ts" --include="*.py" --include=
 2. Read the file it lives in — understand naming, structure, error handling
 3. Check for relevant types or interfaces: `grep -r "interface\|type\|schema" {file}`
 4. Read CLAUDE.md: is TDD active? What's the domain and stack?
+5. If complexity gate triggered (4+ files): present findings and ask
+   clarifying questions NOW, informed by what you just read
 
 **TaskUpdate** `Understand existing pattern` → completed
 
