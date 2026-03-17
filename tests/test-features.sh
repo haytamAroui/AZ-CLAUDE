@@ -840,6 +840,10 @@ check      "code-reviewer: security checks"            "$CR" "injection\|XSS\|OW
 check      "code-reviewer: runs tests"                 "$CR" "npm test\|pytest\|run.*test"
 check      "code-reviewer: structured output format"   "$CR" "BLOCKING\|APPROVE\|REQUEST_CHANGES"
 check      "code-reviewer: self-correction"            "$CR" "Self-Correction\|2 attempts"
+check      "code-reviewer: false positive filter"      "$CR" "Do NOT Flag\|False Positive"
+check      "code-reviewer: pre-existing issues skip"   "$CR" "Pre-existing issues"
+check      "code-reviewer: high signal only"           "$CR" "HIGH SIGNAL\|high signal"
+check      "code-reviewer: validation step"            "$CR" "Validate Findings\|Re-read each BLOCKING"
 
 # ─── test-writer agent ───────────────────────────────────────────────────────
 TW="$ROOT/agents/test-writer.md"

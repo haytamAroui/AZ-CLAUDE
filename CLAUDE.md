@@ -24,7 +24,7 @@ templates/skills/       — 7 SKILL.md files with references/ (model-auto-invoke
 templates/capabilities/ — manifest + shared + level-builders + evolution + intelligence
 templates/agents/       — orchestrator-init + loop-controller + code-reviewer + test-writer
 templates/scripts/      — env-scan.sh (JSON output, ~200 tokens)
-tests/test-features.sh        — 798 grep-based tests, all must pass before commit
+tests/test-features.sh        — 802 grep-based tests, all must pass before commit
 ```
 
 ## Task Routing

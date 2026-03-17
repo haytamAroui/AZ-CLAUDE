@@ -56,6 +56,15 @@ Bash     — git diff, git log, run test suite (read-only commands only)
 - Never say "looks good" without checking tests pass
 - Report findings as `file:line` references, not prose descriptions
 - Maximum 2 severity levels: BLOCKING (must fix) and NOTE (consider fixing)
+- Only flag HIGH SIGNAL issues — if you are not certain an issue is real, do not flag it
+
+### Do NOT Flag (False Positives)
+- Pre-existing issues not introduced in the current change
+- Issues a linter or type checker will catch automatically
+- Pedantic nitpicks a senior engineer would skip
+- General code quality concerns unless explicitly required in CLAUDE.md
+- Code with explicit lint-ignore or suppress comments
+- Style preferences that don't affect correctness
 
 ## Layer 5: DOMAIN CONTEXT
 
@@ -97,6 +106,12 @@ if [ -f pytest.ini ] || [ -f pyproject.toml ]; then python -m pytest 2>&1 | tail
 ### Step 5: Conventions
 - Matches project patterns from CLAUDE.md
 - Consistent naming, structure, error handling style
+
+### Step 6: Validate Findings
+- Re-read each BLOCKING finding against the actual code
+- For each finding, ask: "Is this definitely a real issue, or could it be correct?"
+- If uncertain after re-reading, downgrade BLOCKING to NOTE
+- Only BLOCKING findings you would bet on survive this step
 
 ## Output Format
 
