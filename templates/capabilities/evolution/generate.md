@@ -85,7 +85,34 @@ Skip this step only if the skill is purely guidance (vocabulary, patterns, refer
 
 ---
 
-### Step 5: Add to Manifest
+### Step 5: Consider Hook Generation [Hookify]
+
+If the detected friction is **behavioral** (user keeps correcting the same mistake,
+Claude keeps producing unwanted output), generate a hook instead of rewriting a prompt.
+
+**When to generate a hook instead of a skill/agent:**
+- Same correction appears 3+ times across sessions → PreToolUse or PostToolUse hook
+- Pattern is mechanical (e.g., "always run tests after edit") → PostToolUse hook
+- Pattern is preventive (e.g., "never use eval()") → PreToolUse hook with matcher
+
+**Hook generation template:**
+```json
+{
+  "hooks": {
+    "PreToolUse": [{
+      "matcher": "Edit|Write",
+      "hooks": [{"type": "command", "command": "bash .claude/hooks/check-pattern.sh"}]
+    }]
+  }
+}
+```
+
+**Rule:** Hooks are for mechanical enforcement. Skills are for guided workflows.
+If the fix requires reasoning, write a skill. If it requires pattern matching, write a hook.
+
+---
+
+### Step 6: Add to Manifest
 
 After generating a new capability file, add one row to `capabilities/manifest.md`:
 ```

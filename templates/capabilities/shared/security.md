@@ -143,3 +143,32 @@ Never import a skill that fails checksum verification without user approval.
 **Never give Agent-spawning to implementation agents.**
 
 If an agent needs elevated permissions: document why in its Layer 4 (CONSTRAINTS).
+
+---
+
+### 7. PreToolUse Code Pattern Monitoring
+
+Catch insecure code patterns at write time — before they reach the codebase.
+Cheaper than catching them at `/ship` or `/review` time.
+
+**Patterns to flag on Edit/Write operations:**
+
+| Pattern | Risk | Action |
+|---|---|---|
+| `eval(` / `new Function(` | Code injection | Warn — suggest alternative |
+| `os.system(` / `subprocess.call(` with `shell=True` | Command injection | Warn — suggest subprocess.run with list args |
+| `child_process.exec(` | Command injection | Warn — suggest execFile or spawn |
+| `dangerouslySetInnerHTML` | XSS | Warn — suggest sanitized alternative |
+| `document.write(` / `.innerHTML =` | DOM XSS | Warn — suggest textContent or createElement |
+| `pickle.load(` / `pickle.loads(` | Deserialization | Warn — suggest json or msgpack |
+| `AKIA[0-9A-Z]{16}` / `sk-` / `ghp_` | Hardcoded secret | Block — must use env var |
+
+**Implementation:** Add a PreToolUse hook with matcher `Edit|Write|MultiEdit`:
+```bash
+# In the hook script, scan the new content for patterns:
+echo "$CLAUDE_TOOL_INPUT" | grep -qE 'eval\(|os\.system\(|pickle\.load' && \
+  echo "⚠ Security: potentially unsafe pattern detected. Review before proceeding."
+```
+
+**Rule:** Warn, don't block (except hardcoded secrets). The developer may have a
+valid reason. But make the pattern visible so it gets reviewed.

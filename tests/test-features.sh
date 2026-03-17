@@ -783,6 +783,15 @@ check "Context injection protection present"           "$SEC" "injection\|inject
 check "Credential handling rules present"              "$SEC" "Credential\|secret\|api key"
 check "Shared-skill verification concept present"      "$SEC" "checksum\|verify.*skill"
 check "Agent permission scoping present"               "$SEC" "least privilege\|permission"
+check "PreToolUse code pattern monitoring"             "$SEC" "PreToolUse.*Code Pattern\|PreToolUse.*pattern\|PreToolUse.*Monitor"
+check "Security: eval/exec pattern detection"          "$SEC" "eval\|os.system\|child_process\|pickle"
+check "Security: warn don't block rule"                "$SEC" "Warn.*don.t block\|warn.*not block"
+
+# ─── evolution generate: hook generation ─────
+EVOLVE_GEN="$SHARED/../evolution/generate.md"
+check "evolve generate: hook generation step"          "$EVOLVE_GEN" "Hook Generation\|generate a hook"
+check "evolve generate: behavioral vs mechanical"      "$EVOLVE_GEN" "behavioral\|mechanical"
+check "evolve generate: PreToolUse hook template"      "$EVOLVE_GEN" "PreToolUse\|PostToolUse"
 
 # ─────────────────────────────────────────────
 echo ""
