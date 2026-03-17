@@ -16,6 +16,20 @@ description: >
 Creates production-quality skills that follow the Anthropic skill spec.
 A skill is a RECIPE that changes Claude's behavior — not documentation, not a prompt.
 
+## 5-Minute Checklist
+Before diving into the full workflow, verify these 5 essentials:
+1. Does this skill change Claude's behavior? (If removing it changes nothing, don't build it)
+2. Is the description pushy enough? (30+ trigger keywords, ends with "even if...")
+3. Is the body under 2,000 words? (Deep content goes in references/)
+4. Does the workflow use imperative form? ("Run X" not "You should run X")
+5. Is there at least one concrete example? (Claude follows examples > instructions)
+
+## When NOT to Create a Skill
+- The behavior already exists natively in Claude Code (most prompt wrappers are unnecessary)
+- The "skill" is just documentation — if it doesn't change workflow steps, it's a reference file
+- Another skill already covers this domain — extend it instead of creating overlap
+- The task is a one-off — skills are for repeated patterns, not single-use instructions
+
 ## Workflow
 
 1. **Capture intent.** Ask: what task does this skill handle? What triggers it?

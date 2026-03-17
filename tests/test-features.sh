@@ -162,6 +162,8 @@ check_file "skill-creator: engineering guide"            "$SKILLS_DIR/skill-crea
 check_file "skill-creator: quality checklist"            "$SKILLS_DIR/skill-creator/references/quality-checklist.md"
 check_file "skill-creator: sample output"                "$SKILLS_DIR/skill-creator/examples/sample-skill.md"
 
+check "skill-creator: 5-minute checklist"                "$SKC" "5-Minute Checklist"
+check "skill-creator: when NOT to create"                "$SKC" "When NOT to Create"
 check "skill-creator: pushy description"                 "$SKC" "create a skill\|add a skill\|new skill\|build a skill\|teach Claude"
 check "skill-creator: 30+ keywords formula"              "$SKC" "30.*trigger\|trigger.*30\|30.*keyword"
 check "skill-creator: imperative form rule"              "$SKC" "imperative\|Run the script.*not.*should"
@@ -186,6 +188,8 @@ check_file "agent-creator: engineering guide"             "$SKILLS_DIR/agent-cre
 check_file "agent-creator: quality checklist"             "$SKILLS_DIR/agent-creator/references/quality-checklist.md"
 check_file "agent-creator: sample output"                "$SKILLS_DIR/agent-creator/examples/sample-agent.md"
 
+check "agent-creator: 5-minute checklist"                "$AGC" "5-Minute Checklist"
+check "agent-creator: when NOT to create"                "$AGC" "When NOT to Create"
 check "agent-creator: pushy description"                 "$AGC" "create an agent\|add an agent\|new agent\|build an agent\|custom agent"
 check "agent-creator: 5-layer structure"                 "$AGC" "Layer 1.*PERSONA\|Layer 2.*SCOPE\|Layer 3.*TOOLS\|Layer 4.*CONSTRAINTS\|Layer 5.*DOMAIN"
 check "agent-creator: ownership boundary rule"           "$AGC" "OWNERSHIP BOUNDARY"
@@ -1273,4 +1277,25 @@ else
   echo ""
   echo "  All tests passed."
   echo ""
+
+  # ── Auto-update test counts in docs when all pass ──────────────────────────
+  SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+  ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+  update_count() {
+    local file="$1"
+    local old_pattern="$2"
+    local new_text="$3"
+    if [ -f "$file" ]; then
+      sed -i "s/$old_pattern/$new_text/g" "$file" 2>/dev/null || true
+    fi
+  }
+
+  # Update all 4 docs files with the current test count
+  update_count "$ROOT/CLAUDE.md"        "[0-9]\+ grep-based tests"              "$TOTAL grep-based tests"
+  update_count "$ROOT/README.md"        "[0-9]\+ tests\. Every"                 "$TOTAL tests. Every"
+  update_count "$ROOT/README.md"        "[0-9]\+ passed, 0 failed, [0-9]\+ total"  "$TOTAL passed, 0 failed, $TOTAL total"
+  update_count "$ROOT/README.md"        "test-features\.sh.*[0-9]\+ tests"      "test-features.sh          ← $TOTAL tests"
+  update_count "$ROOT/DOCS.md"          "[0-9]\+ tests passing"                 "$TOTAL tests passing"
+  update_count "$ROOT/CONTRIBUTING.md"  "[0-9]\+ tests\. All must"              "$TOTAL tests. All must"
 fi

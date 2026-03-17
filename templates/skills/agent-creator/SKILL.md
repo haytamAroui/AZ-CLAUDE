@@ -19,6 +19,21 @@ Creates production-quality Claude Code agents following the 5-layer structure.
 An agent is an OWNERSHIP BOUNDARY — not a persona. If two agents can do the
 same task, one shouldn't exist.
 
+## 5-Minute Checklist
+Before diving into the full workflow, verify these 5 essentials:
+1. Does this workstream genuinely need isolation or parallelism? (If not, a skill is enough)
+2. Is the description pushy enough? (30+ trigger keywords, ends with "even if...")
+3. Are all 5 layers filled? (Persona, Scope, Tools, Constraints, Domain — Domain is largest)
+4. Does Scope have explicit DOES NOT TOUCH boundaries? (Without them, agents drift)
+5. Are constraints positive directives that hold under pressure? ("Always X" not "Don't Y")
+
+## When NOT to Create an Agent
+- A skill with direct tool calls can do the same work — agents add coordination overhead
+- The "agent" would just read one file and return its content — that's a tool call, not an agent
+- You're using agents as a routing mechanism — routing belongs in CLAUDE.md, not agents
+- Two existing agents already cover this territory — merge or tighten scope instead
+- The project has < 20 files — CLAUDE.md alone is probably enough
+
 ## Workflow
 
 1. **Determine boundaries.** Run co-change analysis to find what changes together:
