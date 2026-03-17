@@ -200,7 +200,7 @@ check "agent eng guide: co-change analysis"              "$SKILLS_DIR/agent-crea
 check "agent eng guide: layer 5 > layer 1"               "$SKILLS_DIR/agent-creator/references/agent-engineering-guide.md" "Layer 5.*Layer 1\|Domain.*Persona"
 check "agent eng guide: agent + skill pairing"           "$SKILLS_DIR/agent-creator/references/agent-engineering-guide.md" "Skill Pairing\|skill check\|Skill Check"
 check "agent eng guide: evolution section"               "$SKILLS_DIR/agent-creator/references/agent-engineering-guide.md" "patterns.md\|antipatterns.md\|decisions.md"
-check "agent eng guide: self-correction"                 "$SKILLS_DIR/agent-creator/references/agent-engineering-guide.md" "Self-Correction\|2 attempts\|re-read the error"
+check "agent eng guide: evolution cycle"                  "$SKILLS_DIR/agent-creator/references/agent-engineering-guide.md" "Evolution\|evolve\|ELO\|EvoSkill"
 
 check "agent quality checklist: 30+ keywords"            "$SKILLS_DIR/agent-creator/references/quality-checklist.md" "30.*trigger\|trigger.*keyword"
 check "agent quality checklist: 5 layers"                "$SKILLS_DIR/agent-creator/references/quality-checklist.md" "5 layers\|persona.*scope.*tools.*constraints.*domain"
