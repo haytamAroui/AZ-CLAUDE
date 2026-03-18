@@ -95,11 +95,31 @@ if (resolvedProject === homeDir || resolvedProject === '/' || resolvedProject ==
   process.exit(1);
 }
 
+// ── Cost estimation ─────────────────────────────────────────────────────────
+// Estimate token usage per session and total cost based on plan complexity
+const estimatedTokensPerSession = 200000; // ~200K tokens per autonomous session (typical)
+const estimatedCostPerSession   = 3.00;   // ~$3 per session (Sonnet), ~$15 (Opus)
+const estimatedTotalCost        = estimatedCostPerSession * maxSessions;
+
 console.log('\n════════════════════════════════════════════════');
 console.log('  AZCLAUDE COPILOT — Autonomous Mode');
 console.log(`  Project:      ${projectDir}`);
 console.log(`  Max sessions: ${maxSessions}`);
 console.log(`  Mode:         ${resuming ? 'RESUME (plan.md exists)' : 'NEW (will run /blueprint)'}`);
+console.log('');
+console.log('  ┌─── Token & Cost Alert ───────────────────┐');
+console.log(`  │  Est. tokens/session:  ~200K              │`);
+console.log(`  │  Est. cost/session:    ~$3 (Sonnet)       │`);
+console.log(`  │                        ~$15 (Opus)        │`);
+console.log(`  │  Max sessions:         ${String(maxSessions).padEnd(20)}│`);
+console.log(`  │  Est. max total cost:  $${(estimatedCostPerSession * maxSessions).toFixed(0)}-$${(15 * maxSessions).toFixed(0)} ${' '.repeat(Math.max(0, 14 - String((15 * maxSessions).toFixed(0)).length))}│`);
+console.log('  │                                           │');
+console.log('  │  Recommended subscription:                │');
+console.log('  │  • Claude Pro ($20/mo) — small projects   │');
+console.log('  │  • Claude Max 5x ($100/mo) — medium       │');
+console.log('  │  • Claude Max 20x ($200/mo) — copilot     │');
+console.log('  │  • API pay-as-you-go — full control       │');
+console.log('  └───────────────────────────────────────────┘');
 console.log('');
 console.log('  ⚠  Uses --dangerously-skip-permissions');
 console.log('  ⚠  Claude has full access to this directory');
@@ -109,8 +129,15 @@ console.log(`\n  Intent: ${intent.slice(0, 120)}${intent.length > 120 ? '...' : 
 
 // ── Session Loop ─────────────────────────────────────────────────────────────
 
+const sessionStartTimes = [];
+
 for (let session = 1; session <= maxSessions; session++) {
-  console.log(`\n── Session ${session}/${maxSessions} ──`);
+  const sessionStart = Date.now();
+  sessionStartTimes.push(sessionStart);
+  const elapsed = sessionStartTimes.length > 1
+    ? Math.round((sessionStart - sessionStartTimes[0]) / 60000)
+    : 0;
+  console.log(`\n── Session ${session}/${maxSessions} ${elapsed > 0 ? `(${elapsed}min elapsed)` : ''} ──`);
 
   // Build the prompt
   let prompt = 'You are in AZCLAUDE Copilot mode. Run /copilot to continue autonomous building.';
@@ -146,8 +173,10 @@ for (let session = 1; session <= maxSessions; session++) {
     const goals = fs.readFileSync(goalsPath, 'utf8');
     if (goals.includes('COPILOT_COMPLETE')) {
       console.log('\n════════════════════════════════════════════════');
+      const totalMin = Math.round((Date.now() - sessionStartTimes[0]) / 60000);
       console.log('  COPILOT COMPLETE');
       console.log(`  Sessions used: ${session}`);
+      console.log(`  Total time:    ${totalMin} minutes`);
       const reportPath = path.join(claudeDir, 'copilot-report.md');
       if (fs.existsSync(reportPath)) {
         console.log(`  Report: ${reportPath}`);
@@ -183,8 +212,10 @@ for (let session = 1; session <= maxSessions; session++) {
 
 // ── Max sessions reached ─────────────────────────────────────────────────────
 
+const totalMinMax = Math.round((Date.now() - sessionStartTimes[0]) / 60000);
 console.log('\n════════════════════════════════════════════════');
 console.log(`  MAX SESSIONS REACHED (${maxSessions})`);
+console.log(`  Total time:  ${totalMinMax} minutes`);
 console.log('  Project not yet complete.');
 console.log('  Resume: npx azclaude-copilot .');
 console.log('════════════════════════════════════════════════\n');
