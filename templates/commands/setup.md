@@ -70,30 +70,41 @@ The orchestrator-init agent:
 
 ---
 
-## Step 5: Generate Project-Specific Skills
+## Step 5: Generate Project-Specific Skills (MANDATORY — minimum 2)
+
+**Rule**: Never leave a project without project-specific skills. Claude Code works significantly better with skills that encode project conventions. Generate at least 2 skills even on first run with zero git history.
 
 Read `.claude/capabilities/level-builders/level3-skills.md` for the skill design guide.
 
-Analyze the project's domain, stack, and recurring workflows:
-1. Check what file types and patterns exist (endpoints, pages, components, schemas, tests)
-2. Check git log for repeated commit patterns (what work is done most often)
-3. Identify 2-4 project-specific skills that would encode the most common workflows
+### How to decide which skills to generate
+1. **What file types exist?** → what workflow creates more of them
+2. **What domain is this?** → what domain-specific knowledge should be encoded
+3. **What stack?** → which stack-specific defaults apply
+4. Check git log for repeated commit patterns (if any history exists)
 
-For each skill:
-- Create `.claude/commands/{skill-name}.md` with pushy description (3+ trigger variants)
-- Follow RECIPE pattern (steps to do something, not documentation)
-- Include completion rule
-- ≤ 500 lines (references/ subdir for overflow)
+### Minimum: 2 project-specific skills
+Every project gets at least:
+1. A **creation skill** — how to add the main type of content/code in this project
+2. A **validation skill** — how to check that content/code follows project conventions
 
-**Stack-specific defaults** (generate if stack detected):
+### Stack-specific defaults (generate if stack detected):
 | Stack | Generate |
 |-------|---------|
 | Next.js / React | `new-page.md`, `new-component.md` |
-| Express / FastAPI | `new-endpoint.md` |
+| Express / FastAPI | `new-endpoint.md`, `validate-api.md` |
 | Any DB | `migrate.md` |
 | Any deploy config | `deploy.md` |
 | Markdown content | `new-content.md`, `validate-content.md` |
 | Exam / quiz | `new-exam.md`, `validate-exam.md` |
+| CLI tool | `new-command.md`, `validate-cli.md` |
+| Library/SDK | `new-module.md`, `validate-api-surface.md` |
+
+For each skill:
+- Create `.claude/commands/{skill-name}.md` with pushy description (10+ trigger variants)
+- Follow RECIPE pattern (steps to do something, not documentation)
+- Include project-specific conventions (file paths, naming, patterns from existing code)
+- Include completion rule
+- ≤ 500 lines (references/ subdir for overflow)
 
 **TaskUpdate → completed** for Create skills.
 

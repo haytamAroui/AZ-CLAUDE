@@ -152,23 +152,45 @@ If the file doesn't exist, create it with this header:
 
 ---
 
-## Step 7: Generate Project-Specific Skills and Agents from Evidence
+## Step 7: Generate or Update Project-Specific Skills and Agents
 
-### Skills from git evidence
+**Principle**: Never let Claude work without project-specific skills. Generate minimum viable skills early, then improve them as evidence accumulates.
+
+### 7a: Ensure minimum skills exist
+```bash
+ls .claude/commands/*.md 2>/dev/null | wc -l
+ls .claude/skills/*/SKILL.md 2>/dev/null | wc -l
+```
+If project has ZERO project-specific skills (only the 26 standard commands):
+1. Read `.claude/capabilities/level-builders/level3-skills.md`
+2. Analyze the project's stack, domain, and file structure
+3. Generate at least 2 skills immediately — even with zero git history
+4. Focus on: what file types exist → what workflow creates more of them
+
+### 7b: Generate new skills from git evidence
 ```bash
 git log --name-only --format="" --diff-filter=AM | sort | uniq -c | sort -rn | head -20
 ```
-If a file pattern appears 5+ times (e.g., `src/components/*.tsx`, `content/*.md`, `api/routes/*.py`):
+**Threshold: 2+ occurrences** (not 5 — skills should appear early, not late):
 1. Read `.claude/capabilities/level-builders/level3-skills.md`
 2. Create a skill that encodes the workflow for that pattern
 3. Save to `.claude/commands/{skill-name}.md`
 4. Only create if no existing skill covers this workflow
 
-### Agents from co-change clusters
+### 7c: Update existing skills from session learnings
+```bash
+ls .claude/memory/sessions/*.md 2>/dev/null | tail -3
+```
+If session files exist, scan for patterns that existing skills missed:
+- Repeated manual steps that should be in a skill → add them
+- Skill triggered but missing a step → update the skill
+- New conventions emerged → update skill's Rules section
+
+### 7d: Generate agents from co-change clusters
 ```bash
 git log --name-only --format="" --diff-filter=M | sort | uniq -c | sort -rn | head -30
 ```
-If 3+ files in the same directory change together across 3+ commits:
+If 3+ files in the same directory change together across 2+ commits:
 1. Read `.claude/capabilities/level-builders/level5-agents.md`
 2. Create an agent with all 5 layers in `.claude/agents/cc-{name}.md`
 3. Use co-change data for scope boundaries
@@ -176,9 +198,10 @@ If 3+ files in the same directory change together across 3+ commits:
 
 ### Check existing before creating
 ```bash
-ls .claude/commands/*.md .claude/agents/*.md 2>/dev/null
+ls .claude/commands/*.md .claude/agents/*.md .claude/skills/*/SKILL.md 2>/dev/null
 ```
 Skip creation if a skill/agent already covers the same workflow.
+Update existing ones if they're missing steps discovered in recent sessions.
 
 ---
 
