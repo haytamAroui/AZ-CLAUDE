@@ -107,6 +107,23 @@ git push -u origin main
 
 ---
 
+## Step 5: Deploy (Copilot Mode Only)
+
+```bash
+[ -f .claude/copilot-intent.md ] && echo "COPILOT_MODE" || echo "INTERACTIVE_MODE"
+```
+
+If `COPILOT_MODE` and the intent mentions deploy targets (Vercel, Railway, Netlify, etc.):
+1. Check if deploy config exists (vercel.json, railway.json, netlify.toml, Dockerfile)
+2. If config exists → run the deploy command (`vercel --prod`, `railway up`, etc.)
+3. If deploy succeeds → record URL in `.claude/copilot-report.md`
+4. If deploy fails → log to `.claude/memory/blockers.md`, continue (product is still built)
+5. If no deploy target mentioned → skip deployment, push is sufficient
+
+If `INTERACTIVE_MODE`: skip Step 5.
+
+---
+
 ## Completion Rule
 
 Show: files changed, commit hash, branch, push status.

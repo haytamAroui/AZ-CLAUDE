@@ -21,6 +21,8 @@ Load only the files that match the current task. Never load the full list.
 | shared/review-reception.md | Receiving review feedback — before responding, implementing, or pushing back | ~80 |
 | shared/pressure-test.md | Writing a new enforcement skill, or an existing skill keeps getting bypassed | ~120 |
 | shared/plan-tracker.md | Reading/writing plan.md, updating milestone status, copilot mode | ~200 |
+| shared/reflexes.md | Learned behavioral patterns, reflex analysis, observation patterns, promote reflexes | ~250 |
+| shared/domain-advisor-generator.md | Non-tech domain detected (compliance, marketing, finance, medical, legal, research) — generates domain-specific advisor skill | ~400 |
 
 ## Level Builders — load ONE at a time
 | File | When to load | Tokens |

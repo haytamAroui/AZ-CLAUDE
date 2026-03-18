@@ -27,6 +27,23 @@ Do NOT use when:
 
 ---
 
+## Copilot Mode Detection
+
+```bash
+[ -f .claude/copilot-intent.md ] && echo "COPILOT_MODE" || echo "INTERACTIVE_MODE"
+```
+
+If `COPILOT_MODE`:
+- Skip AskUserQuestion — read `.claude/memory/blockers.md` for the blocker context
+- The decision to debate is: how to unblock the stuck milestone
+- Frame options from: the error message, what was tried, and alternative approaches
+- After debate concludes: return the winning approach to /copilot for implementation
+- Record decision in `.claude/memory/decisions.md` as normal
+
+If `INTERACTIVE_MODE`: run Frame the Decision as normal.
+
+---
+
 ## Frame the Decision
 
 If $ARGUMENTS is vague (no clear options stated), use **AskUserQuestion**:

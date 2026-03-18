@@ -13,6 +13,21 @@ $ARGUMENTS
 
 ---
 
+## Copilot Mode Detection
+
+```bash
+[ -f .claude/copilot-intent.md ] && echo "COPILOT_MODE" || echo "INTERACTIVE_MODE"
+```
+
+If `COPILOT_MODE`: skip Phase 1 (AskUserQuestion). Read `.claude/copilot-intent.md` as the
+complete input — it contains the product description, stack, and scope. Extract answers to
+all four questions below from the intent file. If any are missing, infer reasonable defaults
+from the intent rather than asking the user.
+
+If `INTERACTIVE_MODE`: run Phase 1 as normal.
+
+---
+
 ## Phase 1: Structured Intake
 
 **Use AskUserQuestion** to collect all context in one shot. Do not ask in prose.
@@ -25,7 +40,7 @@ Ask these questions:
 
 If $ARGUMENTS already answers one of these clearly, pre-fill it and only ask what's missing.
 
-Do not proceed to Phase 2 until all four answers are collected.
+Do not proceed to Phase 2 until all four answers are collected (or extracted from copilot-intent.md).
 
 ---
 
@@ -67,6 +82,23 @@ For each level:
 Spawn `agents/orchestrator-init.md` to fill CLAUDE.md and goals.md with the actual project data.
 
 If tech stack is unfamiliar → **WebSearch** "{stack} project structure best practices {year}" before scaffolding.
+
+---
+
+## Phase 3b: Generate Domain Advisor Skill
+
+After detecting the project domain in Phase 1/2:
+
+1. Read `capabilities/shared/domain-advisor-generator.md`
+2. If domain is NOT pure developer (compliance, marketing, finance, medical, research, legal, logistics):
+   - Generate `{domain}-advisor/` skill using the domain template
+   - Include decision matrices, thresholds, and anti-patterns
+   - Run `skill-creator` quality checklist
+3. If domain IS developer → `architecture-advisor` already covers this (installed by default)
+4. For multi-domain projects → generate one advisor per domain
+
+This gives the copilot evidence-based guidance for domain-specific decisions,
+not just code patterns.
 
 ---
 

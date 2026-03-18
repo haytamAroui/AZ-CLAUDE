@@ -18,6 +18,23 @@ Load: shared/tdd.md + shared/completion-rule.md
 
 ---
 
+## Copilot Mode Detection
+
+```bash
+[ -f .claude/copilot-intent.md ] && echo "COPILOT_MODE" || echo "INTERACTIVE_MODE"
+```
+
+If `COPILOT_MODE`:
+- Skip AskUserQuestion — the milestone description from plan.md IS the spec
+- Skip the Complexity Gate — copilot commits to the minimal approach by default
+- Read `.claude/plan.md` for the current milestone's `Files:` and `Commit:` fields
+- Read `.claude/memory/patterns.md` for conventions to follow
+- Proceed directly to Phase 2 (Understand Before Writing)
+
+If `INTERACTIVE_MODE`: run Phase 1 as normal.
+
+---
+
 ## Phase 1: Clarify Scope
 
 If $ARGUMENTS is blank or vague, use **AskUserQuestion**:

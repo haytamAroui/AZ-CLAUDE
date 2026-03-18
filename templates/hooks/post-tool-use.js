@@ -107,6 +107,31 @@ if (!content.includes(HEADING)) {
 
 try { fs.writeFileSync(goalsPath, content); } catch (_) {}
 
+// ── Reflex observation capture ───────────────────────────────────────────────
+// Append tool-use observation to observations.jsonl for pattern detection.
+// Lightweight: one JSON line per tool call. Secret patterns scrubbed.
+const reflexDir = path.join(cfg, 'memory', 'reflexes');
+try {
+  fs.mkdirSync(reflexDir, { recursive: true });
+  const obsPath = path.join(reflexDir, 'observations.jsonl');
+  const obsTs   = now.toISOString().replace(/\.\d{3}Z$/, 'Z');
+  const tool    = 'Edit'; // PostToolUse matcher is Write|Edit
+  // Scrub secrets: strip API keys, tokens, passwords from file paths
+  const safeRel = rel.replace(/\.(env|key|pem|secret|credential)/gi, '.[REDACTED]');
+  const obs     = JSON.stringify({
+    ts: obsTs, tool, file: safeRel, session: process.ppid || process.pid, event: 'complete'
+  });
+  fs.appendFileSync(obsPath, obs + '\n');
+  // Auto-truncate: keep last 2000 lines max (prevent unbounded growth)
+  try {
+    const obsContent = fs.readFileSync(obsPath, 'utf8');
+    const obsLines   = obsContent.split('\n').filter(Boolean);
+    if (obsLines.length > 2000) {
+      fs.writeFileSync(obsPath, obsLines.slice(-500).join('\n') + '\n');
+    }
+  } catch (_) {}
+} catch (_) {}
+
 // ── Checkpoint reminder every 15 edits ──────────────────────────────────────
 const counterPath = path.join(os.tmpdir(), `.azclaude-edit-count-${process.ppid || process.pid}`);
 let editCount = 1;

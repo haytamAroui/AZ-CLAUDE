@@ -33,6 +33,21 @@ git diff HEAD
 
 ---
 
+## Copilot Mode Detection
+
+```bash
+[ -f .claude/copilot-intent.md ] && echo "COPILOT_MODE" || echo "INTERACTIVE_MODE"
+```
+
+If `COPILOT_MODE`:
+- The spec is `.claude/copilot-intent.md` (original product description)
+- Review ALL project code against the intent, not just recent changes
+- Check every milestone in `.claude/plan.md` marked `done` — verify it's actually implemented
+- If review finds gaps → output them as new milestones (copilot will add to plan.md)
+- Skip ExitPlanMode approval — output verdict directly
+
+---
+
 ## Step 2: Spec Compliance (REQUIRED FIRST)
 
 **Assume the implementation may be incomplete or optimistic. Verify independently.**
@@ -40,6 +55,7 @@ Do not trust any description of what was implemented — read the actual code.
 
 Find the spec before touching code quality:
 - Check $ARGUMENTS for acceptance criteria
+- If copilot mode: read `.claude/copilot-intent.md` as the spec
 - Read `goals.md` for the current session's requirements
 - Check linked issue or PR description if available
 - Read CLAUDE.md for project-level requirements

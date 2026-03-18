@@ -60,10 +60,11 @@ For each milestone in plan.md:
 ## Step 4: Evolution Cycle (Every 3 Milestones)
 
 After every 3 completed milestones:
-1. Run `/evolve` — scans git history for patterns, creates agents if evidence found
-2. Check if CLAUDE.md conventions need updating
-3. Re-read plan.md — re-evaluate remaining milestone priorities
-4. If a blocked milestone can now be unblocked (new agents/context available) → retry it
+1. Run `/reflexes analyze` — detect patterns from tool-use observations, create/update reflexes
+2. Run `/evolve` — scans git history for patterns, creates agents if evidence found
+3. Check if CLAUDE.md conventions need updating
+4. Re-read plan.md — re-evaluate remaining milestone priorities
+5. If a blocked milestone can now be unblocked (new agents/context available) → retry it
 
 ---
 
@@ -108,6 +109,42 @@ When all milestones show status `done` (or `blocked` with no unblock path):
 
 ---
 
+## Step 7: Blocker Recovery (After All Non-Blocked Milestones Done)
+
+If any milestones are `blocked` and other milestones are now `done`:
+1. Re-read `.claude/memory/blockers.md` for each blocked milestone
+2. With full project context now available, retry the blocked milestone
+3. If retry succeeds → update plan.md status to `done`, remove from blockers.md
+4. If retry still fails → run `/debate` to find alternative approach
+5. If debate finds solution → implement it
+6. If no solution → mark as `skipped` in plan.md, document reason
+
+---
+
+## Self-Healing Protocol
+
+When any build step fails:
+1. **Re-read the error** — exact output, not a summary
+2. **Check antipatterns.md** — has this failure pattern been seen before?
+3. **Try alternative approach** — different library, different structure, different order
+4. **Record what failed** — append to `.claude/memory/antipatterns.md`:
+   ```
+   ## {what failed} — {date}
+   Error: {exact error}
+   Why: {root cause}
+   Avoid: {what to do differently}
+   ```
+5. **Record what worked** — append to `.claude/memory/patterns.md`:
+   ```
+   ## {what worked} — {date}
+   Pattern: {description}
+   Files: {where it's used}
+   ```
+
+Every failure teaches the environment something. Never fail silently.
+
+---
+
 ## Rules
 
 - Do NOT ask for permission between milestones
@@ -116,3 +153,5 @@ When all milestones show status `done` (or `blocked` with no unblock path):
 - STOP if: all milestones complete and shipped
 - Every commit message follows: `{type}: {what} — {why}`
 - Run `/checkpoint` after every milestone (context compaction protection)
+- Read `.claude/memory/patterns.md` before implementing — follow what works
+- Read `.claude/memory/antipatterns.md` before implementing — avoid what broke

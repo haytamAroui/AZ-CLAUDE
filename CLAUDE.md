@@ -21,10 +21,10 @@ Update it at the end of every session with /persist.
 bin/cli.js              — CLI installer (inherited from AZCLAUDE)
 bin/copilot.js          — outer loop runner (restarts Claude Code sessions until done)
 templates/CLAUDE.md     — template installed into user projects
-templates/commands/     — 25 command files (+/copilot)
-templates/skills/       — 7 SKILL.md files with references/
+templates/commands/     — 26 command files (+/copilot, +/reflexes)
+templates/skills/       — 8 SKILL.md files with references/
 templates/capabilities/ — manifest + shared + level-builders + evolution + intelligence
-templates/agents/       — orchestrator-init + loop-controller + code-reviewer + test-writer
+templates/agents/       — orchestrator-init + loop-controller + code-reviewer + test-writer + cc-template-author + cc-cli-integrator + cc-test-maintainer
 templates/scripts/      — env-scan.sh (JSON output, ~200 tokens)
 ROADMAP.md              — 5-phase build plan (the spec for this product)
 tests/test-features.sh  — grep-based tests, all must pass before commit
@@ -60,4 +60,4 @@ Read `ROADMAP.md` for the full 5-phase spec. Build order:
 5. Phase 5: Agent emergence (zero new code — /evolve already does it)
 
 ## Available Commands
-/dream · /setup · /fix · /add · /review · /test · /plan · /evolve · /debate · /checkpoint · /persist · /level-up · /ship · /status · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect · /hookify · /copilot
+/dream · /setup · /fix · /add · /review · /test · /plan · /evolve · /debate · /checkpoint · /persist · /level-up · /ship · /status · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect · /hookify · /copilot · /reflexes
