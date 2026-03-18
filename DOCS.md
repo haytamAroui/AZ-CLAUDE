@@ -1,6 +1,6 @@
 # AZCLAUDE Copilot -- Complete User Guide
 
-> Version 0.1.0 · 1002 tests passing · Autonomous product builder
+> Version 0.1.0 · 1037 tests passing · Autonomous product builder
 
 ---
 

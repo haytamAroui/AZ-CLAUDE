@@ -82,6 +82,26 @@ if (intentArg) {
   process.exit(1);
 }
 
+// ── Auto-install AZCLAUDE if not present ─────────────────────────────────────
+
+const commandsDir  = path.join(claudeDir, 'commands');
+const needsInstall = !fs.existsSync(commandsDir) || !fs.readdirSync(commandsDir).some(f => f.endsWith('.md'));
+
+if (needsInstall) {
+  console.log('\n  Installing AZCLAUDE infrastructure...');
+  const cliPath = path.join(__dirname, 'cli.js');
+  const installResult = spawnSync('node', [cliPath, projectDir], {
+    cwd: projectDir,
+    stdio: 'inherit',
+    timeout: 60000,
+  });
+  if (installResult.status !== 0) {
+    console.error('  Error: AZCLAUDE install failed. Cannot proceed.');
+    process.exit(1);
+  }
+  console.log('  AZCLAUDE installed. Commands, skills, agents, hooks ready.\n');
+}
+
 // ── Banner ───────────────────────────────────────────────────────────────────
 
 const intent = fs.existsSync(intentPath) ? fs.readFileSync(intentPath, 'utf8').trim() : '(resuming)';

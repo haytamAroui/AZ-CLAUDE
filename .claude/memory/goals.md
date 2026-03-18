@@ -2,6 +2,7 @@
 Updated: 2026-03-18
 
 ## Current threads
+- [checkpoint] 08:05 — all-reviews-closed → .claude/memory/checkpoints/2026-03-18-08-05.md
 - [checkpoint] 06:40 — feature-complete → .claude/memory/checkpoints/2026-03-18-06-40.md
 - [checkpoint] 03:45 — agents-created → .claude/memory/checkpoints/2026-03-18-03-45.md
 - [checkpoint] 03:30 — project-initialized → .claude/memory/checkpoints/2026-03-18-03-30.md
@@ -9,6 +10,10 @@ Updated: 2026-03-18
 - ROADMAP.md: 5-phase plan for autonomous product builder
 
 ## Done this session
+- 22:15 — tests\test-features.sh (+2/-0) — ─── State-aware copilot prompt ─────────────────────────────
+- 22:13 — bin\copilot.js (+20/-0)
+- 08:33 — .claude\memory\checkpoints\2026-03-18-08-05.md
+- 08:02 — templates\hooks\post-tool-use.js (+1/-1)
 - 07:59 — tests\test-features.sh (+22/-0)
 - 07:58 — templates\commands\pulse.md (+26/-1) — 4. Intelligence Health
 - 07:58 — templates\commands\reflexes.md (+15/-6) — Subcommand: status (default)
@@ -127,4 +132,4 @@ Updated: 2026-03-18
 - None
 
 ## In progress
-- 08:02 — templates\hooks\post-tool-use.js (+1/-1)
+- 22:17 — package.json (+1/-1) — "version": "0.1.1",

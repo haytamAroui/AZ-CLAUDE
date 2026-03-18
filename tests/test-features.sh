@@ -1598,6 +1598,8 @@ check      "boundaries: install-time check"              "bin/cli.js" "postInsta
 # ─── State-aware copilot prompt ──────────────────────────────────────────────
 echo ""
 echo "─── State-aware copilot ───"
+check      "copilot: auto-install AZCLAUDE"              "bin/copilot.js" "needsInstall\|Installing AZCLAUDE"
+check      "copilot: runs cli.js installer"              "bin/copilot.js" "cli\.js.*projectDir\|node.*cliPath"
 check      "copilot: state-aware prompt"                 "bin/copilot.js" "Plan progress.*done.*blocked\|milestone.*progress"
 check      "copilot: blocker awareness"                  "bin/copilot.js" "blockers.md\|blocked.*retry"
 check      "copilot: evolve trigger hint"                "bin/copilot.js" "evolve\|reflexes"
