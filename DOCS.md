@@ -1,62 +1,70 @@
-# AZCLAUDE — Complete User Guide
+# AZCLAUDE Copilot -- Complete User Guide
 
-> Version 1.0.0 · 989 tests passing · Claude Code marketplace plugin
+> Version 0.1.0 · 1002 tests passing · Autonomous product builder
 
 ---
 
 ## Table of Contents
 
-1. [What AZCLAUDE Is](#what-azclaude-is)
+1. [What AZCLAUDE Copilot Is](#what-azclaude-copilot-is)
 2. [Installation](#installation)
-3. [First Steps After Install](#first-steps-after-install)
-4. [The 10 Levels](#the-10-levels)
-5. [The Evolution System](#the-evolution-system)
-6. [The Intelligence System](#the-intelligence-system)
-7. [Domain Awareness](#domain-awareness)
-8. [Custom Agents](#custom-agents)
-9. [The Memory System](#the-memory-system) (includes all 3 hooks, commands, flow diagrams, token cost)
-10. [Native Tool Orchestration (MCP)](#native-tool-orchestration-mcp)
-11. [All 26 Commands](#all-26-commands)
-12. [Behavioral Defenses (Pressure Testing)](#behavioral-defenses-pressure-testing)
-13. [Multi-CLI Support](#multi-cli-support)
-14. [Security](#security)
-15. [Troubleshooting](#troubleshooting)
+3. [Copilot Mode (Autonomous)](#copilot-mode-autonomous)
+4. [First Steps After Install](#first-steps-after-install)
+5. [The 10 Levels](#the-10-levels)
+6. [The Evolution System](#the-evolution-system)
+7. [The Intelligence System](#the-intelligence-system)
+8. [Evidence-Based Intelligence](#evidence-based-intelligence)
+9. [Domain Awareness](#domain-awareness)
+10. [Custom Agents](#custom-agents)
+11. [The Memory System](#the-memory-system)
+12. [Native Tool Orchestration (MCP)](#native-tool-orchestration-mcp)
+13. [All 26 Commands](#all-26-commands)
+14. [Skills (Auto-Invoked)](#skills-auto-invoked)
+15. [Behavioral Defenses (Pressure Testing)](#behavioral-defenses-pressure-testing)
+16. [Multi-CLI Support](#multi-cli-support)
+17. [Security](#security)
+18. [Troubleshooting](#troubleshooting)
 
 ---
 
-## What AZCLAUDE Is
+## What AZCLAUDE Copilot Is
 
-AZCLAUDE is a complete AI coding environment — not a set of prompts, not a rules file, not a plugin that does one thing. It installs a system that:
+AZCLAUDE Copilot is an autonomous product builder. Describe a product once -- AZCLAUDE Copilot builds it across sessions: planning, implementing, testing, committing, evolving, deploying. Zero human input after the first message.
+
+The hero feature is **copilot mode**: a Node.js runner (`bin/copilot.js`) that restarts Claude Code sessions in a loop, while the AZCLAUDE environment inside each session decides what to build next, implements it, tests it, commits, and evolves the environment. The runner is stateless and dumb on purpose. All intelligence lives in the templates.
+
+Beyond copilot mode, AZCLAUDE is a complete AI coding environment that:
 
 - **Remembers your project** across sessions (auto-tracking, checkpoints, goals injection)
 - **Speaks your domain** (compliance gets "obligations", medical gets "clinical outcomes")
 - **Builds agents for your actual codebase** (from git co-change evidence, not guessing)
+- **Learns reflexes** from tool-use observations (confidence-scored behavioral patterns)
 - **Improves itself** (`/evolve` finds and fixes gaps in the environment)
 - **Routes to the right capability** without loading everything (~380 tokens per task)
 
 After `npx azclaude` + `/setup` you have:
 
 ```
-✓ CLAUDE.md — 30-line dispatch table filled with your project's details
-✓ goals.md — session memory, auto-injected before your first message every session
-✓ 26 commands — /fix, /add, /audit, /blueprint, /ship, /evolve, /debate, /copilot, /reflexes...
-✓ 3 hooks — auto-track every edit to goals.md, inject context on session start, migrate on stop
-✓ Project-specific agents — built from your git history
-✓ 27 capabilities — lazy-loaded, only what the task needs
-✓ Evolution system — scans for gaps, generates fixes, quality-gates them
+CLAUDE.md -- 30-line dispatch table filled with your project's details
+goals.md -- session memory, auto-injected before your first message every session
+26 commands -- /fix, /add, /audit, /blueprint, /ship, /evolve, /debate, /copilot, /reflexes...
+3 hooks -- auto-track every edit to goals.md, inject context on session start, migrate on stop
+Project-specific agents -- built from your git history
+36 capabilities -- lazy-loaded, only what the task needs
+Evolution system -- scans for gaps, generates fixes, quality-gates them
 ```
 
 ---
 
 ## Installation
 
-### Option 1 — Claude Code Marketplace (1 click)
+### Option 1 -- Claude Code Marketplace (1 click)
 
 Search "AZCLAUDE" in the Claude Code plugin marketplace and click Install.
 Hooks, commands, and capabilities are active immediately.
 Then run `/setup` in your project to build the project-specific layer.
 
-### Option 2 — npx (all CLIs)
+### Option 2 -- npx (all CLIs)
 
 ```bash
 npx azclaude
@@ -81,6 +89,117 @@ npx azclaude demo
 
 Runs the actual hook scripts on a temp project. Shows PostToolUse writing to goals.md, simulates context compaction, shows UserPromptSubmit injecting context back. Real execution, no mocks, cleans up after itself. Takes 30 seconds.
 
+### Doctor Audit
+
+```bash
+npx azclaude doctor --audit
+```
+
+Runs all standard checks plus efficiency and security scoring. Reports hook profile compliance, stale patterns, and potential improvements.
+
+---
+
+## Copilot Mode (Autonomous)
+
+The headline feature. Describe a product, walk away, come back to a deployed app.
+
+### Usage
+
+```bash
+# New project -- describe and walk away
+npx azclaude-copilot . "Build a REST API with auth and Stripe"
+
+# From intent file
+npx azclaude-copilot . intent.md
+
+# With session limit
+npx azclaude-copilot . "my app" 30
+
+# Resume (reads existing plan.md)
+npx azclaude-copilot .
+```
+
+### How It Works
+
+The runner (`bin/copilot.js`) is a Node.js loop. It is stateless and cross-platform. It restarts Claude Code sessions with `--dangerously-skip-permissions` until one of three conditions is met:
+
+| Condition | Exit code |
+|-----------|-----------|
+| `COPILOT_COMPLETE` in goals.md | 0 -- product shipped |
+| Max sessions reached (default: 20) | 1 -- resume with `npx azclaude-copilot .` |
+| All milestones blocked | 1 -- needs human intervention |
+
+### The Pipeline
+
+```
+Session 1:  /dream -> /blueprint -> /add M1 -> /add M2 -> /add M3 -> /snapshot
+Session 2:  /evolve -> /add M4 -> /add M5 -> /add M6 -> /snapshot
+Session 3:  /evolve -> /add M7 -> /add M8 -> /add M9 -> /snapshot
+Session 4:  /evolve -> /audit -> /ship -> COPILOT_COMPLETE
+```
+
+Every command detects copilot mode automatically (`[ -f .claude/copilot-intent.md ]`) and skips human interaction.
+
+### Per Milestone
+
+1. Read milestone from `plan.md` (description, expected files, dependencies)
+2. Read context artifacts (schemas, API specs, configs) before implementing
+3. Implement using `/add` (follows `patterns.md`, uses project agents, reads reflexes)
+4. Run tests -- fix if failing (2 attempts max)
+5. If still failing -- log to `blockers.md`, skip, continue
+6. Commit: `{type}: {what} -- {why}`
+7. Push + update `plan.md` status to `done`
+8. `/snapshot` (compaction protection)
+
+### Evolution Cycle (Every 3 Milestones)
+
+1. Run `/reflexes analyze` -- detect patterns from tool-use observations
+2. Run `/evolve` -- scan git history for patterns, create agents if evidence found
+3. Check if CLAUDE.md conventions need updating
+4. Re-evaluate remaining milestone priorities
+5. Retry blocked milestones if new context available
+
+### Self-Healing
+
+When builds fail:
+- Re-read error, check `antipatterns.md`, try alternative approach
+- Record failure to `antipatterns.md` (every failure teaches the environment)
+- Record success to `patterns.md`
+- If stuck, `/debate` finds alternative approach from blocker context
+
+### Blocker Recovery
+
+After all non-blocked milestones complete:
+- Re-read `blockers.md` with full project context now available
+- Retry blocked milestones (often unblocked by later work)
+- If still stuck, `/debate` evaluates; if no solution, mark `skipped`
+
+### Agent Emergence in Copilot Mode
+
+Copilot starts with zero project agents. They emerge from the work:
+
+- Session 1: Build basic structure. 0 project agents.
+- Session 2: `/evolve` reads git log. Files clustering in directories creates agents.
+- Session 3: Domain patterns repeating across files create specialized agents.
+- Session 4: Full evolved environment. `/audit` -> `/ship` -> deploy.
+
+System agents (code-reviewer, test-writer, orchestrator-init) run the framework. Project agents emerge from the work. Two separate layers.
+
+### State Files
+
+| File | Written by | Read by | Purpose |
+|------|-----------|---------|---------|
+| `.claude/copilot-intent.md` | Runner | /dream, /copilot | Original product description |
+| `.claude/plan.md` | /blueprint | /copilot, /add | Milestone tracker with status |
+| `.claude/memory/goals.md` | Hooks | Every session start | File breadcrumbs + session state |
+| `.claude/memory/checkpoints/*` | /snapshot | Every session start | Reasoning snapshots |
+| `.claude/memory/patterns.md` | /evolve, agents | Agents, /add | What works |
+| `.claude/memory/antipatterns.md` | /evolve, agents | Agents, /add | What broke |
+| `.claude/memory/decisions.md` | /debate | Agents | Architecture choices |
+| `.claude/memory/blockers.md` | /copilot | /copilot, /debate | What's stuck and why |
+| `.claude/memory/reflexes/` | /reflexes, hooks | /evolve, agents | Learned behavioral patterns |
+| `.claude/copilot-report.md` | /copilot | Human | Final summary |
+
 ---
 
 ## First Steps After Install
@@ -98,35 +217,35 @@ Runs the actual hook scripts on a temp project. Shows PostToolUse writing to goa
 
 `/setup` runs the orchestrator-init agent once, then the agent exits permanently.
 
-**Step 1 — Scale detection**
-Runs `env-scan.sh` — one script, one JSON result.
+**Step 1 -- Scale detection**
+Runs `env-scan.sh` -- one script, one JSON result.
 
 | File count | Mode | What's read |
 |-----------|------|-------------|
 | < 100 | STANDARD | Everything |
-| 100–500 | SKIM | First 15 lines of configs, skip deep git history |
-| 500–2000 | MINIMAL | Directory structure + manifests only |
+| 100-500 | SKIM | First 15 lines of configs, skip deep git history |
+| 500-2000 | MINIMAL | Directory structure + manifests only |
 | > 2000 | STRUCTURE-ONLY | Directory tree + manifests only, agents marked `confidence: low` |
 
-**Step 2 — Signal extraction**
+**Step 2 -- Signal extraction**
 Reads package.json, requirements.txt, Cargo.toml, go.mod, README (first 30 lines), directory structure, git log (last 10 commits, STANDARD mode only).
 
-**Step 3 — Domain profile + blueprint**
-Writes `.claude/blueprint.json` with: domain, category, stack, scale, tdd_active, complexity, personality, skip_levels. Level-builders read this — they do not re-scan.
+**Step 3 -- Domain profile + blueprint**
+Writes `.claude/blueprint.json` with: domain, category, stack, scale, tdd_active, complexity, personality, skip_levels. Level-builders read this -- they do not re-scan.
 
-**Step 4 — Constraint cascade**
-- Simple projects → skip custom agents (Level 5)
+**Step 4 -- Constraint cascade**
+- Simple projects skip custom agents (Level 5)
 - TDD = opt-in only: requires test files + CLAUDE.md rule + developer domain
-- No prior memory + single-use project → skip full memory structure
+- No prior memory + single-use project -> skip full memory structure
 
-**Step 5 — Fill CLAUDE.md**
+**Step 5 -- Fill CLAUDE.md**
 Replaces all `{{placeholders}}` with project-specific values. Preserves existing content.
 
-**Step 6 — Create goals.md**
+**Step 6 -- Create goals.md**
 Writes `.claude/memory/goals.md` with empty sections and today's date.
 
-**Step 7 — Knowledge index** (if `knowledge/` directory detected)
-Creates `knowledge-index.md` with: file | summary | key_questions | tags. Files are NOT loaded into memory — only the index. Retrieval is grep-based and on-demand.
+**Step 7 -- Knowledge index** (if `knowledge/` directory detected)
+Creates `knowledge-index.md` with: file | summary | key_questions | tags. Files are NOT loaded into memory -- only the index. Retrieval is grep-based and on-demand.
 
 ---
 
@@ -136,16 +255,16 @@ AZCLAUDE builds progressively. You don't need all 10 levels. You need the right 
 
 | Level | What you get | Context cost |
 |-------|-------------|-------------|
-| **1** | CLAUDE.md — project conventions in 30 lines | ~30 tokens |
-| **2** | MCP servers — database, browser, API tools | ~150 tokens |
+| **1** | CLAUDE.md -- project conventions in 30 lines | ~30 tokens |
+| **2** | MCP servers -- database, browser, API tools | ~150 tokens |
 | **3** | 26 commands + lazy-loaded capabilities | ~380 tokens per task |
-| **4** | Memory — goals, checkpoints, sessions | ~200 tokens per session |
-| **5** | Custom agents — specialists with clear scope | ~400 tokens per agent |
-| **6** | Hooks — auto-tracking, injection, friction detection | ~0 tokens (global) |
-| **7** | External MCP — guide for connecting databases, browsers, APIs | Varies |
-| **8** | Intelligence — debates, pipelines, decisions | ~400 tokens per decision |
-| **9** | Evolution — 3-cycle self-improvement | ~1000 tokens per cycle |
-| **10** | **Loop Controller** — A recursive Opus agent that runs 3 autonomous cycles in the background (Environment Evolution, Knowledge Consolidation, Topology Optimization). It actively prunes dead agents, enriches the knowledge index, and re-derives architecture. | ~1500 tokens per full cycle |
+| **4** | Memory -- goals, checkpoints, sessions | ~200 tokens per session |
+| **5** | Custom agents -- specialists with clear scope | ~400 tokens per agent |
+| **6** | Hooks -- auto-tracking, injection, friction detection | ~0 tokens (global) |
+| **7** | External MCP -- guide for connecting databases, browsers, APIs | Varies |
+| **8** | Intelligence -- debates, pipelines, decisions | ~400 tokens per decision |
+| **9** | Evolution -- 3-cycle self-improvement | ~1000 tokens per cycle |
+| **10** | Loop Controller -- recursive Opus agent running 3 autonomous cycles | ~1500 tokens per full cycle |
 
 Use `/level-up` to see your current level and build the next one.
 
@@ -153,7 +272,7 @@ Use `/level-up` to see your current level and build the next one.
 
 ## The Evolution System
 
-`/evolve` is the self-improvement engine. It reads your friction logs, patterns, and session history — then finds what's weak and fixes it.
+`/evolve` is the self-improvement engine. It reads your friction logs, patterns, and session history -- then finds what's weak and fixes it.
 
 ### When to run
 
@@ -161,23 +280,44 @@ Use `/level-up` to see your current level and build the next one.
 - When the same pain keeps recurring
 - After building a new level
 - Quick check: `/evolve quick` (30 seconds, detect-only)
+- In copilot mode: automatically every 3 milestones
 
 ### What it detects
 
-**Friction signals** — repetition (same fix 3+ times), correction (you keep overriding Claude's suggestions), speed (tasks take unexpectedly long), missing (something you reach for that doesn't exist).
+**Friction signals** -- repetition (same fix 3+ times), correction (you keep overriding Claude's suggestions), speed (tasks take unexpectedly long), missing (something you reach for that doesn't exist).
 
 **Context Engineering 2.0 (The CE Pyramid):**
-Before AZCLAUDE fixes a context problem, it classifies the "Context Rot" type using the CE Pyramid:
-- **Poisoning** — Agent believes wrong facts (Fix: Remove or correct the false source)
-- **Distraction** — Irrelevant context consuming the window (Fix: Filter or summarize)
-- **Confusion** — Contradictory instructions in the same file (Fix: Resolve conflict)
-- **Clash** — Multi-source conflicts, like global vs project rules (Fix: Establish priority order)
+Before AZCLAUDE fixes a context problem, it classifies the "Context Rot" type:
+- **Poisoning** -- Agent believes wrong facts (Fix: Remove or correct the false source)
+- **Distraction** -- Irrelevant context consuming the window (Fix: Filter or summarize)
+- **Confusion** -- Contradictory instructions in the same file (Fix: Resolve conflict)
+- **Clash** -- Multi-source conflicts, like global vs project rules (Fix: Establish priority order)
 
-**Sequence candidates** — if you do steps A→B→C in 3+ sessions, that's a skill waiting to be created.
+**Sequence candidates** -- if you do steps A->B->C in 3+ sessions, that's a skill waiting to be created.
 
-**Intention-outcome mismatches** — if a capability says "triggers on X" but friction logs show it's not helping with X, the description needs rewriting.
+**Reflex clustering** -- related reflexes with high confidence get promoted to skills or agents.
 
-### What the quality gate checks
+**Intention-outcome mismatches** -- if a capability says "triggers on X" but friction logs show it's not helping with X, the description needs rewriting.
+
+### Three Cycles
+
+**Cycle 1** -- Environment Evolution
+- Detect: scan for gaps, friction patterns, stale docs, context rot
+- Generate: write fixes for each gap
+- Evaluate: quality-gate before merging
+
+**Cycle 2** -- Knowledge Consolidation (if 3+ sessions)
+- Harvest patterns.md and sessions/ by recency + importance
+- Prune stale entries, consolidate redundant patterns
+- Enrich agent definitions with accumulated learnings
+- Auto-prune reflexes where effective_confidence < 0.15
+
+**Cycle 3** -- Topology Optimization (if friction or /level-up triggered)
+- Measure agent influence in pipelines
+- Identify merge candidates (overlapping agents)
+- Test topology changes in isolated worktree before adopting
+
+### Quality Gate
 
 Before any generated file is promoted:
 - Syntax correct, frontmatter complete
@@ -187,14 +327,9 @@ Before any generated file is promoted:
 
 ### Evolution History and Skill Promotion
 
-Every `/evolve` run logs its results to `ops/evolution-log.md` — what was detected, what was fixed, score before and after. This creates a traceable audit trail of self-improvement over time.
+Every `/evolve` run logs to `ops/evolution-log.md` -- what was detected, what was fixed, score before and after.
 
-When `/evolve` generates a skill or pattern that is **not project-specific** (tagged GENERAL), it promotes a copy to `~/shared-skills/`. This means improvements discovered in one project become available to all your projects automatically. Project-specific skills stay local.
-
-### Scheduling
-
-At the end of `/evolve`, you'll be offered a weekly CronCreate schedule.
-Recommended: Sunday 9am `0 9 * * 0`.
+When `/evolve` generates a skill that is not project-specific (tagged GENERAL), it promotes a copy to `~/shared-skills/`. Improvements discovered in one project become available to all your projects automatically.
 
 ---
 
@@ -202,48 +337,151 @@ Recommended: Sunday 9am `0 9 * * 0`.
 
 Three tools for decisions that are too important for a quick answer.
 
-### /debate — Structured adversarial debate (AceMAD Protocol)
+### /debate -- Structured Adversarial Debate (AceMAD Protocol)
 
 Use when: hard architectural decision, genuine uncertainty, wrong choice costs real time.
 
-The **AceMAD protocol** goes far beyond simple prompting. It enforces:
+The **AceMAD protocol** enforces:
 
 - **Strict Evidence Tagging**: Every claim must be tagged `[VERIFIED]`, `[PARTIAL]`, `[UNVERIFIED]`, or `[FALSE]`.
-- **Disqualified Language**: Any argument containing "should work", "probably", or "I believe" is immediately marked `[UNVERIFIED]` and loses weight. Truth wins, not volume.
-- **Second-Order Cognition Check**: The synthesized conclusion *must* explicitly address the strongest *verified* claim from the *losing* side, or the confidence rating remains LOW.
-- **Order-Independence (PeerRank)**: Position bias has a known 0.39 statistical correlation. If the margin of victory is < 10 points, AZCLAUDE automatically re-runs the debate with the advocates in *reversed order*. If the result flips, the synthesis is marked INCONCLUSIVE to prevent hallucinated confidence.
-- **Length-Independence (Elo-Evolve)**: Scoring is strictly based on *evidence-density* (verified claims per 100 words), mathematically punishing verbosity and hallucinated length.
+- **Disqualified Language**: "should work", "probably", "I believe" are immediately marked `[UNVERIFIED]` and lose weight.
+- **Second-Order Cognition Check**: The synthesis must address the strongest *verified* claim from the *losing* side, or the confidence rating remains LOW.
+- **Order-Independence (PeerRank)**: If margin < 10 points, debate is re-run with advocates reversed. If result flips, synthesis is marked INCONCLUSIVE.
+- **Length-Independence (Elo-Evolve)**: Scoring based on evidence-density (verified claims per 100 words), punishing verbosity.
 
-Output goes to `decisions.md` with the deciding claim and the strongest counter-argument.
+In copilot mode, `/debate` frames from `blockers.md` automatically.
 
-### ELO — Pairwise ranking (PeerRank + Elo-Evolve)
+### ELO -- Pairwise Ranking (PeerRank + Elo-Evolve)
 
-When ranking 3+ options, `/debate` loads ELO automatically. This uses mathematically modeled precision:
+When ranking 3+ options, `/debate` loads ELO automatically:
 
-- **Comparative Binary Framing**: Uses continuous N×(N-1)/2 pairwise comparisons ("Is A better than B?") rather than absolute scoring ("Rate A from 1-10"). This definitively reduces statistical noise from σ_abs=35.65 to σ_comp=7.85.
-- **Authoritative Ownership**: Subagents are never allowed to self-evaluate. The Loop Controller owns the authoritative ELO score reconciliation, increasing reliability from r=0.538 to r=0.905.
-- **Adjusted Evidence Score Formula**: Calculated as `verified_claims / (verified + unverified + false)`. If this ratio falls below 0.5, the ELO score is mathematically hard-capped at 1100 regardless of how many "wins" the candidate has. Volume cannot defeat evidence.
+- **Comparative Binary Framing**: N*(N-1)/2 pairwise comparisons instead of absolute scoring
+- **Authoritative Ownership**: Subagents never self-evaluate. Loop Controller owns ELO reconciliation
+- **Adjusted Evidence Score**: `verified_claims / (verified + unverified + false)`. Below 0.5 -> hard-capped at 1100
 
-Rankings persist in `.claude/memory/elo-rankings.json` across sessions. Three tracks:
-- `debate_elo` — tracks which specific architectural approaches win debates
-- `agent_elo` — updated after pipelines; winner is the agent whose output was accepted without revision
-- `pattern_elo` — succeeded if the approach worked, failed if `/evolve` re-derivation was later triggered
+Three tracks: `debate_elo`, `agent_elo`, `pattern_elo`.
 
-### OPRO — Optimization by Prompting
+### OPRO -- Optimization by Prompting
 
-AZCLAUDE generates 3 variants of its own system instructions (Variant A, B, C), tests their performance, and writes the winning prompt architecture back to its internal `prompt-history.json`. This makes the system self-optimizing over time.
+AZCLAUDE generates 3 variants of its own system instructions, tests performance, and writes the winning prompt architecture back to `prompt-history.json`.
 
-### Pipeline — Agent composition
+### Pipeline -- Agent Composition
 
-Load `intelligence/pipeline.md` when you need 3+ agents chaining output to input.
+Pre-built templates for multi-agent chains:
+- Feature pipeline: planner -> implementer -> reviewer
+- Fix pipeline: investigator -> hypothesizer -> fixer
+- Review pipeline: spec-checker -> quality-checker (hard gate between stages)
+- Architecture pipeline: analyst -> maximalist -> skeptic -> synthesizer
 
-**Pre-built templates:**
-- Feature pipeline: planner → implementer → reviewer
-- Fix pipeline: investigator → hypothesizer → fixer
-- Review pipeline: spec-checker → quality-checker (hard gate between stages)
-- Architecture pipeline: analyst → maximalist → skeptic → synthesizer
+Each agent receives ONLY the previous agent's output + its own capability file. No context bleed.
 
-Each agent receives ONLY the previous agent's output + its own capability file. No context bleed. Agent 3 never inherits Agent 1's 50,000-token conversation.
+---
+
+## Evidence-Based Intelligence
+
+### Reflexes -- Learned Behavioral Patterns
+
+AZCLAUDE observes tool-use patterns across sessions and extracts atomic behaviors called reflexes. Each reflex is confidence-scored, domain-tagged, and evidence-backed.
+
+```yaml
+id: grep-before-edit
+trigger: "when modifying code files"
+action: "Search with Grep first, confirm with Read, then Edit"
+confidence: 0.7
+domain: workflow
+scope: project
+evidence_count: 8
+last_observed: 2026-03-18
+```
+
+**Confidence Levels:**
+
+| Observations | Confidence |
+|-------------|-----------|
+| 3-5 | 0.3 (tentative) |
+| 6-10 | 0.5 (moderate) |
+| 11-20 | 0.7 (strong) |
+| 21+ | 0.85 (near-certain) |
+
+**Adjustments:**
+- +0.05 per confirming observation
+- -0.10 per contradicting observation (user corrects behavior)
+- -0.02 per week without observation (automatic decay)
+- Confidence never exceeds 0.95
+- Below 0.15 after decay -> auto-pruned
+
+**Storage:**
+```
+.claude/memory/reflexes/
+├── observations.jsonl        <- raw tool-use observations (auto-captured by hook)
+├── project/                  <- project-scoped reflexes
+│   ├── grep-before-edit.md
+│   └── prefer-functional.md
+└── global/                   <- universal reflexes (promoted)
+    └── validate-user-input.md
+```
+
+**Evolution Path:** Observations -> 3+ occurrences -> reflex (0.3-0.85) -> /evolve clusters related reflexes -> strong cluster (3+ reflexes, avg confidence > 0.7) -> evolved into skill, command, or agent.
+
+**Commands:**
+```bash
+/reflexes status    # show all reflexes with confidence scores
+/reflexes analyze   # detect patterns from tool-use observations
+/reflexes promote   # promote project reflexes to global scope
+/reflexes clear     # archive old observations, prune weak reflexes
+```
+
+### Architecture Advisor -- 8 Decision Matrices
+
+Auto-fires on architecture decisions. Claude knows every framework -- this skill guides **when to use which** based on project scale (SMALL/MEDIUM/LARGE):
+
+| Decision area | SMALL | MEDIUM | LARGE |
+|--------------|-------|--------|-------|
+| Architecture | Flat modules | Modular monolith | Monolith + targeted microservices |
+| Database | SQLite | PostgreSQL | PostgreSQL + Redis + search |
+| Rendering | SSG or SPA | SSR/ISR | ISR + edge caching |
+| Testing | Test-after critical paths | TDD for business logic | Full TDD |
+| API design | tRPC (internal) | REST | REST + GraphQL (mobile) |
+| State mgmt | useState | TanStack Query | Zustand + XState |
+| Deployment | Vercel/Railway | Managed containers | AWS/GCP with IaC |
+| Auth | Clerk/Supabase | Auth0 | Keycloak (self-hosted) |
+
+Every recommendation includes the threshold where it changes and the anti-pattern to avoid.
+
+### Domain Advisor Generator -- 7 Non-Tech Domains
+
+When `/dream` detects a non-developer domain, it auto-generates a domain-specific advisor skill:
+
+| Domain | Generated decisions |
+|--------|-------------------|
+| **Compliance** | Regulation mapping, evidence strategy, assessment approach, documentation depth, data handling, incident response |
+| **Marketing** | Channel strategy, content type, funnel design, pricing model, metric focus, SEO vs paid |
+| **Finance** | Data model (event-sourced), calculation precision (integer-cents), reconciliation, reporting, risk model |
+| **Medical** | Data standard (FHIR vs HL7), privacy model (HIPAA vs GDPR), clinical workflow, terminology, audit requirements |
+| **Research** | Literature scope, methodology, citation management, experiment design, statistical rigor |
+| **Legal** | Contract structure, clause tracking, jurisdiction, risk classification |
+| **Logistics** | Routing, inventory model, tracking granularity |
+
+Generated skills follow the same structure as architecture-advisor: `SKILL.md` + `references/decision-matrices.md` + `scripts/detect-context.sh`.
+
+### Context Artifacts -- Non-Code Project Knowledge
+
+Before implementing any feature, AZCLAUDE discovers and reads non-code knowledge:
+
+| Type | Examples | Why it matters |
+|------|---------|---------------|
+| Database schemas | schema.sql, prisma/schema.prisma, migrations/ | Know table structure before writing queries |
+| API specs | openapi.yaml, swagger.json, .proto files | Know endpoints before building integrations |
+| Infra configs | terraform/, k8s/, docker-compose.yml | Know deployment constraints before architecture decisions |
+| Architecture docs | docs/architecture.md, ADRs, diagrams | Know design decisions before proposing changes |
+| Environment configs | .env.example, config templates | Know available env vars before hardcoding values |
+| Domain knowledge | knowledge/, regulations, business rules | Know domain constraints before implementing logic |
+
+In copilot mode, artifact discovery runs automatically:
+- Session 1: `/dream` scans for existing artifacts, creates index
+- Per milestone: `/add` reads relevant artifacts before implementing
+- After schema changes: update artifact index
+- `/evolve`: check for stale artifact references
 
 ---
 
@@ -258,10 +496,10 @@ AZCLAUDE detects your project domain from signals in your codebase and adapts ev
 | **Medical/Clinical** | clinical, patient, FHIR in README | Vocabulary: patient, clinical findings, outcomes. FHIR-aware agent naming |
 | **Finance/Trading** | positions, exposure, P&L, trading in README | Vocabulary: positions, risk decisions, exposure. Full code stack |
 | **Writer** | No code files, prose/markdown content | Skills: write-chapter.md, edit-draft.md. No MCP, no agents |
-| **Researcher** | knowledge/ directory, citations | **Insight Researcher**: Spawns specialized agents (literature-reviewer, summarizer). Uses retrieval patterns rather than code execution. |
+| **Researcher** | knowledge/ directory, citations | Insight Researcher: spawns specialized agents (literature-reviewer, summarizer) |
 | **Business** | Docs, reports, no code | Skills: workflow templates, report.md, deck.md |
 
-Detection is automatic. Vocabulary flows into CLAUDE.md, agent definitions, command files, and skill descriptions.
+Detection is automatic. Vocabulary flows into CLAUDE.md, agent definitions, command files, and skill descriptions. For non-developer domains, the domain-advisor-generator creates a full advisor skill automatically.
 
 ---
 
@@ -275,18 +513,18 @@ AZCLAUDE creates agents from evidence, not guessing.
 git log --name-only --format="" --diff-filter=M | sort | uniq -c | sort -rn
 ```
 
-Files that change together in git history → same agent. If `auth.js` and `auth.test.js` always change together, one agent owns both.
+Files that change together in git history -> same agent. If `auth.js` and `auth.test.js` always change together, one agent owns both.
 
-**Rule: Testing is a responsibility, not a role.** The agent that writes the code writes the tests. AZCLAUDE explicitly forbids creating a separate "tester agent" unless tests are genuinely independent.
+**Rule: Testing is a responsibility, not a role.** The agent that writes the code writes the tests.
 
 **When NOT to create an agent:**
-- Do not use agents for routing (routing belongs in `CLAUDE.md`).
-- Do not create an agent if a simple skill with direct tool calls can do the work.
-- Do not create an agent to just read a file and return its content.
+- Do not use agents for routing (routing belongs in `CLAUDE.md`)
+- Do not create an agent if a simple skill with direct tool calls can do the work
+- Do not create an agent to just read a file and return its content
 
 ### The 5-layer agent structure
 
-Every AZCLAUDE agent has exactly 5 layers. Missing one = incomplete agent.
+Every AZCLAUDE agent has exactly 5 layers:
 
 ```yaml
 ---
@@ -298,63 +536,46 @@ model: sonnet
 permissionMode: acceptEdits
 ---
 
-Layer 1 — PERSONA:      "Authentication specialist for this Express project"
-Layer 2 — SCOPE:        "Owns src/auth/ and tests/auth/. Does NOT touch frontend."
-Layer 3 — TOOLS:        "Read, Write, Edit, Bash, Grep"
-Layer 4 — CONSTRAINTS:  "Never store plaintext credentials. Never skip token expiry."
-Layer 5 — DOMAIN:       "Uses Passport.js, JWT (RS256), bcrypt, Redis sessions."
+Layer 1 -- PERSONA:      "Authentication specialist for this Express project"
+Layer 2 -- SCOPE:        "Owns src/auth/ and tests/auth/. Does NOT touch frontend."
+Layer 3 -- TOOLS:        "Read, Write, Edit, Bash, Grep"
+Layer 4 -- CONSTRAINTS:  "Never store plaintext credentials. Never skip token expiry."
+Layer 5 -- DOMAIN:       "Uses Passport.js, JWT (RS256), bcrypt, Redis sessions."
 ```
 
-**Rule: Layer 5 matters more than Layer 1.** Domain knowledge drives correct decisions; the persona just drives the tone.
+**Rule: Layer 5 matters more than Layer 1.** Domain knowledge drives correct decisions.
 
-**Rule: Use Positive Directives, not negative instructions.** Instead of "Don't generate vague output" (which activates the negative behavior in the model's mind), AZCLAUDE enforces positive framing: "Every output includes file:line reference and actual test result."
+### Built-in Agents
 
-### CE 2.0: Self-Correction Behavior
+AZCLAUDE ships with 7 agent templates:
 
-Every AZCLAUDE agent is programmed with a strict self-correction protocol before it is allowed to escalate to the user:
+| Agent | Model | Mode | Purpose |
+|-------|-------|------|---------|
+| **orchestrator-init** | opus | full access | Runs once during `/setup`. Scans project, fills CLAUDE.md, creates goals.md. Exits permanently. |
+| **loop-controller** | opus | full access | Level 10 autonomous agent. 3 cycles: environment evolution, knowledge consolidation, topology optimization. |
+| **code-reviewer** | opus | read-only (`EnterPlanMode`) | Spec-first review. Stage 1: spec compliance. Stage 2: code quality. Never modifies files. |
+| **test-writer** | sonnet | `acceptEdits` | Reads existing test patterns. Matches framework, style, naming. Writes and verifies tests. |
+| **cc-template-author** | sonnet | `acceptEdits` | Writes and maintains AZCLAUDE template files. |
+| **cc-cli-integrator** | sonnet | `acceptEdits` | Integrates new features into `bin/cli.js`. |
+| **cc-test-maintainer** | sonnet | `acceptEdits` | Maintains `tests/test-features.sh` with proper patterns. |
+
+### Self-Correction Protocol
+
+Every agent follows:
 ```
-Attempt 1 → Primary approach
-If it fails → Re-read error, identify what was wrong, try ONE alternative
-If Attempt 2 fails → STOP. Report what was tried, the exact error, and what decision is needed.
+Attempt 1 -> Primary approach
+If it fails -> Re-read error, try ONE alternative
+If Attempt 2 fails -> STOP. Report what was tried, exact error, what decision is needed.
 Never guess a third time.
 ```
 
 ### Spec-First Code Review Rule
-Reviewer agents enforce a rigid, non-negotiable step order:
+
+Reviewer agents enforce a rigid step order:
 - **Step 1:** Spec Compliance Check (Does it meet requirements?)
 - **Step 2:** Code Quality Check (Style, tests, conventions)
-**Rule:** An agent must NEVER begin Step 2 if Step 1 has violations. Reviewing the quality of code that doesn't solve the problem is a waste of tokens.
 
-### What agents learn automatically
-
-After every task:
-- Succeeded → appends approach to `patterns.md`
-- Failed → appends what didn't work to `antipatterns.md`
-- Made a decision → appends to `decisions.md`
-- Changed significant files → appends to `codebase-map.md`
-
-Next run, the agent reads these files. It doesn't repeat the same mistake twice.
-
-### Framework collision handling
-
-If your project uses langgraph, crewai, autogen, or langchain:
-All Claude Code agents are prefixed `cc-` (e.g., `cc-frontend.md`, `cc-backend.md`)
-Each gets a comment: `# Claude Code Development Agent (not a {framework} application agent)`
-
-This prevents naming collision between "the agent helping you code" and "the agent that IS the product."
-
-### Built-in Agents
-
-AZCLAUDE ships with 4 agent templates. Two handle infrastructure, two handle daily work.
-
-| Agent | Model | Mode | Purpose |
-|-------|-------|------|---------|
-| **orchestrator-init** | opus | full access | Runs once during `/setup`. Scans project, fills CLAUDE.md, creates goals.md, builds agents. Exits permanently after. |
-| **loop-controller** | opus | full access | Level 10 autonomous agent. Runs 3 cycles: environment evolution, knowledge consolidation, topology optimization. |
-| **code-reviewer** | opus | read-only (`EnterPlanMode`) | Spec-first review. Stage 1: spec compliance. Stage 2: code quality. Never modifies files. Issues classified as BLOCKING or SUGGESTION. |
-| **test-writer** | sonnet | `acceptEdits` | Reads existing test patterns in your project. Matches framework, style, naming. Writes tests, runs them, verifies they pass. All 5 agent layers present. |
-
-The code-reviewer is deliberately read-only — it uses `EnterPlanMode` so it cannot accidentally modify files during review. The test-writer uses Sonnet for cost efficiency on high-volume test generation.
+An agent must NEVER begin Step 2 if Step 1 has violations.
 
 ---
 
@@ -362,7 +583,7 @@ The code-reviewer is deliberately read-only — it uses `EnterPlanMode` so it ca
 
 **Three hooks. Three commands. One rule: goals.md is always read first.**
 
-No databases. No servers. No vector search. Just markdown files — written by hooks, injected by hooks, read by Claude natively.
+No databases. No servers. No vector search. Just markdown files -- written by hooks, injected by hooks, read by Claude natively.
 
 ### The Core Insight
 
@@ -372,39 +593,38 @@ AZCLAUDE asks: *"What does Claude actually need to see at the moment it starts w
 
 The answer is two things:
 
-1. **What files changed** — the mechanical record
-2. **Why decisions were made** — the human reasoning
+1. **What files changed** -- the mechanical record
+2. **Why decisions were made** -- the human reasoning
 
 500 tokens. Injected before your first message. That's complete session continuity.
 
-### Two Layers — Automatic and Manual
+### Two Layers -- Automatic and Manual
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    AUTOMATIC LAYER                           │
-│              (zero user input required)                      │
-│                                                             │
-│   PostToolUse hook  ──→  goals.md  ──→  UserPromptSubmit   │
-│   (fires on every edit)  (rolling ledger)  (injects before │
-│                                            your message)    │
-│                                                             │
-│   Stop hook  ──→  migrates "In progress" to "Done"         │
-├─────────────────────────────────────────────────────────────┤
-│                     MANUAL LAYER                            │
-│              (user triggers when ready)                      │
-│                                                             │
-│   /snapshot  ──→  checkpoints/{timestamp}.md                │
-│   (WHY you made decisions — every 15-20 turns)              │
-│                                                             │
-│   /persist  ──→  sessions/{date}-{topic}.md                 │
-│   (full session narrative — before closing)                  │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
++--------------------------------------------------------------+
+|                     AUTOMATIC LAYER                          |
+|               (zero user input required)                     |
+|                                                              |
+|   PostToolUse hook --> goals.md --> UserPromptSubmit          |
+|   (fires on every edit) (rolling ledger) (injects before     |
+|                                           your message)      |
+|                                                              |
+|   Stop hook --> migrates "In progress" to "Done"             |
++--------------------------------------------------------------+
+|                      MANUAL LAYER                            |
+|               (user triggers when ready)                     |
+|                                                              |
+|   /snapshot --> checkpoints/{timestamp}.md                   |
+|   (WHY you made decisions -- every 15-20 turns)              |
+|                                                              |
+|   /persist --> sessions/{date}-{topic}.md                    |
+|   (full session narrative -- before closing)                 |
++--------------------------------------------------------------+
 ```
 
 Machines track WHAT happened. Humans record WHY. Neither layer tries to do the other's job.
 
-### Hook 1: PostToolUse → goals.md
+### Hook 1: PostToolUse -> goals.md
 
 **When:** Every time Claude writes, edits, or creates a file.
 
@@ -414,263 +634,85 @@ Machines track WHAT happened. Humans record WHY. Neither layer tries to do the o
 
 ```markdown
 ## In progress
-- 22:10 — src/auth.js (+8/-2) — added JWT validation
-- 22:13 — test/auth.test.js (+15/-0) — added token expiry tests
-- 22:18 — README.md (+3/-1) — updated auth section
+- 22:10 -- src/auth.js (+8/-2) -- added JWT validation
+- 22:13 -- test/auth.test.js (+15/-0) -- added token expiry tests
+- 22:18 -- README.md (+3/-1) -- updated auth section
 
 ## Done
-- 21:45 — package.json (+1/-1) — bumped express version
-- 21:30 — .env.example (+2/-0) — added JWT_SECRET placeholder
+- 21:45 -- package.json (+1/-1) -- bumped express version
+- 21:30 -- .env.example (+2/-0) -- added JWT_SECRET placeholder
 ```
 
-**Why it matters:** Every edit leaves a trace. The user does nothing. No file change is ever forgotten, even after context compaction wipes the conversation history.
+PostToolUse also captures tool-use observations to `.claude/memory/reflexes/observations.jsonl` for reflex detection.
 
-### Hook 2: UserPromptSubmit → Context Injection
+### Hook 2: UserPromptSubmit -> Context Injection
 
-**When:** Before Claude processes the user's first message — every session, every time.
+**When:** Before Claude processes the user's first message -- every session.
 
 **What it does:**
 1. Reads `goals.md` (what you were working on)
 2. Reads the latest file from `checkpoints/` (why you made decisions)
-3. Prints both to stdout
+3. Strips prompt injection patterns (security)
+4. Prints both to stdout
 
-**What Claude sees before your message:**
+Claude sees this BEFORE your message. Memory is physically injected into the context window -- not a suggestion, a mechanism.
 
-```
---- ACTIVE GOALS ---
-## In progress
-- 22:10 — src/auth.js (+8/-2) — added JWT validation
-- 22:13 — test/auth.test.js (+15/-0) — added token expiry tests
-- 22:18 — README.md (+3/-1) — updated auth section
---- END GOALS ---
-
---- LAST CHECKPOINT (2026-03-14-22:10.md) ---
-## What I'm doing now
-Implementing JWT refresh token rotation in src/auth.js
-
-## WHY — decisions made this session
-- Chose RS256 over HS256: asymmetric keys safer for multi-service setup
-- Redis for token blacklist: O(1) lookup vs DB query
-
-## What I know that isn't written yet
-Old refresh flow in auth.js:180 has a race condition — fix next task
-
-## What's next
-1. Add token blacklist check to middleware
-2. Write expiry tests
-3. Update API docs
---- END CHECKPOINT ---
-```
-
-**Why it matters:** This is the critical architectural decision. Claude doesn't choose to read memory. Memory is physically injected into the context window before Claude sees your prompt. The difference between "tell Claude to read memory" and "inject memory before Claude reads anything" is the difference between a suggestion and a mechanism. Suggestions get ignored under pressure. Mechanisms can't be.
-
-### Hook 3: Stop → Migration
+### Hook 3: Stop -> Migration
 
 **When:** When Claude stops responding.
 
-**What it does:** Migrates "In progress" items in goals.md to "Done."
+**What it does:** Migrates "In progress" items in goals.md to "Done." Warns if no `/persist` was run.
 
-**Why it matters:** Goals.md stays clean. Active work on top. Completed work archived below. It's a rolling ledger, not an unbounded log. Token cost stays fixed regardless of how many sessions you've run.
+### /snapshot -- Mid-Session Reasoning Snapshot
 
-### /snapshot — Mid-Session Reasoning Snapshot
+Run every 15-20 turns. Captures: what you're doing, WHY, key decisions, what you know that isn't in the code yet, what's next. Saved to `.claude/memory/checkpoints/{timestamp}.md`. UserPromptSubmit automatically picks up the latest checkpoint.
 
-**When to use:** Every 15-20 turns, or before a major decision.
+### /persist -- End-of-Session Narrative
 
-**What it captures:** What you're doing, WHY, key decisions, what you know that isn't in the code yet, and what's next.
+Run before closing. Writes updated goals.md, friction log (only when there's actual friction), and session summary to `.claude/memory/sessions/`.
 
-**Where it saves:** `.claude/memory/checkpoints/{timestamp}.md`
-
-**Why it matters:** No automatic system can capture reasoning. PostToolUse knows you edited `auth.js` — it doesn't know you chose RS256 over HS256 because asymmetric keys are safer for multi-service architectures. Only you know that. /snapshot captures it so Claude knows it next session.
-
-The UserPromptSubmit hook automatically picks up the LATEST checkpoint and injects it alongside goals.md.
-
-### /persist — End-of-Session Narrative
-
-**When to use:** Before closing a session.
-
-**What it captures:** Full session summary — what was accomplished, what friction was encountered, what decisions were made, what's next.
-
-**Where it saves:** `.claude/memory/sessions/{date}-{topic}.md`
-
-**Why it matters:** Session narratives feed the evolution loop. When you run `/evolve`, the evolution module reads past sessions to detect patterns and antipatterns across your project's history. A pattern that appears in 3 sessions gets promoted to `patterns.md`. A mistake that recurs gets logged to `antipatterns.md`. Sessions are the raw material for self-improvement.
-
-### The Full Flow — Turn by Turn
-
-```
-SESSION 1
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Turn 1:    User types "fix the auth bug"
-           ┌─ UserPromptSubmit fires
-           │  Reads goals.md → (empty first time)
-           │  Reads checkpoints/ → (none yet)
-           └─ Claude sees: empty context + user's message
-
-Turn 5:    Claude edits src/auth.js
-           ┌─ PostToolUse fires
-           └─ goals.md gets: "14:05 — src/auth.js (+12/-3) — fixed race condition"
-
-Turn 12:   Claude edits test/auth.test.js
-           ┌─ PostToolUse fires
-           └─ goals.md gets another line
-
-Turn 15:   User runs /snapshot
-           ┌─ Captures: "Fixing auth. Chose RS256 over HS256.
-           │  Race condition in auth.js:180 still needs fix."
-           └─ Saved to checkpoints/2026-03-16-14:15.md
-
-Turn 30:   User runs /snapshot again
-           └─ New snapshot with updated progress
-
-Turn 80:   ⚠️  CONTEXT COMPACTION — earlier turns are gone
-
-Turn 81:   User types next prompt
-           ┌─ UserPromptSubmit fires
-           │  Reads goals.md → has ALL edit history from turns 5-79
-           │  Reads latest checkpoint → has reasoning from turn 30
-           └─ Claude sees both BEFORE the user's message
-              → picks up in seconds, not minutes
-
-End:       User runs /persist
-           ┌─ Full narrative saved to sessions/
-           └─ Stop hook migrates In progress → Done
-
-
-SESSION 2
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Turn 1:    User types "continue the auth work"
-           ┌─ UserPromptSubmit fires
-           │  Reads goals.md → has Session 1's edit history
-           │  Reads latest checkpoint → has Session 1's reasoning
-           └─ Claude knows:
-              • Which files were touched and what changed
-              • Why RS256 was chosen over HS256
-              • That auth.js:180 still needs the race condition fix
-              → zero re-explanation needed
-```
-
-### How Memory Connects to the Rest of AZCLAUDE
-
-```
-                         AUTOMATIC
-                            │
-        PostToolUse ────→ goals.md ────→ UserPromptSubmit ────→ Claude
-        (every edit)     (rolling        (every session         (sees it
-                          ledger)         start)                 first)
-
-                          MANUAL
-                            │
-        /snapshot ────→ checkpoints/ ──→ UserPromptSubmit ────→ Claude
-        (every 15-20      (reasoning       (picks latest
-         turns)            snapshots)       automatically)
-
-        /persist ───────→ sessions/ ─────→ /evolve ─────→ patterns.md
-        (end of session)  (narratives)     (reads sessions,   antipatterns.md
-                                            extracts what      decisions.md
-                                            worked/failed)
-
-                         AGENTS READ
-                            │
-        patterns.md ──────────────────→ Agent instructions (what works)
-        antipatterns.md ──────────────→ Agent instructions (what broke)
-        decisions.md ─────────────────→ Agent instructions (what was decided)
-```
-
-The automatic layer feeds the session start.
-The manual layer feeds both the session start AND the evolution loop.
-The evolution loop feeds the agents.
-The agents produce better work.
-Better work produces better sessions.
-Better sessions feed better evolution.
-
-**The system improves itself through its own memory.**
-
-### Why Markdown — Not a Database
-
-```
-Database approach (Claude-Mem, Ruflo):
-
-  Hook fires → HTTP request to worker service →
-  Worker queries SQLite → FTS5 search → ChromaDB vector lookup →
-  Format results → Return via MCP protocol → Inject into context
-
-  Failure points: worker not running, port occupied, SQLite locked,
-  ChromaDB not installed, MCP protocol error, HTTP timeout
-  Token cost: ~30,000 tokens protocol overhead before results
-
-  Dependencies: Node.js + Bun + uv + SQLite + ChromaDB + MCP server
-
-
-Markdown approach (AZCLAUDE):
-
-  Hook fires → read goals.md → print to stdout → Claude sees it
-
-  Failure points: file doesn't exist
-  Token cost: ~500 tokens total (goals + checkpoint)
-
-  Dependencies: Node.js (which Claude Code already requires)
-```
-
-Claude Code's native operation is reading files. It does this thousands of times per session. Reading goals.md is the same operation Claude already does constantly — zero new infrastructure, zero new protocols, zero new failure modes.
-
-### Token Cost — Fixed, Not Variable
+### Token Cost -- Fixed, Not Variable
 
 ```
 AZCLAUDE memory cost per session:
 
   goals.md injection:        ~200 tokens
   checkpoint injection:      ~300 tokens
-  ─────────────────────────────────────
+  ------------------------------------
   Total:                     ~500 tokens (fixed)
-
-
-Claude-Mem memory cost per session:
-
-  MCP protocol overhead:     ~30,000 tokens
-  Search query + results:    variable
-  Vector search overhead:    variable
-  ─────────────────────────────────────
-  Total:                     30,000+ tokens (grows with history)
 ```
 
-AZCLAUDE's memory cost is the same whether your project has 5 sessions or 500 — because goals.md is a rolling ledger (Stop hook archives completed items) and only the latest checkpoint is injected.
+Same cost whether your project has 5 sessions or 500.
 
 ### Memory Summary
 
 | Layer | Mechanism | What It Captures | Automatic | Survives Compaction |
 |-------|-----------|-----------------|-----------|-------------------|
-| File breadcrumb | PostToolUse → goals.md | WHERE you were, WHAT changed | Yes | Yes |
-| Reasoning snapshot | /snapshot → checkpoints/ | WHY decisions were made | Manual | Yes |
-| Session narrative | /persist → sessions/ | Full summary, friction, next steps | Manual | Yes |
-| Context injection | UserPromptSubmit | Delivers goals + checkpoint to Claude | Yes | Yes |
-| Ledger cleanup | Stop → migration | Keeps goals.md current | Yes | Yes |
-
-Five mechanisms. Three files. Zero databases. Zero servers. Zero dependencies.
-
-**Pure Claude Code. Fully orchestrated.**
+| File breadcrumb | PostToolUse -> goals.md | WHERE + WHAT changed | Yes | Yes |
+| Reasoning snapshot | /snapshot -> checkpoints/ | WHY decisions were made | Manual | Yes |
+| Session narrative | /persist -> sessions/ | Full summary + next steps | Manual | Yes |
+| Context injection | UserPromptSubmit | Delivers goals + checkpoint | Yes | Yes |
+| Ledger cleanup | Stop -> migration | Keeps goals.md current | Yes | Yes |
 
 ### Hook Reliability
 
-Three design decisions keep the hooks dependable:
-
-- **Always overwrite on install.** Running `npx azclaude` always writes fresh hook scripts, even if the hooks directory already exists. This fixes stale hooks left behind by older versions — the most common support issue before this change.
-- **Project-scoped by default.** Hooks install to `.claude/settings.local.json` (gitignored, machine-specific paths) — no global pollution. Old global hooks are auto-migrated: AZCLAUDE entries removed from `~/.claude/settings.json`, other plugins' hooks preserved.
-- **Merge, never replace.** The installer merges AZCLAUDE hooks into settings per-key — it never replaces the entire hooks object. Other plugins' hooks are preserved.
-- **Checkpoint reminder.** PostToolUse counts edits per session. Every 15 edits, it prints: `⚠ 15 edits — run /snapshot before context compaction loses your reasoning`. This prevents forgotten checkpoints on long sessions.
-- **Stop hook warns, never stubs.** The Stop hook migrates "In progress" → "Done" and warns if no `/persist` was run. It does NOT create empty friction log files. Friction logs are only written when there's actual friction to record — empty stubs were noise that polluted `ops/observations/`.
+- **Always overwrite on install.** `npx azclaude` always writes fresh hook scripts.
+- **Project-scoped by default.** Hooks install to `.claude/settings.local.json` (gitignored).
+- **Merge, never replace.** The installer merges AZCLAUDE hooks per-key -- other plugins preserved.
+- **Checkpoint reminder.** Every 15 edits: prints a warning to run `/snapshot`.
+- **Stop hook warns, never stubs.** Friction logs only written when there's actual friction.
 
 ---
 
 ## Native Tool Orchestration (MCP)
 
-AZCLAUDE doesn't just use text prompts; it hardwires its logic directly into the host CLI's built-in MCP (Model Context Protocol) capabilities:
+AZCLAUDE hardwires its logic directly into the host CLI's built-in MCP capabilities:
 
-- **`AskUserQuestion`**: Wrapped into `/add`, `/blueprint`, and `/setup` to force the AI to halt and clarify vague requirements instead of hallucinating.
-- **`EnterPlanMode`**: Called natively during `/blueprint` and `/audit` for forced read-only analysis.
-- **`EnterWorktree`**: Called natively to safely isolate state during `/evolve` and `/fix`.
-- **`CronCreate` / `CronList`**: Natively tied to the `/loop` command for actual autonomous background execution.
-- **`mcp__ide__getDiagnostics`**: Hard-gated before `/test` and `/ship` to ensure no syntax errors exist before running bash commands.
+- **`AskUserQuestion`**: Wrapped into `/add`, `/blueprint`, and `/setup` to force clarification of vague requirements.
+- **`EnterPlanMode`**: Called during `/blueprint` and `/audit` for forced read-only analysis.
+- **`EnterWorktree`**: Called to isolate state during `/evolve` and `/fix`.
+- **`CronCreate` / `CronList`**: Tied to `/loop` for autonomous background execution.
+- **`mcp__ide__getDiagnostics`**: Hard-gated before `/test` and `/ship`.
 
 ---
 
@@ -683,8 +725,7 @@ AZCLAUDE doesn't just use text prompts; it hardwires its logic directly into the
 /dream I want to build a compliance tracking API with FastAPI and Postgres
 ```
 
-Structured intake → environment scan → build levels 1–7 in sequence → quality gate.
-Use for greenfield projects. For existing projects use `/setup`.
+Structured intake -> environment scan -> build levels 1-7 in sequence -> quality gate. Detects domain and generates domain-specific advisor skill if non-developer domain. Use for greenfield projects. For existing projects use `/setup`.
 
 ---
 
@@ -706,14 +747,13 @@ Scans your code, detects domain/stack/scale, fills CLAUDE.md, creates goals.md, 
 /fix TypeError: Cannot read property 'id' of undefined at auth.js:42
 ```
 
-4 phases — none skippable:
-1. **REPRODUCE** — IDE diagnostics first, then run the actual test. Show exit code.
-2. **INVESTIGATE** — Read code at failure point, git history, test framework config, antipatterns.md.
-3. **HYPOTHESIZE** — One root cause only. Fill a checkpoint before touching code. Gate on confidence (high/medium/low).
-4. **FIX** — Minimal change. Run full test suite. Show output with exit code.
+4 phases -- none skippable:
+1. **REPRODUCE** -- IDE diagnostics first, then run the actual test.
+2. **INVESTIGATE** -- Read code at failure point, git history, antipatterns.md.
+3. **HYPOTHESIZE** -- One root cause only. Confidence gate.
+4. **FIX** -- Minimal change. Run full test suite. Show output with exit code.
 
 Self-correction: 2 attempts max, then escalate with exact context.
-Never says "should work." Shows test output or stays in progress.
 
 ---
 
@@ -723,12 +763,9 @@ Never says "should work." Shows test output or stays in progress.
 ```
 /add user authentication endpoint with JWT
 /add React component for the data table
-/add unit tests for the billing module
 ```
 
-Steps: clarify scope → understand existing patterns → TDD check (signal-based) → implement → verify.
-Never invents patterns — copies what's already in your codebase.
-TDD activates only if: developer domain + test files exist + CLAUDE.md has TDD rule.
+Clarify scope -> understand existing patterns -> read context artifacts -> TDD check -> implement -> verify. In copilot mode: uses milestone spec directly. Never invents patterns -- copies what's already in your codebase.
 
 ---
 
@@ -741,21 +778,12 @@ TDD activates only if: developer domain + test files exist + CLAUDE.md has TDD r
 /audit src/auth.js  # specific file
 ```
 
-Read-only mode (no modifications). This command enforces **Distrust-in-Review**: it assumes the implementer was optimistic or incomplete. The reviewer *must* independently verify success by reading actual file diffs or running tests, rather than taking the implementer's word for it.
+Read-only mode. Enforces **Distrust-in-Review**: assumes the implementer was optimistic. In copilot mode: reviews against copilot-intent.md.
 
-**Review Reception:** AZCLAUDE explicitly bans sycophantic "You're absolutely right!" responses. It prioritizes technical evaluation, enforces YAGNI checks on user feedback, and provides concrete pushback wording for bad suggestions.
+Stage 1 -- Spec compliance (required first). STOPS if violations found.
+Stage 2 -- Code quality (only if Stage 1 passes).
 
-Two stages:
-
-**Stage 1 — Spec compliance (required first):** Find requirements → verify each in the actual code → show compliance result. STOPS here if spec violations found.
-
-**Stage 2 — Code quality (only if Stage 1 passes):** IDE diagnostics → project conventions → security → tests → antipatterns.
-
-Issue classification:
-- **BLOCKING** — security issue, broken behavior, missing tests. Must fix before merge.
-- **SUGGESTION** — style, naming, optional refactor. Take or leave.
-
-Output: `Spec: ✓ pass / ✗ fail` · `Quality: ✓ pass / N issues` · `IDE: N errors` · `Verdict: APPROVE / REQUEST CHANGES / NEEDS SPEC FIRST`
+Issue classification: BLOCKING (must fix) or SUGGESTION (take or leave).
 
 ---
 
@@ -765,147 +793,110 @@ Output: `Spec: ✓ pass / ✗ fail` · `Quality: ✓ pass / N issues` · `IDE: N
 ```
 /test
 /test auth.test.js
-/test "token expiry"
 ```
 
-Steps: IDE diagnostics first → detect framework (Jest/Vitest/Mocha/pytest/unittest/cargo test/go test) → run with exit-code gate → classify failures.
-
-Failure types:
-- Compile/type error → fix IDE diagnostics first
-- Assertion failure → /fix protocol
-- Timeout → check async patterns
-- Import error → check module paths
+IDE diagnostics first -> detect framework -> run with exit-code gate -> classify failures (compile error, assertion failure, timeout, import error).
 
 ---
 
 ### /blueprint
-**Read-only analysis and approval gate for risky changes.**
+**Read-only analysis -> structured plan with milestones.**
 
 ```
 /blueprint refactor the authentication module to use refresh tokens
-/blueprint migrate from REST to GraphQL
 ```
 
-Triggers when: 4+ files, schema/API changes, high reversal cost, or you explicitly want approval before code.
-Does NOT trigger on "add X" or "implement X" — those go to /add directly.
-
-Read-only analysis → numbered plan with file:line references + risk level → approval gate: waits for your "yes" before creating any tasks.
+Read-only analysis -> numbered plan with file:line references + risk level -> approval gate (skipped in copilot mode). Generates `plan.md` with milestone descriptions, expected files, and dependencies.
 
 ---
 
 ### /ship
-**Pre-ship gate, smart commit, push to GitHub.**
+**Pre-ship gate, smart commit, push.**
 
 ```
 /ship
 /ship "feat: add JWT refresh token rotation"
 ```
 
-Sequence:
-1. IDE diagnostics — STOP if errors
-2. Tests pass — STOP if EXIT ≠ 0
-3. Docs sync check — README version matches package.json? Command count correct? Stale content?
-4. Secrets scan — reject .env, plaintext keys, tokens
-5. Commit — auto-generate message `{type}: {what} — {why}`
-6. Push — `git push` or sets up remote if first push
+1. IDE diagnostics -- STOP if errors
+2. Tests pass -- STOP if EXIT != 0
+3. Docs sync check
+4. Secrets scan -- reject .env, keys, tokens
+5. Commit
+6. Push
+
+In copilot mode: auto-deploys to Vercel/Railway.
 
 ---
 
 ### /evolve
-**Scan your environment for gaps, generate fixes, quality-gate them.**
+**Scan for gaps, generate fixes, quality-gate them.**
 
 ```
-/evolve           # full cycle (~3-6k tokens, ~3-6 min)
-/evolve quick     # detect gaps only (~500 tokens, ~30 sec)
+/evolve           # full cycle
+/evolve quick     # detect gaps only
 ```
 
-Three cycles — each opt-in based on what's detected:
-
-**Cycle 1** — Environment Evolution
-- Detect: scan for gaps, friction patterns, stale docs, context rot
-- Generate: write fixes for each gap
-- Evaluate: quality-gate before merging
-
-**Cycle 2** — Knowledge Consolidation (if 3+ sessions)
-- Harvest patterns.md and sessions/ by recency + importance
-- Prune stale entries, consolidate redundant patterns
-- Enrich agent definitions with accumulated learnings
-
-**Cycle 3** — Topology Optimization (if friction or /level-up triggered)
-- Measure agent influence in pipelines
-- Identify merge candidates (overlapping agents)
-- Test topology changes in isolated worktree before adopting
-
-Rules: max 5 improvements/cycle · max 3 iterations/component · never delete user files.
+Three cycles: Environment Evolution, Knowledge Consolidation, Topology Optimization. Creates agents from evidence, prunes stale reflexes, consolidates patterns. See [The Evolution System](#the-evolution-system).
 
 ---
 
 ### /debate
-**Adversarial decision protocol for hard choices.**
+**Adversarial decision protocol (AceMAD).**
 
 ```
 /debate should we use REST or GraphQL for the new API?
-/debate PostgreSQL vs MongoDB for user session storage
 ```
 
-Use when a decision is genuinely uncertain and the wrong choice costs real time.
-Do NOT use for routine decisions — Claude's direct answer is faster.
+Evidence-tagged, order-independent, length-independent. See [The Intelligence System](#the-intelligence-system).
 
-**AceMAD Protocol:**
-1. Define the decision as a binary or small option set
-2. MAXIMALIST argues strongest case FOR (≤10 arguments, evidence-tagged)
-3. SKEPTIC argues strongest case AGAINST (must address best verified argument)
-4. FACT CHECK — every claim tagged [VERIFIED] / [PARTIAL] / [UNVERIFIED] / [FALSE]
-5. Synthesis — winner + confidence (0-100), second-order check (address strongest losing claim), order-independence check (if margin < 10, reverse and re-run)
-6. Length-independence — score on evidence-density, not word count
-7. Record to decisions.md: question, options, winner, confidence, deciding claim, dissent
+---
 
-Truth wins, not volume. All claims must be verified or they lose weight.
+### /copilot
+**Autonomous milestone execution. Zero human input.**
+
+```
+/copilot
+```
+
+The core command. Reads plan.md, finds next milestone, implements it, tests, commits, pushes. Every 3 milestones runs `/reflexes analyze` + `/evolve`. When all done: `/audit` -> `/ship` -> `COPILOT_COMPLETE`. See [Copilot Mode](#copilot-mode-autonomous).
+
+---
+
+### /reflexes
+**View, analyze, and manage learned behavioral patterns.**
+
+```
+/reflexes status    # show all reflexes with confidence scores
+/reflexes analyze   # detect patterns from tool-use observations
+/reflexes promote   # promote project reflexes to global scope
+/reflexes clear     # archive old observations, prune weak reflexes
+```
+
+Reflexes are atomic learned behaviors extracted from session observations. Confidence-scored (0.3 tentative -> 0.9 certain). See [Evidence-Based Intelligence](#evidence-based-intelligence).
 
 ---
 
 ### /level-up
-**See your current level (0–10) and build the next one.**
+**See your current level (0-10) and build the next one.**
 
 ```
 /level-up
 ```
 
-Detects current level from what exists in your project → shows visual checklist → builds the next level.
-
-| Level | What gets built |
-|-------|----------------|
-| 1 | CLAUDE.md rules file |
-| 2 | MCP servers (database, browser, APIs) |
-| 3 | 26 commands + lazy-loaded capabilities |
-| 4 | Memory system (goals, checkpoints, sessions) |
-| 5 | Custom agents from git evidence |
-| 6 | Hooks (auto-tracking, injection, friction detection) |
-| 7 | External MCP (guide for connecting databases, browsers, APIs) |
-| 8+ | Intelligence (debates, pipelines, experiments) |
-| 9 | Evolution cycles (self-improvement) |
-| 10 | Loop controller (autonomous evolution) |
-
-At Level 7 → use `/evolve` instead (environment is built, now improve it).
+Detects current level from what exists -> shows visual checklist -> builds next level.
 
 ---
 
 ### /snapshot
-**Mid-session snapshot. Run every 15–20 turns on complex work.**
+**Mid-session snapshot. Run every 15-20 turns.**
 
 ```
 /snapshot
 /snapshot "auth refactor"
 ```
 
-Writes `.claude/memory/checkpoints/{date}-{HH:MM}.md` capturing:
-- What you're doing right now
-- WHY — key decisions made this session
-- What you know that isn't written down yet
-- What's next (top 3)
-- Open risks
-
-UserPromptSubmit automatically injects the latest checkpoint on the next session start. This is what survives context compaction — not just which files changed, but why.
+Captures: what you're doing, WHY, key decisions, what's next. Saved to `checkpoints/`. Injected automatically on next session start.
 
 ---
 
@@ -916,12 +907,7 @@ UserPromptSubmit automatically injects the latest checkpoint on the next session
 /persist
 ```
 
-Run before closing. Writes:
-1. Updated `goals.md` — current threads, done this session, next actions, open blockers
-2. `ops/observations/{date}-{slug}-friction.md` — only written when there's actual friction (something hard, repeated, slow, or missing). Skipped for smooth sessions.
-3. `.claude/memory/sessions/{date}-session.md` — 2–3 sentence narrative
-
-Never skip even for short sessions.
+Run before closing. Updates goals.md, writes friction log (only when actual friction exists), saves session narrative.
 
 ---
 
@@ -932,20 +918,19 @@ Never skip even for short sessions.
 /pulse
 ```
 
-Shows: recent git activity (last 5 commits), uncommitted changes, project health (IDE diagnostics, dependencies, config), what changed (git diff --stat), current level, next 2–3 steps from goals.md.
+Shows: recent git activity, uncommitted changes, project health, current level, next steps from goals.md.
 
 ---
 
 ### /explain
-**Plain language explanation. Zero jargon.**
+**Plain language explanation.**
 
 ```
 /explain src/auth/jwt.js
 /explain "TypeError: Cannot read property 'id' of undefined"
-/explain what is a JWT refresh token
 ```
 
-Simple language, step-by-step for code, root cause for errors, real-world analogy for concepts. Max 2–3 paragraphs unless you ask for more.
+Simple language, step-by-step for code, root cause for errors. Max 2-3 paragraphs.
 
 ---
 
@@ -958,121 +943,107 @@ Simple language, step-by-step for code, root cause for errors, real-world analog
 /loop daily /persist
 ```
 
-Schedules via CronCreate. Runs immediately once so you see it working.
-
-| Interval | Cron |
-|----------|------|
-| 5m | `*/5 * * * *` |
-| 30m | `*/30 * * * *` |
-| 1h | `0 * * * *` |
-| daily | `0 9 * * *` |
-| weekly | `0 9 * * 1` |
-
-Use `/loop stop` to cancel.
+Schedules via CronCreate. Use `/loop stop` to cancel.
 
 ---
 
 ### /refactor
 **Safe code restructuring with test safety net.**
+
 ```
 /refactor rename UserService to AuthService
 /refactor extract validation logic from auth.js
 ```
+
 Tests before AND after. Maps all references. High-risk changes use worktree isolation.
-Never changes behavior — only structure.
 
 ---
 
 ### /doc
 **Generate documentation from code.**
+
 ```
 /doc src/auth.js
 /doc readme
 ```
-Detects existing doc style (JSDoc, docstrings, Go doc). Reads actual code — never guesses signatures. Verifies examples run.
+
+Detects existing doc style. Reads actual code -- never guesses signatures.
 
 ---
 
 ### /migrate
 **Upgrade dependencies and frameworks safely.**
+
 ```
 /migrate react 19
-/migrate update all packages
 ```
-Tests before + after. Researches breaking changes via WebSearch. Major version upgrades run in worktree.
+
+Tests before + after. Researches breaking changes. Major version upgrades run in worktree.
 
 ---
 
 ### /deps
 **Dependency audit: outdated, vulnerable, unused.**
+
 ```
 /deps
 /deps security
 /deps unused
 ```
-Runs npm audit / pip audit. Classifies by risk (patch/minor/major). Detects unused packages.
+
+Runs npm audit / pip audit. Classifies by risk.
 
 ---
 
 ### /find
 **Search for skills across the ecosystem.**
+
 ```
 /find testing
 /find deploy
 ```
-Searches project commands, ~/shared-skills/, and capabilities manifest. Suggests /create if nothing matches.
+
+Searches project commands, ~/shared-skills/, and capabilities manifest.
 
 ---
 
 ### /create
 **Build a new command with guided workflow.**
+
 ```
 /create deploy-to-staging
-/create weekly-report
 ```
-Intent capture → duplicate check → frontmatter template → test cases → validation. Ensures 5+ trigger phrases for reliable invocation.
+
+Intent capture -> duplicate check -> frontmatter template -> test cases -> validation.
+
+---
 
 ### /reflect
 **Self-improve CLAUDE.md from conversation friction.**
+
 ```
 /reflect
 ```
-Reads friction logs and session history, identifies patterns where Claude's behavior didn't match expectations, and proposes targeted edits to CLAUDE.md rules, routing, or trade-off hierarchies.
+
+Reads friction logs and session history, identifies patterns where Claude's behavior didn't match expectations, proposes targeted edits to CLAUDE.md.
+
+---
 
 ### /hookify
 **Generate hooks from conversation friction.**
+
 ```
 /hookify block rm -rf commands
 /hookify
 ```
-Analyzes recent conversation patterns (corrections, repeated undos, frustration signals) and generates PreToolUse or PostToolUse hooks to prevent unwanted behaviors. With arguments: generates a specific hook. Without arguments: scans conversation for friction and asks which patterns to hookify. Classifies into 5 hook types: dangerous commands (block), unsafe code patterns (warn), file protection (block), missing steps (remind), session behavior (inject).
 
----
-
-### /copilot
-**Autonomous milestone execution. Zero human input.**
-```
-/copilot
-```
-The core command. Reads plan.md, finds next milestone, implements it, tests, commits, pushes. Every 3 milestones runs `/reflexes analyze` + `/evolve`. When all milestones done: `/audit` → `/ship` → `COPILOT_COMPLETE`. Includes blocker recovery (retry blocked milestones after others complete) and self-healing (record failures to antipatterns.md, successes to patterns.md). All other commands detect copilot mode via `[ -f .claude/copilot-intent.md ]` and skip human interaction.
-
----
-
-### /reflexes
-**View, analyze, and manage learned behavioral patterns.**
-```
-/reflexes status    # show all reflexes with confidence scores
-/reflexes analyze   # detect patterns from tool-use observations
-/reflexes promote   # promote project reflexes to global scope
-/reflexes clear     # archive old observations, prune weak reflexes
-```
-Reflexes are atomic learned behaviors extracted from session observations. Smaller than skills, confidence-scored (0.3 tentative → 0.9 certain). PostToolUse hook captures observations to `observations.jsonl`. Patterns with 3+ occurrences become reflexes. Strong reflex clusters evolve into skills/agents via `/evolve`.
+Analyzes patterns and generates PreToolUse or PostToolUse hooks. Classifies into 5 hook types: dangerous commands (block), unsafe code patterns (warn), file protection (block), missing steps (remind), session behavior (inject).
 
 ---
 
 ## Skills (Auto-Invoked)
 
-Skills are model-invoked capabilities that fire automatically based on context — no slash command needed. AZCLAUDE installs 8 skills:
+Skills fire automatically based on context -- no slash command needed. AZCLAUDE installs 8 skills:
 
 | Skill | Triggers on |
 |---|---|
@@ -1083,79 +1054,84 @@ Skills are model-invoked capabilities that fire automatically based on context �
 | security | Credentials, auth, payments, .env files, secrets |
 | skill-creator | "Create a skill", "add capability", repeated workflows |
 | agent-creator | "Create an agent", agent boundaries, 5-layer structure |
-| architecture-advisor | Architecture decisions, database choice, rendering strategy, testing approach — by project scale |
+| architecture-advisor | Architecture decisions, database choice, rendering strategy, testing approach -- by project scale |
 
 Each skill has: `SKILL.md` (lean workflow), `references/` (deep content), `examples/` (concrete output), `scripts/` (deterministic work).
-
-### Architecture Advisor
-
-Evidence-based decision guidance. Claude knows every framework — this skill guides **when to use which** based on project context (SMALL/MEDIUM/LARGE). Covers 8 areas: architecture pattern, rendering, database, testing, API design, state management, deployment, auth. Every recommendation includes the threshold where it changes and the anti-pattern to avoid.
-
-### Domain Advisor Generator
-
-When `/dream` detects a non-developer domain (compliance, marketing, finance, medical, research, legal, logistics), it auto-generates a domain-specific advisor skill using `capabilities/shared/domain-advisor-generator.md`. The generated skill follows the same structure as architecture-advisor — decision matrices with context, evidence, thresholds, and anti-patterns — but tailored to the detected domain.
 
 ---
 
 ## Behavioral Defenses (Pressure Testing)
 
-AZCLAUDE is trained to handle bad human behavior and cognitive biases via the `pressure-test.md` capability. It intercepts scenarios where the user applies negative framing:
+AZCLAUDE handles bad human behavior and cognitive biases via `pressure-test.md`:
 
-- **Time Pressure**: Rushing tasks ("We are behind schedule, just ship it").
-- **Sunk Cost Fallacy**: Continuing bad architecture ("We already spent a week on this").
-- **Authority Framing**: Pulling rank ("I'm a senior engineer, just do what I say").
-- **False Confidence**: "This is obviously right, no need to test."
+- **Time Pressure**: "We are behind schedule, just ship it" -> demands tests first.
+- **Sunk Cost Fallacy**: "We already spent a week on this" -> evaluates on merits.
+- **Authority Framing**: "I'm a senior engineer, just do what I say" -> follows technical evidence.
+- **False Confidence**: "This is obviously right, no need to test" -> runs tests anyway.
 
-In these scenarios, AZCLAUDE will politely but firmly halt, re-frame the risk, and suggest the technically correct path (e.g., demanding tests or root-cause analysis) rather than blindly executing dangerous commands.
+**Review Reception**: AZCLAUDE bans sycophantic responses. Prioritizes technical evaluation, enforces YAGNI checks, provides concrete pushback wording for bad suggestions.
 
 ---
 
 ## Multi-CLI Support
 
-AZCLAUDE works with 5 AI coding CLIs. Path substitution happens at install time — zero runtime cost.
+AZCLAUDE works with 5 AI coding CLIs. Path substitution happens at install time -- zero runtime cost.
 
 | CLI | Config dir | Rules file | Hooks |
 |-----|-----------|-----------|-------|
-| Claude Code | `.claude/` | `CLAUDE.md` | Yes — project-scoped in .claude/hooks/ |
+| Claude Code | `.claude/` | `CLAUDE.md` | Yes -- project-scoped in .claude/hooks/ |
 | Gemini CLI | `.gemini/` | `GEMINI.md` | No |
 | Codex CLI | `.codex/` | `AGENTS.md` | No |
 | OpenCode | `.opencode/` | `AGENTS.md` | No |
 | Cursor | `.cursor/` | `.cursor/rules/project.mdc` | No |
 
-All capabilities, commands, and memory work the same way on every CLI.
 Memory and hooks are Claude Code only (other CLIs don't expose hook APIs).
 
 ---
 
 ## Security
 
-AZCLAUDE executes code and modifies files. 6 layers of protection.
+AZCLAUDE executes code and modifies files. 6 layers of protection. Zero dependencies in `package.json`.
 
-**1. Hook Integrity**
-SHA-256 hash of hook config written at install (`.claude/.azclaude-integrity`). Verified on every subsequent run. If hooks are modified, doctor reports the mismatch.
+### 1. Hook Integrity
+SHA-256 hash of hook config written at install (`.claude/.azclaude-integrity`). Verified on every subsequent run.
 
-**2. Command Injection Protection**
-Formatter hooks sanitize `$CLAUDE_FILE_PATH`. Shell metacharacters (` ; | & $ ( ) < > `) are rejected before any formatter runs, preventing malicious paths from executing arbitrary commands.
+### 2. Command Injection Protection
+PostToolUse sanitizes `$CLAUDE_FILE_PATH`. Shell metacharacters rejected. Paths outside project root rejected.
 
-**3. Indirect Prompt Injection Defense**
-UserPromptSubmit hook strips injection patterns from goals.md and checkpoint files before injecting into context:
-- `curl.*|.*bash` or `wget.*|.*sh` patterns
-- `ignore previous instructions`
-- `you are now` or `system prompt`
-- `<script>` or HTML injection attempts
-- Base64-encoded blocks longer than 500 characters
+### 3. Prompt Injection Defense
+UserPromptSubmit strips injection patterns from goals.md before context injection: `curl|bash`, `ignore previous instructions`, `system prompt`, `<script>`, base64 blocks > 500 chars.
 
-**4. Skill Checksums**
-Portable skills in `~/shared-skills/` are SHA-256 hashed. Imports fail loudly if tampered with.
+### 4. Skill Checksums
+Portable skills in `~/shared-skills/` are SHA-256 hashed. Imports fail if tampered.
 
-**5. Credential Auditing**
-`/ship` scans staged files for `.env`, plaintext keys, tokens, secrets (`AKIA`, `sk-`, `ghp_`, etc.). Blocks the commit if found.
-**Audit Trail:** If an agent must handle credentials, it is required to log the action to `.claude/memory/security-events.md`.
+### 5. Credential Auditing
+`/ship` scans for `.env`, plaintext keys, tokens (`AKIA`, `sk-`, `ghp_`). Blocks commit if found.
 
-**6. Agent Scoping**
-- Review agents: read-only (`EnterPlanMode`, no Write permissions)
-- Experiment agents: isolated git worktree (`EnterWorktree`) — changes discarded if experiment fails
-- Never promote an experiment result without going through evaluate.md
+### 6. Agent Scoping
+- Review agents: read-only (`EnterPlanMode`)
+- Experiment agents: isolated worktree (`EnterWorktree`)
+- Never promote experiment results without evaluate.md
+
+### Hook Profiles
+
+Control hook behavior via environment variable:
+
+```bash
+AZCLAUDE_HOOK_PROFILE=minimal  claude   # goals.md tracking only (fastest)
+AZCLAUDE_HOOK_PROFILE=standard claude   # all features (default)
+AZCLAUDE_HOOK_PROFILE=strict   claude   # all features + extra validation
+```
+
+### Copilot Mode Security
+
+`bin/copilot.js` uses `--dangerously-skip-permissions`. Mitigations:
+- Refuses to run on home directory or root
+- All file operations scoped to project directory
+- `/ship` runs secrets scan before any `git push`
+- PostToolUse hook rejects paths outside project root
+
+See [SECURITY.md](SECURITY.md) for full details.
 
 ---
 
@@ -1163,55 +1139,37 @@ Portable skills in `~/shared-skills/` are SHA-256 hashed. Imports fail loudly if
 
 ### `npx azclaude doctor` shows failures
 
-Doctor runs 32 checks across 6 categories and exits 1 with a specific fix hint for each failure.
+Doctor runs 32 checks across 6 categories. Each failure includes the exact fix command.
 
 **What doctor checks:**
-- **Runtime** — Node.js version, git available, CLI detected
-- **Project hooks** — UserPromptSubmit, PostToolUse, Stop hooks wired in `.claude/settings.local.json` (or global fallback)
-- **Hook freshness** — hook scripts in `.claude/hooks/` match the latest version shipped with AZCLAUDE
-- **Settings integrity** — SHA-256 hash of hook config matches install-time hash
-- **Commands** — all 26 commands present (dynamically derived from `COMMANDS` array in cli.js)
-- **Memory** — goals.md exists, checkpoints directory exists, git repo initialized
-- **Project** — CLAUDE.md exists and has no unfilled `{{placeholders}}`
-
-Each failure includes the exact fix command. For example: `FIX: re-run 'npx azclaude' to refresh hook scripts`.
+- **Runtime** -- Node.js version, git available, CLI detected
+- **Project hooks** -- UserPromptSubmit, PostToolUse, Stop hooks wired
+- **Hook freshness** -- hook scripts match latest version
+- **Settings integrity** -- SHA-256 hash matches install-time hash
+- **Commands** -- all 26 commands present
+- **Memory** -- goals.md exists, checkpoints directory exists, git repo initialized
+- **Project** -- CLAUDE.md exists and has no unfilled `{{placeholders}}`
 
 Common fixes:
-- **Node.js not in PATH** → install Node.js ≥16 from nodejs.org
-- **Hook not wired** → re-run `npx azclaude` to upgrade
-- **Stale hooks** → re-run `npx azclaude` (always overwrites with fresh scripts)
-- **Placeholders in CLAUDE.md** → run `/setup` to fill them
-- **Missing commands** → re-run `npx azclaude`
+- **Hook not wired** -> re-run `npx azclaude`
+- **Stale hooks** -> re-run `npx azclaude` (always overwrites)
+- **Placeholders in CLAUDE.md** -> run `/setup`
+- **Missing commands** -> re-run `npx azclaude`
 
 ### Goals.md not injecting at session start
 
-The UserPromptSubmit hook runs once per session (keyed by parent PID). If you're in the same session, it won't re-run. Start a new Claude Code session.
+The UserPromptSubmit hook runs once per session (keyed by parent PID). Start a new Claude Code session.
 
-Check that `.claude/settings.local.json` has the `UserPromptSubmit` hook entry — doctor checks this.
+### Context compacted and lost your place
 
-### PostToolUse not writing to goals.md
-
-goals.md must exist (created by `/setup`). The hook exits silently if goals.md is not found.
-
-If goals.md exists but entries aren't appearing: check that `Write` and `Edit` are in the PostToolUse matcher in `.claude/settings.local.json`.
-
-### /setup didn't detect my domain
-
-The domain detection reads README, package.json, and directory structure. Add domain keywords to your README (e.g., "compliance", "EU AI Act", "clinical", "trading") and re-run `/setup`.
-
-### Context compacted and I lost my place
-
-This is expected. Open a new session — UserPromptSubmit will inject goals.md + latest checkpoint automatically. If you ran `/snapshot` before compaction, Claude has your current reasoning. If not, it has the file trail from PostToolUse.
-
-Next time: run `/snapshot` every 15–20 turns.
+Open a new session -- UserPromptSubmit injects goals.md + latest checkpoint automatically. Run `/snapshot` every 15-20 turns to protect reasoning.
 
 ### Agent keeps making the same mistake
 
-Check `.claude/memory/antipatterns.md` — it may not exist yet (created after first task failure). Agents read it at the start of each task. If it doesn't exist yet, tell the agent directly what the antipattern is — it will append it.
+Check `.claude/memory/antipatterns.md`. Agents read it at the start of each task.
 
 ### /evolve didn't find anything
 
-If you just installed and haven't run many sessions, there's nothing to evolve yet. Run `/evolve` after a week of real use when friction logs and patterns have accumulated.
+Run `/evolve` after a week of real use when friction logs and patterns have accumulated.
 
 ---
-
