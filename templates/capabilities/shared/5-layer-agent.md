@@ -50,6 +50,24 @@ mcpServers: []                  # scope MCP access per agent
 - Use `background: true` for concurrent agents (linting, formatting)
 - Use `isolation: worktree` for risky/experimental work
 
+## Universal Agent Rule: Search Before Reading
+
+Every agent must search before reading files. Never open a file just to check
+if it's relevant — use Grep or Glob first. A single Grep call returns matches
+from the entire codebase in milliseconds. This saves tokens and prevents
+speculative file reads.
+
+```
+Bad:  Read src/auth.js → Read src/users.js → Read src/api.js → "found it in api.js"
+Good: Grep "authenticate" → 3 matches in src/api.js → Read src/api.js
+```
+
+Also check for non-code artifacts before implementing:
+- Database schemas (prisma/, migrations/, schema.sql)
+- API specs (openapi.yaml, swagger.json)
+- Domain knowledge (knowledge/, docs/)
+See `shared/context-artifacts.md` for the full discovery protocol.
+
 ---
 
 ## 5-Layer Body Structure

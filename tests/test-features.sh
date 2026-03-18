@@ -1504,6 +1504,37 @@ check      "reflexes: auto-pruning threshold"              "$ROOT/capabilities/s
 check      "reflexes: last_observed in frontmatter"        "$ROOT/capabilities/shared/reflexes.md" "last_observed.*date\|last_observed:.*2026"
 check      "reflexes: created date tracked"                "$ROOT/capabilities/shared/reflexes.md" "created:.*2026\|created.*date"
 
+# ─── Context artifacts ───────────────────────────────────────────────────────
+echo ""
+echo "─── Context artifacts ───"
+CA="$ROOT/capabilities/shared/context-artifacts.md"
+check_file "context-artifacts: capability exists"        "$CA"
+check      "context-artifacts: DB schemas"               "$CA" "schema.sql\|prisma.*schema\|migrations"
+check      "context-artifacts: API specs"                "$CA" "openapi\|swagger\|proto"
+check      "context-artifacts: infra configs"            "$CA" "terraform\|k8s\|docker-compose"
+check      "context-artifacts: discovery protocol"       "$CA" "Discovery Protocol"
+check      "context-artifacts: copilot integration"      "$CA" "Copilot Mode"
+check      "context-artifacts: anti-patterns"            "$CA" "Anti-Pattern"
+check      "context-artifacts: in manifest"              "$ROOT/capabilities/manifest.md" "context-artifacts"
+
+# ─── Import graph ────────────────────────────────────────────────────────────
+echo ""
+echo "─── Import graph ───"
+IG="templates/scripts/import-graph.sh"
+check_file "import-graph: script exists"                 "$IG"
+check      "import-graph: circular dep detection"        "$IG" "Circular.*dep\|circular"
+check      "import-graph: co-change analysis"            "$IG" "co-change\|Co-change"
+check      "import-graph: multi-language"                "$IG" "TypeScript\|Python\|Go"
+check      "import-graph: zero dependencies"             "$IG" "grep\|Zero depend"
+check      "evolve: runs import graph"                   "$CMD/evolve.md" "import-graph"
+
+# ─── Search before read ─────────────────────────────────────────────────────
+echo ""
+echo "─── Search before read ───"
+check      "agents: search before read rule"             "$ROOT/capabilities/shared/5-layer-agent.md" "Search Before Reading\|search before reading"
+check      "agents: grep before read example"            "$ROOT/capabilities/shared/5-layer-agent.md" "Grep.*matches\|Bad.*Read.*Good.*Grep"
+check      "agents: context artifacts reference"         "$ROOT/capabilities/shared/5-layer-agent.md" "context-artifacts"
+
 # ─── AZROLE sync: v3.9.0 stress test signals ──────────────────────────────────
 echo ""
 echo "─── AZROLE sync ───"

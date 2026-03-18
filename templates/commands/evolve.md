@@ -53,9 +53,22 @@ All cycle work happens here. Environment changes do not touch main until evaluat
 
 ---
 
+## Cycle 0.5: Import Graph Analysis (before detection)
+
+Run the import graph script for structural insight:
+```bash
+bash .claude/scripts/import-graph.sh
+```
+This outputs: most-imported files, circular dependency warnings, co-change clusters.
+Feed these signals into Cycle 1 detection — circular deps are architectural gaps,
+co-change clusters are agent candidates.
+
+---
+
 ## Cycle 1: Detect → Generate → Evaluate
 
 **Step 1**: Read `capabilities/evolution/detect.md` and run DETECT.
+Include import-graph output as input. Circular deps = high-priority gaps.
 Outputs: PLAN (list of gaps, rot types, sequence candidates)
 
 **Step 2**: If PLAN has items → read `capabilities/evolution/generate.md` and run GENERATE.
