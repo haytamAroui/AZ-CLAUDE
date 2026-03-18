@@ -295,17 +295,16 @@ function installCapabilities(projectDir, cfg, full) {
   const dst = path.join(projectDir, cfg, 'capabilities');
 
   if (fs.existsSync(dst)) {
-    // If upgrading to --full, install missing dirs
-    if (full) {
-      for (const dir of FULL_CAP_DIRS) {
-        const dstSub = path.join(dst, dir);
-        if (!fs.existsSync(dstSub)) {
-          copyDir(path.join(src, dir), dstSub);
-          ok(`${dir}/ capabilities added (--full)`);
-        }
+    // Always install missing core dirs (e.g. evolution/ added in v0.1.6)
+    const dirs = full ? FULL_CAP_DIRS : CORE_CAP_DIRS;
+    for (const dir of dirs) {
+      const dstSub = path.join(dst, dir);
+      if (!fs.existsSync(dstSub)) {
+        copyDir(path.join(src, dir), dstSub);
+        ok(`${dir}/ capabilities added`);
       }
     }
-    ok('Capabilities already installed — checked');
+    ok('Capabilities verified — all dirs present');
     return;
   }
 
