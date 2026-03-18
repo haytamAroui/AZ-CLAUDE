@@ -117,50 +117,53 @@ try { fs.writeFileSync(goalsPath, content); } catch (_) {}
 // ── Reflex observation capture (standard/strict only) ───────────────────────
 // Append tool-use observation to observations.jsonl for pattern detection.
 // Lightweight: one JSON line per tool call. Secret patterns scrubbed.
-if (HOOK_PROFILE === 'minimal') { /* skip observations in minimal mode */ } else
-const reflexDir = path.join(cfg, 'memory', 'reflexes');
-try {
-  fs.mkdirSync(reflexDir, { recursive: true });
-  const obsPath = path.join(reflexDir, 'observations.jsonl');
-  const obsTs   = now.toISOString().replace(/\.\d{3}Z$/, 'Z');
-  const tool    = 'Edit'; // PostToolUse matcher is Write|Edit
-  // Scrub secrets: strip API keys, tokens, passwords from file paths
-  const safeRel = rel.replace(/\.(env|key|pem|secret|credential)/gi, '.[REDACTED]');
-  const obs     = JSON.stringify({
-    ts: obsTs, tool, file: safeRel, session: process.ppid || process.pid, event: 'complete'
-  });
-  fs.appendFileSync(obsPath, obs + '\n');
-  // Auto-truncate: keep last 2000 lines max (prevent unbounded growth)
+if (HOOK_PROFILE !== 'minimal') {
+  const reflexDir = path.join(cfg, 'memory', 'reflexes');
   try {
-    const obsContent = fs.readFileSync(obsPath, 'utf8');
-    const obsLines   = obsContent.split('\n').filter(Boolean);
-    if (obsLines.length > 2000) {
-      fs.writeFileSync(obsPath, obsLines.slice(-500).join('\n') + '\n');
-    }
+    fs.mkdirSync(reflexDir, { recursive: true });
+    const obsPath = path.join(reflexDir, 'observations.jsonl');
+    const obsTs   = now.toISOString().replace(/\.\d{3}Z$/, 'Z');
+    const tool    = 'Edit'; // PostToolUse matcher is Write|Edit
+    // Scrub secrets: strip API keys, tokens, passwords from file paths
+    const safeRel = rel.replace(/\.(env|key|pem|secret|credential)/gi, '.[REDACTED]');
+    const obs     = JSON.stringify({
+      ts: obsTs, tool, file: safeRel, session: process.ppid || process.pid, event: 'complete'
+    });
+    fs.appendFileSync(obsPath, obs + '\n');
+    // Auto-truncate: keep last 2000 lines max (prevent unbounded growth)
+    try {
+      const obsContent = fs.readFileSync(obsPath, 'utf8');
+      const obsLines   = obsContent.split('\n').filter(Boolean);
+      if (obsLines.length > 2000) {
+        fs.writeFileSync(obsPath, obsLines.slice(-500).join('\n') + '\n');
+      }
+    } catch (_) {}
   } catch (_) {}
-} catch (_) {}
+}
 
 // ── Cost tracking (standard/strict only) ────────────────────────────────────
 // Append estimated cost per tool call to costs.jsonl for budget awareness.
-if (HOOK_PROFILE !== 'minimal') try {
-  const costsDir = path.join(cfg, 'memory', 'metrics');
-  fs.mkdirSync(costsDir, { recursive: true });
-  const costsPath = path.join(costsDir, 'costs.jsonl');
-  const costEntry = JSON.stringify({
-    ts: now.toISOString().replace(/\.\d{3}Z$/, 'Z'),
-    tool: 'Edit',
-    file: rel,
-    session: process.ppid || process.pid
-  });
-  fs.appendFileSync(costsPath, costEntry + '\n');
-  // Auto-truncate: keep last 1000 entries
+if (HOOK_PROFILE !== 'minimal') {
   try {
-    const costLines = fs.readFileSync(costsPath, 'utf8').split('\n').filter(Boolean);
-    if (costLines.length > 1000) {
-      fs.writeFileSync(costsPath, costLines.slice(-500).join('\n') + '\n');
-    }
+    const costsDir = path.join(cfg, 'memory', 'metrics');
+    fs.mkdirSync(costsDir, { recursive: true });
+    const costsPath = path.join(costsDir, 'costs.jsonl');
+    const costEntry = JSON.stringify({
+      ts: now.toISOString().replace(/\.\d{3}Z$/, 'Z'),
+      tool: 'Edit',
+      file: rel,
+      session: process.ppid || process.pid
+    });
+    fs.appendFileSync(costsPath, costEntry + '\n');
+    // Auto-truncate: keep last 1000 entries
+    try {
+      const costLines = fs.readFileSync(costsPath, 'utf8').split('\n').filter(Boolean);
+      if (costLines.length > 1000) {
+        fs.writeFileSync(costsPath, costLines.slice(-500).join('\n') + '\n');
+      }
+    } catch (_) {}
   } catch (_) {}
-} catch (_) {}
+}
 
 // ── Checkpoint reminder every 15 edits ──────────────────────────────────────
 const counterPath = path.join(os.tmpdir(), `.azclaude-edit-count-${process.ppid || process.pid}`);
