@@ -388,7 +388,7 @@ function installScripts(projectDir, cfg) {
 
 // ─── Agents ───────────────────────────────────────────────────────────────────
 
-const AGENTS = ['orchestrator-init', 'code-reviewer', 'test-writer', 'cc-template-author', 'cc-cli-integrator', 'cc-test-maintainer'];
+const AGENTS = ['orchestrator-init', 'code-reviewer', 'test-writer', 'loop-controller', 'cc-template-author', 'cc-cli-integrator', 'cc-test-maintainer'];
 
 function installAgents(projectDir, cfg) {
   const agentsDir = path.join(projectDir, cfg, 'agents');
