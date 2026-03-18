@@ -7,8 +7,8 @@
 .claude/commands/
 .claude/scripts/
 
-# Session state — local working memory, not for public repo
-.claude/memory/
+# Session state — tracked for copilot (memory IS the product state)
+# .claude/memory/ — NOT ignored, copilot needs goals.md + checkpoints in git
 ops/evolution-log.md
 ops/observations/*.md
 
