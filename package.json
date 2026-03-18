@@ -1,27 +1,28 @@
 {
-  "name": "azclaude",
-  "version": "1.0.0",
-  "description": "The operating system for Claude Code. Memory, auto-tracking, agents, skills, intelligence, evolution — orchestrating Claude Code's native architecture. Zero external dependencies. One command to set up.",
+  "name": "azclaude-copilot",
+  "version": "0.1.0",
+  "description": "Autonomous product builder. Describe once, AZCLAUDE builds it across sessions — planning, implementing, testing, evolving, deploying. Zero human input.",
   "bin": {
-    "azclaude": "./bin/cli.js"
+    "azclaude": "./bin/cli.js",
+    "azclaude-copilot": "./bin/copilot.js"
   },
   "keywords": [
     "claude",
     "claude-code",
     "ai",
+    "autonomous",
+    "copilot",
     "developer-tools",
-    "skills",
     "automation",
-    "context-engineering",
-    "lazy-loading"
+    "context-engineering"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/haytamAroui/AZ-CLAUDE.git"
+    "url": "https://github.com/haytamAroui/AZ-CLAUDE-COPILOT.git"
   },
-  "homepage": "https://github.com/haytamAroui/AZ-CLAUDE#readme",
+  "homepage": "https://github.com/haytamAroui/AZ-CLAUDE-COPILOT#readme",
   "bugs": {
-    "url": "https://github.com/haytamAroui/AZ-CLAUDE/issues"
+    "url": "https://github.com/haytamAroui/AZ-CLAUDE-COPILOT/issues"
   },
   "scripts": {
     "test:node": "node --test tests/node-smoke.test.js"

@@ -9,7 +9,7 @@ const { execSync }  = require('child_process');
 const TEMPLATE_DIR = path.join(__dirname, '..', 'templates');
 const CORE_COMMANDS     = ['setup', 'fix', 'add', 'review', 'test', 'plan', 'ship', 'status', 'explain', 'checkpoint', 'persist'];
 const EXTENDED_COMMANDS = ['dream', 'refactor', 'doc', 'loop', 'migrate', 'deps', 'find', 'create', 'reflect', 'hookify'];
-const ADVANCED_COMMANDS = ['evolve', 'debate', 'level-up'];
+const ADVANCED_COMMANDS = ['evolve', 'debate', 'level-up', 'copilot'];
 const COMMANDS          = [...CORE_COMMANDS, ...EXTENDED_COMMANDS, ...ADVANCED_COMMANDS];
 
 function ok(msg)   { console.log(`  ✓ ${msg}`); }
@@ -819,6 +819,14 @@ function copyDir(src, dst) {
 
 if (process.argv[2] === 'doctor') { runDoctor(); process.exit(0); }
 if (process.argv[2] === 'demo')   { runDemo();   process.exit(0); }
+if (process.argv[2] === 'copilot') {
+  // Delegate to copilot runner
+  const copilotScript = path.join(__dirname, 'copilot.js');
+  const copilotArgs = process.argv.slice(3);
+  const { spawnSync } = require('child_process');
+  const result = spawnSync(process.execPath, [copilotScript, ...copilotArgs], { stdio: 'inherit' });
+  process.exit(result.status || 0);
+}
 
 const fullInstall = process.argv.includes('--full');
 const projectDir  = process.cwd();

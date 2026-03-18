@@ -20,6 +20,7 @@ Load only the files that match the current task. Never load the full list.
 | shared/native-tools.md | Writing or improving a skill — which Claude Code tools to use and when | ~200 |
 | shared/review-reception.md | Receiving review feedback — before responding, implementing, or pushing back | ~80 |
 | shared/pressure-test.md | Writing a new enforcement skill, or an existing skill keeps getting bypassed | ~120 |
+| shared/plan-tracker.md | Reading/writing plan.md, updating milestone status, copilot mode | ~200 |
 
 ## Level Builders — load ONE at a time
 | File | When to load | Tokens |

@@ -999,7 +999,7 @@ check_file "install: agent-creator scaffold script"      "$IDIR/.claude/skills/a
 check_file "install: agent-creator references"           "$IDIR/.claude/skills/agent-creator/references/agent-engineering-guide.md"
 check_file "install: agent-creator examples"             "$IDIR/.claude/skills/agent-creator/examples/sample-agent.md"
 INSTALLED=$(ls "$IDIR/.claude/commands/" | wc -l | tr -d ' ')
-EXPECTED_CMDS=24
+EXPECTED_CMDS=25
 if [ "$INSTALLED" -eq "$EXPECTED_CMDS" ]; then
   echo "  ✓ install: all $EXPECTED_CMDS commands present"
   PASS=$((PASS + 1))
@@ -1295,6 +1295,61 @@ check      "create: generates frontmatter template"      "$CRT" "disable-model-i
 check      "create: requires 5+ trigger phrases"         "$CRT" "5.*trigger\|trigger phrases"
 check      "create: generates test cases"                "$CRT" "Test Cases\|evals"
 check      "create: completion rule required"            "$CRT" "Completion Rule\|completion rule"
+
+# ─── /copilot command ─────────────────────────────────────────────────────────
+echo ""
+echo "─── /copilot ───"
+COPILOT="$CMD/copilot.md"
+check_file "copilot: command file exists"              "$COPILOT"
+check      "copilot: reads plan.md"                    "$COPILOT" "plan\.md"
+check      "copilot: reads copilot-intent.md"          "$COPILOT" "copilot-intent"
+check      "copilot: decision logic"                   "$COPILOT" "No plan\|No CLAUDE"
+check      "copilot: per-milestone protocol"           "$COPILOT" "Per Milestone\|milestone"
+check      "copilot: COPILOT_COMPLETE signal"          "$COPILOT" "COPILOT_COMPLETE"
+check      "copilot: blockers.md logging"              "$COPILOT" "blockers\.md"
+check      "copilot: evolution every 3 milestones"     "$COPILOT" "3 milestones\|Every 3"
+check      "copilot: references /dream /plan /evolve"  "$COPILOT" "/dream\|/plan\|/evolve\|/review\|/ship"
+check      "copilot: no permission asking"             "$COPILOT" "Do NOT ask for permission"
+check      "copilot: copilot-report.md generation"     "$COPILOT" "copilot-report"
+check      "copilot: checkpoint after milestone"       "$COPILOT" "/checkpoint"
+
+# ─── copilot.js runner ──────────────────────────────────────────────────────
+echo ""
+echo "─── copilot.js runner ───"
+RUNNER="bin/copilot.js"
+check_file "runner: copilot.js exists"                 "$RUNNER"
+check      "runner: reads copilot-intent.md"           "$RUNNER" "copilot-intent"
+check      "runner: checks COPILOT_COMPLETE"           "$RUNNER" "COPILOT_COMPLETE"
+check      "runner: max sessions limit"                "$RUNNER" "maxSessions\|MAX_SESSIONS"
+check      "runner: spawns claude CLI"                 "$RUNNER" "spawnSync.*claude\|claude.*-p"
+check      "runner: session timeout"                   "$RUNNER" "timeout\|ETIMEDOUT"
+check      "runner: checks plan.md status"             "$RUNNER" "plan\.md"
+check      "runner: all-blocked detection"             "$RUNNER" "allBlocked\|ALL MILESTONES BLOCKED"
+check      "runner: node.js not bash"                  "$RUNNER" "#!/usr/bin/env node"
+
+# ─── plan-tracker capability ────────────────────────────────────────────────
+echo ""
+echo "─── plan-tracker ───"
+PT2="$ROOT/capabilities/shared/plan-tracker.md"
+check_file "plan-tracker: capability exists"           "$PT2"
+check      "plan-tracker: milestone status values"     "$PT2" "pending\|in-progress\|done\|blocked"
+check      "plan-tracker: dependency rules"            "$PT2" "Depends\|dependency\|dependencies"
+check      "plan-tracker: finding next milestone"      "$PT2" "next milestone\|Next Milestone"
+check      "plan-tracker: plan.md format"              "$PT2" "plan\.md\|## Milestones"
+check      "plan-tracker: in manifest"                 "templates/capabilities/manifest.md" "plan-tracker"
+
+# ─── /plan copilot mode ─────────────────────────────────────────────────────
+echo ""
+echo "─── /plan copilot mode ───"
+check      "plan: copilot mode section"                "$CMD/plan.md" "Copilot Mode"
+check      "plan: writes to plan.md"                   "$CMD/plan.md" "plan\.md.*structured\|Write.*plan.*plan\.md"
+check      "plan: references plan-tracker"             "$CMD/plan.md" "plan-tracker"
+
+# ─── CLI copilot routing ────────────────────────────────────────────────────
+echo ""
+echo "─── CLI copilot routing ───"
+check      "cli: copilot in ADVANCED_COMMANDS"         "bin/cli.js" "copilot"
+check      "cli: routes copilot to copilot.js"         "bin/cli.js" "copilot\.js"
 
 # ─── AZROLE sync: v3.9.0 stress test signals ──────────────────────────────────
 echo ""

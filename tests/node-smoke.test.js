@@ -68,7 +68,7 @@ test('all skill directories have SKILL.md', () => {
 
 test('package.json is valid and has required fields', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
-  assert.strictEqual(pkg.name, 'azclaude');
+  assert.ok(pkg.name.startsWith('azclaude'), `package name starts with azclaude: ${pkg.name}`);
   assert.ok(pkg.bin.azclaude, 'bin entry exists');
   assert.ok(pkg.engines.node, 'engines.node specified');
   assert.ok(pkg.files.includes('bin/'), 'bin/ in files');

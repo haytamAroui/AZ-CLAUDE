@@ -93,8 +93,23 @@ Tasks are only created after explicit approval. This is the point of /plan.
 
 ---
 
+## Copilot Mode — Structured plan.md Output
+
+When running inside `/copilot` (detected by: `.claude/copilot-intent.md` exists):
+- Skip the approval gate (Step 4) — copilot operates autonomously
+- Write the plan to `.claude/plan.md` in the structured format defined in `plan-tracker.md`
+- Read `.claude/capabilities/shared/plan-tracker.md` for the exact format
+- Each milestone = one logical unit of work (1-3 files, one commit)
+- Include `Depends:` for milestones that require prior work
+- Include `Files:` with expected paths
+- Include `Commit:` with conventional commit format
+- Write `## Summary` with counts at the bottom
+- After writing plan.md, return control to /copilot
+
+---
+
 ## Completion Rule
 
 Show: the plan with `file:line` references + risk level.
 Show: tasks created (only after approval).
-Do not write any code during /plan — ever.
+Do not write any code during /plan — ever (unless in copilot mode, where plan.md is the output).
