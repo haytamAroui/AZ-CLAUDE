@@ -1602,6 +1602,8 @@ check      "copilot: auto-install AZCLAUDE"              "bin/copilot.js" "needs
 check      "copilot: runs cli.js installer"              "bin/copilot.js" "cli\.js.*projectDir\|node.*cliPath"
 check      "copilot: setup subcommand"                   "bin/copilot.js" "SUBCOMMANDS.*setup\|setup.*init.*install"
 check      "copilot: doctor subcommand"                  "bin/copilot.js" "doctor.*--doctor\|SUBCOMMANDS.*doctor"
+check      "copilot: -p mode slash cmd warning"          "bin/copilot.js" "Slash commands.*don.*work in -p mode\|non-interactive"
+check      "copilot: read command files instead"         "bin/copilot.js" "read.*\.claude/commands/.*\.md"
 check      "copilot: state-aware prompt"                 "bin/copilot.js" "Plan progress.*done.*blocked\|milestone.*progress"
 check      "copilot: blocker awareness"                  "bin/copilot.js" "blockers.md\|blocked.*retry"
 check      "copilot: evolve trigger hint"                "bin/copilot.js" "evolve\|reflexes"

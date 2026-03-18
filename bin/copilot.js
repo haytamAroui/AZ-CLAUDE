@@ -169,7 +169,11 @@ for (let session = 1; session <= maxSessions; session++) {
   console.log(`\n── Session ${session}/${maxSessions} ${elapsed > 0 ? `(${elapsed}min elapsed)` : ''} ──`);
 
   // Build state-aware prompt
-  let prompt = 'You are in AZCLAUDE Copilot mode. Run /copilot to continue autonomous building.';
+  // IMPORTANT: In -p mode, slash commands (/setup, /copilot) don't work.
+  // Tell Claude to read and follow the command .md files directly.
+  let prompt = 'You are in AZCLAUDE Copilot mode. You are running in non-interactive mode (-p flag).';
+  prompt += '\n\nIMPORTANT: Slash commands like /setup do NOT work in -p mode. Instead, read the command file and follow its instructions. For example, to run /copilot: read .claude/commands/copilot.md and follow it. To run /setup: read .claude/commands/setup.md and follow it.';
+  prompt += '\n\nRead .claude/commands/copilot.md now and follow it to continue autonomous building.';
   prompt += `\n\nOriginal intent: ${intent}`;
   prompt += `\n\nSession ${session}/${maxSessions}.`;
 
@@ -184,13 +188,13 @@ for (let session = 1; session <= maxSessions; session++) {
       const total = statuses.length;
       prompt += `\n\nPlan progress: ${done}/${total} done, ${blocked} blocked, ${pending} remaining.`;
       if (blocked > 0) prompt += ' Check blockers.md — retry blocked milestones if new context helps.';
-      if (done > 0 && done % 3 === 0) prompt += ' 3+ milestones since last /evolve — run /reflexes analyze + /evolve.';
-      if (pending === 0 && blocked === 0) prompt += ' All milestones done — run /audit then /ship.';
+      if (done > 0 && done % 3 === 0) prompt += ' 3+ milestones since last /evolve — read .claude/commands/reflexes.md then .claude/commands/evolve.md.';
+      if (pending === 0 && blocked === 0) prompt += ' All milestones done — read .claude/commands/audit.md then .claude/commands/ship.md.';
     } else {
       prompt += '\n\nPlan exists but plan.md not found. Read .claude/plan.md for status.';
     }
   } else {
-    prompt += '\n\nNo plan yet. Start with /setup then /blueprint to create milestones.';
+    prompt += '\n\nNo plan yet. Read .claude/commands/setup.md and follow it, then read .claude/commands/blueprint.md to create milestones.';
   }
 
   // Run Claude Code session
