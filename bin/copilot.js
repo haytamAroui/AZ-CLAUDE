@@ -87,11 +87,23 @@ if (intentArg) {
 const intent = fs.existsSync(intentPath) ? fs.readFileSync(intentPath, 'utf8').trim() : '(resuming)';
 const resuming = fs.existsSync(planPath);
 
+// ── Security: verify project directory is safe ──────────────────────────────
+const resolvedProject = path.resolve(projectDir);
+const homeDir = require('os').homedir();
+if (resolvedProject === homeDir || resolvedProject === '/' || resolvedProject === 'C:\\') {
+  console.error('  Error: refusing to run copilot on home directory or root. Use a project subdirectory.');
+  process.exit(1);
+}
+
 console.log('\n════════════════════════════════════════════════');
 console.log('  AZCLAUDE COPILOT — Autonomous Mode');
 console.log(`  Project:      ${projectDir}`);
 console.log(`  Max sessions: ${maxSessions}`);
-console.log(`  Mode:         ${resuming ? 'RESUME (plan.md exists)' : 'NEW (will run /plan)'}`);
+console.log(`  Mode:         ${resuming ? 'RESUME (plan.md exists)' : 'NEW (will run /blueprint)'}`);
+console.log('');
+console.log('  ⚠  Uses --dangerously-skip-permissions');
+console.log('  ⚠  Claude has full access to this directory');
+console.log('  ⚠  See SECURITY.md for mitigations');
 console.log('════════════════════════════════════════════════');
 console.log(`\n  Intent: ${intent.slice(0, 120)}${intent.length > 120 ? '...' : ''}\n`);
 

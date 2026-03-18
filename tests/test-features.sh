@@ -1545,6 +1545,19 @@ check "orchestrator: co_change field"                 "$ORCH" "co_change_data"
 check "orchestrator: confidence scoring"              "$ORCH" "confidence.*low"
 check "orchestrator: compliance traceability"          "$ORCH" "article-level traceability"
 
+# ─── Security ────────────────────────────────────────────────────────────────
+echo ""
+echo "─── Security ───"
+check_file "security: SECURITY.md exists"               "SECURITY.md"
+check      "security: responsible disclosure"            "SECURITY.md" "Do NOT open a public issue"
+check      "security: 6 layers documented"               "SECURITY.md" "Hook integrity\|integrity"
+check      "security: dangerously-skip-permissions doc"  "SECURITY.md" "dangerously-skip-permissions"
+check      "security: API key handling documented"       "SECURITY.md" "ANTHROPIC_API_KEY\|API key"
+check      "security: hook profiles documented"          "SECURITY.md" "HOOK_PROFILE\|hook profile"
+check      "security: known limitations"                 "SECURITY.md" "Known Limitations"
+check      "copilot: refuses home directory"             "bin/copilot.js" "refusing to run.*home\|homedir"
+check      "copilot: security warning banner"            "bin/copilot.js" "dangerously-skip-permissions\|SECURITY.md"
+
 echo ""
 echo "════════════════════════════════════════════════════"
 TOTAL=$((PASS + FAIL))
