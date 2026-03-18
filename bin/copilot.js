@@ -130,14 +130,29 @@ for (let session = 1; session <= maxSessions; session++) {
     : 0;
   console.log(`\n── Session ${session}/${maxSessions} ${elapsed > 0 ? `(${elapsed}min elapsed)` : ''} ──`);
 
-  // Build the prompt
+  // Build state-aware prompt
   let prompt = 'You are in AZCLAUDE Copilot mode. Run /copilot to continue autonomous building.';
   prompt += `\n\nOriginal intent: ${intent}`;
+  prompt += `\n\nSession ${session}/${maxSessions}.`;
 
   if (resuming || session > 1) {
-    prompt += '\n\nPlan exists. Read .claude/plan.md for milestone status.';
+    // Parse plan.md for milestone progress
+    if (fs.existsSync(planPath)) {
+      const planContent = fs.readFileSync(planPath, 'utf8');
+      const statuses = [...planContent.matchAll(/^- Status: (\w+)/gm)].map(m => m[1]);
+      const done = statuses.filter(s => s === 'done').length;
+      const blocked = statuses.filter(s => s === 'blocked').length;
+      const pending = statuses.filter(s => s === 'pending' || s === 'in-progress').length;
+      const total = statuses.length;
+      prompt += `\n\nPlan progress: ${done}/${total} done, ${blocked} blocked, ${pending} remaining.`;
+      if (blocked > 0) prompt += ' Check blockers.md — retry blocked milestones if new context helps.';
+      if (done > 0 && done % 3 === 0) prompt += ' 3+ milestones since last /evolve — run /reflexes analyze + /evolve.';
+      if (pending === 0 && blocked === 0) prompt += ' All milestones done — run /audit then /ship.';
+    } else {
+      prompt += '\n\nPlan exists but plan.md not found. Read .claude/plan.md for status.';
+    }
   } else {
-    prompt += '\n\nNo plan yet. Start with /setup then /plan to create milestones.';
+    prompt += '\n\nNo plan yet. Start with /setup then /blueprint to create milestones.';
   }
 
   // Run Claude Code session

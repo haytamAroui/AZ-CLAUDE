@@ -20,16 +20,25 @@ Load: capabilities/shared/reflexes.md
 
 ## Subcommand: status (default)
 
-Show all learned reflexes with confidence scores.
+Show all learned reflexes with confidence scores + observation health.
 
 ```bash
-# Count observations
-wc -l .claude/memory/reflexes/observations.jsonl 2>/dev/null || echo "0 observations"
+# Observation health
+OBS_FILE=".claude/memory/reflexes/observations.jsonl"
+if [ -f "$OBS_FILE" ]; then
+  OBS_COUNT=$(wc -l < "$OBS_FILE" 2>/dev/null | tr -d ' ')
+  LATEST=$(tail -1 "$OBS_FILE" 2>/dev/null | grep -o '"ts":"[^"]*"' | head -1)
+  echo "Observations: $OBS_COUNT total, latest: $LATEST"
+  # Check capture recency (warn if > 24h since last observation)
+  echo "Health: $([ "$OBS_COUNT" -gt 10 ] && echo 'good' || echo 'low — hooks may not be capturing')"
+else
+  echo "Observations: none — hooks not capturing yet"
+fi
 
-# List project reflexes
+# Count project reflexes
 ls .claude/memory/reflexes/project/*.md 2>/dev/null || echo "No project reflexes yet"
 
-# List global reflexes
+# Count global reflexes
 ls .claude/memory/reflexes/global/*.md 2>/dev/null || echo "No global reflexes yet"
 ```
 

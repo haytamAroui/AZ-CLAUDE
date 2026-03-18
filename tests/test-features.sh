@@ -1595,6 +1595,28 @@ check      "boundaries: JSON report output"             "$VB" "boundaries.json"
 check      "boundaries: timestamp in report"             "$VB" "timestamp"
 check      "boundaries: install-time check"              "bin/cli.js" "postInstallValidator\|Post-install boundary"
 
+# ─── State-aware copilot prompt ──────────────────────────────────────────────
+echo ""
+echo "─── State-aware copilot ───"
+check      "copilot: state-aware prompt"                 "bin/copilot.js" "Plan progress.*done.*blocked\|milestone.*progress"
+check      "copilot: blocker awareness"                  "bin/copilot.js" "blockers.md\|blocked.*retry"
+check      "copilot: evolve trigger hint"                "bin/copilot.js" "evolve\|reflexes"
+check      "copilot: all-done detection"                 "bin/copilot.js" "All milestones done\|audit.*ship"
+
+# ─── Pulse health snapshot ───────────────────────────────────────────────────
+echo ""
+echo "─── Pulse health snapshot ───"
+check      "pulse: intelligence health section"          "$CMD/pulse.md" "Intelligence Health"
+check      "pulse: copilot status"                       "$CMD/pulse.md" "Copilot.*plan.md\|plan.md.*exists"
+check      "pulse: reflex health"                        "$CMD/pulse.md" "Reflex.*health\|observations"
+check      "pulse: boundary health"                      "$CMD/pulse.md" "Boundary.*health\|boundaries.json"
+check      "pulse: blocker count"                        "$CMD/pulse.md" "Blocker.*count\|blockers.md"
+
+# ─── Reflex observation health ───────────────────────────────────────────────
+echo ""
+echo "─── Reflex observation health ───"
+check      "reflexes: observation health in status"      "$CMD/reflexes.md" "Observation health\|observation health\|Health.*good\|hooks.*capturing"
+
 echo ""
 echo "════════════════════════════════════════════════════"
 TOTAL=$((PASS + FAIL))

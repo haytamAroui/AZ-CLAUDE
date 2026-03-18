@@ -55,7 +55,32 @@ One line: "Environment: Level N / 7"
 
 ---
 
-## 4. Next Steps
+## 4. Intelligence Health
+
+Quick check on the learning and boundary systems:
+
+```bash
+# Copilot status
+[ -f .claude/plan.md ] && echo "Copilot: plan.md exists" && grep -c "Status:" .claude/plan.md 2>/dev/null | xargs -I{} echo "  {} milestones" || echo "Copilot: no plan"
+
+# Reflex health
+OBS=".claude/memory/reflexes/observations.jsonl"
+[ -f "$OBS" ] && echo "Reflexes: $(wc -l < "$OBS" | tr -d ' ') observations" || echo "Reflexes: no observations"
+ls .claude/memory/reflexes/project/*.md 2>/dev/null | wc -l | xargs -I{} echo "  {} project reflexes"
+
+# Boundary health
+[ -f .claude/memory/metrics/boundaries.json ] && echo "Boundaries: $(cat .claude/memory/metrics/boundaries.json 2>/dev/null | grep -o '"warn":[0-9]*' | head -1)" || echo "Boundaries: not scanned"
+
+# Blocker count
+[ -f .claude/memory/blockers.md ] && echo "Blockers: $(grep -c "^###" .claude/memory/blockers.md 2>/dev/null || echo 0)" || echo "Blockers: none"
+
+# Evolution history
+[ -f ops/evolution-log.md ] && echo "Evolve: $(tail -1 ops/evolution-log.md 2>/dev/null | cut -d'|' -f2 | tr -d ' ')" || echo "Evolve: never run"
+```
+
+---
+
+## 5. Next Steps
 Based on what you see — suggest 2-3 things to work on next.
 Be specific. Not "improve the code" — "fix the failing test in auth.test.js:47".
 
