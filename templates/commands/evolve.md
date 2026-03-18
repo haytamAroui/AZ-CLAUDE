@@ -32,13 +32,15 @@ If $ARGUMENTS is blank or "full": run all cycles below.
 ls .claude/agents/loop-controller.md 2>/dev/null
 ```
 
-**If loop-controller.md exists**: delegate ALL evolution work to it via Agent tool:
+**If loop-controller.md exists**: delegate evolution work to it via Agent tool:
 ```
 Run a full evolution cycle: re-derivation check, then Cycle 1 (detect/generate/evaluate),
 Cycle 2 (knowledge consolidation if 3+ sessions), Cycle 3 (topology if friction detected).
 Show the full cycle report when done.
 ```
-**STOP HERE** — do not run the steps below.
+**After loop-controller finishes**: continue to Step 7 (Generate Project-Specific Skills and Agents).
+The loop-controller handles gap detection and code fixes, but skill/agent generation requires
+reading level-builders which the loop-controller does not do.
 
 ---
 

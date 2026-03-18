@@ -287,7 +287,7 @@ function installGlobalHooks(cli) {
 // ─── Capabilities ─────────────────────────────────────────────────────────────
 
 // Core capability dirs installed by default; advanced dirs only with --full
-const CORE_CAP_DIRS  = ['shared', 'level-builders'];
+const CORE_CAP_DIRS  = ['shared', 'level-builders', 'evolution'];
 const FULL_CAP_DIRS  = ['shared', 'level-builders', 'evolution', 'intelligence'];
 
 function installCapabilities(projectDir, cfg, full) {
@@ -317,7 +317,7 @@ function installCapabilities(projectDir, cfg, full) {
     copyDir(path.join(src, dir), path.join(dst, dir));
   }
   ok(`Capabilities installed (${cfg}/capabilities/) — ${full ? 'full' : 'core'}`);
-  if (!full) info('Run npx azclaude --full to add evolution + intelligence capabilities');
+  if (!full) info('Run npx azclaude --full to add intelligence capabilities (debate, pipeline, ELO)');
   info('manifest.md is your capability index — read it to find what to load');
 }
 
