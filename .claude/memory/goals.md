@@ -9,6 +9,29 @@ Updated: 2026-03-18
 - ROADMAP.md: 5-phase plan for autonomous product builder
 
 ## Done this session
+- 07:59 — tests\test-features.sh (+22/-0)
+- 07:58 — templates\commands\pulse.md (+26/-1) — 4. Intelligence Health
+- 07:58 — templates\commands\reflexes.md (+15/-6) — Subcommand: status (default)
+- 07:57 — bin\copilot.js (+18/-3) — // Build state-aware prompt
+- 07:48 — bin\copilot.js (+1/-1) — console.log('  Session timed out (30 min). Restarting...');
+- 07:43 — tests\test-features.sh (+3/-0)
+- 07:43 — bin\cli.js (+15/-0)
+- 07:43 — templates\scripts\validate-boundaries.sh (+31/-0) — ── Machine-readable output (last line, always) ─────────────
+- 07:32 — tests\test-features.sh (+15/-0) — check      "semantic: REDUNDANT classification"           "$
+- 07:30 — templates\commands\evolve.md (+6/-0) — Cycle 3: Topology (if /level-up or topology friction detecte
+- 07:30 — templates\capabilities\manifest.md (+1/-0)
+- 07:30 — templates\capabilities\shared\semantic-boundary-check.md
+- 07:20 — tests\test-features.sh (+3/-0)
+- 07:20 — bin\cli.js (+18/-12) — // 8. Boundary Health (no overlaps, no orphans, manifest com
+- 07:20 — templates\scripts\validate-boundaries.sh (+9/-0) — ── Summary ─────────────────────────────────────────────────
+- 07:13 — tests\test-features.sh (+12/-0)
+- 07:13 — bin\cli.js (+20/-0) — scores['Evolution Readiness'] = Math.min(evoScore, 10);
+- 07:12 — templates\commands\evolve.md (+12/-5) — Cycle 0.5: Structural Analysis (before detection)
+- 07:12 — templates\scripts\validate-boundaries.sh
+- 07:10 — .claude\memory\decisions.md
+- 07:06 — DOCS.md (+575/-617)
+- 07:00 — README.md (+296/-210)
+- 06:44 — bin\copilot.js (+1/-1) — timeout: 1800000, // 30 minutes per session (large milestone
 - 06:42 — .claude\memory\checkpoints\2026-03-18-06-40.md
 - 06:38 — templates\hooks\post-tool-use.js (+40/-37) — // ── Cost tracking (standard/strict only) ─────────────────
 - 06:30 — bin\cli.js (+1/-1)
@@ -104,4 +127,4 @@ Updated: 2026-03-18
 - None
 
 ## In progress
-- 06:44 — bin\copilot.js (+1/-1) — timeout: 1800000, // 30 minutes per session (large milestone
+- 08:02 — templates\hooks\post-tool-use.js (+1/-1)
