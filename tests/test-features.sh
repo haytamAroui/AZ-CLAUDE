@@ -1571,8 +1571,11 @@ check      "boundaries: manifest completeness"           "$VB" "Manifest complet
 check      "boundaries: overlap detection"               "$VB" "overlap\|Overlap"
 check      "boundaries: orphan detection"                "$VB" "Orphan\|orphan"
 check      "boundaries: collision check"                 "$VB" "collision\|Collision\|BUILTINS"
+check      "boundaries: machine-readable output"        "$VB" "BOUNDARY_RESULT:pass=.*:warn="
+check      "boundaries: structured exit code"            "$VB" "exit.*WARN"
 check      "boundaries: wired into evolve"               "$CMD/evolve.md" "validate-boundaries"
 check      "audit: scores boundary health"               "bin/cli.js" "Boundary Health"
+check      "audit: parses BOUNDARY_RESULT"              "bin/cli.js" "BOUNDARY_RESULT"
 
 echo ""
 echo "════════════════════════════════════════════════════"

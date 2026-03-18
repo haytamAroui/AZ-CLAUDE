@@ -138,3 +138,12 @@ echo "### Summary: $PASS passed, $WARN warnings"
 if [ "$WARN" -gt 0 ]; then
   echo "  Run /evolve to auto-fix overlaps and orphans"
 fi
+
+# ── Machine-readable output (last line, always) ─────────────────────────────
+# Format: BOUNDARY_RESULT:pass=N:warn=N
+# Parsed by doctor --audit instead of counting ⚠ symbols
+echo ""
+echo "BOUNDARY_RESULT:pass=$PASS:warn=$WARN"
+
+# Exit code: 0 if no warnings, 1 if warnings found
+exit $( [ "$WARN" -eq 0 ] && echo 0 || echo 1 )

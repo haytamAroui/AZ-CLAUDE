@@ -377,13 +377,14 @@ function installScripts(projectDir, cfg) {
   if (!fs.existsSync(src)) return;
   fs.mkdirSync(dst, { recursive: true });
   for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    if (entry.isDirectory()) continue;
+    const s = path.join(src, entry.name);
     const d = path.join(dst, entry.name);
-    if (!fs.existsSync(d)) {
-      fs.copyFileSync(path.join(src, entry.name), d);
-      try { fs.chmodSync(d, '755'); } catch {}
-    }
+    // Always overwrite scripts to keep in sync (unlike commands which preserve user edits)
+    fs.copyFileSync(s, d);
+    try { fs.chmodSync(d, '755'); } catch {}
   }
-  ok(`Scripts installed (${cfg}/scripts/) — env-scan.sh outputs JSON, not 15 tool calls`);
+  ok(`Scripts installed/updated (${cfg}/scripts/)`);
 }
 
 // ─── Agents ───────────────────────────────────────────────────────────────────
@@ -684,15 +685,20 @@ function runAudit() {
   if (fs.existsSync(validateScript)) {
     boundScore += 3;
     try {
-      const { spawnSync } = require('child_process');
       const vr = spawnSync('bash', [validateScript, path.join(projectDir, cfg)],
         { encoding: 'utf8', cwd: projectDir, timeout: 10000 });
-      if (vr.status === 0 && vr.stdout) {
-        const warns = (vr.stdout.match(/⚠/g) || []).length;
-        if (warns === 0) boundScore += 7;
-        else if (warns <= 2) boundScore += 4;
-        else boundScore += 1;
-        if (warns > 0) console.log(`  Boundary warnings: ${warns}`);
+      if (vr.stdout) {
+        // Parse machine-readable output: BOUNDARY_RESULT:pass=N:warn=N
+        const resultMatch = vr.stdout.match(/BOUNDARY_RESULT:pass=(\d+):warn=(\d+)/);
+        if (resultMatch) {
+          const warns = parseInt(resultMatch[2], 10);
+          if (warns === 0) boundScore += 7;
+          else if (warns <= 2) boundScore += 4;
+          else boundScore += 1;
+          if (warns > 0) console.log(`  Boundary warnings: ${warns}`);
+        } else {
+          boundScore += 2; // script ran but no parseable output
+        }
       }
     } catch (_) { boundScore += 2; }
   }
