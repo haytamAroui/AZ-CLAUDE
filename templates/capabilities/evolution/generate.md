@@ -44,8 +44,16 @@ Sparse documentation is a signal, not a gap to fill with code.
 
 ### Step 3: Generate the File
 
-Write the capability file following the architecture rules:
-- ≤ 150 lines
+**If generating a skill/command**: read `capabilities/level-builders/level3-skills.md` first.
+Follow the Pushy Description Rule (10+ trigger scenarios), RECIPE pattern (steps not docs),
+and CE 2.0 Self-Correction layers. Skills go in `.claude/commands/{name}.md`.
+
+**If generating an agent**: read `capabilities/level-builders/level5-agents.md` first.
+Follow the 5-layer structure (Persona, Scope, Tools, Constraints, Domain Context).
+Use co-change analysis for scope boundaries. Agents go in `.claude/agents/cc-{name}.md`.
+
+**For all capability files** — follow these architecture rules:
+- ≤ 150 lines (overflow goes to references/ subdir)
 - YAML frontmatter required (name, description, tokens estimate)
 - One capability per file — if it's growing beyond 150 lines, split it
 - No file reads another file by default — explicit pointers only
