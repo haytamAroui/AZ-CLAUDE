@@ -154,7 +154,7 @@ for (let session = 1; session <= maxSessions; session++) {
   if (result.error) {
     console.error(`  Session ${session} error: ${result.error.message}`);
     if (result.error.code === 'ETIMEDOUT') {
-      console.log('  Session timed out (10 min). Restarting...');
+      console.log('  Session timed out (30 min). Restarting...');
       continue;
     }
   }
