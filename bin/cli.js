@@ -678,6 +678,26 @@ function runAudit() {
   if (fs.existsSync(path.join(projectDir, 'ops', 'evolution-log.md'))) evoScore += 2;
   scores['Evolution Readiness'] = Math.min(evoScore, 10);
 
+  // 8. Boundary Health (no overlaps, no orphans, manifest complete)
+  let boundScore = 0;
+  const validateScript = path.join(projectDir, cfg, 'scripts', 'validate-boundaries.sh');
+  if (fs.existsSync(validateScript)) {
+    boundScore += 3;
+    try {
+      const { spawnSync } = require('child_process');
+      const vr = spawnSync('bash', [validateScript, path.join(projectDir, cfg)],
+        { encoding: 'utf8', cwd: projectDir, timeout: 10000 });
+      if (vr.status === 0 && vr.stdout) {
+        const warns = (vr.stdout.match(/⚠/g) || []).length;
+        if (warns === 0) boundScore += 7;
+        else if (warns <= 2) boundScore += 4;
+        else boundScore += 1;
+        if (warns > 0) console.log(`  Boundary warnings: ${warns}`);
+      }
+    } catch (_) { boundScore += 2; }
+  }
+  scores['Boundary Health'] = Math.min(boundScore, 10);
+
   // Output scores
   let total = 0;
   for (const [cat, score] of Object.entries(scores)) {

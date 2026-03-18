@@ -53,15 +53,22 @@ All cycle work happens here. Environment changes do not touch main until evaluat
 
 ---
 
-## Cycle 0.5: Import Graph Analysis (before detection)
+## Cycle 0.5: Structural Analysis (before detection)
 
-Run the import graph script for structural insight:
+Run both analysis scripts for structural insight:
 ```bash
 bash .claude/scripts/import-graph.sh
+bash .claude/scripts/validate-boundaries.sh
 ```
-This outputs: most-imported files, circular dependency warnings, co-change clusters.
-Feed these signals into Cycle 1 detection — circular deps are architectural gaps,
-co-change clusters are agent candidates.
+
+**import-graph.sh** outputs: most-imported files, circular dependency warnings, co-change clusters.
+**validate-boundaries.sh** outputs: manifest completeness, description overlap between extensions, orphaned agents, Claude Code collision check.
+
+Feed these signals into Cycle 1 detection:
+- Circular deps → architectural gaps
+- Co-change clusters → agent candidates
+- Description overlap → merge or split extensions
+- Orphaned agents → remove or wire into commands
 
 ---
 

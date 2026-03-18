@@ -1562,6 +1562,18 @@ check      "copilot: session limit hint"                 "bin/copilot.js" "Reduc
 check      "copilot: session elapsed time"               "bin/copilot.js" "elapsed\|totalMin"
 check      "copilot: total time on complete"             "bin/copilot.js" "Total time"
 
+# ─── Boundary validation ─────────────────────────────────────────────────────
+echo ""
+echo "─── Boundary validation ───"
+VB="templates/scripts/validate-boundaries.sh"
+check_file "boundaries: script exists"                   "$VB"
+check      "boundaries: manifest completeness"           "$VB" "Manifest completeness\|manifest.md"
+check      "boundaries: overlap detection"               "$VB" "overlap\|Overlap"
+check      "boundaries: orphan detection"                "$VB" "Orphan\|orphan"
+check      "boundaries: collision check"                 "$VB" "collision\|Collision\|BUILTINS"
+check      "boundaries: wired into evolve"               "$CMD/evolve.md" "validate-boundaries"
+check      "audit: scores boundary health"               "bin/cli.js" "Boundary Health"
+
 echo ""
 echo "════════════════════════════════════════════════════"
 TOTAL=$((PASS + FAIL))
