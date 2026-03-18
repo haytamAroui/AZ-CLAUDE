@@ -1102,6 +1102,14 @@ check      "add: competing approaches"              "templates/commands/add.md" 
 check      "tdd: orchestrator checks test files"     "templates/agents/orchestrator-init.md" "test files.*exist\|test files already"
 check      "tdd: orchestrator checks CLAUDE.md rule" "templates/agents/orchestrator-init.md" "grep.*tdd.*CLAUDE.md\|CLAUDE.md has.*TDD"
 
+# ─── /setup skill+agent generation ────────────────────────────────────────────
+echo ""
+echo "─── Setup skill+agent generation ───"
+check      "setup: generates project skills"           "templates/commands/setup.md" "level3-skills\|Generate.*Skill\|project-specific.*skill"
+check      "setup: generates project agents"           "templates/commands/setup.md" "level5-agents\|Generate.*Agent\|project-specific.*agent"
+check      "setup: stack-specific skill defaults"      "templates/commands/setup.md" "Next.js.*React\|FastAPI\|new-endpoint\|new-page\|new-component"
+check      "setup: exam/content skills"                "templates/commands/setup.md" "exam\|content\|validate-content\|validate-exam"
+
 # ─── /evolve quick mode ───────────────────────────────────────────────────────
 echo ""
 echo "─── /evolve quick mode ───"
@@ -1112,6 +1120,9 @@ check      "evolve: description mentions quick"     "templates/commands/evolve.m
 check      "evolve: full mode still runs all cycles" "templates/commands/evolve.md" "blank.*full\|full.*all cycles"
 check      "evolve: evolution history log step"     "templates/commands/evolve.md" "evolution-log\.md\|Evolution History"
 check      "evolve: logs before/after score"        "templates/commands/evolve.md" "before score\|after score\|delta"
+check      "evolve: generates skills from git evidence" "templates/commands/evolve.md" "level3-skills\|project-specific.*skill\|skill.*git.*evidence"
+check      "evolve: generates agents from co-change"  "templates/commands/evolve.md" "level5-agents\|co-change.*agent\|agent.*cluster"
+check      "evolve: checks existing before creating"  "templates/commands/evolve.md" "existing.*before\|Skip.*creation\|already covers"
 check      "evolve: promotes GENERAL to shared-skills" "templates/commands/evolve.md" "shared-skills\|GENERAL.*promote\|Promoted to"
 check      "evolve: adds discovered_in on promote"  "templates/commands/evolve.md" "discovered_in"
 check      "evolve: checksums on promote"            "templates/commands/evolve.md" "checksums\|sha256"

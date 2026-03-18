@@ -150,7 +150,37 @@ If the file doesn't exist, create it with this header:
 
 ---
 
-## Step 7: Promote GENERAL Skills
+## Step 7: Generate Project-Specific Skills and Agents from Evidence
+
+### Skills from git evidence
+```bash
+git log --name-only --format="" --diff-filter=AM | sort | uniq -c | sort -rn | head -20
+```
+If a file pattern appears 5+ times (e.g., `src/components/*.tsx`, `content/*.md`, `api/routes/*.py`):
+1. Read `.claude/capabilities/level-builders/level3-skills.md`
+2. Create a skill that encodes the workflow for that pattern
+3. Save to `.claude/commands/{skill-name}.md`
+4. Only create if no existing skill covers this workflow
+
+### Agents from co-change clusters
+```bash
+git log --name-only --format="" --diff-filter=M | sort | uniq -c | sort -rn | head -30
+```
+If 3+ files in the same directory change together across 3+ commits:
+1. Read `.claude/capabilities/level-builders/level5-agents.md`
+2. Create an agent with all 5 layers in `.claude/agents/cc-{name}.md`
+3. Use co-change data for scope boundaries
+4. Only create if no existing agent covers this cluster
+
+### Check existing before creating
+```bash
+ls .claude/commands/*.md .claude/agents/*.md 2>/dev/null
+```
+Skip creation if a skill/agent already covers the same workflow.
+
+---
+
+## Step 8: Promote GENERAL Skills
 
 For any fix tagged GENERAL in EVALUATE:
 1. Copy to `~/shared-skills/{name}.md`
