@@ -11,6 +11,10 @@
 const fs   = require('fs');
 const path = require('path');
 
+// ── Hook profile gate ───────────────────────────────────────────────────────
+// AZCLAUDE_HOOK_PROFILE=minimal|standard|strict (default: standard)
+const HOOK_PROFILE = process.env.AZCLAUDE_HOOK_PROFILE || 'standard';
+
 const cfg       = process.env.AZCLAUDE_CFG || '.claude';
 // Guard: cfg must resolve inside the project root
 if (path.resolve(cfg).indexOf(process.cwd()) !== 0) process.exit(0);

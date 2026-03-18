@@ -11,6 +11,10 @@ const fs   = require('fs');
 const path = require('path');
 const os   = require('os');
 
+// ── Hook profile gate ───────────────────────────────────────────────────────
+// AZCLAUDE_HOOK_PROFILE=minimal|standard|strict (default: standard)
+const HOOK_PROFILE = process.env.AZCLAUDE_HOOK_PROFILE || 'standard';
+
 // Fire once per session only — keyed by parent PID
 const marker = path.join(os.tmpdir(), `.azclaude-session-${process.ppid || process.pid}`);
 if (fs.existsSync(marker)) process.exit(0);

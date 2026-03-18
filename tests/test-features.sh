@@ -1466,6 +1466,44 @@ check      "domain-gen: multi-domain support"           "$DAG" "Multi-Domain"
 check      "domain-gen: in manifest"                    "$ROOT/capabilities/manifest.md" "domain-advisor-generator"
 check      "dream: generates domain advisor"            "$CMD/dream.md" "domain-advisor-generator\|Generate Domain Advisor"
 
+# ─── Hook profiles ───────────────────────────────────────────────────────────
+echo ""
+echo "─── Hook profiles ───"
+check      "hook-profile: post-tool-use has HOOK_PROFILE"  "templates/hooks/post-tool-use.js" "AZCLAUDE_HOOK_PROFILE"
+check      "hook-profile: user-prompt has HOOK_PROFILE"    "templates/hooks/user-prompt.js" "AZCLAUDE_HOOK_PROFILE"
+check      "hook-profile: stop has HOOK_PROFILE"           "templates/hooks/stop.js" "AZCLAUDE_HOOK_PROFILE"
+check      "hook-profile: minimal mode skips obs"          "templates/hooks/post-tool-use.js" "minimal"
+check      "hook-profile: 3 levels defined"                "templates/hooks/post-tool-use.js" "minimal.*standard.*strict\|standard.*strict"
+
+# ─── Cost tracking ───────────────────────────────────────────────────────────
+echo ""
+echo "─── Cost tracking ───"
+check      "cost: hook writes costs.jsonl"                 "templates/hooks/post-tool-use.js" "costs.jsonl"
+check      "cost: metrics directory"                       "templates/hooks/post-tool-use.js" "metrics"
+check      "cost: auto-truncates"                          "templates/hooks/post-tool-use.js" "1000.*entries\|slice.*-500"
+
+# ─── Doctor --audit ──────────────────────────────────────────────────────────
+echo ""
+echo "─── Doctor --audit ───"
+check      "audit: runAudit function exists"               "bin/cli.js" "function runAudit"
+check      "audit: CLI routes --audit"                     "bin/cli.js" "audit.*runAudit\|--audit"
+check      "audit: scores tool coverage"                   "bin/cli.js" "Tool Coverage"
+check      "audit: scores context efficiency"              "bin/cli.js" "Context Efficiency"
+check      "audit: scores quality gates"                   "bin/cli.js" "Quality Gates"
+check      "audit: scores memory persistence"              "bin/cli.js" "Memory Persistence"
+check      "audit: scores security"                        "bin/cli.js" "Security"
+check      "audit: scores cost awareness"                  "bin/cli.js" "Cost Awareness"
+check      "audit: scores evolution readiness"             "bin/cli.js" "Evolution Readiness"
+check      "audit: grades A/B/C/D"                         "bin/cli.js" "Grade: A\|Grade: B\|Grade: C\|Grade: D"
+
+# ─── Confidence decay ───────────────────────────────────────────────────────
+echo ""
+echo "─── Confidence decay ───"
+check      "reflexes: confidence decay formula"            "$ROOT/capabilities/shared/reflexes.md" "decay\|weeks_since_last_observed"
+check      "reflexes: auto-pruning threshold"              "$ROOT/capabilities/shared/reflexes.md" "0\.15\|auto-pruned"
+check      "reflexes: last_observed in frontmatter"        "$ROOT/capabilities/shared/reflexes.md" "last_observed.*date\|last_observed:.*2026"
+check      "reflexes: created date tracked"                "$ROOT/capabilities/shared/reflexes.md" "created:.*2026\|created.*date"
+
 # ─── AZROLE sync: v3.9.0 stress test signals ──────────────────────────────────
 echo ""
 echo "─── AZROLE sync ───"

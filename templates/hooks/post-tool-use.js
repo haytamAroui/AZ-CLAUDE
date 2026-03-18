@@ -12,6 +12,13 @@ const path          = require('path');
 const os            = require('os');
 const { spawnSync } = require('child_process');
 
+// ── Hook profile gate ───────────────────────────────────────────────────────
+// AZCLAUDE_HOOK_PROFILE=minimal|standard|strict (default: standard)
+// minimal = goals.md tracking only (no observations, no cost tracking)
+// standard = all features (default)
+// strict = all features + extra validation
+const HOOK_PROFILE = process.env.AZCLAUDE_HOOK_PROFILE || 'standard';
+
 // Read tool input + response from stdin — Claude Code sends JSON and closes stdin
 let filePath = '';
 let changeSummary = '';
@@ -107,9 +114,10 @@ if (!content.includes(HEADING)) {
 
 try { fs.writeFileSync(goalsPath, content); } catch (_) {}
 
-// ── Reflex observation capture ───────────────────────────────────────────────
+// ── Reflex observation capture (standard/strict only) ───────────────────────
 // Append tool-use observation to observations.jsonl for pattern detection.
 // Lightweight: one JSON line per tool call. Secret patterns scrubbed.
+if (HOOK_PROFILE === 'minimal') { /* skip observations in minimal mode */ } else
 const reflexDir = path.join(cfg, 'memory', 'reflexes');
 try {
   fs.mkdirSync(reflexDir, { recursive: true });
@@ -128,6 +136,28 @@ try {
     const obsLines   = obsContent.split('\n').filter(Boolean);
     if (obsLines.length > 2000) {
       fs.writeFileSync(obsPath, obsLines.slice(-500).join('\n') + '\n');
+    }
+  } catch (_) {}
+} catch (_) {}
+
+// ── Cost tracking (standard/strict only) ────────────────────────────────────
+// Append estimated cost per tool call to costs.jsonl for budget awareness.
+if (HOOK_PROFILE !== 'minimal') try {
+  const costsDir = path.join(cfg, 'memory', 'metrics');
+  fs.mkdirSync(costsDir, { recursive: true });
+  const costsPath = path.join(costsDir, 'costs.jsonl');
+  const costEntry = JSON.stringify({
+    ts: now.toISOString().replace(/\.\d{3}Z$/, 'Z'),
+    tool: 'Edit',
+    file: rel,
+    session: process.ppid || process.pid
+  });
+  fs.appendFileSync(costsPath, costEntry + '\n');
+  // Auto-truncate: keep last 1000 entries
+  try {
+    const costLines = fs.readFileSync(costsPath, 'utf8').split('\n').filter(Boolean);
+    if (costLines.length > 1000) {
+      fs.writeFileSync(costsPath, costLines.slice(-500).join('\n') + '\n');
     }
   } catch (_) {}
 } catch (_) {}

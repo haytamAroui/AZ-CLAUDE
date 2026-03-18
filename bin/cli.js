@@ -589,6 +589,117 @@ function runDemo() {
   console.log('════════════════════════════════════════════════\n');
 }
 
+// ─── Audit — efficiency scoring ───────────────────────────────────────────────
+
+function runAudit() {
+  const cli        = detectCLI();
+  const projectDir = process.cwd();
+  const cfg        = cli.cfg;
+
+  console.log('\n════════════════════════════════════════════════');
+  console.log('  AZCLAUDE audit — efficiency score');
+  console.log('════════════════════════════════════════════════\n');
+
+  const scores = {};
+
+  // 1. Tool Coverage (hooks, agents, skills, commands)
+  const hasHooks    = fs.existsSync(path.join(projectDir, cfg, 'settings.local.json'));
+  const agentDir    = path.join(projectDir, cfg, 'agents');
+  const agentCount  = fs.existsSync(agentDir) ? fs.readdirSync(agentDir).filter(f => f.endsWith('.md')).length : 0;
+  const skillDir    = path.join(projectDir, cfg, 'skills');
+  const skillCount  = fs.existsSync(skillDir) ? fs.readdirSync(skillDir).filter(s => fs.existsSync(path.join(skillDir, s, 'SKILL.md'))).length : 0;
+  const cmdDir      = path.join(projectDir, cfg, 'commands');
+  const cmdCount    = fs.existsSync(cmdDir) ? fs.readdirSync(cmdDir).filter(f => f.endsWith('.md')).length : 0;
+  let toolScore     = 0;
+  if (hasHooks)       toolScore += 3;
+  if (agentCount >= 3) toolScore += 3;
+  if (skillCount >= 5) toolScore += 2;
+  if (cmdCount >= 20)  toolScore += 2;
+  scores['Tool Coverage'] = Math.min(toolScore, 10);
+
+  // 2. Context Efficiency (manifest exists, CLAUDE.md < 500 lines)
+  const manifestExists = fs.existsSync(path.join(projectDir, cfg, 'capabilities', 'manifest.md'));
+  const rulesPath      = path.join(projectDir, cli.rulesFile);
+  const rulesLines     = fs.existsSync(rulesPath) ? fs.readFileSync(rulesPath, 'utf8').split('\n').length : 0;
+  let ctxScore = 0;
+  if (manifestExists)      ctxScore += 4;
+  if (rulesLines > 0 && rulesLines < 500) ctxScore += 3;
+  else if (rulesLines >= 500)             ctxScore += 1;
+  if (rulesLines > 0 && !fs.readFileSync(rulesPath, 'utf8').includes('{{')) ctxScore += 3;
+  scores['Context Efficiency'] = Math.min(ctxScore, 10);
+
+  // 3. Quality Gates (TDD rule, completion rule, tests exist)
+  let qualScore = 0;
+  if (fs.existsSync(rulesPath)) {
+    const rules = fs.readFileSync(rulesPath, 'utf8');
+    if (/tdd|test.first/i.test(rules)) qualScore += 3;
+    if (/completion|never say.*should work/i.test(rules)) qualScore += 3;
+  }
+  const hasTests = fs.existsSync('tests') || fs.existsSync('test') || fs.existsSync('__tests__');
+  if (hasTests) qualScore += 4;
+  scores['Quality Gates'] = Math.min(qualScore, 10);
+
+  // 4. Memory Persistence (goals.md, checkpoints, patterns)
+  let memScore = 0;
+  const goalsPath     = path.join(projectDir, cfg, 'memory', 'goals.md');
+  const cpDir         = path.join(projectDir, cfg, 'memory', 'checkpoints');
+  const patternsPath  = path.join(projectDir, cfg, 'memory', 'patterns.md');
+  const reflexDir     = path.join(projectDir, cfg, 'memory', 'reflexes');
+  if (fs.existsSync(goalsPath))    memScore += 3;
+  if (fs.existsSync(cpDir) && fs.readdirSync(cpDir).length > 0) memScore += 3;
+  if (fs.existsSync(patternsPath)) memScore += 2;
+  if (fs.existsSync(reflexDir))    memScore += 2;
+  scores['Memory Persistence'] = Math.min(memScore, 10);
+
+  // 5. Security (integrity hash, injection filter, path guard)
+  let secScore = 0;
+  if (fs.existsSync(path.join(projectDir, cfg, '.azclaude-integrity'))) secScore += 4;
+  if (hasHooks) secScore += 3;
+  const postHook = path.join(projectDir, cfg, 'hooks', 'post-tool-use.js');
+  if (fs.existsSync(postHook) && fs.readFileSync(postHook, 'utf8').includes('startsWith')) secScore += 3;
+  scores['Security'] = Math.min(secScore, 10);
+
+  // 6. Cost Awareness (costs.jsonl exists, hook profiles supported)
+  let costScore = 0;
+  const costsPath = path.join(projectDir, cfg, 'memory', 'metrics', 'costs.jsonl');
+  if (fs.existsSync(costsPath)) {
+    costScore += 5;
+    const costLines = fs.readFileSync(costsPath, 'utf8').split('\n').filter(Boolean);
+    console.log(`  Tool calls tracked: ${costLines.length}`);
+  }
+  if (fs.existsSync(postHook) && fs.readFileSync(postHook, 'utf8').includes('HOOK_PROFILE')) costScore += 5;
+  scores['Cost Awareness'] = Math.min(costScore, 10);
+
+  // 7. Evolution Readiness (evolve command, agents from evidence, reflexes)
+  let evoScore = 0;
+  if (fs.existsSync(path.join(cmdDir, 'evolve.md')))   evoScore += 3;
+  if (fs.existsSync(path.join(cmdDir, 'reflexes.md'))) evoScore += 3;
+  if (agentCount >= 5) evoScore += 2;
+  if (fs.existsSync(path.join(projectDir, 'ops', 'evolution-log.md'))) evoScore += 2;
+  scores['Evolution Readiness'] = Math.min(evoScore, 10);
+
+  // Output scores
+  let total = 0;
+  for (const [cat, score] of Object.entries(scores)) {
+    const bar = '█'.repeat(score) + '░'.repeat(10 - score);
+    console.log(`  ${bar}  ${score}/10  ${cat}`);
+    total += score;
+  }
+
+  const maxTotal = Object.keys(scores).length * 10;
+  const pct = Math.round((total / maxTotal) * 100);
+
+  console.log('\n════════════════════════════════════════════════');
+  console.log(`  Overall: ${total}/${maxTotal} (${pct}%)`);
+  if (pct >= 80)      console.log('  Grade: A — production-ready environment');
+  else if (pct >= 60) console.log('  Grade: B — solid foundation, room to grow');
+  else if (pct >= 40) console.log('  Grade: C — basics in place, gaps remain');
+  else                console.log('  Grade: D — run /setup and /level-up');
+  console.log('════════════════════════════════════════════════\n');
+
+  process.exit(pct >= 60 ? 0 : 1);
+}
+
 // ─── Doctor ───────────────────────────────────────────────────────────────────
 
 function runDoctor() {
@@ -817,6 +928,7 @@ function copyDir(src, dst) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
+if (process.argv[2] === 'doctor' && process.argv[3] === '--audit') { runAudit(); process.exit(0); }
 if (process.argv[2] === 'doctor') { runDoctor(); process.exit(0); }
 if (process.argv[2] === 'demo')   { runDemo();   process.exit(0); }
 if (process.argv[2] === 'copilot') {

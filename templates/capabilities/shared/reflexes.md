@@ -47,7 +47,41 @@ last_observed: 2026-03-18
 Adjustments:
 - +0.05 per confirming observation
 - -0.10 per contradicting observation (user corrects behavior)
+- -0.02 per week without observation (automatic decay)
 - Confidence never exceeds 0.95
+- Confidence < 0.15 after decay → auto-pruned by `/reflexes clear`
+
+## Confidence Decay
+
+Reflexes that aren't confirmed decay over time. This prevents stale patterns from
+accumulating. The decay formula:
+
+```
+effective_confidence = base_confidence - (0.02 × weeks_since_last_observed)
+```
+
+Example: a reflex with confidence 0.5 not observed for 10 weeks → 0.5 - 0.2 = 0.3 (demoted to tentative).
+
+**Auto-pruning**: `/reflexes clear` and `/evolve` Cycle 2 remove reflexes where
+effective_confidence < 0.15. This keeps the reflex library lean and relevant.
+
+## Reflex Frontmatter
+
+Every reflex file includes `last_observed` date for decay calculation:
+
+```yaml
+---
+id: grep-before-edit
+trigger: "when modifying code files"
+action: "Search with Grep first, confirm with Read, then Edit"
+confidence: 0.7
+domain: workflow
+scope: project
+evidence_count: 8
+last_observed: 2026-03-18
+created: 2026-03-10
+---
+```
 
 ## Scope Rules
 
