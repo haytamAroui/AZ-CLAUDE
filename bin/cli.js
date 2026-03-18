@@ -79,6 +79,18 @@ function detectCLI() {
     if (forced) return forced;
   }
 
+  // 0b. If project already has a .claude/ or .opencode/ etc, prefer that CLI
+  const projectDir = path.resolve(process.argv[2] || '.');
+  for (const cli of CLI_TABLE) {
+    const existingCfg = path.join(projectDir, cli.cfg);
+    if (fs.existsSync(existingCfg) && fs.statSync(existingCfg).isDirectory()) {
+      // Check it has commands or settings (not just an empty dir)
+      const hasContent = fs.existsSync(path.join(existingCfg, 'commands'))
+        || fs.existsSync(path.join(existingCfg, 'settings.local.json'));
+      if (hasContent) return cli;
+    }
+  }
+
   // 1. Check executable in PATH
   for (const cli of CLI_TABLE) {
     try {
