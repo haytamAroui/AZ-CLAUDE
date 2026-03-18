@@ -2,12 +2,16 @@
 Updated: 2026-03-18
 
 ## Current threads
+- [checkpoint] 06:40 — feature-complete → .claude/memory/checkpoints/2026-03-18-06-40.md
 - [checkpoint] 03:45 — agents-created → .claude/memory/checkpoints/2026-03-18-03-45.md
 - [checkpoint] 03:30 — project-initialized → .claude/memory/checkpoints/2026-03-18-03-30.md
 - Forked from AZCLAUDE v1.0.0 (830 tests, project-scoped hooks)
 - ROADMAP.md: 5-phase plan for autonomous product builder
 
 ## Done this session
+- 06:42 — .claude\memory\checkpoints\2026-03-18-06-40.md
+- 06:38 — templates\hooks\post-tool-use.js (+40/-37) — // ── Cost tracking (standard/strict only) ─────────────────
+- 06:30 — bin\cli.js (+1/-1)
 - 06:25 — tests\test-features.sh (+2/-2)
 - 06:25 — bin\copilot.js (+10/-19) — console.log('\n═════════════════════════════════════════════
 - 06:22 — tests\test-features.sh (+4/-0)
@@ -100,4 +104,4 @@ Updated: 2026-03-18
 - None
 
 ## In progress
-- 06:30 — bin\cli.js (+1/-1)
+- 06:44 — bin\copilot.js (+1/-1) — timeout: 1800000, // 30 minutes per session (large milestone

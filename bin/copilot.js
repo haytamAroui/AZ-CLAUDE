@@ -148,7 +148,7 @@ for (let session = 1; session <= maxSessions; session++) {
   ], {
     cwd: projectDir,
     stdio: 'inherit',
-    timeout: 600000, // 10 minutes per session
+    timeout: 1800000, // 30 minutes per session (large milestones need time)
   });
 
   if (result.error) {
