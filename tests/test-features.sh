@@ -1557,8 +1557,8 @@ check      "security: hook profiles documented"          "SECURITY.md" "HOOK_PRO
 check      "security: known limitations"                 "SECURITY.md" "Known Limitations"
 check      "copilot: refuses home directory"             "bin/copilot.js" "refusing to run.*home\|homedir"
 check      "copilot: security warning banner"            "bin/copilot.js" "dangerously-skip-permissions\|SECURITY.md"
-check      "copilot: token cost alert"                   "bin/copilot.js" "Token.*Cost Alert\|cost.*session"
-check      "copilot: subscription recommendations"       "bin/copilot.js" "Claude Pro\|Claude Max\|API pay-as-you-go"
+check      "copilot: token usage alert"                  "bin/copilot.js" "Token Usage Alert\|token.*quota"
+check      "copilot: session limit hint"                 "bin/copilot.js" "Reduce sessions\|copilot.*intent"
 check      "copilot: session elapsed time"               "bin/copilot.js" "elapsed\|totalMin"
 check      "copilot: total time on complete"             "bin/copilot.js" "Total time"
 

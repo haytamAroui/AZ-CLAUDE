@@ -95,31 +95,22 @@ if (resolvedProject === homeDir || resolvedProject === '/' || resolvedProject ==
   process.exit(1);
 }
 
-// ── Cost estimation ─────────────────────────────────────────────────────────
-// Estimate token usage per session and total cost based on plan complexity
-const estimatedTokensPerSession = 200000; // ~200K tokens per autonomous session (typical)
-const estimatedCostPerSession   = 3.00;   // ~$3 per session (Sonnet), ~$15 (Opus)
-const estimatedTotalCost        = estimatedCostPerSession * maxSessions;
-
 console.log('\n════════════════════════════════════════════════');
 console.log('  AZCLAUDE COPILOT — Autonomous Mode');
 console.log(`  Project:      ${projectDir}`);
 console.log(`  Max sessions: ${maxSessions}`);
 console.log(`  Mode:         ${resuming ? 'RESUME (plan.md exists)' : 'NEW (will run /blueprint)'}`);
 console.log('');
-console.log('  ┌─── Token & Cost Alert ───────────────────┐');
-console.log(`  │  Est. tokens/session:  ~200K              │`);
-console.log(`  │  Est. cost/session:    ~$3 (Sonnet)       │`);
-console.log(`  │                        ~$15 (Opus)        │`);
-console.log(`  │  Max sessions:         ${String(maxSessions).padEnd(20)}│`);
-console.log(`  │  Est. max total cost:  $${(estimatedCostPerSession * maxSessions).toFixed(0)}-$${(15 * maxSessions).toFixed(0)} ${' '.repeat(Math.max(0, 14 - String((15 * maxSessions).toFixed(0)).length))}│`);
-console.log('  │                                           │');
-console.log('  │  Recommended subscription:                │');
-console.log('  │  • Claude Pro ($20/mo) — small projects   │');
-console.log('  │  • Claude Max 5x ($100/mo) — medium       │');
-console.log('  │  • Claude Max 20x ($200/mo) — copilot     │');
-console.log('  │  • API pay-as-you-go — full control       │');
-console.log('  └───────────────────────────────────────────┘');
+console.log('  ┌─── Token Usage Alert ─────────────────────┐');
+console.log('  │                                            │');
+console.log(`  │  Copilot runs ~${maxSessions} autonomous sessions.       │`);
+console.log('  │  Each session uses ~100K-300K tokens.      │');
+console.log('  │                                            │');
+console.log('  │  Ensure your LLM provider has sufficient   │');
+console.log('  │  token quota before starting.              │');
+console.log('  │                                            │');
+console.log('  │  Reduce sessions with: copilot . intent 5  │');
+console.log('  └────────────────────────────────────────────┘');
 console.log('');
 console.log('  ⚠  Uses --dangerously-skip-permissions');
 console.log('  ⚠  Claude has full access to this directory');
