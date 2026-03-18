@@ -35,12 +35,20 @@ Human input after first message: ZERO
 
 ---
 
-## One Command
+## Quick Start
+
+### 1. Install into your project
 
 ```bash
-npx azclaude-copilot . "EU AI Act compliance SaaS. Free deterministic
-classification terminal. Paid 30-question assessment with PDF report.
-FastAPI backend. Next.js frontend. Supabase. Trilingual EN/FR/NL. Stripe."
+npx azclaude-copilot setup
+```
+
+This installs CLAUDE.md, 26 commands, 8 skills, 7 agents, hooks, and capabilities into your project's `.claude/` directory. Works with Claude Code, Gemini CLI, Codex, OpenCode, and Cursor.
+
+### 2. Run autonomously (copilot mode)
+
+```bash
+npx azclaude-copilot . "EU AI Act compliance SaaS with trilingual support"
 ```
 
 Walk away. Come back to:
@@ -49,7 +57,24 @@ Walk away. Come back to:
 - `copilot-report.md` with everything that was built
 - Evolved environment with project-specific agents and learned reflexes
 
-Resume anytime: `npx azclaude-copilot .`
+### 3. Or use commands manually
+
+```bash
+/setup          # analyze project, detect stack + domain
+/dream          # scaffold from idea
+/add            # add a feature
+/fix            # fix a bug
+/audit          # review code
+/pulse          # health check
+```
+
+### Other commands
+
+```bash
+npx azclaude-copilot . intent.md 30     # intent from file, 30 session limit
+npx azclaude-copilot .                   # resume existing project
+npx azclaude-copilot doctor             # run health check (32 checks)
+```
 
 ---
 
@@ -367,45 +392,7 @@ See [SECURITY.md](SECURITY.md) for full details including known limitations and 
 
 ---
 
-## Installation
-
-### Install the AZCLAUDE environment
-
-```bash
-npx azclaude
-```
-
-Works with Claude Code, Gemini CLI, Codex, OpenCode, and Cursor. Auto-detects your CLI and installs to the correct paths.
-
-### Run /setup inside your project
-
-```bash
-/setup
-```
-
-### Verify
-
-```bash
-npx azclaude doctor
-```
-
-### Run Copilot (autonomous mode)
-
-```bash
-# New project -- describe and walk away
-npx azclaude-copilot . "Build a REST API with auth and Stripe"
-
-# From intent file
-npx azclaude-copilot . intent.md
-
-# With session limit
-npx azclaude-copilot . "my app" 30
-
-# Resume (reads existing plan.md)
-npx azclaude-copilot .
-```
-
-### Exit Conditions
+## Exit Conditions
 
 | Condition | Exit code |
 |-----------|-----------|
@@ -437,7 +424,7 @@ azclaude-copilot/
 ├── DOCS.md                          <- full user guide
 ├── SECURITY.md                      <- security policy + architecture
 ├── tests/
-│   └── test-features.sh          ← 1037 tests
+│   └── test-features.sh          ← 1039 tests
 ```
 
 ---
@@ -463,11 +450,11 @@ The runner is stateless. These files ARE the state.
 
 ## Verified
 
-1037 tests. Every template, command, capability, agent, and CLI feature verified.
+1039 tests. Every template, command, capability, agent, and CLI feature verified.
 
 ```bash
 bash tests/test-features.sh
-# Results: 1037 passed, 0 failed, 1037 total
+# Results: 1039 passed, 0 failed, 1039 total
 ```
 
 ---
