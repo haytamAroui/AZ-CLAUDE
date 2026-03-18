@@ -100,6 +100,12 @@ Outputs: consolidated patterns, pruned stale memory, enriched knowledge-index
 Read `capabilities/evolution/cycle3-topology.md` and run.
 Outputs: optimized pipeline map, pruned obsolete agents, updated manifest token estimates
 
+After topology optimization, run semantic boundary check:
+1. If `validate-boundaries.sh` reported warnings → load `capabilities/shared/semantic-boundary-check.md`
+2. Classify all flagged pairs as REDUNDANT / OVERLAPPING / COMPLEMENTARY / CLEAN
+3. Apply fixes: merge redundant, extract shared, clarify complementary
+4. Record decisions in `.claude/memory/decisions.md`
+
 ---
 
 ## Re-Derivation Check (run before any cycle if friction is high)

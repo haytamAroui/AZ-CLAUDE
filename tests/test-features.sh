@@ -1577,6 +1577,21 @@ check      "boundaries: wired into evolve"               "$CMD/evolve.md" "valid
 check      "audit: scores boundary health"               "bin/cli.js" "Boundary Health"
 check      "audit: parses BOUNDARY_RESULT"              "bin/cli.js" "BOUNDARY_RESULT"
 
+# ─── Semantic boundary check ─────────────────────────────────────────────────
+echo ""
+echo "─── Semantic boundary check ───"
+SBC="$ROOT/capabilities/shared/semantic-boundary-check.md"
+check_file "semantic: capability exists"                 "$SBC"
+check      "semantic: overlap matrix"                    "$SBC" "Overlap Matrix\|overlap.*matrix"
+check      "semantic: REDUNDANT classification"           "$SBC" "REDUNDANT"
+check      "semantic: OVERLAPPING classification"        "$SBC" "OVERLAPPING"
+check      "semantic: COMPLEMENTARY classification"      "$SBC" "COMPLEMENTARY"
+check      "semantic: reads full bodies"                 "$SBC" "full body\|full file bodies"
+check      "semantic: merge protocol"                    "$SBC" "merge.*redundant\|Merge.*REDUNDANT"
+check      "semantic: records decisions"                 "$SBC" "decisions.md"
+check      "semantic: in manifest"                       "$ROOT/capabilities/manifest.md" "semantic-boundary-check"
+check      "semantic: wired into evolve Cycle 3"         "$CMD/evolve.md" "semantic-boundary-check\|semantic boundary"
+
 echo ""
 echo "════════════════════════════════════════════════════"
 TOTAL=$((PASS + FAIL))
