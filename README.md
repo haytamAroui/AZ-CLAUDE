@@ -228,6 +228,7 @@ Three layers work silently. Context compaction stops being a problem.
 |---------|-------------|
 | `/debate` | Adversarial debate with evidence scoring. In copilot mode: frames from blockers.md |
 | `/evolve` | Scans for gaps → generates fixes → quality-gates them. Creates agents from evidence |
+| `/reflexes` | View/analyze learned behavioral patterns with confidence scoring. Detects tool-use patterns from observations |
 | `/level-up` | Shows current level (0-10) → builds the next one |
 | `/find` | Search across commands, ~/shared-skills/, capabilities |
 | `/create` | Build a new command with frontmatter and tests |
@@ -244,9 +245,57 @@ Three layers work silently. Context compaction stops being a problem.
 | `/explain` | Code or error → plain language |
 | `/loop` | Repeat any command on an interval |
 
-### 7 Skills (Auto-Invoked)
+### 8 Skills (Auto-Invoked)
 
-session-guard · test-first · env-scanner · debate · security · skill-creator · agent-creator
+| Skill | Triggers on |
+|-------|------------|
+| session-guard | Session start, context reset |
+| test-first | Writing/fixing code in TDD projects |
+| env-scanner | Project setup, stack detection |
+| debate | Decisions, trade-offs, comparisons |
+| security | Credentials, auth, payments, secrets |
+| skill-creator | "Create a skill", repeated workflows |
+| agent-creator | "Create an agent", agent boundaries |
+| architecture-advisor | Architecture decisions, which pattern/DB/framework for this project size |
+
+---
+
+## 🧭 Evidence-Based Decision Guidance
+
+Claude already knows every framework. These skills guide **when to use which approach** based on project context.
+
+### Architecture Advisor (Tech Projects)
+
+Auto-fires on architecture decisions. 8 decision matrices with thresholds:
+
+| Decision area | Example guidance |
+|--------------|-----------------|
+| Architecture | SMALL: flat modules. MEDIUM: modular monolith. LARGE: monolith + targeted microservices |
+| Database | SMALL: SQLite. MEDIUM+: PostgreSQL. Cache: Redis. Search: Postgres FTS first |
+| Rendering | Marketing: SSG. Dashboards: SSR. Admin: SPA. Products: ISR |
+| Testing | MVP: test-after critical paths. MEDIUM: TDD for business logic. LARGE: full TDD |
+| API design | Internal: tRPC. Public: REST. Mobile: GraphQL. Real-time: WebSocket/SSE |
+| State mgmt | Simple: useState. Server data: TanStack Query. Complex: Zustand. Workflows: XState |
+| Deployment | MVP: Vercel/Railway. Scale: AWS/GCP with IaC |
+| Auth | Small: Clerk/Supabase. Large: Auth0/Keycloak |
+
+Every recommendation includes the **threshold where it changes** and the **anti-pattern** to avoid.
+
+### Domain Advisor Generator (Non-Tech Projects)
+
+When `/dream` detects a non-developer domain, it auto-generates a domain-specific advisor skill:
+
+| Domain | Generated decisions |
+|--------|-------------------|
+| **Compliance** | Which regulation, evidence strategy, assessment approach, documentation depth |
+| **Marketing** | Channel strategy, funnel design, pricing model, KPI focus by revenue stage |
+| **Finance** | Data model (event-sourced), calculation precision (integer-cents), reconciliation |
+| **Medical** | Data standard (FHIR vs HL7), privacy model (HIPAA vs GDPR), terminology |
+| **Research** | Literature scope, methodology, experiment design, statistical rigor |
+| **Legal** | Contract structure, clause tracking, jurisdiction, risk classification |
+| **Logistics** | Routing, inventory model, tracking granularity |
+
+Skills guide decisions. Agents own code territories. Both generated from evidence.
 
 ---
 
@@ -303,9 +352,9 @@ azclaude-copilot/
 │   │   ├── post-tool-use.js         ← writes file + diff stat on every edit
 │   │   └── stop.js                  ← migrates In progress → Done
 │   ├── agents/              (7)     ← system + project agents
-│   ├── capabilities/                ← 27 files, lazy-loaded via manifest.md
-│   ├── commands/            (25)    ← all commands including /copilot
-│   ├── skills/              (7)     ← auto-invoked SKILL.md files
+│   ├── capabilities/                ← 29 files, lazy-loaded via manifest.md
+│   ├── commands/            (26)    ← all commands including /copilot, /reflexes
+│   ├── skills/              (8)     ← auto-invoked SKILL.md files + architecture-advisor
 │   └── scripts/env-scan.sh
 ├── ROADMAP.md                       ← 5-phase build spec
 ├── DOCS.md                          ← full user guide

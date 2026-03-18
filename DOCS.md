@@ -1,6 +1,6 @@
 # AZCLAUDE — Complete User Guide
 
-> Version 1.0.0 · 830 tests passing · Claude Code marketplace plugin
+> Version 1.0.0 · 950 tests passing · Claude Code marketplace plugin
 
 ---
 
@@ -16,7 +16,7 @@
 8. [Custom Agents](#custom-agents)
 9. [The Memory System](#the-memory-system) (includes all 3 hooks, commands, flow diagrams, token cost)
 10. [Native Tool Orchestration (MCP)](#native-tool-orchestration-mcp)
-11. [All 22 Commands](#all-22-commands)
+11. [All 26 Commands](#all-26-commands)
 12. [Behavioral Defenses (Pressure Testing)](#behavioral-defenses-pressure-testing)
 13. [Multi-CLI Support](#multi-cli-support)
 14. [Security](#security)
@@ -39,7 +39,7 @@ After `npx azclaude` + `/setup` you have:
 ```
 ✓ CLAUDE.md — 30-line dispatch table filled with your project's details
 ✓ goals.md — session memory, auto-injected before your first message every session
-✓ 24 commands — /fix, /add, /review, /plan, /ship, /evolve, /debate, /checkpoint...
+✓ 26 commands — /fix, /add, /review, /plan, /ship, /evolve, /debate, /copilot, /reflexes...
 ✓ 3 hooks — auto-track every edit to goals.md, inject context on session start, migrate on stop
 ✓ Project-specific agents — built from your git history
 ✓ 27 capabilities — lazy-loaded, only what the task needs
@@ -71,7 +71,7 @@ Auto-detects your CLI and installs to the correct paths.
 npx azclaude doctor
 ```
 
-Runs 32 checks: Node.js version, project hooks, settings integrity, project structure, all 24 commands present. Exits 0 if healthy. Exits 1 with a specific fix hint if anything is wrong.
+Runs 32 checks: Node.js version, project hooks, settings integrity, project structure, all 26 commands present. Exits 0 if healthy. Exits 1 with a specific fix hint if anything is wrong.
 
 ### See it working before committing
 
@@ -138,7 +138,7 @@ AZCLAUDE builds progressively. You don't need all 10 levels. You need the right 
 |-------|-------------|-------------|
 | **1** | CLAUDE.md — project conventions in 30 lines | ~30 tokens |
 | **2** | MCP servers — database, browser, API tools | ~150 tokens |
-| **3** | 24 commands + lazy-loaded capabilities | ~380 tokens per task |
+| **3** | 26 commands + lazy-loaded capabilities | ~380 tokens per task |
 | **4** | Memory — goals, checkpoints, sessions | ~200 tokens per session |
 | **5** | Custom agents — specialists with clear scope | ~400 tokens per agent |
 | **6** | Hooks — auto-tracking, injection, friction detection | ~0 tokens (global) |
@@ -674,7 +674,7 @@ AZCLAUDE doesn't just use text prompts; it hardwires its logic directly into the
 
 ---
 
-## All 22 Commands
+## All 26 Commands
 
 ### /dream
 **New project from idea.**
@@ -877,7 +877,7 @@ Detects current level from what exists in your project → shows visual checklis
 |-------|----------------|
 | 1 | CLAUDE.md rules file |
 | 2 | MCP servers (database, browser, APIs) |
-| 3 | 24 commands + lazy-loaded capabilities |
+| 3 | 26 commands + lazy-loaded capabilities |
 | 4 | Memory system (goals, checkpoints, sessions) |
 | 5 | Custom agents from git evidence |
 | 6 | Hooks (auto-tracking, injection, friction detection) |
@@ -1049,9 +1049,30 @@ Analyzes recent conversation patterns (corrections, repeated undos, frustration 
 
 ---
 
+### /copilot
+**Autonomous milestone execution. Zero human input.**
+```
+/copilot
+```
+The core command. Reads plan.md, finds next milestone, implements it, tests, commits, pushes. Every 3 milestones runs `/reflexes analyze` + `/evolve`. When all milestones done: `/review` → `/ship` → `COPILOT_COMPLETE`. Includes blocker recovery (retry blocked milestones after others complete) and self-healing (record failures to antipatterns.md, successes to patterns.md). All other commands detect copilot mode via `[ -f .claude/copilot-intent.md ]` and skip human interaction.
+
+---
+
+### /reflexes
+**View, analyze, and manage learned behavioral patterns.**
+```
+/reflexes status    # show all reflexes with confidence scores
+/reflexes analyze   # detect patterns from tool-use observations
+/reflexes promote   # promote project reflexes to global scope
+/reflexes clear     # archive old observations, prune weak reflexes
+```
+Reflexes are atomic learned behaviors extracted from session observations. Smaller than skills, confidence-scored (0.3 tentative → 0.9 certain). PostToolUse hook captures observations to `observations.jsonl`. Patterns with 3+ occurrences become reflexes. Strong reflex clusters evolve into skills/agents via `/evolve`.
+
+---
+
 ## Skills (Auto-Invoked)
 
-Skills are model-invoked capabilities that fire automatically based on context — no slash command needed. AZCLAUDE installs 7 skills:
+Skills are model-invoked capabilities that fire automatically based on context — no slash command needed. AZCLAUDE installs 8 skills:
 
 | Skill | Triggers on |
 |---|---|
@@ -1062,8 +1083,17 @@ Skills are model-invoked capabilities that fire automatically based on context �
 | security | Credentials, auth, payments, .env files, secrets |
 | skill-creator | "Create a skill", "add capability", repeated workflows |
 | agent-creator | "Create an agent", agent boundaries, 5-layer structure |
+| architecture-advisor | Architecture decisions, database choice, rendering strategy, testing approach — by project scale |
 
 Each skill has: `SKILL.md` (lean workflow), `references/` (deep content), `examples/` (concrete output), `scripts/` (deterministic work).
+
+### Architecture Advisor
+
+Evidence-based decision guidance. Claude knows every framework — this skill guides **when to use which** based on project context (SMALL/MEDIUM/LARGE). Covers 8 areas: architecture pattern, rendering, database, testing, API design, state management, deployment, auth. Every recommendation includes the threshold where it changes and the anti-pattern to avoid.
+
+### Domain Advisor Generator
+
+When `/dream` detects a non-developer domain (compliance, marketing, finance, medical, research, legal, logistics), it auto-generates a domain-specific advisor skill using `capabilities/shared/domain-advisor-generator.md`. The generated skill follows the same structure as architecture-advisor — decision matrices with context, evidence, thresholds, and anti-patterns — but tailored to the detected domain.
 
 ---
 
@@ -1140,7 +1170,7 @@ Doctor runs 32 checks across 6 categories and exits 1 with a specific fix hint f
 - **Project hooks** — UserPromptSubmit, PostToolUse, Stop hooks wired in `.claude/settings.local.json` (or global fallback)
 - **Hook freshness** — hook scripts in `.claude/hooks/` match the latest version shipped with AZCLAUDE
 - **Settings integrity** — SHA-256 hash of hook config matches install-time hash
-- **Commands** — all 24 commands present (dynamically derived from `COMMANDS` array in cli.js)
+- **Commands** — all 26 commands present (dynamically derived from `COMMANDS` array in cli.js)
 - **Memory** — goals.md exists, checkpoints directory exists, git repo initialized
 - **Project** — CLAUDE.md exists and has no unfilled `{{placeholders}}`
 
