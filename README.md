@@ -104,7 +104,7 @@ npx azclaude
 npx azclaude doctor
 ```
 
-`doctor` runs 32 checks — runtime, global hooks, settings integrity, all 24 commands. Exits 0 if healthy. Exits 1 with the exact fix hint if anything is wrong.
+`doctor` runs 32 checks — runtime, hooks, settings integrity, all 24 commands. Exits 0 if healthy. Exits 1 with the exact fix hint if anything is wrong.
 
 **Or install from the Claude Code marketplace** — search "AZCLAUDE", click Install. Hooks active immediately. Then run `/setup`.
 
@@ -301,7 +301,7 @@ Build what you need. Stop when the environment matches the project's complexity.
 | **3** | 24 commands + lazy-loaded capabilities | ~380 tokens per task |
 | **4** | Memory — goals, checkpoints, sessions | ~200 tokens per session |
 | **5** | Custom agents from git evidence | ~400 tokens per agent |
-| **6** | Hooks — auto-tracking, injection, friction detection | ~0 tokens (global) |
+| **6** | Hooks — auto-tracking, injection, friction detection | ~0 tokens (project-scoped) |
 | **7** | External MCP — guide for connecting databases, browsers, APIs | Varies |
 | **8** | Intelligence — debates, pipelines, decisions | ~400 tokens per decision |
 | **9** | Evolution — 3-cycle self-improvement | ~1000 tokens per cycle |
@@ -396,7 +396,7 @@ AZCLAUDE holds its ground when you try to shortcut it.
 
 6 layers. All hooks are pure Node.js — cross-platform: Windows, macOS, Linux.
 
-1. **Hook integrity** — SHA-256 hash of `~/.claude/settings.json` written at install, verified on every run
+1. **Hook integrity** — SHA-256 hash of hook config written at install, verified on every run
 2. **Command injection protection** — `$CLAUDE_FILE_PATH` sanitized, shell metacharacters rejected before any formatter
 3. **Prompt injection defense** — `curl | bash`, `ignore previous instructions`, base64 blocks > 500 chars stripped from goals.md and checkpoints before context injection
 4. **Skill checksums** — portable skills SHA-256 hashed, imports fail loudly if tampered
@@ -411,7 +411,7 @@ Works with 5 AI coding CLIs. Path substitution at install time — zero runtime 
 
 | CLI | Config dir | Rules file | Hooks |
 |-----|-----------|-----------|-------|
-| **Claude Code** | `.claude/` | `CLAUDE.md` | ✅ Full (global + project) |
+| **Claude Code** | `.claude/` | `CLAUDE.md` | ✅ Full (project-scoped) |
 | **Gemini CLI** | `.gemini/` | `GEMINI.md` | — |
 | **Codex CLI** | `.codex/` | `AGENTS.md` | — |
 | **OpenCode** | `.opencode/` | `AGENTS.md` | — |
@@ -423,7 +423,7 @@ All capabilities, commands, and memory work identically on every CLI.
 
 ## ✅ Verified
 
-817 tests. Every link in the system verified — content accuracy, not just file presence.
+830 tests. Every link in the system verified — content accuracy, not just file presence.
 
 ```bash
 bash tests/test-features.sh
@@ -431,7 +431,7 @@ bash tests/test-features.sh
 
 ```
 ════════════════════════════════════════════════════
-  Results: 817 passed, 0 failed, 817 total
+  Results: 830 passed, 0 failed, 830 total
 ════════════════════════════════════════════════════
 ```
 
@@ -465,7 +465,7 @@ azclaude/
 ├── DOCS.md                       ← full user guide (all features, step by step)
 ├── CONTRIBUTING.md
 ├── tests/
-│   └── test-features.sh          ← 817 tests
+│   └── test-features.sh          ← 830 tests
 ```
 
 ---

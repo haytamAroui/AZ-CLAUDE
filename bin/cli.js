@@ -26,25 +26,38 @@ function generateIntegrityHash(hooksObj) {
   return crypto.createHash('sha256').update(content).digest('hex');
 }
 
-function verifyIntegrity(cli) {
-  if (!cli.hooksDir) return true;
-  const settingsPath  = path.join(cli.hooksDir, 'settings.json');
-  const integrityPath = path.join(cli.hooksDir, '.azclaude-integrity');
+// Atomic write: write to .tmp then rename — prevents corruption on crash/power loss
+function atomicWriteFileSync(filePath, data) {
+  const tmp = filePath + '.tmp';
+  fs.writeFileSync(tmp, data);
+  fs.renameSync(tmp, filePath);
+}
 
-  if (!fs.existsSync(integrityPath) || !fs.existsSync(settingsPath)) return true;
+function verifyIntegrity(projectDir, cfg, cli) {
+  // Check project-scoped first, then global
+  const candidates = [
+    { settingsPath: path.join(projectDir, cfg, 'settings.local.json'), integrityPath: path.join(projectDir, cfg, '.azclaude-integrity'), label: 'project' },
+  ];
+  if (cli.hooksDir) {
+    candidates.push({ settingsPath: path.join(cli.hooksDir, 'settings.json'), integrityPath: path.join(cli.hooksDir, '.azclaude-integrity'), label: 'global' });
+  }
 
-  try {
-    const settings   = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
-    const savedHash  = fs.readFileSync(integrityPath, 'utf8').trim();
-    const currentHash = generateIntegrityHash(settings.hooks || {});
-    if (savedHash !== currentHash) {
-      warn('Hook integrity mismatch — hooks in settings.json were modified since last AZCLAUDE install');
-      warn('Verify your hooks manually before continuing.');
-      return false;
+  for (const { settingsPath, integrityPath, label } of candidates) {
+    if (!fs.existsSync(integrityPath) || !fs.existsSync(settingsPath)) continue;
+    try {
+      const settings    = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+      const savedHash   = fs.readFileSync(integrityPath, 'utf8').trim();
+      const currentHash = generateIntegrityHash(settings.hooks || {});
+      if (savedHash !== currentHash) {
+        warn(`Hook integrity mismatch (${label}) — hooks were modified since last AZCLAUDE install`);
+        warn('Verify your hooks manually before continuing.');
+        return false;
+      }
+      ok(`Hook integrity verified (${label})`);
+      return true;
+    } catch {
+      warn(`Could not verify hook integrity (${label})`);
     }
-    ok('Hook integrity verified');
-  } catch {
-    warn('Could not verify hook integrity');
   }
   return true;
 }
@@ -91,27 +104,146 @@ function substitutePaths(content, cfg) {
   return content.replace(/\.claude\//g, `${cfg}/`);
 }
 
-// ─── Global Hooks ─────────────────────────────────────────────────────────────
+// ─── Hook Scripts ─────────────────────────────────────────────────────────────
 
-function installHookScripts(hooksDir) {
-  const hooksScriptsDir = path.join(hooksDir, 'hooks');
-  fs.mkdirSync(hooksScriptsDir, { recursive: true });
+const HOOK_SCRIPTS = ['user-prompt.js', 'stop.js', 'post-tool-use.js'];
 
+function copyHookScripts(dstDir) {
+  fs.mkdirSync(dstDir, { recursive: true });
   const srcDir = path.join(TEMPLATE_DIR, 'hooks');
-  for (const name of ['user-prompt.js', 'stop.js', 'post-tool-use.js']) {
+  for (const name of HOOK_SCRIPTS) {
     const src = path.join(srcDir, name);
-    const dst = path.join(hooksScriptsDir, name);
+    const dst = path.join(dstDir, name);
     if (fs.existsSync(src)) {
       fs.copyFileSync(src, dst);
       try { fs.chmodSync(dst, '755'); } catch (_) {}
     }
   }
-  return hooksScriptsDir;
+  return dstDir;
 }
+
+function buildHookEntries(scriptsDir) {
+  const nodeExe           = process.execPath;
+  const userPromptScript  = path.join(scriptsDir, 'user-prompt.js');
+  const stopScript        = path.join(scriptsDir, 'stop.js');
+  const postToolUseScript = path.join(scriptsDir, 'post-tool-use.js');
+  return {
+    UserPromptSubmit: [{ matcher: '',           hooks: [{ type: 'command', command: `"${nodeExe}" "${userPromptScript}"` }] }],
+    Stop:             [{ matcher: '',           hooks: [{ type: 'command', command: `"${nodeExe}" "${stopScript}"` }]       }],
+    PostToolUse:      [{ matcher: 'Write|Edit', hooks: [{ type: 'command', command: `"${nodeExe}" "${postToolUseScript}"` }] }],
+  };
+}
+
+// ─── Project-Scoped Hooks (default) ──────────────────────────────────────────
+// Installs hooks into <project>/.claude/settings.local.json + <project>/.claude/hooks/
+// settings.local.json is gitignored (machine-specific absolute paths).
+
+function installProjectHooks(projectDir, cfg) {
+  const hooksDir     = path.join(projectDir, cfg, 'hooks');
+  const settingsPath = path.join(projectDir, cfg, 'settings.local.json');
+
+  // Copy hook scripts into project
+  const scriptsDir = copyHookScripts(hooksDir);
+
+  // Read existing settings.local.json (may have permissions, env vars, etc.)
+  let settings = {};
+  if (fs.existsSync(settingsPath)) {
+    try { settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8')); } catch {}
+  }
+
+  if (settings._azclaude) {
+    // Already installed — just refresh scripts to latest templates
+    ok('Project hooks already installed — scripts refreshed');
+    return;
+  }
+
+  // Check for existing hooks from other sources
+  const hasExistingHooks = settings.hooks && Object.keys(settings.hooks).length > 0;
+  if (hasExistingHooks) {
+    warn(`Existing hooks in ${settingsPath} — merging AZCLAUDE hooks`);
+  }
+
+  // Write hook config
+  settings._azclaude = true;
+  if (!settings.hooks) settings.hooks = {};
+  Object.assign(settings.hooks, buildHookEntries(scriptsDir));
+
+  atomicWriteFileSync(settingsPath, JSON.stringify(settings, null, 2));
+
+  // Write integrity hash
+  const integrityPath = path.join(projectDir, cfg, '.azclaude-integrity');
+  fs.writeFileSync(integrityPath, generateIntegrityHash(settings.hooks));
+
+  // Ensure settings.local.json is gitignored (contains machine-specific absolute paths)
+  const gitignorePath = path.join(projectDir, '.gitignore');
+  if (fs.existsSync(gitignorePath)) {
+    const gitignore = fs.readFileSync(gitignorePath, 'utf8');
+    if (!gitignore.includes('settings.local.json')) {
+      fs.appendFileSync(gitignorePath, `\n# AZCLAUDE — machine-specific hook paths\n${cfg}/settings.local.json\n`);
+      ok('Added settings.local.json to .gitignore');
+    }
+  }
+
+  ok(`Project hooks installed (${cfg}/settings.local.json)`);
+  ok(`Hook scripts installed (${cfg}/hooks/)`);
+  info('Project-scoped — no global pollution, no cross-project side effects');
+  info('Node.js hooks — works on Windows PowerShell, CMD, Git Bash, macOS, Linux');
+}
+
+// ─── Migration: clean global hooks if project hooks now active ───────────────
+
+function migrateFromGlobalHooks(cli, projectDir, cfg) {
+  if (!cli.hooksDir) return;
+  const globalSettings = path.join(cli.hooksDir, 'settings.json');
+  if (!fs.existsSync(globalSettings)) return;
+
+  let settings = {};
+  try { settings = JSON.parse(fs.readFileSync(globalSettings, 'utf8')); } catch { return; }
+  if (!settings._azclaude) return;
+
+  // Global AZCLAUDE hooks exist — remove only AZCLAUDE's entries, preserve other plugins'
+  delete settings._azclaude;
+  if (settings.hooks) {
+    for (const event of ['UserPromptSubmit', 'Stop', 'PostToolUse']) {
+      if (Array.isArray(settings.hooks[event])) {
+        // Keep entries that don't reference AZCLAUDE hook scripts
+        settings.hooks[event] = settings.hooks[event].filter(group => {
+          const cmds = (group.hooks || []).map(h => h.command || '');
+          return !cmds.some(c => c.includes('user-prompt.js') || c.includes('stop.js') || c.includes('post-tool-use.js'));
+        });
+        if (settings.hooks[event].length === 0) delete settings.hooks[event];
+      }
+    }
+    if (Object.keys(settings.hooks).length === 0) delete settings.hooks;
+  }
+
+  // Clean up: if settings is now empty (only had AZCLAUDE), remove the file
+  const remaining = Object.keys(settings).length;
+  if (remaining === 0) {
+    try { fs.unlinkSync(globalSettings); } catch (_) {}
+  } else {
+    atomicWriteFileSync(globalSettings, JSON.stringify(settings, null, 2));
+  }
+
+  // Remove global hook scripts
+  const globalHooksDir = path.join(cli.hooksDir, 'hooks');
+  for (const name of HOOK_SCRIPTS) {
+    const f = path.join(globalHooksDir, name);
+    try { if (fs.existsSync(f)) fs.unlinkSync(f); } catch (_) {}
+  }
+
+  // Remove integrity hash
+  const integrityPath = path.join(cli.hooksDir, '.azclaude-integrity');
+  try { if (fs.existsSync(integrityPath)) fs.unlinkSync(integrityPath); } catch (_) {}
+
+  ok('Migrated: global hooks removed — project-scoped hooks take over');
+}
+
+// ─── Global Hooks (fallback for CLIs without project-scoped support) ─────────
 
 function installGlobalHooks(cli) {
   if (!cli.hooksDir) {
-    warn(`Global hooks not supported for ${cli.name}`);
+    warn(`Hooks not supported for ${cli.name}`);
     info('Session state (goals.md injection, friction stubs) requires manual /persist on this CLI');
     return;
   }
@@ -125,33 +257,8 @@ function installGlobalHooks(cli) {
   }
 
   if (settings._azclaude) {
-    // Migrate: if hooks still use old bash syntax, upgrade to Node.js scripts
-    const existingCmd = settings.hooks?.UserPromptSubmit?.[0]?.hooks?.[0]?.command || '';
-    const isBashHook  = existingCmd.includes('SESSION_MARKER') || existingCmd.includes('mkdir -p');
-    const hasPostToolUse = !!settings.hooks?.PostToolUse;
-    if (isBashHook || !hasPostToolUse) {
-      const reason = isBashHook ? 'bash→Node.js upgrade' : 'adding PostToolUse edit-tracking hook';
-      warn(`Upgrading hooks (${reason})...`);
-      const hooksScriptsDir   = installHookScripts(cli.hooksDir);
-      const nodeExe           = process.execPath;
-      const userPromptScript  = path.join(hooksScriptsDir, 'user-prompt.js');
-      const stopScript        = path.join(hooksScriptsDir, 'stop.js');
-      const postToolUseScript = path.join(hooksScriptsDir, 'post-tool-use.js');
-      // Merge — preserve other plugins' hooks, only replace AZCLAUDE's
-      if (!settings.hooks) settings.hooks = {};
-      settings.hooks.UserPromptSubmit = [{ matcher: '',           hooks: [{ type: 'command', command: `"${nodeExe}" "${userPromptScript}"` }]  }];
-      settings.hooks.Stop             = [{ matcher: '',           hooks: [{ type: 'command', command: `"${nodeExe}" "${stopScript}"` }]        }];
-      settings.hooks.PostToolUse      = [{ matcher: 'Write|Edit', hooks: [{ type: 'command', command: `"${nodeExe}" "${postToolUseScript}"` }] }];
-      fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
-      const integrityPath = path.join(cli.hooksDir, '.azclaude-integrity');
-      fs.writeFileSync(integrityPath, generateIntegrityHash(settings.hooks));
-      ok('Hooks upgraded — edit tracking active (PostToolUse writes progress to goals.md)');
-      ok(`Hook scripts: ${hooksScriptsDir}`);
-    } else {
-      // Always refresh hook scripts to latest template versions
-      installHookScripts(cli.hooksDir);
-      ok('Global hooks already installed — scripts refreshed');
-    }
+    copyHookScripts(path.join(cli.hooksDir, 'hooks'));
+    ok('Global hooks already installed — scripts refreshed');
     return;
   }
 
@@ -162,37 +269,19 @@ function installGlobalHooks(cli) {
     return;
   }
 
-  // Install Node.js hook scripts (cross-platform: Windows/macOS/Linux)
-  const hooksScriptsDir   = installHookScripts(cli.hooksDir);
-  const nodeExe           = process.execPath; // absolute path to node binary
-  const userPromptScript  = path.join(hooksScriptsDir, 'user-prompt.js');
-  const stopScript        = path.join(hooksScriptsDir, 'stop.js');
-  const postToolUseScript = path.join(hooksScriptsDir, 'post-tool-use.js');
-
-  // Use "node /absolute/path/script.js" — works on Windows PowerShell, CMD, Git Bash, macOS, Linux
-  const userPromptCmd  = `"${nodeExe}" "${userPromptScript}"`;
-  const stopCmd        = `"${nodeExe}" "${stopScript}"`;
-  const postToolUseCmd = `"${nodeExe}" "${postToolUseScript}"`;
+  const scriptsDir = copyHookScripts(path.join(cli.hooksDir, 'hooks'));
 
   settings._azclaude = true;
-  // Merge — preserve other plugins' hooks, only set AZCLAUDE's
   if (!settings.hooks) settings.hooks = {};
-  settings.hooks.UserPromptSubmit = [{ matcher: '',         hooks: [{ type: 'command', command: userPromptCmd  }] }];
-  settings.hooks.Stop             = [{ matcher: '',         hooks: [{ type: 'command', command: stopCmd        }] }];
-  settings.hooks.PostToolUse      = [{ matcher: 'Write|Edit', hooks: [{ type: 'command', command: postToolUseCmd }] }];
+  Object.assign(settings.hooks, buildHookEntries(scriptsDir));
 
-  fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+  atomicWriteFileSync(settingsPath, JSON.stringify(settings, null, 2));
 
-  // Write integrity hash
   const integrityPath = path.join(cli.hooksDir, '.azclaude-integrity');
-  const hash = generateIntegrityHash(settings.hooks);
-  fs.writeFileSync(integrityPath, hash);
+  fs.writeFileSync(integrityPath, generateIntegrityHash(settings.hooks));
 
   ok(`Global hooks installed (${settingsPath})`);
-  ok(`Hook scripts installed (${hooksScriptsDir})`);
-  ok(`Integrity hash written (${integrityPath})`);
-  info('Why global: runs in every project — install once, covered everywhere');
-  info('Why Node.js: works on Windows PowerShell, CMD, Git Bash, macOS, Linux — no bash required');
+  ok(`Hook scripts installed (${scriptsDir})`);
 }
 
 // ─── Capabilities ─────────────────────────────────────────────────────────────
@@ -524,11 +613,49 @@ function runDoctor() {
   chk(`Node.js ${process.versions.node} (need ≥ 16)`, major >= 16);
   chk(`node binary: ${process.execPath}`, fs.existsSync(process.execPath));
 
-  // ── Global hooks ─────────────────────────────────────────────────────────
-  console.log('\n[ Global hooks — ~/.claude/ ]');
-  if (!cli.hooksDir) {
-    console.log(`  · hooks not supported for ${cli.name} — skipping`);
-  } else {
+  // ── Hooks (project-scoped or global) ─────────────────────────────────────
+  const projectSettingsPath = path.join(projectDir, cfg, 'settings.local.json');
+  const projectHooksDir    = path.join(projectDir, cfg, 'hooks');
+  const hasProjectHooks    = fs.existsSync(projectSettingsPath);
+
+  if (hasProjectHooks) {
+    console.log(`\n[ Project hooks — ${cfg}/settings.local.json ]`);
+    let settings = {};
+    try { settings = JSON.parse(fs.readFileSync(projectSettingsPath, 'utf8')); } catch {}
+
+    chk('_azclaude marker present (hooks installed)',        !!settings._azclaude);
+    chk('UserPromptSubmit hook present',                     !!settings.hooks?.UserPromptSubmit);
+    chk('Stop hook present',                                 !!settings.hooks?.Stop);
+    chk('PostToolUse hook present (edit tracking)',           !!settings.hooks?.PostToolUse);
+
+    const upCmd = settings.hooks?.UserPromptSubmit?.[0]?.hooks?.[0]?.command || '';
+    chk('UserPromptSubmit uses Node.js (not bash)',          upCmd.includes('node') && !upCmd.includes('SESSION_MARKER'));
+
+    for (const script of HOOK_SCRIPTS) {
+      chk(`hook script exists: ${script}`,                   fs.existsSync(path.join(projectHooksDir, script)));
+    }
+
+    const integrityPath = path.join(projectDir, cfg, '.azclaude-integrity');
+    if (fs.existsSync(integrityPath) && settings.hooks) {
+      const saved   = fs.readFileSync(integrityPath, 'utf8').trim();
+      const current = generateIntegrityHash(settings.hooks);
+      chk('hook integrity hash matches',                     saved === current);
+    }
+
+    // Warn if global hooks still present (should have been migrated)
+    if (cli.hooksDir) {
+      const globalSettings = path.join(cli.hooksDir, 'settings.json');
+      if (fs.existsSync(globalSettings)) {
+        try {
+          const gs = JSON.parse(fs.readFileSync(globalSettings, 'utf8'));
+          if (gs._azclaude) {
+            console.log('  ⚠ Global hooks still present — re-run npx azclaude to migrate');
+          }
+        } catch {}
+      }
+    }
+  } else if (cli.hooksDir) {
+    console.log('\n[ Global hooks — ~/.claude/ ]');
     const settingsPath  = path.join(cli.hooksDir, 'settings.json');
     const integrityPath = path.join(cli.hooksDir, '.azclaude-integrity');
     const hooksDir      = path.join(cli.hooksDir, 'hooks');
@@ -545,21 +672,23 @@ function runDoctor() {
     chk('Stop hook present',                                 !!settings.hooks?.Stop);
     chk('PostToolUse hook present (edit tracking)',           !!settings.hooks?.PostToolUse);
 
-    // Check hooks use Node.js scripts, not bash
     const upCmd = settings.hooks?.UserPromptSubmit?.[0]?.hooks?.[0]?.command || '';
     chk('UserPromptSubmit uses Node.js (not bash)',          upCmd.includes('node') && !upCmd.includes('SESSION_MARKER'));
 
-    // Check hook scripts exist on disk
-    for (const script of ['user-prompt.js', 'stop.js', 'post-tool-use.js']) {
+    for (const script of HOOK_SCRIPTS) {
       chk(`hook script exists: ${script}`,                   fs.existsSync(path.join(hooksDir, script)));
     }
 
-    // Integrity check
     if (fs.existsSync(integrityPath) && settings.hooks) {
       const saved   = fs.readFileSync(integrityPath, 'utf8').trim();
       const current = generateIntegrityHash(settings.hooks);
       chk('hook integrity hash matches',                     saved === current);
     }
+
+    info('Tip: re-run npx azclaude to upgrade to project-scoped hooks');
+  } else {
+    console.log(`\n[ Hooks ]`);
+    console.log(`  · hooks not supported for ${cli.name} — skipping`);
   }
 
   // ── Project structure ────────────────────────────────────────────────────
@@ -636,10 +765,10 @@ function runDoctor() {
 
   // ── Hook freshness ────────────────────────────────────────────────────
   console.log('\n[ Hook freshness ]');
-  const installedHooksDir = cli.hooksDir ? path.join(cli.hooksDir, 'hooks') : null;
+  const installedHooksDir = hasProjectHooks ? projectHooksDir : (cli.hooksDir ? path.join(cli.hooksDir, 'hooks') : null);
   const templateHooksDir  = path.join(__dirname, '..', 'templates', 'hooks');
   if (installedHooksDir) {
-    for (const script of ['user-prompt.js', 'stop.js', 'post-tool-use.js']) {
+    for (const script of HOOK_SCRIPTS) {
       const installedPath = path.join(installedHooksDir, script);
       const templatePath  = path.join(templateHooksDir, script);
       if (fs.existsSync(installedPath) && fs.existsSync(templatePath)) {
@@ -700,8 +829,15 @@ console.log('  AZCLAUDE — AI Coding Environment');
 console.log(`  CLI: ${cli.name} → installing to ${cli.cfg}/`);
 console.log('════════════════════════════════════════════════\n');
 
-verifyIntegrity(cli);
-installGlobalHooks(cli);
+verifyIntegrity(projectDir, cli.cfg, cli);
+
+// Hooks: project-scoped by default (settings.local.json), global as fallback
+if (cli.cfg === '.claude') {
+  installProjectHooks(projectDir, cli.cfg);
+  migrateFromGlobalHooks(cli, projectDir, cli.cfg);
+} else {
+  installGlobalHooks(cli);
+}
 installCapabilities(projectDir, cli.cfg, fullInstall);
 installCommands(projectDir, cli.cfg);
 installSkills(projectDir, cli.cfg);

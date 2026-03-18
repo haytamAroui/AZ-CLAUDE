@@ -1,6 +1,6 @@
 # AZCLAUDE — Complete User Guide
 
-> Version 1.0.0 · 817 tests passing · Claude Code marketplace plugin
+> Version 1.0.0 · 830 tests passing · Claude Code marketplace plugin
 
 ---
 
@@ -71,7 +71,7 @@ Auto-detects your CLI and installs to the correct paths.
 npx azclaude doctor
 ```
 
-Runs 32 checks: Node.js version, global hooks, settings.json integrity, project structure, all 24 commands present. Exits 0 if healthy. Exits 1 with a specific fix hint if anything is wrong.
+Runs 32 checks: Node.js version, project hooks, settings integrity, project structure, all 24 commands present. Exits 0 if healthy. Exits 1 with a specific fix hint if anything is wrong.
 
 ### See it working before committing
 
@@ -655,8 +655,8 @@ Five mechanisms. Three files. Zero databases. Zero servers. Zero dependencies.
 Three design decisions keep the hooks dependable:
 
 - **Always overwrite on install.** Running `npx azclaude` always writes fresh hook scripts, even if the hooks directory already exists. This fixes stale hooks left behind by older versions — the most common support issue before this change.
-- **Merge, never replace.** The installer merges AZCLAUDE hooks into `~/.claude/settings.json` per-key — it never replaces the entire hooks object. Other plugins' hooks are preserved.
-- **Project-scoped side effects.** Hooks only create directories and write files when they detect an AZCLAUDE project (goals.md exists). Non-AZCLAUDE directories are never modified.
+- **Project-scoped by default.** Hooks install to `.claude/settings.local.json` (gitignored, machine-specific paths) — no global pollution. Old global hooks are auto-migrated: AZCLAUDE entries removed from `~/.claude/settings.json`, other plugins' hooks preserved.
+- **Merge, never replace.** The installer merges AZCLAUDE hooks into settings per-key — it never replaces the entire hooks object. Other plugins' hooks are preserved.
 - **Checkpoint reminder.** PostToolUse counts edits per session. Every 15 edits, it prints: `⚠ 15 edits — run /checkpoint before context compaction loses your reasoning`. This prevents forgotten checkpoints on long sessions.
 - **Stop hook warns, never stubs.** The Stop hook migrates "In progress" → "Done" and warns if no `/persist` was run. It does NOT create empty friction log files. Friction logs are only written when there's actual friction to record — empty stubs were noise that polluted `ops/observations/`.
 
@@ -1086,7 +1086,7 @@ AZCLAUDE works with 5 AI coding CLIs. Path substitution happens at install time 
 
 | CLI | Config dir | Rules file | Hooks |
 |-----|-----------|-----------|-------|
-| Claude Code | `.claude/` | `CLAUDE.md` | Yes — global hooks in ~/.claude/hooks/ |
+| Claude Code | `.claude/` | `CLAUDE.md` | Yes — project-scoped in .claude/hooks/ |
 | Gemini CLI | `.gemini/` | `GEMINI.md` | No |
 | Codex CLI | `.codex/` | `AGENTS.md` | No |
 | OpenCode | `.opencode/` | `AGENTS.md` | No |
@@ -1102,7 +1102,7 @@ Memory and hooks are Claude Code only (other CLIs don't expose hook APIs).
 AZCLAUDE executes code and modifies files. 6 layers of protection.
 
 **1. Hook Integrity**
-SHA-256 hash of `~/.claude/settings.json` hooks written at install. Verified on every subsequent run. If hooks are modified, doctor reports the mismatch.
+SHA-256 hash of hook config written at install (`.claude/.azclaude-integrity`). Verified on every subsequent run. If hooks are modified, doctor reports the mismatch.
 
 **2. Command Injection Protection**
 Formatter hooks sanitize `$CLAUDE_FILE_PATH`. Shell metacharacters (` ; | & $ ( ) < > `) are rejected before any formatter runs, preventing malicious paths from executing arbitrary commands.
@@ -1137,9 +1137,9 @@ Doctor runs 32 checks across 6 categories and exits 1 with a specific fix hint f
 
 **What doctor checks:**
 - **Runtime** — Node.js version, git available, CLI detected
-- **Global hooks** — UserPromptSubmit, PostToolUse, Stop hooks wired in `~/.claude/settings.json`
-- **Hook freshness** — hook scripts match the latest version shipped with AZCLAUDE (catches stale hooks)
-- **Settings integrity** — SHA-256 hash of settings.json matches install-time hash
+- **Project hooks** — UserPromptSubmit, PostToolUse, Stop hooks wired in `.claude/settings.local.json` (or global fallback)
+- **Hook freshness** — hook scripts in `.claude/hooks/` match the latest version shipped with AZCLAUDE
+- **Settings integrity** — SHA-256 hash of hook config matches install-time hash
 - **Commands** — all 24 commands present (dynamically derived from `COMMANDS` array in cli.js)
 - **Memory** — goals.md exists, checkpoints directory exists, git repo initialized
 - **Project** — CLAUDE.md exists and has no unfilled `{{placeholders}}`
@@ -1157,13 +1157,13 @@ Common fixes:
 
 The UserPromptSubmit hook runs once per session (keyed by parent PID). If you're in the same session, it won't re-run. Start a new Claude Code session.
 
-Check that `~/.claude/settings.json` has the `UserPromptSubmit` hook entry — doctor checks this.
+Check that `.claude/settings.local.json` has the `UserPromptSubmit` hook entry — doctor checks this.
 
 ### PostToolUse not writing to goals.md
 
 goals.md must exist (created by `/setup`). The hook exits silently if goals.md is not found.
 
-If goals.md exists but entries aren't appearing: check that `Write` and `Edit` are in the PostToolUse matcher in `~/.claude/settings.json`.
+If goals.md exists but entries aren't appearing: check that `Write` and `Edit` are in the PostToolUse matcher in `.claude/settings.local.json`.
 
 ### /setup didn't detect my domain
 
