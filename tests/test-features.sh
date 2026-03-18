@@ -1535,15 +1535,15 @@ check      "agents: search before read rule"             "$ROOT/capabilities/sha
 check      "agents: grep before read example"            "$ROOT/capabilities/shared/5-layer-agent.md" "Grep.*matches\|Bad.*Read.*Good.*Grep"
 check      "agents: context artifacts reference"         "$ROOT/capabilities/shared/5-layer-agent.md" "context-artifacts"
 
-# ─── AZROLE sync: v3.9.0 stress test signals ──────────────────────────────────
+# ─── Orchestrator-init agent content ─────────────────────────────────────────
 echo ""
-echo "─── AZROLE sync ───"
-check "azrole-sync: cc- prefix protocol"             "$ORCH" "cc-frontend\|cc-backend\|cc-"
-check "azrole-sync: framework collision bash scan"   "$ORCH" "langgraph.*crewai\|crewai.*autogen\|grep.*langgraph"
-check "azrole-sync: layer comment on cc- agents"    "$ORCH" "Claude Code Development Agent"
-check "azrole-sync: STRUCTURE-ONLY co_change field" "$ORCH" "co_change_data"
-check "azrole-sync: STRUCTURE-ONLY confidence low"  "$ORCH" "confidence.*low"
-check "azrole-sync: compliance article-level"        "$ORCH" "article-level traceability"
+echo "─── Orchestrator-init content ───"
+check "orchestrator: cc- prefix protocol"             "$ORCH" "cc-frontend\|cc-backend\|cc-"
+check "orchestrator: framework collision bash scan"   "$ORCH" "langgraph.*crewai\|crewai.*autogen\|grep.*langgraph"
+check "orchestrator: layer comment on cc- agents"     "$ORCH" "Claude Code Development Agent"
+check "orchestrator: co_change field"                 "$ORCH" "co_change_data"
+check "orchestrator: confidence scoring"              "$ORCH" "confidence.*low"
+check "orchestrator: compliance traceability"          "$ORCH" "article-level traceability"
 
 echo ""
 echo "════════════════════════════════════════════════════"
