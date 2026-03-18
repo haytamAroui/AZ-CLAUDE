@@ -21,6 +21,21 @@ const { spawnSync } = require('child_process');
 // ── Args ─────────────────────────────────────────────────────────────────────
 
 const args       = process.argv.slice(2);
+
+// ── Subcommand routing ──────────────────────────────────────────────────────
+// Catch `npx azclaude-copilot setup` and similar — run the installer instead
+const SUBCOMMANDS = ['setup', 'init', 'install', 'doctor'];
+if (args[0] && SUBCOMMANDS.includes(args[0].toLowerCase())) {
+  const subDir = path.resolve(args[1] || '.');
+  console.log(`\n  Running AZCLAUDE installer on ${subDir}...\n`);
+  const cliPath = path.join(__dirname, 'cli.js');
+  const subArgs = args[0].toLowerCase() === 'doctor'
+    ? [cliPath, subDir, '--doctor']
+    : [cliPath, subDir];
+  const r = spawnSync('node', subArgs, { cwd: subDir, stdio: 'inherit' });
+  process.exit(r.status || 0);
+}
+
 const projectDir = path.resolve(args[0] || '.');
 const intentArg  = args[1] || '';
 const maxSessions = parseInt(args[2] || '20', 10);
@@ -31,11 +46,14 @@ if (args.includes('--help') || args.includes('-h')) {
 
   Usage:
     npx azclaude-copilot <project-dir> <intent> [max-sessions]
+    npx azclaude-copilot setup [dir]      # install AZCLAUDE into project
+    npx azclaude-copilot doctor [dir]     # run health check
 
   Examples:
     npx azclaude-copilot . "Build a REST API with auth"
     npx azclaude-copilot . intent.md 30
     npx azclaude-copilot .                    # resume existing project
+    npx azclaude-copilot setup               # install templates + commands
 
   Options:
     --help, -h    Show this help
