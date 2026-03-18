@@ -145,5 +145,36 @@ fi
 echo ""
 echo "BOUNDARY_RESULT:pass=$PASS:warn=$WARN"
 
+# ── JSON report (structured, diffable, CI-friendly) ─────────────────────────
+REPORT_DIR="$ROOT/memory/metrics"
+mkdir -p "$REPORT_DIR" 2>/dev/null || true
+REPORT_PATH="$REPORT_DIR/boundaries.json"
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+cat > "$REPORT_PATH" << JSONEOF
+{
+  "timestamp": "$TIMESTAMP",
+  "pass": $PASS,
+  "warn": $WARN,
+  "manifest_gaps": $([ -f "$ROOT/capabilities/manifest.md" ] && {
+    gaps=0
+    for cap in "$ROOT"/capabilities/shared/*.md; do
+      [ -f "$cap" ] || continue
+      grep -q "$(basename "$cap")" "$ROOT/capabilities/manifest.md" 2>/dev/null || gaps=$((gaps + 1))
+    done
+    echo $gaps
+  } || echo 0),
+  "orphaned_agents": $(for a in "$ROOT"/agents/*.md; do
+    [ -f "$a" ] || continue
+    n=$(basename "$a" .md)
+    grep -rl "$n" "$ROOT/commands/" "$ROOT/capabilities/" CLAUDE.md 2>/dev/null | wc -l | tr -d ' '
+  done | awk '$1==0{c++}END{print c+0}'),
+  "collisions": $COLLISIONS,
+  "overlaps": $OVERLAP_FOUND
+}
+JSONEOF
+
+echo "  Report written: $REPORT_PATH"
+
 # Exit code: 0 if no warnings, 1 if warnings found
 exit $( [ "$WARN" -eq 0 ] && echo 0 || echo 1 )

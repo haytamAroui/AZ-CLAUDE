@@ -1591,6 +1591,9 @@ check      "semantic: merge protocol"                    "$SBC" "merge.*redundan
 check      "semantic: records decisions"                 "$SBC" "decisions.md"
 check      "semantic: in manifest"                       "$ROOT/capabilities/manifest.md" "semantic-boundary-check"
 check      "semantic: wired into evolve Cycle 3"         "$CMD/evolve.md" "semantic-boundary-check\|semantic boundary"
+check      "boundaries: JSON report output"             "$VB" "boundaries.json"
+check      "boundaries: timestamp in report"             "$VB" "timestamp"
+check      "boundaries: install-time check"              "bin/cli.js" "postInstallValidator\|Post-install boundary"
 
 echo ""
 echo "════════════════════════════════════════════════════"

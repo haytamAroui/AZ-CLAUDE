@@ -1000,6 +1000,21 @@ if (!fs.existsSync(evolLogPath)) {
   try { fs.writeFileSync(evolLogPath, header); } catch (_) {}
 }
 
+// ── Post-install boundary check (warn if collisions detected) ────────────────
+const postInstallValidator = path.join(projectDir, cli.cfg, 'scripts', 'validate-boundaries.sh');
+if (fs.existsSync(postInstallValidator)) {
+  try {
+    const vr = spawnSync('bash', [postInstallValidator, path.join(projectDir, cli.cfg)],
+      { encoding: 'utf8', cwd: projectDir, timeout: 10000 });
+    const match = (vr.stdout || '').match(/BOUNDARY_RESULT:pass=(\d+):warn=(\d+)/);
+    if (match && parseInt(match[2], 10) > 0) {
+      warn(`Boundary check: ${match[2]} warning(s) detected — run /evolve to resolve`);
+    } else if (match) {
+      ok('Boundary check: no collisions or overlaps');
+    }
+  } catch (_) {}
+}
+
 console.log('\n════════════════════════════════════════════════');
 console.log(`  Install mode: ${fullInstall ? 'full (all capabilities)' : 'core (shared + level-builders)'}`);
 console.log('  Architecture: lazy-loaded, manifest-driven');
