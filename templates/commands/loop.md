@@ -16,10 +16,10 @@ $ARGUMENTS
 
 Extract from $ARGUMENTS:
 - **Interval**: `5m`, `10m`, `30m`, `1h`, `daily`, `weekly` — default `10m` if not specified
-- **Command**: everything after the interval token (e.g. `/status`, `/fix`, a prompt)
+- **Command**: everything after the interval token (e.g. `/pulse`, `/fix`, a prompt)
 
 If blank, use **AskUserQuestion**:
-- What should run? (e.g. `/status`, `/fix`, `check if the deploy succeeded`)
+- What should run? (e.g. `/pulse`, `/fix`, `check if the deploy succeeded`)
 - How often? (5m / 10m / 30m / 1h / daily / weekly)
 
 ---

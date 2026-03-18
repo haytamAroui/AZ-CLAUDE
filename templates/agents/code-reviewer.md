@@ -1,7 +1,7 @@
 ---
 name: code-reviewer
 description: >
-  Autonomous code review agent. Runs on /review or when asked to review code,
+  Autonomous code review agent. Runs on /audit or when asked to review code,
   check a PR, audit changes, find bugs, check security, verify test coverage.
   Use when: review, check this code, is this safe, audit, PR review, find bugs,
   what's wrong with this, code quality, security check, before merging.

@@ -24,10 +24,10 @@ Read these files (skip any that don't exist):
 Follow this decision tree in order:
 
 1. **No CLAUDE.md filled?** → Run `/setup` with the intent from copilot-intent.md
-2. **No plan.md?** → Run `/plan` to generate a milestone plan
+2. **No plan.md?** → Run `/blueprint` to generate a milestone plan
 3. **Plan has incomplete milestones?** → Find the next one (respecting dependencies), implement it
 4. **3 milestones done since last /evolve?** → Run `/evolve` first, then continue
-5. **All milestones done?** → Run `/review` on the full project
+5. **All milestones done?** → Run `/audit` on the full project
 6. **Review passes?** → Run `/ship` and deploy
 7. **Deploy succeeds?** → Write `COPILOT_COMPLETE` to goals.md, generate copilot-report.md
 
@@ -53,7 +53,7 @@ For each milestone in plan.md:
 6. Stage and commit: `{type}: {what} — {why}`
 7. Push
 8. Update plan.md: set milestone status to `done`
-9. Run `/checkpoint`
+9. Run `/snapshot`
 
 ---
 
@@ -71,7 +71,7 @@ After every 3 completed milestones:
 ## Step 5: Final Review
 
 When all milestones show status `done` (or `blocked` with no unblock path):
-1. Run `/review` on the full project against copilot-intent.md
+1. Run `/audit` on the full project against copilot-intent.md
 2. If review finds gaps → create fix milestones, add to plan.md, continue building
 3. If review passes → proceed to ship
 
@@ -105,7 +105,7 @@ When all milestones show status `done` (or `blocked` with no unblock path):
    {test results summary}
    ```
 3. Write `COPILOT_COMPLETE` to the top of goals.md
-4. Final `/checkpoint`
+4. Final `/snapshot`
 
 ---
 
@@ -152,6 +152,6 @@ Every failure teaches the environment something. Never fail silently.
 - STOP only if: tests fail after 2 fix attempts on same issue AND alternative approach also fails → log to blockers.md, continue to next milestone
 - STOP if: all milestones complete and shipped
 - Every commit message follows: `{type}: {what} — {why}`
-- Run `/checkpoint` after every milestone (context compaction protection)
+- Run `/snapshot` after every milestone (context compaction protection)
 - Read `.claude/memory/patterns.md` before implementing — follow what works
 - Read `.claude/memory/antipatterns.md` before implementing — avoid what broke

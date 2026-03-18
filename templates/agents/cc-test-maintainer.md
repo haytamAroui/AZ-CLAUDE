@@ -86,7 +86,7 @@ echo "  Results: $PASS passed, $FAIL failed, $((PASS + FAIL)) total"
 ```
 
 **Tests needed per ROADMAP (copilot feature):**
-- copilot.md: exists, decision logic, per-milestone protocol, COPILOT_COMPLETE, references /dream /plan /evolve /review /ship
+- copilot.md: exists, decision logic, per-milestone protocol, COPILOT_COMPLETE, references /dream /blueprint /evolve /audit /ship
 - copilot.js: exists, accepts args, creates copilot-intent.md, exits on COPILOT_COMPLETE, exits on max sessions
 - plan-tracker.md: exists, milestone status values, dependency rules, finding next milestone
 - CLI: copilot in ADVANCED_COMMANDS, routes to copilot.js

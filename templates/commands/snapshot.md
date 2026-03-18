@@ -1,12 +1,12 @@
 ---
-name: checkpoint
+name: snapshot
 description: Mid-session snapshot — captures current reasoning, decisions, and state to survive context compaction. Run every 15-20 turns on complex work. Auto-injected on next session start.
 argument-hint: "[optional: topic label]"
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit
 ---
 
-# /checkpoint — Mid-Session Snapshot
+# /snapshot — Mid-Session Snapshot
 
 **Purpose**: Write your current mental model to disk NOW, before context compaction loses it.
 This is different from `/persist` (end-of-session). Checkpoint = mid-flight snapshot.

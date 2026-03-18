@@ -149,7 +149,7 @@ If an agent needs elevated permissions: document why in its Layer 4 (CONSTRAINTS
 ### 7. PreToolUse Code Pattern Monitoring
 
 Catch insecure code patterns at write time — before they reach the codebase.
-Cheaper than catching them at `/ship` or `/review` time.
+Cheaper than catching them at `/ship` or `/audit` time.
 
 **Patterns to flag on Edit/Write operations:**
 

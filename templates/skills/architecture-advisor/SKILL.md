@@ -9,7 +9,7 @@ description: >
   horizontal vs vertical scaling, caching strategy, state management, when to use,
   which is better, trade-offs, decision, scale, performance, project size, small
   project, large project, enterprise, startup, MVP, production-ready, best practice.
-  Also triggers when /dream or /plan needs to decide stack, /copilot faces an
+  Also triggers when /dream or /blueprint needs to decide stack, /copilot faces an
   architecture milestone, or /debate needs evidence for a technical decision.
   Even if the user doesn't say "architecture", use this when the task involves
   choosing between competing approaches for a project of a specific size or domain.

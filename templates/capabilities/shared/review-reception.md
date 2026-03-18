@@ -11,7 +11,7 @@ tokens: ~80
 
 ## Receiving Code Review — Technical Evaluation, Not Performance
 
-When you receive a /review result or code review feedback, your job is
+When you receive a /audit result or code review feedback, your job is
 **technical evaluation**, not agreement. These are different things.
 
 ---

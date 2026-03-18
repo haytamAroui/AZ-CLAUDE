@@ -52,7 +52,7 @@ description: >
   validation, SQL injection, XSS, CSRF, command injection, path traversal, 
   eval(), os.system(), exec(), shell commands, file permissions, CORS, 
   authentication, authorization, rate limiting, data exposure, error 
-  leaking stack traces. Trigger on: /review, /ship, security check, 
+  leaking stack traces. Trigger on: /audit, /ship, security check, 
   audit, vulnerability, penetration test, compliance check, OWASP, 
   secure coding, hardening. Even if the user doesn't explicitly mention 
   security, use this skill whenever code touches authentication, payments, 
@@ -67,7 +67,7 @@ description =
   + ACTIONS that trigger it (write, review, fix, audit, check, scan...)
   + OBJECTS it applies to (keys, tokens, passwords, .env, connections...)
   + PATTERNS it detects (injection, XSS, CSRF, eval, exec...)
-  + COMMANDS that invoke it (/review, /ship, security...)
+  + COMMANDS that invoke it (/audit, /ship, security...)
   + CONTEXTS where it should fire even without explicit request
   + "Even if the user doesn't explicitly mention X, use this skill when Y"
 ```

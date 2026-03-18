@@ -56,12 +56,12 @@ ls .env.example .env.template 2>/dev/null | head -5
 3. Check if the feature has infra constraints → read config first
 4. Check knowledge/ for domain-specific rules
 
-### Before /plan (any plan)
+### Before /blueprint (any plan)
 1. Read all available artifacts to understand system constraints
 2. Reference artifact files in milestone descriptions
 3. Flag milestones that will change artifacts (schema migrations, API changes)
 
-### Before /review
+### Before /audit
 1. Verify implementation matches schema (table names, column types)
 2. Verify API calls match spec (endpoints, request/response shapes)
 3. Verify deploy config supports the implementation

@@ -113,7 +113,7 @@ $ARGUMENTS
 !`git log --oneline -5`
 !`bash .claude/scripts/env-scan.sh 2>/dev/null`
 ```
-The `!`command`` syntax runs the shell command immediately. Claude only sees the output — not the command. Use for `/status`, `/setup`, any skill that needs live project data.
+The `!`command`` syntax runs the shell command immediately. Claude only sees the output — not the command. Use for `/pulse`, `/setup`, any skill that needs live project data.
 
 **`ultrathink`** — include this word anywhere in the skill body to enable extended thinking for that skill.
 
@@ -212,7 +212,7 @@ These three are installed by `npx azclaude` into `.claude/commands/` automatical
 
 Check they exist — if not, the install is incomplete:
 ```bash
-ls .claude/commands/add.md .claude/commands/review.md .claude/commands/test.md 2>/dev/null \
+ls .claude/commands/add.md .claude/commands/audit.md .claude/commands/test.md 2>/dev/null \
   || echo "Missing — re-run: npx azclaude"
 ```
 
@@ -221,7 +221,7 @@ If this project is a **Code** category (has package.json / Cargo.toml / etc.) �
 | Command | What it encodes |
 |---------|----------------|
 | `add.md` | Feature addition: scope intake → understand pattern → TDD → implement → verify |
-| `review.md` | Spec compliance first → code quality second — uses EnterPlanMode |
+| `audit.md` | Spec compliance first → code quality second — uses EnterPlanMode |
 | `test.md` | IDE diagnostics → run suite → interpret failures → apply /fix |
 
 **Stack-specific commands to generate when stack detected:**

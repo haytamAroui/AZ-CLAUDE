@@ -1,6 +1,6 @@
 # AZCLAUDE — Complete User Guide
 
-> Version 1.0.0 · 950 tests passing · Claude Code marketplace plugin
+> Version 1.0.0 · 989 tests passing · Claude Code marketplace plugin
 
 ---
 
@@ -39,7 +39,7 @@ After `npx azclaude` + `/setup` you have:
 ```
 ✓ CLAUDE.md — 30-line dispatch table filled with your project's details
 ✓ goals.md — session memory, auto-injected before your first message every session
-✓ 26 commands — /fix, /add, /review, /plan, /ship, /evolve, /debate, /copilot, /reflexes...
+✓ 26 commands — /fix, /add, /audit, /blueprint, /ship, /evolve, /debate, /copilot, /reflexes...
 ✓ 3 hooks — auto-track every edit to goals.md, inject context on session start, migrate on stop
 ✓ Project-specific agents — built from your git history
 ✓ 27 capabilities — lazy-loaded, only what the task needs
@@ -88,9 +88,9 @@ Runs the actual hook scripts on a temp project. Shows PostToolUse writing to goa
 ```
 1. npx azclaude              # install
 2. /setup                    # scan project, build environment
-3. /status                   # see what was built and what's next
+3. /pulse                    # see what was built and what's next
 4. /fix [error] or /add [feature]   # start working
-5. /checkpoint               # every 15-20 turns on complex work
+5. /snapshot                 # every 15-20 turns on complex work
 6. /persist                  # before closing the session
 ```
 
@@ -393,7 +393,7 @@ The answer is two things:
 │                     MANUAL LAYER                            │
 │              (user triggers when ready)                      │
 │                                                             │
-│   /checkpoint  ──→  checkpoints/{timestamp}.md              │
+│   /snapshot  ──→  checkpoints/{timestamp}.md                │
 │   (WHY you made decisions — every 15-20 turns)              │
 │                                                             │
 │   /persist  ──→  sessions/{date}-{topic}.md                 │
@@ -472,7 +472,7 @@ Old refresh flow in auth.js:180 has a race condition — fix next task
 
 **Why it matters:** Goals.md stays clean. Active work on top. Completed work archived below. It's a rolling ledger, not an unbounded log. Token cost stays fixed regardless of how many sessions you've run.
 
-### /checkpoint — Mid-Session Reasoning Snapshot
+### /snapshot — Mid-Session Reasoning Snapshot
 
 **When to use:** Every 15-20 turns, or before a major decision.
 
@@ -480,7 +480,7 @@ Old refresh flow in auth.js:180 has a race condition — fix next task
 
 **Where it saves:** `.claude/memory/checkpoints/{timestamp}.md`
 
-**Why it matters:** No automatic system can capture reasoning. PostToolUse knows you edited `auth.js` — it doesn't know you chose RS256 over HS256 because asymmetric keys are safer for multi-service architectures. Only you know that. /checkpoint captures it so Claude knows it next session.
+**Why it matters:** No automatic system can capture reasoning. PostToolUse knows you edited `auth.js` — it doesn't know you chose RS256 over HS256 because asymmetric keys are safer for multi-service architectures. Only you know that. /snapshot captures it so Claude knows it next session.
 
 The UserPromptSubmit hook automatically picks up the LATEST checkpoint and injects it alongside goals.md.
 
@@ -514,12 +514,12 @@ Turn 12:   Claude edits test/auth.test.js
            ┌─ PostToolUse fires
            └─ goals.md gets another line
 
-Turn 15:   User runs /checkpoint
+Turn 15:   User runs /snapshot
            ┌─ Captures: "Fixing auth. Chose RS256 over HS256.
            │  Race condition in auth.js:180 still needs fix."
            └─ Saved to checkpoints/2026-03-16-14:15.md
 
-Turn 30:   User runs /checkpoint again
+Turn 30:   User runs /snapshot again
            └─ New snapshot with updated progress
 
 Turn 80:   ⚠️  CONTEXT COMPACTION — earlier turns are gone
@@ -561,7 +561,7 @@ Turn 1:    User types "continue the auth work"
 
                           MANUAL
                             │
-        /checkpoint ────→ checkpoints/ ──→ UserPromptSubmit ────→ Claude
+        /snapshot ────→ checkpoints/ ──→ UserPromptSubmit ────→ Claude
         (every 15-20      (reasoning       (picks latest
          turns)            snapshots)       automatically)
 
@@ -641,7 +641,7 @@ AZCLAUDE's memory cost is the same whether your project has 5 sessions or 500 �
 | Layer | Mechanism | What It Captures | Automatic | Survives Compaction |
 |-------|-----------|-----------------|-----------|-------------------|
 | File breadcrumb | PostToolUse → goals.md | WHERE you were, WHAT changed | Yes | Yes |
-| Reasoning snapshot | /checkpoint → checkpoints/ | WHY decisions were made | Manual | Yes |
+| Reasoning snapshot | /snapshot → checkpoints/ | WHY decisions were made | Manual | Yes |
 | Session narrative | /persist → sessions/ | Full summary, friction, next steps | Manual | Yes |
 | Context injection | UserPromptSubmit | Delivers goals + checkpoint to Claude | Yes | Yes |
 | Ledger cleanup | Stop → migration | Keeps goals.md current | Yes | Yes |
@@ -657,7 +657,7 @@ Three design decisions keep the hooks dependable:
 - **Always overwrite on install.** Running `npx azclaude` always writes fresh hook scripts, even if the hooks directory already exists. This fixes stale hooks left behind by older versions — the most common support issue before this change.
 - **Project-scoped by default.** Hooks install to `.claude/settings.local.json` (gitignored, machine-specific paths) — no global pollution. Old global hooks are auto-migrated: AZCLAUDE entries removed from `~/.claude/settings.json`, other plugins' hooks preserved.
 - **Merge, never replace.** The installer merges AZCLAUDE hooks into settings per-key — it never replaces the entire hooks object. Other plugins' hooks are preserved.
-- **Checkpoint reminder.** PostToolUse counts edits per session. Every 15 edits, it prints: `⚠ 15 edits — run /checkpoint before context compaction loses your reasoning`. This prevents forgotten checkpoints on long sessions.
+- **Checkpoint reminder.** PostToolUse counts edits per session. Every 15 edits, it prints: `⚠ 15 edits — run /snapshot before context compaction loses your reasoning`. This prevents forgotten checkpoints on long sessions.
 - **Stop hook warns, never stubs.** The Stop hook migrates "In progress" → "Done" and warns if no `/persist` was run. It does NOT create empty friction log files. Friction logs are only written when there's actual friction to record — empty stubs were noise that polluted `ops/observations/`.
 
 ---
@@ -666,8 +666,8 @@ Three design decisions keep the hooks dependable:
 
 AZCLAUDE doesn't just use text prompts; it hardwires its logic directly into the host CLI's built-in MCP (Model Context Protocol) capabilities:
 
-- **`AskUserQuestion`**: Wrapped into `/add`, `/plan`, and `/setup` to force the AI to halt and clarify vague requirements instead of hallucinating.
-- **`EnterPlanMode`**: Called natively during `/plan` and `/review` for forced read-only analysis.
+- **`AskUserQuestion`**: Wrapped into `/add`, `/blueprint`, and `/setup` to force the AI to halt and clarify vague requirements instead of hallucinating.
+- **`EnterPlanMode`**: Called natively during `/blueprint` and `/audit` for forced read-only analysis.
 - **`EnterWorktree`**: Called natively to safely isolate state during `/evolve` and `/fix`.
 - **`CronCreate` / `CronList`**: Natively tied to the `/loop` command for actual autonomous background execution.
 - **`mcp__ide__getDiagnostics`**: Hard-gated before `/test` and `/ship` to ensure no syntax errors exist before running bash commands.
@@ -732,13 +732,13 @@ TDD activates only if: developer domain + test files exist + CLAUDE.md has TDD r
 
 ---
 
-### /review
+### /audit
 **Spec-first code review with Distrust-in-Review. Read-only.**
 
 ```
-/review
-/review 42          # PR number
-/review src/auth.js  # specific file
+/audit
+/audit 42          # PR number
+/audit src/auth.js  # specific file
 ```
 
 Read-only mode (no modifications). This command enforces **Distrust-in-Review**: it assumes the implementer was optimistic or incomplete. The reviewer *must* independently verify success by reading actual file diffs or running tests, rather than taking the implementer's word for it.
@@ -778,12 +778,12 @@ Failure types:
 
 ---
 
-### /plan
+### /blueprint
 **Read-only analysis and approval gate for risky changes.**
 
 ```
-/plan refactor the authentication module to use refresh tokens
-/plan migrate from REST to GraphQL
+/blueprint refactor the authentication module to use refresh tokens
+/blueprint migrate from REST to GraphQL
 ```
 
 Triggers when: 4+ files, schema/API changes, high reversal cost, or you explicitly want approval before code.
@@ -890,12 +890,12 @@ At Level 7 → use `/evolve` instead (environment is built, now improve it).
 
 ---
 
-### /checkpoint
+### /snapshot
 **Mid-session snapshot. Run every 15–20 turns on complex work.**
 
 ```
-/checkpoint
-/checkpoint "auth refactor"
+/snapshot
+/snapshot "auth refactor"
 ```
 
 Writes `.claude/memory/checkpoints/{date}-{HH:MM}.md` capturing:
@@ -925,11 +925,11 @@ Never skip even for short sessions.
 
 ---
 
-### /status
+### /pulse
 **Quick project overview.**
 
 ```
-/status
+/pulse
 ```
 
 Shows: recent git activity (last 5 commits), uncommitted changes, project health (IDE diagnostics, dependencies, config), what changed (git diff --stat), current level, next 2–3 steps from goals.md.
@@ -953,7 +953,7 @@ Simple language, step-by-step for code, root cause for errors, real-world analog
 **Repeat a command on an interval.**
 
 ```
-/loop 5m /status
+/loop 5m /pulse
 /loop 30m /evolve quick
 /loop daily /persist
 ```
@@ -1054,7 +1054,7 @@ Analyzes recent conversation patterns (corrections, repeated undos, frustration 
 ```
 /copilot
 ```
-The core command. Reads plan.md, finds next milestone, implements it, tests, commits, pushes. Every 3 milestones runs `/reflexes analyze` + `/evolve`. When all milestones done: `/review` → `/ship` → `COPILOT_COMPLETE`. Includes blocker recovery (retry blocked milestones after others complete) and self-healing (record failures to antipatterns.md, successes to patterns.md). All other commands detect copilot mode via `[ -f .claude/copilot-intent.md ]` and skip human interaction.
+The core command. Reads plan.md, finds next milestone, implements it, tests, commits, pushes. Every 3 milestones runs `/reflexes analyze` + `/evolve`. When all milestones done: `/audit` → `/ship` → `COPILOT_COMPLETE`. Includes blocker recovery (retry blocked milestones after others complete) and self-healing (record failures to antipatterns.md, successes to patterns.md). All other commands detect copilot mode via `[ -f .claude/copilot-intent.md ]` and skip human interaction.
 
 ---
 
@@ -1201,9 +1201,9 @@ The domain detection reads README, package.json, and directory structure. Add do
 
 ### Context compacted and I lost my place
 
-This is expected. Open a new session — UserPromptSubmit will inject goals.md + latest checkpoint automatically. If you ran `/checkpoint` before compaction, Claude has your current reasoning. If not, it has the file trail from PostToolUse.
+This is expected. Open a new session — UserPromptSubmit will inject goals.md + latest checkpoint automatically. If you ran `/snapshot` before compaction, Claude has your current reasoning. If not, it has the file trail from PostToolUse.
 
-Next time: run `/checkpoint` every 15–20 turns.
+Next time: run `/snapshot` every 15–20 turns.
 
 ### Agent keeps making the same mistake
 

@@ -199,7 +199,7 @@ Generate one advisor per domain. They don't conflict — each guides different d
 ## Integration with /copilot
 
 In copilot mode, domain advisor skills fire automatically when:
-- `/plan` creates milestones that touch domain-specific decisions
+- `/blueprint` creates milestones that touch domain-specific decisions
 - `/add` implements a feature that involves domain logic
 - `/debate` evaluates trade-offs in the domain space
 - `/evolve` detects domain patterns from git history

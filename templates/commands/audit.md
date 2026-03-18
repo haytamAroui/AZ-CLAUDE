@@ -1,5 +1,5 @@
 ---
-name: review
+name: audit
 description: >
   Review code for spec compliance then quality. Spec-first — never quality before spec.
   Triggers on: "review this", "review PR", "check my code", "code review", "review changes",
@@ -10,7 +10,7 @@ disable-model-invocation: true
 allowed-tools: Read, Grep, Bash, Glob
 ---
 
-# /review — Spec-First Code Review
+# /audit — Spec-First Code Review
 
 $ARGUMENTS
 

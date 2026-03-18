@@ -1,5 +1,5 @@
 ---
-name: plan
+name: blueprint
 description: >
   Plan a large or risky change — reads codebase, writes a file-level plan, waits for
   explicit approval before any code is touched. Use when /add would be too fast.
@@ -13,11 +13,11 @@ disable-model-invocation: true
 allowed-tools: Read, Grep, Glob, Bash
 ---
 
-# /plan — Plan Before Implementing
+# /blueprint — Plan Before Implementing
 
 $ARGUMENTS
 
-**Use /add for straightforward features. Use /plan when:**
+**Use /add for straightforward features. Use /blueprint when:**
 - The change touches 4+ files
 - It involves a schema, API contract, or interface change
 - Getting it wrong would be costly to reverse
@@ -89,7 +89,7 @@ Ask the user: **"Approve this plan? (yes / change step N / cancel)"**
 - `change step N` → revise that step, re-present, ask again
 - `cancel` → discard, no tasks created
 
-Tasks are only created after explicit approval. This is the point of /plan.
+Tasks are only created after explicit approval. This is the point of /blueprint.
 
 ---
 
@@ -112,4 +112,4 @@ When running inside `/copilot` (detected by: `.claude/copilot-intent.md` exists)
 
 Show: the plan with `file:line` references + risk level.
 Show: tasks created (only after approval).
-Do not write any code during /plan — ever (unless in copilot mode, where plan.md is the output).
+Do not write any code during /blueprint — ever (unless in copilot mode, where plan.md is the output).

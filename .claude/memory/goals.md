@@ -8,6 +8,21 @@ Updated: 2026-03-18
 - ROADMAP.md: 5-phase plan for autonomous product builder
 
 ## Done this session
+- 05:51 — tests\test-features.sh (+9/-9) — ─── Orchestrator-init agent content ────────────────────────
+- 05:48 — tests\test-features.sh (+31/-0)
+- 05:48 — templates\commands\evolve.md (+13/-0) — Cycle 0.5: Import Graph Analysis (before detection)
+- 05:47 — templates\capabilities\manifest.md (+1/-0)
+- 05:47 — templates\capabilities\shared\5-layer-agent.md (+18/-0) — Agent Design Patterns
+- 05:47 — templates\scripts\import-graph.sh
+- 05:47 — templates\capabilities\shared\context-artifacts.md
+- 05:40 — tests\test-features.sh (+38/-0)
+- 05:40 — templates\capabilities\shared\reflexes.md (+34/-0) — Adjustments:
+- 05:40 — bin\cli.js (+112/-0)
+- 05:39 — templates\hooks\stop.js (+4/-0) — // ── Hook profile gate ────────────────────────────────────
+- 05:39 — templates\hooks\user-prompt.js (+4/-0) — // ── Hook profile gate ────────────────────────────────────
+- 05:39 — templates\hooks\post-tool-use.js (+31/-1) — // ── Cost tracking (standard/strict only) ─────────────────
+- 05:35 — DOCS.md (+39/-9)
+- 05:34 — README.md (+54/-5) — │   ├── agents/              (7)     ← system + project agen
 - 05:08 — tests\test-features.sh (+116/-1)
 - 05:08 — templates\commands\dream.md (+33/-1)
 - 05:08 — templates\capabilities\manifest.md (+2/-0)
@@ -53,3 +68,28 @@ Updated: 2026-03-18
 
 ## Open blockers
 - None
+
+## In progress
+- 06:07 — tests\test-features.sh (+57/-57)
+- 06:06 — CLAUDE.md (+3/-3) — 2. Phase 2: plan-tracker capability + structured /blueprint 
+- 06:06 — ROADMAP.md (+27/-27) — Step 2: Update templates/commands/blueprint.md for structure
+- 06:02 — templates\skills\architecture-advisor\SKILL.md (+1/-1)
+- 06:02 — templates\skills\skill-creator\references\skill-engineering-guide.md (+2/-2) — /audit
+- 06:02 — templates\skills\skill-creator\examples\sample-skill.md (+1/-1) — /audit
+- 06:02 — templates\skills\session-guard\SKILL.md (+3/-3) — /snapshot
+- 06:02 — templates\capabilities\level-builders\level3-skills.md (+3/-3)
+- 06:02 — templates\capabilities\shared\native-tools.md (+4/-4) — /pulse`
+- 06:02 — templates\capabilities\shared\review-reception.md (+1/-1) — When you receive a /audit result or code review feedback, yo
+- 06:02 — templates\capabilities\shared\security.md (+1/-1) — Cheaper than catching them at `/ship` or `/audit` time.
+- 06:01 — templates\capabilities\shared\domain-advisor-generator.md (+1/-1) — `/blueprint` creates milestones that touch domain-specific d
+- 06:01 — templates\capabilities\shared\context-artifacts.md (+2/-2) — Before /audit
+- 06:01 — templates\agents\cc-test-maintainer.md (+1/-1)
+- 06:01 — templates\agents\code-reviewer.md (+1/-1) — Autonomous code review agent. Runs on /audit or when asked t
+- 06:01 — DOCS.md (+30/-30)
+- 05:59 — README.md (+17/-17) — /audit → /ship → deploy
+- 05:58 — templates\commands\loop.md (+2/-2) — /pulse`
+- 05:58 — templates\commands\copilot.md (+6/-6) — 4. Final `/snapshot`
+- 05:58 — templates\commands\snapshot.md — /snapshot — Mid-Session Snapshot
+- 05:58 — templates\commands\pulse.md — /pulse — Project Overview
+- 05:58 — templates\commands\audit.md — /audit — Spec-First Code Review
+- 05:58 — templates\commands\blueprint.md

@@ -2,7 +2,7 @@
 
 ## Quick Start
 1. Run `/setup` — scans this project, fills in the sections below, creates `goals.md`
-2. Run `/status` — shows current state of the project
+2. Run `/pulse` — shows current state of the project
 3. Run `/add [what to build]` to add features, `/fix [what's broken]` to fix bugs
 4. Run `/persist` before closing — saves session state so next session picks up where you left off
 
@@ -28,12 +28,12 @@ Load ONLY the files relevant to the current task — nothing else.
 
 Quick dispatch (core — used most sessions):
 - /add → commands/add.md · /fix → commands/fix.md · /test → commands/test.md
-- /review → commands/review.md · /plan → commands/plan.md · /ship → commands/ship.md
-- /status → commands/status.md · /explain → commands/explain.md
+- /audit → commands/audit.md · /blueprint → commands/blueprint.md · /ship → commands/ship.md
+- /pulse → commands/pulse.md · /explain → commands/explain.md
 - Any code task → shared/tdd.md + shared/completion-rule.md
 
 Extended (load command file on use):
-- /setup · /dream · /checkpoint · /persist · /refactor · /doc · /loop
+- /setup · /dream · /snapshot · /persist · /refactor · /doc · /loop
 - /migrate · /deps · /find · /create · /reflect · /hookify
 
 Advanced (Level 5+):
@@ -48,4 +48,4 @@ When priorities conflict:
 3. {{PRIORITY_3}}
 
 ## Available Commands
-/dream · /setup · /fix · /add · /review · /test · /plan · /evolve · /debate · /checkpoint · /persist · /level-up · /ship · /status · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect · /hookify
+/dream · /setup · /fix · /add · /audit · /test · /blueprint · /evolve · /debate · /snapshot · /persist · /level-up · /ship · /pulse · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect · /hookify

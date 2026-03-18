@@ -54,10 +54,10 @@ When priorities conflict:
 ## Build Plan
 Read `ROADMAP.md` for the full 5-phase spec. Build order:
 1. Phase 1: templates/commands/copilot.md (the /copilot command)
-2. Phase 2: plan-tracker capability + structured /plan output
+2. Phase 2: plan-tracker capability + structured /blueprint output
 3. Phase 3: bin/copilot.js (Node.js runner loop — NOT bash)
-4. Phase 4: Wire /dream → /plan → /add → /evolve → /review → /ship into copilot flow
+4. Phase 4: Wire /dream → /blueprint → /add → /evolve → /audit → /ship into copilot flow
 5. Phase 5: Agent emergence (zero new code — /evolve already does it)
 
 ## Available Commands
-/dream · /setup · /fix · /add · /review · /test · /plan · /evolve · /debate · /checkpoint · /persist · /level-up · /ship · /status · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect · /hookify · /copilot · /reflexes
+/dream · /setup · /fix · /add · /audit · /test · /blueprint · /evolve · /debate · /snapshot · /persist · /level-up · /ship · /pulse · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect · /hookify · /copilot · /reflexes

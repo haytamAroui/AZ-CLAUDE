@@ -80,10 +80,10 @@ Runner loops. AZCLAUDE accumulates. Claude thinks.
 Every command in the pipeline detects copilot mode automatically (`[ -f .claude/copilot-intent.md ]`) and skips human interaction — no approval gates, no AskUserQuestion, no complexity gate pauses.
 
 ```
-Session 1:  /dream → /plan → /add M1 → /add M2 → /add M3 → /checkpoint
-Session 2:  /evolve → /add M4 → /add M5 → /add M6 → /checkpoint
-Session 3:  /evolve → /add M7 → /add M8 → /add M9 → /checkpoint
-Session 4:  /evolve → /review → /ship → COPILOT_COMPLETE
+Session 1:  /dream → /blueprint → /add M1 → /add M2 → /add M3 → /snapshot
+Session 2:  /evolve → /add M4 → /add M5 → /add M6 → /snapshot
+Session 3:  /evolve → /add M7 → /add M8 → /add M9 → /snapshot
+Session 4:  /evolve → /audit → /ship → COPILOT_COMPLETE
 ```
 
 ### Per Milestone
@@ -94,7 +94,7 @@ Session 4:  /evolve → /review → /ship → COPILOT_COMPLETE
 4. If still failing → log to `blockers.md`, skip, continue
 5. Commit: `{type}: {what} — {why}`
 6. Push + update `plan.md` status to `done`
-7. `/checkpoint` (compaction protection)
+7. `/snapshot` (compaction protection)
 
 ### Every 3 Milestones
 
@@ -128,7 +128,7 @@ This is the key differentiator. Copilot starts with **ZERO project agents**. The
 ```
 Session 1 (milestones 1-3):
   0 project agents
-  /dream + /plan + build basic structure
+  /dream + /blueprint + build basic structure
   Git: 3 commits touching fastapi/, next/, supabase/
 
 Session 2 (milestones 4-6):
@@ -145,7 +145,7 @@ Session 3 (milestones 7-9):
 
 Session 4 (milestones 10-12):
   Full evolved environment
-  /review → /ship → deploy
+  /audit → /ship → deploy
   COPILOT_COMPLETE
 ```
 
@@ -177,9 +177,9 @@ The runner is stateless. These files ARE the state.
 | File | Written by | Read by | Purpose |
 |------|-----------|---------|---------|
 | `.claude/copilot-intent.md` | Runner | /dream, /copilot | Original product description |
-| `.claude/plan.md` | /plan | /copilot, /add | Milestone tracker with status |
+| `.claude/plan.md` | /blueprint | /copilot, /add | Milestone tracker with status |
 | `.claude/memory/goals.md` | Hooks | Every session start | File breadcrumbs + session state |
-| `.claude/memory/checkpoints/*` | /checkpoint | Every session start | Reasoning snapshots |
+| `.claude/memory/checkpoints/*` | /snapshot | Every session start | Reasoning snapshots |
 | `.claude/memory/patterns.md` | /evolve, agents | Agents, /add | What works |
 | `.claude/memory/antipatterns.md` | /evolve, agents | Agents, /add | What broke |
 | `.claude/memory/decisions.md` | /debate | Agents | Architecture choices |
@@ -195,7 +195,7 @@ Three layers work silently. Context compaction stops being a problem.
 | Layer | Mechanism | Survives compaction | Automatic |
 |-------|-----------|-------------------|-----------|
 | **File breadcrumb** | PostToolUse → goals.md | ✓ WHERE + WHAT changed | ✓ Every edit |
-| **Reasoning snapshot** | /checkpoint → checkpoints/ | ✓ WHY decisions were made | Run every 15-20 turns |
+| **Reasoning snapshot** | /snapshot → checkpoints/ | ✓ WHY decisions were made | Run every 15-20 turns |
 | **Session narrative** | /persist → sessions/ | ✓ Full summary + next actions | Run before closing |
 
 `UserPromptSubmit` hook injects `goals.md` + latest checkpoint before every message. No re-explanation needed.
@@ -213,9 +213,9 @@ Three layers work silently. Context compaction stops being a problem.
 | `/setup` | Analyzes existing project. Detects domain + stack + scale. Builds everything |
 | `/add` | Add a feature. Complexity gate for 4+ files. In copilot mode: uses milestone spec directly |
 | `/fix` | REPRODUCE → INVESTIGATE → HYPOTHESIZE → FIX → show passing tests |
-| `/review` | Spec-first review. In copilot mode: reviews against copilot-intent.md |
+| `/audit` | Spec-first review. In copilot mode: reviews against copilot-intent.md |
 | `/test` | IDE diagnostics → framework detection → exit-code gate → failure classification |
-| `/plan` | Read-only analysis → structured plan.md with milestones. In copilot mode: skips approval |
+| `/blueprint` | Read-only analysis → structured plan.md with milestones. In copilot mode: skips approval |
 | `/ship` | Tests → secrets scan → commit → push. In copilot mode: auto-deploys to Vercel/Railway |
 | `/refactor` | Restructure safely. Tests before + after. Worktree isolation for risky changes |
 | `/doc` | Generate docs from code. Matches existing style |
@@ -239,9 +239,9 @@ Three layers work silently. Context compaction stops being a problem.
 
 | Command | What it does |
 |---------|-------------|
-| `/checkpoint` | Mid-session snapshot: WHY + decisions + what's next |
+| `/snapshot` | Mid-session snapshot: WHY + decisions + what's next |
 | `/persist` | End-of-session: goals, friction log, session summary |
-| `/status` | Health check + recent changes + current level |
+| `/pulse` | Health check + recent changes + current level |
 | `/explain` | Code or error → plain language |
 | `/loop` | Repeat any command on an interval |
 
@@ -359,18 +359,18 @@ azclaude-copilot/
 ├── ROADMAP.md                       ← 5-phase build spec
 ├── DOCS.md                          ← full user guide
 ├── tests/
-│   └── test-features.sh          ← 950 tests
+│   └── test-features.sh          ← 989 tests
 ```
 
 ---
 
 ## ✅ Verified
 
-950 tests. Every template, command, capability, agent, and CLI feature verified.
+989 tests. Every template, command, capability, agent, and CLI feature verified.
 
 ```bash
 bash tests/test-features.sh
-# Results: 950 passed, 0 failed, 950 total
+# Results: 989 passed, 0 failed, 989 total
 ```
 
 ---

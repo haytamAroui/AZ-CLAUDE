@@ -1,10 +1,10 @@
 ---
-name: status
+name: pulse
 description: Quick project overview — health check, recent changes, current level, next steps from goals.md.
 allowed-tools: Read, Bash, Grep
 ---
 
-# /status — Project Overview
+# /pulse — Project Overview
 
 Recent git activity:
 !`git log --oneline -5 2>/dev/null || echo 'no git history'`

@@ -61,7 +61,7 @@ Do not skip TaskUpdate — the user uses it to track what happened.
 
 **When to use in skills**:
 - `/debate` — enter plan mode during analysis (Phases 1-5). Exit before recording decision.
-- `/review` agents — enter plan mode on load, never exit (reviewers must never write)
+- `/audit` agents — enter plan mode on load, never exit (reviewers must never write)
 - `/dream` — enter plan mode during Phase 1 (environment scan), exit before building
 
 **Pattern**:
@@ -132,7 +132,7 @@ Show: "Scheduled: {command} every {interval}. CronList to view, CronDelete to ca
 
 **When to use in skills**:
 - `/fix Phase 1` — call this FIRST before running any test command. IDE already knows the error location.
-- `/status` — include diagnostic count in the health check
+- `/pulse` — include diagnostic count in the health check
 - Any skill that deals with TypeScript, ESLint, or language-server errors
 
 **Pattern**:
@@ -192,8 +192,8 @@ If the error references a third-party library and no local docs exist:
 | `ExitPlanMode` | `/debate` (before recording decision) |
 | `EnterWorktree` | `/evolve`, `/fix` (medium/low confidence) |
 | `CronCreate` | `/loop`, `/evolve` (post-run scheduling) |
-| `CronList` | `/loop stop`, `/status` |
+| `CronList` | `/loop stop`, `/pulse` |
 | `CronDelete` | `/loop stop` |
-| `mcp__ide__getDiagnostics` | `/fix` Phase 1, `/status` |
+| `mcp__ide__getDiagnostics` | `/fix` Phase 1, `/pulse` |
 | `WebSearch/WebFetch` | `/fix` self-correction, `/dream` (unfamiliar stack) |
 | `NotebookEdit` | `/setup` + `/dream` for Data/ML |
