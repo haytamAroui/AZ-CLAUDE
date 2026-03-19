@@ -1,4 +1,4 @@
-# Goals — AZCLAUDE COPILOT
+# Goals — AZCLAUDE
 Updated: 2026-03-19
 
 ## Current threads
@@ -26,3 +26,20 @@ Updated: 2026-03-19
 
 ## Open blockers
 - None
+
+
+## Done this session
+- 02:10 — package.json (+1/-1) — "version": "0.2.1",
+- 02:10 — README.md (+46/-40) — What You Get
+- 00:55 — package.json (+1/-1) — "version": "0.2.0",
+- 00:54 — templates\commands\setup.md (+23/-12) — Step 5: Generate Project-Specific Skills (MANDATORY — minimu
+- 00:53 — templates\commands\evolve.md (+29/-6) — Step 7: Generate or Update Project-Specific Skills and Agent
+
+## In progress
+- 02:14 — SECURITY.md (+2/-2) — AZCLAUDE does **not** manage or store API keys.
+- 02:14 — .claude\memory\decisions.md (+1/-1) — Architecture Decisions — AZCLAUDE
+- 02:13 — bin\copilot.js (+3/-3) — AZCLAUDE — Autonomous Runner (copilot mode)
+- 02:13 — DOCS.md (+5/-5) — > Version 0.2.1 · 1048 tests passing · AI coding environment
+- 02:13 — README.md (+1/-1) — | Feature | Claude Code | Ralph Loop | Lovable | Cursor | AZ
+- 02:13 — CLAUDE.md (+3/-4) — AZCLAUDE
+- 02:13 — package.json (+1/-1)

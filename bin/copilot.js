@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 /**
- * AZCLAUDE Copilot — Autonomous Runner
+ * AZCLAUDE — Autonomous Runner (copilot mode)
  *
  * The outer loop. Stateless. Dumb on purpose.
  * Restarts Claude Code sessions until COPILOT_COMPLETE or max sessions reached.
@@ -42,7 +42,7 @@ const maxSessions = parseInt(args[2] || '20', 10);
 
 if (args.includes('--help') || args.includes('-h')) {
   console.log(`
-  AZCLAUDE Copilot — Autonomous Product Builder
+  AZCLAUDE — Autonomous Mode
 
   Usage:
     npx azclaude-copilot <project-dir> <intent> [max-sessions]
@@ -134,7 +134,7 @@ if (resolvedProject === homeDir || resolvedProject === '/' || resolvedProject ==
 }
 
 console.log('\n════════════════════════════════════════════════');
-console.log('  AZCLAUDE COPILOT — Autonomous Mode');
+console.log('  AZCLAUDE — Autonomous Mode');
 console.log(`  Project:      ${projectDir}`);
 console.log(`  Max sessions: ${maxSessions}`);
 console.log(`  Mode:         ${resuming ? 'RESUME (plan.md exists)' : 'NEW (will run /blueprint)'}`);

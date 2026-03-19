@@ -154,7 +154,7 @@ After all non-blocked milestones complete:
 
 ## What Makes It Different
 
-| Feature | Claude Code | Ralph Loop | Lovable | Cursor | AZCLAUDE Copilot |
+| Feature | Claude Code | Ralph Loop | Lovable | Cursor | AZCLAUDE |
 |---------|------------|------------|---------|--------|-----------------|
 | Autonomous loop | -- | Yes | -- | -- | Yes |
 | Memory across sessions | -- | Git only | -- | -- | Goals + checkpoints + patterns + reflexes |

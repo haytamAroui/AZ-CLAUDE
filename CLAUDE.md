@@ -1,9 +1,8 @@
-# AZCLAUDE COPILOT
+# AZCLAUDE
 
 ## Identity
-Autonomous product builder. Describe a product once — AZCLAUDE Copilot builds it across sessions:
-planning, implementing, testing, committing, evolving, deploying. Zero human input after the first message.
-Forked from AZCLAUDE v1.0.0. New features: /copilot command, plan tracker, Node.js runner loop.
+AI coding environment — 26 commands, 8 skills, 7 agents, memory, reflexes, evolution.
+Install once, works on any stack. Copilot mode (/copilot) enables full autonomous building.
 Domain: Developer tooling | Stack: Node.js CLI, Markdown templates | Scale: STANDARD
 
 ## Rules

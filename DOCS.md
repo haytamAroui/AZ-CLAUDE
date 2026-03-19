@@ -1,12 +1,12 @@
-# AZCLAUDE Copilot -- Complete User Guide
+# AZCLAUDE -- Complete User Guide
 
-> Version 0.1.0 · 1048 tests passing · Autonomous product builder
+> Version 0.2.1 · 1048 tests passing · AI coding environment
 
 ---
 
 ## Table of Contents
 
-1. [What AZCLAUDE Copilot Is](#what-azclaude-copilot-is)
+1. [What AZCLAUDE Is](#what-azclaude-is)
 2. [Installation](#installation)
 3. [Copilot Mode (Autonomous)](#copilot-mode-autonomous)
 4. [First Steps After Install](#first-steps-after-install)
@@ -27,9 +27,9 @@
 
 ---
 
-## What AZCLAUDE Copilot Is
+## What AZCLAUDE Is
 
-AZCLAUDE Copilot is an autonomous product builder. Describe a product once -- AZCLAUDE Copilot builds it across sessions: planning, implementing, testing, committing, evolving, deploying. Zero human input after the first message.
+AZCLAUDE is an AI coding environment. 26 commands, 8 skills, 7 agents, memory, reflexes, evolution. Install once, works on any stack. Copilot mode builds autonomously across sessions: planning, implementing, testing, committing, evolving, deploying. Zero human input after the first message.
 
 The hero feature is **copilot mode**: a Node.js runner (`bin/copilot.js`) that restarts Claude Code sessions in a loop, while the AZCLAUDE environment inside each session decides what to build next, implements it, tests it, commits, and evolves the environment. The runner is stateless and dumb on purpose. All intelligence lives in the templates.
 

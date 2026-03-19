@@ -1,4 +1,4 @@
-# Architecture Decisions — AZCLAUDE Copilot
+# Architecture Decisions — AZCLAUDE
 
 ## Classification Drift Risk — 2026-03-18
 

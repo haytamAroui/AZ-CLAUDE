@@ -1,4 +1,4 @@
-# Security Policy — AZCLAUDE Copilot
+# Security Policy — AZCLAUDE
 
 ## Supported Versions
 
@@ -53,7 +53,7 @@ Response time: within 48 hours. Fix timeline: within 7 days for critical issues.
 
 ### Anthropic API Key
 
-AZCLAUDE Copilot does **not** manage or store API keys. The `claude` CLI handles authentication independently:
+AZCLAUDE does **not** manage or store API keys. The `claude` CLI handles authentication independently:
 
 ```bash
 # User authenticates once (stored by claude CLI, not by AZCLAUDE)
