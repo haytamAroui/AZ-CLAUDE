@@ -338,7 +338,7 @@ function installCapabilities(projectDir, cfg, full) {
     copyDir(path.join(src, dir), path.join(dst, dir));
   }
   ok(`Capabilities installed (${cfg}/capabilities/) — ${full ? 'full' : 'core'}`);
-  if (!full) info('Run npx azclaude --full to add intelligence capabilities (debate, pipeline, ELO)');
+  if (!full) info('Run npx azclaude-copilot --full to add intelligence capabilities (debate, pipeline, ELO)');
   info('manifest.md is your capability index — read it to find what to load');
 }
 
@@ -671,8 +671,8 @@ function runDemo() {
   console.log('\n════════════════════════════════════════════════');
   console.log('  Memory works. Context survives compaction.');
   console.log('  The hook fires on every file edit — no user action needed.');
-  console.log('\n  Install on your project:  npx azclaude');
-  console.log('  Check health:             npx azclaude doctor');
+  console.log('\n  Install on your project:  npx azclaude-copilot');
+  console.log('  Check health:             npx azclaude-copilot doctor');
   console.log('════════════════════════════════════════════════\n');
 }
 
@@ -872,7 +872,7 @@ function runDoctor() {
         try {
           const gs = JSON.parse(fs.readFileSync(globalSettings, 'utf8'));
           if (gs._azclaude) {
-            console.log('  ⚠ Global hooks still present — re-run npx azclaude to migrate');
+            console.log('  ⚠ Global hooks still present — re-run npx azclaude-copilot to migrate');
           }
         } catch {}
       }
@@ -908,7 +908,7 @@ function runDoctor() {
       chk('hook integrity hash matches',                     saved === current);
     }
 
-    info('Tip: re-run npx azclaude to upgrade to project-scoped hooks');
+    info('Tip: re-run npx azclaude-copilot to upgrade to project-scoped hooks');
   } else {
     console.log(`\n[ Hooks ]`);
     console.log(`  · hooks not supported for ${cli.name} — skipping`);
@@ -1014,7 +1014,7 @@ function runDoctor() {
     const hasGitFail     = failures.some(f => /uncommitted/.test(f));
     const hasMemoryFail  = failures.some(f => /checkpoints|sessions|codebase-map|goals/.test(f));
     console.log('');
-    if (hasCommandFail || hasHookFail) console.log('  Fix: re-run  npx azclaude  to install missing files');
+    if (hasCommandFail || hasHookFail) console.log('  Fix: re-run  npx azclaude-copilot  to install missing files');
     if (hasHookFail)                   console.log('  If hooks still fail: check that Node.js ≥ 16 is in PATH');
     if (hasGitFail)                    console.log('  Git: commit or stash uncommitted changes');
     if (hasMemoryFail)                 console.log('  Memory: run /setup or /persist to create missing files');
@@ -1127,9 +1127,12 @@ console.log('\n═════════════════════�
 console.log(`  Install mode: ${fullInstall ? 'full (all capabilities)' : 'core (shared + level-builders)'}`);
 console.log('  Architecture: lazy-loaded, manifest-driven');
 console.log('  Token cost per task: ~200-600 (vs ~21,000 monolith)');
-console.log(`  Next step: run /setup to configure this project`);
+console.log('');
 if (!fullInstall) {
-  console.log('');
-  console.log('  When ready for Level 5+: npx azclaude --full');
+  console.log('  Next steps:');
+  console.log('    1. npx azclaude-copilot --full   (Level 5+: debate, pipeline, ELO)');
+  console.log('    2. Open Claude Code and run /setup');
+} else {
+  console.log('  Next step: open Claude Code and run /setup');
 }
 console.log('════════════════════════════════════════════════\n');

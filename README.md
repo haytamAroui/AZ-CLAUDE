@@ -29,39 +29,58 @@ Zero dependencies. One install. Works on any stack.
 
 ## Install
 
+**Step 1 — core install** (26 commands, memory, reflexes, evolution):
+
 ```bash
-npx azclaude-copilot setup
+npx azclaude-copilot
 ```
 
-That's it. Your project now has the full AZCLAUDE environment in `.claude/`.
+**Step 2 — full install** (adds Level 5+: debate, pipeline, ELO — optional):
+
+```bash
+npx azclaude-copilot --full
+```
+
+**Step 3 — configure your project** (open Claude Code, then run):
+
+```
+/setup
+```
+
+That's it. Your project now has AZCLAUDE in `.claude/`.
 
 ---
 
 ## Three Ways to Use It
 
-### `/dream` — Start from an idea
+### 1. `/setup` — Configure an existing project
+
+Open Claude Code in your project, then run:
+
+```
+/setup
+```
+
+Analyzes your project's stack, domain, and scale. Fills CLAUDE.md. Generates project-specific skills and agents. Creates memory structure.
+
+### 2. `/dream` — Start from an idea
 
 ```
 /dream
 > "Build a compliance SaaS with trilingual support"
 ```
+
 Scaffolds the full project: CLAUDE.md, skills, agents, memory, milestones. You build from there.
 
-### `/setup` — Configure an existing project
-
-```
-/setup
-```
-Analyzes your project's stack, domain, and scale. Fills CLAUDE.md. Generates project-specific skills and agents. Creates memory structure.
-
-### `/copilot` — Full autonomous mode
+### 3. `/copilot` — Full autonomous mode
 
 ```bash
 npx azclaude-copilot . "Build a compliance SaaS with trilingual support"
 ```
+
 Walk away. AZCLAUDE plans, builds, tests, commits, evolves, and deploys. Come back to a working product with full git history.
 
-### Day-to-day commands
+### Day-to-day commands (in Claude Code terminal)
 
 ```bash
 /add [feature]   # add a feature with TDD
@@ -76,7 +95,8 @@ Walk away. AZCLAUDE plans, builds, tests, commits, evolves, and deploys. Come ba
 ### CLI commands
 
 ```bash
-npx azclaude-copilot setup          # install AZCLAUDE
+npx azclaude-copilot                # core install (26 commands, memory, reflexes)
+npx azclaude-copilot --full         # full install (adds debate, pipeline, ELO)
 npx azclaude-copilot doctor         # 32-check health audit
 npx azclaude-copilot . "intent" 30  # copilot with 30 session limit
 npx azclaude-copilot .              # resume existing copilot run
@@ -390,8 +410,8 @@ AZCLAUDE_HOOK_PROFILE=strict   claude   # all features + extra validation
 ### Doctor Audit
 
 ```bash
-npx azclaude doctor          # 32 checks: hooks, settings, commands, memory
-npx azclaude doctor --audit  # efficiency + security score
+npx azclaude-copilot doctor          # 32 checks: hooks, settings, commands, memory
+npx azclaude-copilot doctor --audit  # efficiency + security score
 ```
 
 See [SECURITY.md](SECURITY.md) for full details including known limitations and copilot-mode mitigations.
