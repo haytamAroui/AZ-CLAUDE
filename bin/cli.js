@@ -142,7 +142,7 @@ function buildHookEntries(scriptsDir) {
   return {
     UserPromptSubmit: [{ matcher: '',           hooks: [{ type: 'command', command: `"${nodeExe}" "${userPromptScript}"` }] }],
     Stop:             [{ matcher: '',           hooks: [{ type: 'command', command: `"${nodeExe}" "${stopScript}"` }]       }],
-    PostToolUse:      [{ matcher: 'Write|Edit', hooks: [{ type: 'command', command: `"${nodeExe}" "${postToolUseScript}"` }] }],
+    PostToolUse:      [{ matcher: 'Write|Edit|Read|Bash|Grep', hooks: [{ type: 'command', command: `"${nodeExe}" "${postToolUseScript}"` }] }],
   };
 }
 
