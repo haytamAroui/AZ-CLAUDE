@@ -1130,6 +1130,9 @@ check      "evolve: adds discovered_in on promote"  "templates/commands/evolve.m
 check      "evolve: checksums on promote"            "templates/commands/evolve.md" "checksums\|sha256"
 check      "cli: creates evolution-log.md"           "bin/cli.js" "evolution-log\.md"
 check      "cli: --full flag for advanced install"    "bin/cli.js" "npx azclaude --full\|fullInstall\|--full"
+check      "cli: --update flag for refreshing"       "bin/cli.js" "forceUpdate\|--update"
+check      "cli: commands updated with --update"     "bin/cli.js" "updated.*--update\|--update.*overwrite"
+check      "cli: agents updated with --update"       "bin/cli.js" "agent updated.*--update"
 
 # ─── /ship docs sync ──────────────────────────────────────────────────────────
 echo ""

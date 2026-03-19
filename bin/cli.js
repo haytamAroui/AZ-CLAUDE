@@ -341,11 +341,20 @@ function installCommands(projectDir, cfg) {
   for (const cmd of COMMANDS) {
     const src = path.join(TEMPLATE_DIR, 'commands', `${cmd}.md`);
     const dst = path.join(commandsDir, `${cmd}.md`);
-    if (!fs.existsSync(dst) && fs.existsSync(src)) {
+    if (!fs.existsSync(src)) continue;
+    if (!fs.existsSync(dst)) {
       fs.copyFileSync(src, dst);
       ok(`/${cmd} installed`);
-    } else if (fs.existsSync(dst)) {
-      info(`/${cmd} already exists — skipping`);
+    } else if (forceUpdate) {
+      // --update: overwrite with latest template
+      const srcContent = fs.readFileSync(src, 'utf8');
+      const dstContent = fs.readFileSync(dst, 'utf8');
+      if (srcContent !== dstContent) {
+        fs.copyFileSync(src, dst);
+        ok(`/${cmd} updated (--update)`);
+      }
+    } else {
+      info(`/${cmd} already exists — skipping (use --update to refresh)`);
     }
   }
 }
@@ -374,6 +383,13 @@ function installSkills(projectDir, cfg) {
         if (fs.existsSync(subSrc)) copyDir(subSrc, path.join(dstDir, sub));
       }
       ok(`${skill} skill installed (auto-invoked by model)`);
+    } else if (forceUpdate && fs.existsSync(src)) {
+      const srcContent = substitutePaths(fs.readFileSync(src, 'utf8'), cfg);
+      const dstContent = fs.readFileSync(dst, 'utf8');
+      if (srcContent !== dstContent) {
+        fs.writeFileSync(dst, srcContent);
+        ok(`${skill} skill updated (--update)`);
+      }
     } else if (fs.existsSync(dst)) {
       info(`${skill} skill already exists — skipping`);
     }
@@ -409,10 +425,18 @@ function installAgents(projectDir, cfg) {
   for (const agent of AGENTS) {
     const src = path.join(TEMPLATE_DIR, 'agents', `${agent}.md`);
     const dst = path.join(agentsDir, `${agent}.md`);
-    if (!fs.existsSync(dst) && fs.existsSync(src)) {
+    if (!fs.existsSync(src)) continue;
+    if (!fs.existsSync(dst)) {
       const content = substitutePaths(fs.readFileSync(src, 'utf8'), cfg);
       fs.writeFileSync(dst, content);
       ok(`${agent} agent installed`);
+    } else if (forceUpdate) {
+      const srcContent = substitutePaths(fs.readFileSync(src, 'utf8'), cfg);
+      const dstContent = fs.readFileSync(dst, 'utf8');
+      if (srcContent !== dstContent) {
+        fs.writeFileSync(dst, srcContent);
+        ok(`${agent} agent updated (--update)`);
+      }
     }
   }
 }
@@ -1018,12 +1042,14 @@ if (process.argv[2] === 'copilot') {
 }
 
 const fullInstall = process.argv.includes('--full');
+const forceUpdate = process.argv.includes('--update');
 const projectDir  = process.cwd();
 const cli         = detectCLI();
 
 console.log('\n════════════════════════════════════════════════');
 console.log('  AZCLAUDE — AI Coding Environment');
 console.log(`  CLI: ${cli.name} → installing to ${cli.cfg}/`);
+if (forceUpdate) console.log('  Mode: --update (refreshing all templates)');
 console.log('════════════════════════════════════════════════\n');
 
 // ── Detect conflicting installations ─────────────────────────────────────────
