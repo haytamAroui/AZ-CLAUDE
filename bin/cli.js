@@ -417,6 +417,46 @@ function installAgents(projectDir, cfg) {
   }
 }
 
+// ─── Capability Reference Verification ───────────────────────────────────────
+
+function verifyCapabilityReferences(projectDir, cfg) {
+  const dirsToScan = [
+    path.join(projectDir, cfg, 'commands'),
+    path.join(projectDir, cfg, 'agents'),
+  ];
+  const capPattern = /capabilities\/[^\s)}\]"'`,]+/g;
+  let checked = 0, missing = 0;
+  const seen = new Set();
+
+  for (const dir of dirsToScan) {
+    if (!fs.existsSync(dir)) continue;
+    const files = fs.readdirSync(dir).filter(f => f.endsWith('.md'));
+    for (const file of files) {
+      const content = fs.readFileSync(path.join(dir, file), 'utf8');
+      const matches = content.match(capPattern);
+      if (!matches) continue;
+      for (const ref of matches) {
+        const key = ref;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        checked++;
+        // Resolve relative to cfg dir (e.g. .claude/capabilities/shared/tdd.md)
+        const resolved = path.join(projectDir, cfg, ref);
+        if (!fs.existsSync(resolved)) {
+          warn(`Capability ref not found: ${ref} (in ${path.basename(dir)}/${file})`);
+          missing++;
+        }
+      }
+    }
+  }
+
+  if (checked > 0 && missing === 0) {
+    ok(`Capability references verified — ${checked} refs, all resolve`);
+  } else if (missing > 0) {
+    warn(`Capability references: ${missing}/${checked} missing — fix or remove stale refs`);
+  }
+}
+
 // ─── Rules File (CLAUDE.md / GEMINI.md / AGENTS.md) ──────────────────────────
 
 function installRulesFile(projectDir, cfg, rulesFile) {
@@ -986,6 +1026,23 @@ console.log('  AZCLAUDE — AI Coding Environment');
 console.log(`  CLI: ${cli.name} → installing to ${cli.cfg}/`);
 console.log('════════════════════════════════════════════════\n');
 
+// ── Detect conflicting installations ─────────────────────────────────────────
+const CLI_DIRS = ['.claude', '.gemini', '.opencode', '.codex', '.cursor'];
+const existing = CLI_DIRS.filter(d => {
+  const p = path.join(projectDir, d);
+  return fs.existsSync(p) && fs.statSync(p).isDirectory() && d !== cli.cfg;
+}).filter(d => {
+  // Only flag dirs that have AZCLAUDE content (commands/ or settings)
+  const p = path.join(projectDir, d);
+  return fs.existsSync(path.join(p, 'commands')) || fs.existsSync(path.join(p, 'settings.local.json'));
+});
+
+if (existing.length > 0) {
+  warn(`Found AZCLAUDE in other CLI directories: ${existing.join(', ')}`);
+  warn(`Installing to ${cli.cfg}/ — the other directories may be stale.`);
+  warn(`Consider removing stale dirs: ${existing.map(d => `rm -rf ${d}`).join(', ')}`);
+}
+
 verifyIntegrity(projectDir, cli.cfg, cli);
 
 // Hooks: project-scoped by default (settings.local.json), global as fallback
@@ -1010,6 +1067,9 @@ if (!fs.existsSync(evolLogPath)) {
   const header = '# Evolution History\n\n| Date | Before | After | Delta | Summary |\n|------|--------|-------|-------|---------|\n';
   try { fs.writeFileSync(evolLogPath, header); } catch (_) {}
 }
+
+// ── Post-install capability reference verification ───────────────────────────
+verifyCapabilityReferences(projectDir, cli.cfg);
 
 // ── Post-install boundary check (warn if collisions detected) ────────────────
 const postInstallValidator = path.join(projectDir, cli.cfg, 'scripts', 'validate-boundaries.sh');

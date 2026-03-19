@@ -430,7 +430,7 @@ azclaude-copilot/
 ├── DOCS.md                          <- full user guide
 ├── SECURITY.md                      <- security policy + architecture
 ├── tests/
-│   └── test-features.sh          ← 1048 tests
+│   └── test-features.sh          ← 1055 tests
 ```
 
 ---
@@ -456,11 +456,11 @@ The runner is stateless. These files ARE the state.
 
 ## Verified
 
-1048 tests. Every template, command, capability, agent, and CLI feature verified.
+1055 tests. Every template, command, capability, agent, and CLI feature verified.
 
 ```bash
 bash tests/test-features.sh
-# Results: 1048 passed, 0 failed, 1048 total
+# Results: 1055 passed, 0 failed, 1055 total
 ```
 
 ---

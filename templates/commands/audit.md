@@ -107,6 +107,19 @@ Issues:
 
 ---
 
+## Content Audit (educational/documentation projects only)
+
+Detect: `ls **/course* **/exam* **/quiz* **/lesson* knowledge/ docs/courses/ 2>/dev/null`
+
+If educational content detected:
+1. **Weight/percentage validation** — compare any stated percentages against source material
+2. **Internal link check** — verify all markdown links resolve to existing files/anchors
+3. **Content completeness** — check each section has substantive content (not just headers)
+4. **Consistency check** — domain names, numbering, terminology used consistently
+5. **Scroll depth warning** — flag any single page with 3000+ words (suggest splitting)
+
+---
+
 ## Completion Rule
 
 **ExitPlanMode**

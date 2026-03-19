@@ -127,6 +127,11 @@ Skip if project has < 10 files or < 5 commits.
 
 Load `capabilities/shared/quality-check.md` and run the full environment check.
 
+Verify all capability file references in commands and agents resolve to existing files:
+- Grep all `.claude/commands/*.md` and `.claude/agents/*.md` for `capabilities/` references
+- Check each referenced path exists under `.claude/`
+- Warn on any missing references — stale refs cause silent load failures
+
 **TaskUpdate → completed** for Run quality check.
 
 All ✓ required before printing "Setup complete."

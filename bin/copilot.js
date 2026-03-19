@@ -36,9 +36,11 @@ if (args[0] && SUBCOMMANDS.includes(args[0].toLowerCase())) {
   process.exit(r.status || 0);
 }
 
-const projectDir = path.resolve(args[0] || '.');
-const intentArg  = args[1] || '';
-const maxSessions = parseInt(args[2] || '20', 10);
+const deepMode   = args.includes('--deep');
+const filteredArgs = args.filter(a => a !== '--deep');
+const projectDir = path.resolve(filteredArgs[0] || '.');
+const intentArg  = filteredArgs[1] || '';
+const maxSessions = parseInt(filteredArgs[2] || '20', 10);
 
 if (args.includes('--help') || args.includes('-h')) {
   console.log(`
@@ -57,6 +59,7 @@ if (args.includes('--help') || args.includes('-h')) {
 
   Options:
     --help, -h    Show this help
+    --deep        Enable deep audit mode (content accuracy, UX, links, a11y)
     max-sessions  Maximum sessions before stopping (default: 20)
   `);
   process.exit(0);
@@ -176,6 +179,15 @@ for (let session = 1; session <= maxSessions; session++) {
   prompt += '\n\nRead .claude/commands/copilot.md now and follow it to continue autonomous building.';
   prompt += `\n\nOriginal intent: ${intent}`;
   prompt += `\n\nSession ${session}/${maxSessions}.`;
+
+  if (deepMode) {
+    prompt += '\n\nDEEP MODE: After code audit passes, also run:';
+    prompt += '\n1. Content accuracy audit — verify facts, percentages, links against source material';
+    prompt += '\n2. UX heuristic check — scroll depth, navigation efficiency, mobile responsiveness';
+    prompt += '\n3. Link validation — verify all internal/external links resolve';
+    prompt += '\n4. Accessibility audit — screen reader flow, focus order, color contrast';
+    prompt += '\nDo NOT declare COPILOT_COMPLETE until deep checks pass.';
+  }
 
   if (resuming || session > 1) {
     // Parse plan.md for milestone progress

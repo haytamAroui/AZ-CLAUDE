@@ -768,6 +768,8 @@ check "installAgents function"                   "$CLI" "installAgents"
 check "createDirectories function"               "$CLI" "createDirectories"
 check "ensureSharedSkillsDir function"           "$CLI" "ensureSharedSkillsDir"
 check "knowledge-index.md stub creation"        "$CLI" "knowledge-index"
+check "cli: detects conflicting installations"  "$CLI" "conflicting\|stale\|other CLI"
+check "cli: warns about stale dirs"             "$CLI" "stale\|rm -rf\|Consider removing"
 
 # ─────────────────────────────────────────────
 echo ""
@@ -1606,6 +1608,12 @@ check      "boundaries: JSON report output"             "$VB" "boundaries.json"
 check      "boundaries: timestamp in report"             "$VB" "timestamp"
 check      "boundaries: install-time check"              "bin/cli.js" "postInstallValidator\|Post-install boundary"
 
+# ─── Capability reference verification ────────────────────────────────────────
+echo ""
+echo "─── Capability reference verification ───"
+check      "cap-refs: verifyCapabilityReferences function"  "bin/cli.js" "verifyCapabilityReferences"
+check      "cap-refs: setup quality gate checks refs"       "$CMD/setup.md" "capability file references.*commands and agents\|capability.*references.*resolve"
+
 # ─── State-aware copilot prompt ──────────────────────────────────────────────
 echo ""
 echo "─── State-aware copilot ───"
@@ -1619,6 +1627,13 @@ check      "copilot: state-aware prompt"                 "bin/copilot.js" "Plan 
 check      "copilot: blocker awareness"                  "bin/copilot.js" "blockers.md\|blocked.*retry"
 check      "copilot: evolve trigger hint"                "bin/copilot.js" "evolve\|reflexes"
 check      "copilot: all-done detection"                 "bin/copilot.js" "All milestones done\|audit.*ship"
+
+# ─── Content audit + deep mode ────────────────────────────────────────────────
+echo ""
+echo "─── Content audit + deep mode ───"
+check      "audit: content audit for educational projects"  "$CMD/audit.md" "Content Audit.*educational\|Weight.*percentage validation\|educational.*documentation"
+check      "copilot: --deep flag support"                   "bin/copilot.js" "deepMode\|--deep"
+check      "copilot: deep mode prompt additions"            "bin/copilot.js" "DEEP MODE.*audit\|Content accuracy audit\|Accessibility audit"
 
 # ─── Pulse health snapshot ───────────────────────────────────────────────────
 echo ""
