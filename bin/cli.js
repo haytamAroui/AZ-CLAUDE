@@ -310,10 +310,20 @@ function installCapabilities(projectDir, cfg, full) {
     // Always install missing core dirs (e.g. evolution/ added in v0.1.6)
     const dirs = full ? FULL_CAP_DIRS : CORE_CAP_DIRS;
     for (const dir of dirs) {
+      const srcSub = path.join(src, dir);
       const dstSub = path.join(dst, dir);
       if (!fs.existsSync(dstSub)) {
-        copyDir(path.join(src, dir), dstSub);
+        copyDir(srcSub, dstSub);
         ok(`${dir}/ capabilities added`);
+      } else {
+        // Copy any new files added to existing subdirs (e.g. reflexes.md)
+        for (const entry of fs.readdirSync(srcSub, { withFileTypes: true })) {
+          if (!entry.isFile()) continue;
+          const d = path.join(dstSub, entry.name);
+          if (!fs.existsSync(d)) {
+            fs.copyFileSync(path.join(srcSub, entry.name), d);
+          }
+        }
       }
     }
     ok('Capabilities verified — all dirs present');
@@ -448,7 +458,7 @@ function verifyCapabilityReferences(projectDir, cfg) {
     path.join(projectDir, cfg, 'commands'),
     path.join(projectDir, cfg, 'agents'),
   ];
-  const capPattern = /capabilities\/[^\s)}\]"'`,]+/g;
+  const capPattern = /capabilities\/[^\s)}\]"'`,{]+/g;
   let checked = 0, missing = 0;
   const seen = new Set();
 
@@ -460,6 +470,7 @@ function verifyCapabilityReferences(projectDir, cfg) {
       const matches = content.match(capPattern);
       if (!matches) continue;
       for (const ref of matches) {
+        if (!ref.endsWith('.md')) continue; // skip template placeholders like level{N}.md
         const key = ref;
         if (seen.has(key)) continue;
         seen.add(key);
