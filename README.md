@@ -1,18 +1,17 @@
 <p align="center">
-  <h1 align="center">AZCLAUDE COPILOT</h1>
-  <p align="center"><strong>Describe a product once. Walk away. Come back to a deployed app with full git history.</strong></p>
+  <h1 align="center">AZCLAUDE</h1>
+  <p align="center"><strong>AI coding environment that learns, evolves, and builds autonomously.</strong></p>
   <p align="center">
     <a href="https://www.npmjs.com/package/azclaude-copilot"><img src="https://img.shields.io/npm/v/azclaude-copilot.svg" alt="npm version"></a>
-    <a href="https://github.com/haytamAroui/AZ-CLAUDE-COPILOT/actions"><img src="https://img.shields.io/badge/tests-1002%20passing-brightgreen" alt="tests"></a>
+    <a href="https://github.com/haytamAroui/AZ-CLAUDE-COPILOT/actions"><img src="https://img.shields.io/badge/tests-1048%20passing-brightgreen" alt="tests"></a>
     <a href="https://github.com/haytamAroui/AZ-CLAUDE-COPILOT/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license"></a>
     <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D16-brightgreen" alt="node version"></a>
   </p>
   <p align="center">
-    <a href="#one-command">One Command</a> ·
-    <a href="#how-it-works">How It Works</a> ·
-    <a href="#the-pipeline">Pipeline</a> ·
+    <a href="#install">Install</a> ·
+    <a href="#three-ways-to-use-it">Use It</a> ·
+    <a href="#what-you-get">What You Get</a> ·
     <a href="#evidence-based-intelligence">Intelligence</a> ·
-    <a href="#memory-system">Memory</a> ·
     <a href="#all-26-commands">Commands</a> ·
     <a href="DOCS.md">Full Docs</a>
   </p>
@@ -20,67 +19,74 @@
 
 ---
 
-## The Problem
+## What is AZCLAUDE?
 
-Every AI coding tool makes you the project manager. You prompt, review, approve, prompt again. You are the bottleneck. Context resets every session. Agents don't learn. Nothing accumulates.
+An AI coding environment you install into any project. It gives Claude Code (or Gemini CLI, Codex, OpenCode, Cursor) **26 commands, 8 auto-invoked skills, 7 agents, memory across sessions, learned reflexes, and self-evolving infrastructure**.
 
-**AZCLAUDE Copilot removes you from the loop entirely.**
-
-```
-Input:   "Build EU AI Act compliance SaaS with trilingual support"
-Output:  Deployed product with full git history, evolved agents, copilot-report.md
-
-Human input after first message: ZERO
-```
+Zero dependencies. One install. Works on any stack.
 
 ---
 
-## Quick Start
-
-### 1. Install into your project
+## Install
 
 ```bash
 npx azclaude-copilot setup
 ```
 
-This installs CLAUDE.md, 26 commands, 8 skills, 7 agents, hooks, and capabilities into your project's `.claude/` directory. Works with Claude Code, Gemini CLI, Codex, OpenCode, and Cursor.
+That's it. Your project now has the full AZCLAUDE environment in `.claude/`.
 
-### 2. Run autonomously (copilot mode)
+---
+
+## Three Ways to Use It
+
+### `/dream` — Start from an idea
+
+```
+/dream
+> "Build a compliance SaaS with trilingual support"
+```
+Scaffolds the full project: CLAUDE.md, skills, agents, memory, milestones. You build from there.
+
+### `/setup` — Configure an existing project
+
+```
+/setup
+```
+Analyzes your project's stack, domain, and scale. Fills CLAUDE.md. Generates project-specific skills and agents. Creates memory structure.
+
+### `/copilot` — Full autonomous mode
 
 ```bash
-npx azclaude-copilot . "EU AI Act compliance SaaS with trilingual support"
+npx azclaude-copilot . "Build a compliance SaaS with trilingual support"
+```
+Walk away. AZCLAUDE plans, builds, tests, commits, evolves, and deploys. Come back to a working product with full git history.
+
+### Day-to-day commands
+
+```bash
+/add [feature]   # add a feature with TDD
+/fix [bug]        # reproduce → investigate → fix → verify
+/audit            # spec-first code review
+/test             # run tests, classify failures
+/evolve           # detect gaps, generate fixes, learn
+/ship             # tests → secrets scan → commit → push → deploy
+/pulse            # health check — what's the state of things?
 ```
 
-Walk away. Come back to:
-- Full git history (one commit per milestone)
-- Deployed product
-- `copilot-report.md` with everything that was built
-- Evolved environment with project-specific agents and learned reflexes
-
-### 3. Or use commands manually
+### CLI commands
 
 ```bash
-/setup          # analyze project, detect stack + domain
-/dream          # scaffold from idea
-/add            # add a feature
-/fix            # fix a bug
-/audit          # review code
-/pulse          # health check
-```
-
-### Other commands
-
-```bash
-npx azclaude-copilot . intent.md 30     # intent from file, 30 session limit
-npx azclaude-copilot .                   # resume existing project
-npx azclaude-copilot doctor             # run health check (32 checks)
+npx azclaude-copilot setup          # install AZCLAUDE
+npx azclaude-copilot doctor         # 32-check health audit
+npx azclaude-copilot . "intent" 30  # copilot with 30 session limit
+npx azclaude-copilot .              # resume existing copilot run
 ```
 
 ---
 
-## How It Works
+## What You Get
 
-Three layers. The runner is dumb. The brain is smart. The environment accumulates.
+26 commands, 8 skills, 7 agents, memory, reflexes, evolution. Here's how the layers work:
 
 ```
 +-----------------------------------------------------------+
