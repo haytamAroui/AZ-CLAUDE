@@ -20,12 +20,11 @@ Update it at the end of every session with /persist.
 bin/cli.js              — CLI installer (inherited from AZCLAUDE)
 bin/copilot.js          — outer loop runner (restarts Claude Code sessions until done)
 templates/CLAUDE.md     — template installed into user projects
-templates/commands/     — 26 command files (+/copilot, +/reflexes)
+templates/commands/     — command files (copilot, reflexes, etc.)
 templates/skills/       — 8 SKILL.md files with references/
 templates/capabilities/ — manifest + shared + level-builders + evolution + intelligence
 templates/agents/       — orchestrator-init + loop-controller + code-reviewer + test-writer + cc-template-author + cc-cli-integrator + cc-test-maintainer
 templates/scripts/      — env-scan.sh (JSON output, ~200 tokens)
-ROADMAP.md              — 5-phase build plan (the spec for this product)
 tests/test-features.sh  — grep-based tests, all must pass before commit
 ```
 
@@ -43,6 +42,8 @@ Quick dispatch:
 - /evolve → commands/evolve.md → evolution/detect + generate + evaluate
 - /debate → commands/debate.md → intelligence/debate.md
 - /persist → commands/persist.md
+- /reflect → commands/reflect.md (self-improving CLAUDE.md)
+- Release → bump package.json, run tests, commit, push, npm publish
 
 ## Trade-Off Hierarchies
 When priorities conflict:
@@ -50,13 +51,13 @@ When priorities conflict:
 2. Real behavior > claimed behavior — if it can't be tested, it doesn't exist
 3. User clarity > framework elegance — the user is the last consumer, optimize for them
 
-## Build Plan
-Read `ROADMAP.md` for the full 5-phase spec. Build order:
-1. Phase 1: templates/commands/copilot.md (the /copilot command)
-2. Phase 2: plan-tracker capability + structured /blueprint output
-3. Phase 3: bin/copilot.js (Node.js runner loop — NOT bash)
-4. Phase 4: Wire /dream → /blueprint → /add → /evolve → /audit → /ship into copilot flow
-5. Phase 5: Agent emergence (zero new code — /evolve already does it)
+## Release Process
+1. Edit code
+2. Run `bash tests/test-features.sh` — all must pass
+3. Bump version in `package.json`
+4. Commit with test count in message
+5. `git push origin main`
+6. `npm publish`
 
 ## Available Commands
 /dream · /setup · /fix · /add · /audit · /test · /blueprint · /evolve · /debate · /snapshot · /persist · /level-up · /ship · /pulse · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect · /hookify · /copilot · /reflexes
