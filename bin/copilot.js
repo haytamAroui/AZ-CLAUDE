@@ -25,13 +25,16 @@ const args       = process.argv.slice(2);
 // ── Subcommand routing ──────────────────────────────────────────────────────
 // Catch `npx azclaude-copilot setup` and similar — run the installer instead
 const SUBCOMMANDS = ['setup', 'init', 'install', 'doctor'];
+const CLI_FLAGS   = ['--update', '--full', '--audit'];
 if (args[0] && SUBCOMMANDS.includes(args[0].toLowerCase())) {
-  const subDir = path.resolve(args[1] || '.');
-  console.log(`\n  Running AZCLAUDE installer on ${subDir}...\n`);
+  const subFlags = args.filter(a => CLI_FLAGS.includes(a));
+  const subPositional = args.slice(1).filter(a => !CLI_FLAGS.includes(a));
+  const subDir = path.resolve(subPositional[0] || '.');
+  console.log(`\n  Running AZCLAUDE installer on ${subDir}...${subFlags.length ? ' (' + subFlags.join(' ') + ')' : ''}\n`);
   const cliPath = path.join(__dirname, 'cli.js');
   const subArgs = args[0].toLowerCase() === 'doctor'
-    ? [cliPath, subDir, '--doctor']
-    : [cliPath, subDir];
+    ? [cliPath, subDir, '--doctor', ...subFlags]
+    : [cliPath, subDir, ...subFlags];
   const r = spawnSync('node', subArgs, { cwd: subDir, stdio: 'inherit' });
   process.exit(r.status || 0);
 }
