@@ -3,7 +3,7 @@
   <p align="center"><strong>AI coding environment that learns, evolves, and builds autonomously.</strong></p>
   <p align="center">
     <a href="https://www.npmjs.com/package/azclaude-copilot"><img src="https://img.shields.io/npm/v/azclaude-copilot.svg" alt="npm version"></a>
-    <a href="https://github.com/haytamAroui/AZ-CLAUDE-COPILOT/actions"><img src="https://img.shields.io/badge/tests-1048%20passing-brightgreen" alt="tests"></a>
+    <a href="https://github.com/haytamAroui/AZ-CLAUDE-COPILOT/actions/workflows/tests.yml"><img src="https://github.com/haytamAroui/AZ-CLAUDE-COPILOT/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
     <a href="https://github.com/haytamAroui/AZ-CLAUDE-COPILOT/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license"></a>
     <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D16-brightgreen" alt="node version"></a>
   </p>
@@ -430,7 +430,7 @@ azclaude-copilot/
 ├── DOCS.md                          <- full user guide
 ├── SECURITY.md                      <- security policy + architecture
 ├── tests/
-│   └── test-features.sh          ← 1055 tests
+│   └── test-features.sh          ← 1058 tests
 ```
 
 ---
@@ -456,11 +456,11 @@ The runner is stateless. These files ARE the state.
 
 ## Verified
 
-1055 tests. Every template, command, capability, agent, and CLI feature verified.
+1058 tests. Every template, command, capability, agent, and CLI feature verified.
 
 ```bash
 bash tests/test-features.sh
-# Results: 1055 passed, 0 failed, 1055 total
+# Results: 1058 passed, 0 failed, 1058 total
 ```
 
 ---
