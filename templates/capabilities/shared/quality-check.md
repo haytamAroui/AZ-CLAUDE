@@ -27,7 +27,7 @@ echo "--- Core files ---"
 [ -f .claude/capabilities/manifest.md ] && echo "✓ manifest.md" || echo "✗ manifest.md MISSING"
 
 echo "--- Commands ---"
-for cmd in dream setup fix add review test plan evolve debate persist level-up ship status explain loop; do
+for cmd in dream setup fix add audit test blueprint evolve debate persist level-up ship pulse explain loop; do
   [ -f ".claude/commands/$cmd.md" ] && echo "✓ /$cmd" || echo "✗ /$cmd MISSING"
 done
 
@@ -67,6 +67,30 @@ for skill in .claude/commands/*.md; do
   # Check for frontmatter
   grep -q '^---' "$skill" && echo "✓ $name: has frontmatter" || echo "✗ $name: MISSING frontmatter"
 done
+```
+
+---
+
+### Capability Reference Check
+
+Verify all `capabilities/` references in commands and agents resolve to existing files:
+
+```bash
+echo "--- Capability references ---"
+missing=0
+for dir in .claude/commands .claude/agents; do
+  [ -d "$dir" ] || continue
+  for f in "$dir"/*.md; do
+    refs=$(grep -oE 'capabilities/[^ )\]}"'"'"',]+' "$f" 2>/dev/null | sort -u)
+    for ref in $refs; do
+      if [ ! -f ".claude/$ref" ] && [ ! -d ".claude/$ref" ]; then
+        echo "✗ Missing: $ref (in $(basename $f))"
+        missing=$((missing + 1))
+      fi
+    done
+  done
+done
+[ "$missing" -eq 0 ] && echo "✓ All capability references resolve" || echo "✗ $missing broken references"
 ```
 
 ---
