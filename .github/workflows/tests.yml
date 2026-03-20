@@ -35,6 +35,8 @@ jobs:
               'templates/agents/problem-architect.md',
               'templates/agents/milestone-builder.md',
               'templates/capabilities/shared/intelligent-dispatch.md',
+              'templates/capabilities/shared/security.md',
+              'templates/hooks/pre-tool-use.js',
               'bin/cli.js',
               'bin/copilot.js'
             ];

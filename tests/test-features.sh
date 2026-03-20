@@ -1752,6 +1752,7 @@ echo "─── Content audit + deep mode ───"
 check      "audit: content audit for educational projects"  "$CMD/audit.md" "Content Audit.*educational\|Weight.*percentage validation\|educational.*documentation"
 check      "copilot: --deep flag support"                   "bin/copilot.js" "deepMode\|--deep"
 check      "copilot: deep mode prompt additions"            "bin/copilot.js" "DEEP MODE.*audit\|Content accuracy audit\|Accessibility audit"
+check      "copilot: --deep uses Opus model"               "bin/copilot.js" "claude-opus-4-6\|deepMode.*opus\|opus.*deepMode"
 
 # ─── Pulse health snapshot ───────────────────────────────────────────────────
 echo ""

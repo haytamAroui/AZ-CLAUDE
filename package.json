@@ -3,8 +3,8 @@
   "version": "0.4.4",
   "description": "AI coding environment — 26 commands, 8 skills, 10 agents, memory, reflexes, evolution. Install once, works on any stack.",
   "bin": {
-    "azclaude": "./bin/cli.js",
-    "azclaude-copilot": "./bin/copilot.js"
+    "azclaude": "bin/cli.js",
+    "azclaude-copilot": "bin/copilot.js"
   },
   "keywords": [
     "claude",
@@ -18,7 +18,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/haytamAroui/AZ-CLAUDE-COPILOT.git"
+    "url": "git+https://github.com/haytamAroui/AZ-CLAUDE-COPILOT.git"
   },
   "homepage": "https://github.com/haytamAroui/AZ-CLAUDE-COPILOT#readme",
   "bugs": {

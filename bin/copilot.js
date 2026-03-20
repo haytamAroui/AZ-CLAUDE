@@ -216,7 +216,8 @@ for (let session = 1; session <= maxSessions; session++) {
   const result = spawnSync('claude', [
     '--dangerously-skip-permissions',
     '-p', prompt,
-    '--output-format', 'text'
+    '--output-format', 'text',
+    ...(deepMode ? ['--model', 'claude-opus-4-6'] : [])
   ], {
     cwd: projectDir,
     stdio: 'inherit',
