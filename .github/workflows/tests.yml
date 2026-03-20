@@ -25,3 +25,46 @@ jobs:
 
       - name: Run Node smoke tests
         run: node --test tests/node-smoke.test.js
+
+      - name: Verify package structure (agents ship correctly)
+        run: |
+          node -e "
+            const fs = require('fs');
+            const required = [
+              'templates/agents/orchestrator.md',
+              'templates/agents/problem-architect.md',
+              'templates/agents/milestone-builder.md',
+              'templates/capabilities/shared/intelligent-dispatch.md',
+              'bin/cli.js',
+              'bin/copilot.js'
+            ];
+            let missing = [];
+            for (const f of required) {
+              if (!fs.existsSync(f)) missing.push(f);
+            }
+            if (missing.length > 0) {
+              console.error('Missing required files:', missing);
+              process.exit(1);
+            }
+            console.log('Package structure OK — all', required.length, 'required files present');
+          "
+
+      - name: Verify CLI registers new agents
+        run: |
+          node -e "
+            const src = require('fs').readFileSync('bin/cli.js', 'utf8');
+            const required = ['orchestrator', 'problem-architect', 'milestone-builder'];
+            let missing = [];
+            for (const a of required) {
+              if (!src.includes(a)) missing.push(a);
+            }
+            if (missing.length > 0) {
+              console.error('CLI AGENTS array missing:', missing);
+              process.exit(1);
+            }
+            console.log('CLI agent registration OK');
+          "
+
+      - name: Dry-run npm pack (verify publish structure)
+        run: npm pack --dry-run 2>&1 | grep -E "files|kB|total" | tail -5
+        if: matrix.node-version == '22'
