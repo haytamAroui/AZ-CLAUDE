@@ -155,6 +155,7 @@ Cheaper than catching them at `/ship` or `/audit` time.
 
 | Pattern | Risk | Action |
 |---|---|---|
+| `${{ github.event.` in `run:` steps | GitHub Actions workflow injection | Warn — use `${{ github.event.pull_request.title }}` only in env:, never directly in run: |
 | `eval(` / `new Function(` | Code injection | Warn — suggest alternative |
 | `os.system(` / `subprocess.call(` with `shell=True` | Command injection | Warn — suggest subprocess.run with list args |
 | `child_process.exec(` | Command injection | Warn — suggest execFile or spawn |
@@ -166,9 +167,10 @@ Cheaper than catching them at `/ship` or `/audit` time.
 **Implementation:** Add a PreToolUse hook with matcher `Edit|Write|MultiEdit`:
 ```bash
 # In the hook script, scan the new content for patterns:
-echo "$CLAUDE_TOOL_INPUT" | grep -qE 'eval\(|os\.system\(|pickle\.load' && \
+echo "$CLAUDE_TOOL_INPUT" | grep -qE 'eval\(|os\.system\(|pickle\.load|\$\{\{.*github\.event\.' && \
   echo "⚠ Security: potentially unsafe pattern detected. Review before proceeding."
 ```
 
 **Rule:** Warn, don't block (except hardcoded secrets). The developer may have a
 valid reason. But make the pattern visible so it gets reviewed.
+**GitHub Actions injection** is an exception — always treat `${{ github.event.* }}` in `run:` steps as HIGH risk because it allows attackers to inject arbitrary shell commands via PR titles, issue bodies, or comment text.

@@ -118,7 +118,7 @@ function substitutePaths(content, cfg) {
 
 // ─── Hook Scripts ─────────────────────────────────────────────────────────────
 
-const HOOK_SCRIPTS = ['user-prompt.js', 'stop.js', 'post-tool-use.js'];
+const HOOK_SCRIPTS = ['user-prompt.js', 'stop.js', 'post-tool-use.js', 'pre-tool-use.js'];
 
 function copyHookScripts(dstDir) {
   fs.mkdirSync(dstDir, { recursive: true });
@@ -139,9 +139,11 @@ function buildHookEntries(scriptsDir) {
   const userPromptScript  = path.join(scriptsDir, 'user-prompt.js');
   const stopScript        = path.join(scriptsDir, 'stop.js');
   const postToolUseScript = path.join(scriptsDir, 'post-tool-use.js');
+  const preToolUseScript  = path.join(scriptsDir, 'pre-tool-use.js');
   return {
-    UserPromptSubmit: [{ matcher: '',           hooks: [{ type: 'command', command: `"${nodeExe}" "${userPromptScript}"` }] }],
-    Stop:             [{ matcher: '',           hooks: [{ type: 'command', command: `"${nodeExe}" "${stopScript}"` }]       }],
+    UserPromptSubmit: [{ matcher: '',                           hooks: [{ type: 'command', command: `"${nodeExe}" "${userPromptScript}"` }]  }],
+    Stop:             [{ matcher: '',                           hooks: [{ type: 'command', command: `"${nodeExe}" "${stopScript}"` }]         }],
+    PreToolUse:       [{ matcher: 'Write|Edit|MultiEdit',      hooks: [{ type: 'command', command: `"${nodeExe}" "${preToolUseScript}"` }]  }],
     PostToolUse:      [{ matcher: 'Write|Edit|Read|Bash|Grep', hooks: [{ type: 'command', command: `"${nodeExe}" "${postToolUseScript}"` }] }],
   };
 }

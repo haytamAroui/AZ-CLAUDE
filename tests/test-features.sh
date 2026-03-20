@@ -1152,6 +1152,24 @@ check        "hooks: post-tool-use respects AZCLAUDE_CFG"   "templates/hooks/pos
 check        "hooks: post-tool-use git timeout"             "templates/hooks/post-tool-use.js" "timeout.*3000\|3000"
 check        "hooks: plugin PostToolUse matches Write|Edit" "hooks/hooks.json"                 "Write|Edit"
 
+# Pre-tool-use security hook
+check_file   "hooks: pre-tool-use.js template exists"        "templates/hooks/pre-tool-use.js"
+check        "hooks: pre-tool-use reads stdin fd 0"          "templates/hooks/pre-tool-use.js"  "readFileSync.*0\b"
+check        "hooks: pre-tool-use gates on Edit|Write"       "templates/hooks/pre-tool-use.js"  "Edit.*Write\|Write.*Edit\|MultiEdit"
+check        "hooks: pre-tool-use skips node_modules"        "templates/hooks/pre-tool-use.js"  "node_modules"
+check        "hooks: pre-tool-use skips .md files"           "templates/hooks/pre-tool-use.js"  "\.md\b\|\.md'"
+check        "hooks: pre-tool-use warns eval"                "templates/hooks/pre-tool-use.js"  "eval"
+check        "hooks: pre-tool-use warns dangerouslySetInnerHTML" "templates/hooks/pre-tool-use.js" "dangerouslySetInnerHTML"
+check        "hooks: pre-tool-use warns pickle.load"         "templates/hooks/pre-tool-use.js"  "pickle\.load"
+check        "hooks: pre-tool-use warns child_process.exec"  "templates/hooks/pre-tool-use.js"  "child_process\.exec\|child_process"
+check        "hooks: pre-tool-use blocks hardcoded secrets"  "templates/hooks/pre-tool-use.js"  "AKIA\|ghp_\|sk-"
+check        "hooks: pre-tool-use exit 2 to block"          "templates/hooks/pre-tool-use.js"  "exit.*2\|process\.exit(2)"
+check        "hooks: pre-tool-use session dedup"             "templates/hooks/pre-tool-use.js"  "azclaude-sec\|dedup\|warned"
+check        "hooks: pre-tool-use warns GH Actions injection" "templates/hooks/pre-tool-use.js" "github\.event\|Actions.*inject\|workflow.*inject"
+check        "hooks: cli installs pre-tool-use script"       "bin/cli.js"                       "pre-tool-use\.js"
+check        "hooks: cli wires PreToolUse event"             "bin/cli.js"                       "PreToolUse"
+check        "security: GH Actions injection pattern"        "templates/capabilities/shared/security.md" "github\.event\|Actions.*inject\|workflow.*inject"
+
 # Performance hooks
 check        "hooks: user-prompt caps Done to 20"         "templates/hooks/user-prompt.js"   "MAX_DONE.*20\|MAX_DONE = 20"
 check        "hooks: user-prompt caps checkpoint to 50"   "templates/hooks/user-prompt.js"   "MAX_CP.*50\|MAX_CP = 50"
