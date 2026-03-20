@@ -1,7 +1,7 @@
 {
   "name": "azclaude-copilot",
-  "version": "0.3.9",
-  "description": "AI coding environment — 26 commands, 8 skills, 7 agents, memory, reflexes, evolution. Install once, works on any stack.",
+  "version": "0.4.0",
+  "description": "AI coding environment — 26 commands, 8 skills, 10 agents, memory, reflexes, evolution. Install once, works on any stack.",
   "bin": {
     "azclaude": "./bin/cli.js",
     "azclaude-copilot": "./bin/copilot.js"

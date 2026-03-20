@@ -913,6 +913,43 @@ check      "cc-test-maintainer: section headers"         "$CTM" "section.*header
 check      "cc-test-maintainer: runs full suite"         "$CTM" "test-features.sh"
 check      "cc-test-maintainer: self-correction"         "$CTM" "Self-Correction\|2 attempts"
 check      "cli: AGENTS includes project agents"         "bin/cli.js" "cc-template-author.*cc-cli-integrator.*cc-test-maintainer"
+check      "cli: AGENTS includes orchestrator"           "bin/cli.js" "orchestrator[',]"
+check      "cli: AGENTS includes problem-architect"      "bin/cli.js" "problem-architect"
+check      "cli: AGENTS includes milestone-builder"      "bin/cli.js" "milestone-builder"
+
+# ─── orchestrator agent (intelligent copilot tier 1) ─────────────────────────
+ORCH2="$ROOT/agents/orchestrator.md"
+check_file "orchestrator: agent file exists"             "$ORCH2"
+check      "orchestrator: model sonnet"                  "$ORCH2" "model: sonnet"
+check      "orchestrator: never writes code"             "$ORCH2" "NEVER writes code\|NEVER write"
+check      "orchestrator: consults problem-architect"    "$ORCH2" "problem-architect"
+check      "orchestrator: parallel safety check"         "$ORCH2" "Files Written\|parallel.*safety\|file.*overlap"
+check      "orchestrator: owns plan.md"                  "$ORCH2" "plan\.md"
+check      "orchestrator: triggers evolve"               "$ORCH2" "evolve\|\/evolve"
+
+# ─── problem-architect agent (intelligent copilot tier 2) ────────────────────
+PA="$ROOT/agents/problem-architect.md"
+check_file "problem-architect: agent file exists"        "$PA"
+check      "problem-architect: read-only tools"          "$PA" "tools:.*Read.*Grep\|Read, Grep"
+check      "problem-architect: never implements"         "$PA" "NEVER implement"
+check      "problem-architect: returns team spec"        "$PA" "Team Spec"
+check      "problem-architect: files written section"    "$PA" "Files Written"
+check      "problem-architect: complexity estimate"      "$PA" "SIMPLE.*MEDIUM.*COMPLEX\|Estimated Complexity"
+check      "problem-architect: structural decision flag" "$PA" "Structural Decision"
+
+# ─── milestone-builder agent (intelligent copilot tier 3) ────────────────────
+MB="$ROOT/agents/milestone-builder.md"
+check_file "milestone-builder: agent file exists"        "$MB"
+check      "milestone-builder: pre-read required"        "$MB" "Pre-Read\|pre-read\|REQUIRED"
+check      "milestone-builder: fix attempt budget"       "$MB" "attempt.*budget\|Fix attempt budget"
+check      "milestone-builder: reports back"             "$MB" "Report.*orchestrator\|report back"
+check      "milestone-builder: shows test output"        "$MB" "test output\|ALWAYS show"
+check      "milestone-builder: never exceeds budget"     "$MB" "NEVER exceed\|budget exhausted"
+
+# ─── copilot.md orchestration delegation ─────────────────────────────────────
+check      "copilot: orchestration mode block"           "templates/commands/copilot.md" "Orchestration Mode"
+check      "copilot: delegates to orchestrator"          "templates/commands/copilot.md" "orchestrator\.md.*exists\|agents/orchestrator"
+check      "copilot: fallback if no orchestrator"        "templates/commands/copilot.md" "does not exist.*fallback\|fallback"
 
 check "level3-skills: references native-tools.md"      "$LVL/level3-skills.md" "native-tools"
 check "level3-skills: copy /add /audit /test pattern"  "$LVL/level3-skills.md" "add\.md.*audit\.md.*test\.md\|add.md\|audit.md"

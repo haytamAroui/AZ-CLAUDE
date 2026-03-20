@@ -6,6 +6,16 @@ You are in COPILOT mode. No human input needed. Decide what to do next based on 
 
 ---
 
+## Orchestration Mode
+
+If `.claude/agents/orchestrator.md` exists:
+→ Delegate ALL decisions to the orchestrator agent. It owns the full loop (plan → architect → dispatch → monitor → ship).
+→ Run it now. Do NOT run the built-in logic below.
+
+If `.claude/agents/orchestrator.md` does not exist (fallback — run built-in logic below):
+
+---
+
 ## Step 1: Read State
 
 Read these files (skip any that don't exist):
