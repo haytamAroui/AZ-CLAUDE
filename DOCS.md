@@ -1,6 +1,6 @@
 # AZCLAUDE -- Complete User Guide
 
-> Version 0.3.8 · 1070 tests passing · AI coding environment
+> Version 0.4.2 · 1135 tests passing · AI coding environment
 
 ---
 
@@ -29,7 +29,7 @@
 
 ## What AZCLAUDE Is
 
-AZCLAUDE is an AI coding environment. 26 commands, 8 skills, 7 agents, memory, reflexes, evolution. Install once, works on any stack. Copilot mode builds autonomously across sessions: planning, implementing, testing, committing, evolving, deploying. Zero human input after the first message.
+AZCLAUDE is an AI coding environment. 26 commands, 8 skills, 10 agents, memory, reflexes, evolution. Install once, works on any stack. Copilot mode builds autonomously across sessions using a three-tier intelligent team (orchestrator → problem-architect → milestone-builder). Zero human input after the first message.
 
 The hero feature is **copilot mode**: a Node.js runner (`bin/copilot.js`) that restarts Claude Code sessions in a loop, while the AZCLAUDE environment inside each session decides what to build next, implements it, tests it, commits, and evolves the environment. The runner is stateless and dumb on purpose. All intelligence lives in the templates.
 
@@ -129,35 +129,45 @@ The runner (`bin/copilot.js`) is a Node.js loop. It is stateless and cross-platf
 | Max sessions reached (default: 20) | 1 -- resume with `npx azclaude-copilot .` |
 | All milestones blocked | 1 -- needs human intervention |
 
-### The Pipeline
+### The Intelligent Pipeline (v0.4+)
 
 ```
-Session 1:  /dream -> /blueprint -> /add M1 -> /add M2 -> /add M3 -> /snapshot
-Session 2:  /evolve -> /add M4 -> /add M5 -> /add M6 -> /snapshot
-Session 3:  /evolve -> /add M7 -> /add M8 -> /add M9 -> /snapshot
+Session 1:  /dream -> /blueprint (problem-architect annotates each milestone with Team Spec)
+                   -> orchestrator dispatches milestone-builder M1,M2,M3 -> /snapshot
+Session 2:  /evolve (new agents -> orchestrator unblocks plan) -> M4+M5 (parallel) -> M6
+Session 3:  /evolve -> M7,M8,M9 -> /snapshot
 Session 4:  /evolve -> /audit -> /ship -> COPILOT_COMPLETE
 ```
 
 Every command detects copilot mode automatically (`[ -f .claude/copilot-intent.md ]`) and skips human interaction.
 
+### Three-Tier Intelligent Copilot
+
+| Tier | Agent | Role | Never does |
+|------|-------|------|------------|
+| 1 | **Orchestrator** | Reads plan.md, selects milestone wave, dispatches, monitors, triggers /evolve | Writes code |
+| 2 | **Problem-Architect** | Analyzes each milestone → Team Spec (agents, skills, files-written, pre-conditions, risks, complexity) | Implements |
+| 3 | **Milestone-Builder** | Pre-reads, implements, verifies, self-corrects, commits, reports back | Decides what to build |
+
+**Key mechanism — Files Written:** Problem-Architect returns the exact list of files each milestone will touch. Orchestrator checks for overlap before parallel dispatch → prevents silent file collision.
+
 ### Per Milestone
 
-1. Read milestone from `plan.md` (description, expected files, dependencies)
-2. Read context artifacts (schemas, API specs, configs) before implementing
-3. Implement using `/add` (follows `patterns.md`, uses project agents, reads reflexes)
-4. Run tests -- fix if failing (2 attempts max)
-5. If still failing -- log to `blockers.md`, skip, continue
-6. Commit: `{type}: {what} -- {why}`
-7. Push + update `plan.md` status to `done`
-8. `/snapshot` (compaction protection)
+1. **Orchestrator** selects pending milestone where all dependencies are done
+2. **Problem-Architect** analyzes it → returns Team Spec
+3. **Orchestrator** dispatches **Milestone-Builder** with fully packaged context (skills to load, files to pre-read, patterns, antipatterns, fix attempt budget)
+4. **Milestone-Builder** pre-reads all files, implements, runs tests
+5. Fix if failing (2 attempts SIMPLE/MEDIUM, 3 for COMPLEX)
+6. Budget exhausted → log to `blockers.md`, orchestrator moves to next milestone
+7. Commit + push + update plan.md status → `done`
 
 ### Evolution Cycle (Every 3 Milestones)
 
 1. Run `/reflexes analyze` -- detect patterns from tool-use observations
 2. Run `/evolve` -- scan git history for patterns, create agents if evidence found
-3. Check if CLAUDE.md conventions need updating
-4. Re-evaluate remaining milestone priorities
-5. Retry blocked milestones if new context available
+3. **Orchestrator re-evaluates plan.md** -- checks which blocked milestones can now be unblocked with new agents
+4. Check if CLAUDE.md conventions need updating
+5. Retry newly-unblocked milestones with full project context
 
 ### Self-Healing
 
@@ -464,6 +474,33 @@ When `/dream` detects a non-developer domain, it auto-generates a domain-specifi
 
 Generated skills follow the same structure as architecture-advisor: `SKILL.md` + `references/decision-matrices.md` + `scripts/detect-context.sh`.
 
+### Intelligent Dispatch (v0.4+)
+
+`shared/intelligent-dispatch.md` is a universal pre-flight protocol loaded before any non-trivial build, fix, refactor, audit, or plan task. Every command that used to jump straight to doing now runs pre-analysis first.
+
+**When it runs:** Task touches 3+ files, crosses module boundaries, involves a structural change, or this is the first time working in this area.
+
+**What it does:**
+1. Spawns `problem-architect` (if installed) with task description + current state
+2. Receives Team Spec back: skills to load, files to pre-read, pre-conditions, risks, Files Written
+3. Checks pre-conditions — blocks if any unmet
+4. If `Structural Decision: YES` → triggers `/debate` before proceeding
+5. Follows milestone-builder implementation protocol for the actual work
+
+**Commands wired to intelligent-dispatch:**
+
+| Command | What changes |
+|---------|-------------|
+| `/add` | Pre-reads right files + loads skills before Phase 2 (replaces blind grep) |
+| `/fix` | Scopes the bug after reproduction — identifies all affected files, relevant antipatterns |
+| `/dream` | Deep scans existing codebase before generating vision |
+| `/audit` | Injects decisions.md + patterns.md + antipatterns.md as review checklist |
+| `/refactor` | Maps full dependency graph before manual scan |
+| `/ship` | Risk scan as Step 0 — unmet pre-conditions block the push |
+| `/blueprint` | Annotates each plan.md milestone with Team Spec after generation |
+| `/evolve` | Orchestrator re-evaluates plan.md after new agents/skills created |
+| `/setup` | Problem-architect recommends agents when < 5 git commits exist |
+
 ### Context Artifacts -- Non-Code Project Knowledge
 
 Before implementing any feature, AZCLAUDE discovers and reads non-code knowledge:
@@ -547,7 +584,17 @@ Layer 5 -- DOMAIN:       "Uses Passport.js, JWT (RS256), bcrypt, Redis sessions.
 
 ### Built-in Agents
 
-AZCLAUDE ships with 7 agent templates:
+AZCLAUDE ships with 10 agent templates:
+
+**Intelligent Copilot Team (v0.4+):**
+
+| Agent | Model | Purpose |
+|-------|-------|---------|
+| **orchestrator** | sonnet (opus with --deep) | Tech lead for copilot mode. Owns plan.md. Dispatches builders, monitors results, triggers /evolve every 3 milestones. NEVER writes code. |
+| **problem-architect** | sonnet | Analyzes each milestone before dispatch. Returns Team Spec: agents, skills, pre-read files, Files Written (parallel safety), pre-conditions, risks, complexity. NEVER implements. |
+| **milestone-builder** | sonnet | Base builder: pre-read protocol, 5-step implementation loop, fix attempt budget (2/3), report format. Receives full context from orchestrator. |
+
+**Framework Agents:**
 
 | Agent | Model | Mode | Purpose |
 |-------|-------|------|---------|
@@ -740,7 +787,7 @@ AZCLAUDE hardwires its logic directly into the host CLI's built-in MCP capabilit
 /dream I want to build a compliance tracking API with FastAPI and Postgres
 ```
 
-Structured intake -> environment scan -> build levels 1-7 in sequence -> quality gate. Detects domain and generates domain-specific advisor skill if non-developer domain. Use for greenfield projects. For existing projects use `/setup`.
+Structured intake → environment scan → **intelligent-dispatch deep scan for existing projects** (problem-architect analyzes what agents/skills/patterns already exist before generating vision) → build levels 1-7 → quality gate. Detects domain, generates domain advisor. Use for greenfield projects or projects with existing code that need a full environment.
 
 ---
 
@@ -762,7 +809,7 @@ Scans your code, detects domain/stack/scale, fills CLAUDE.md, creates goals.md, 
 /fix TypeError: Cannot read property 'id' of undefined at auth.js:42
 ```
 
-4 phases -- none skippable:
+**Intelligent-dispatch pre-flight** after reproduction: problem-architect scopes the bug (affected files, relevant patterns/antipatterns). Then 4 phases -- none skippable:
 1. **REPRODUCE** -- IDE diagnostics first, then run the actual test.
 2. **INVESTIGATE** -- Read code at failure point, git history, antipatterns.md.
 3. **HYPOTHESIZE** -- One root cause only. Confidence gate.
@@ -780,7 +827,7 @@ Self-correction: 2 attempts max, then escalate with exact context.
 /add React component for the data table
 ```
 
-Clarify scope -> understand existing patterns -> read context artifacts -> TDD check -> implement -> verify. In copilot mode: uses milestone spec directly. Never invents patterns -- copies what's already in your codebase.
+Clarify scope → **intelligent-dispatch pre-flight** (spawns problem-architect for 3+ file tasks) → understand existing patterns → TDD check → implement → verify. In copilot mode: milestone-builder receives full context from orchestrator. Never invents patterns — copies what's already in your codebase.
 
 ---
 
@@ -793,7 +840,7 @@ Clarify scope -> understand existing patterns -> read context artifacts -> TDD c
 /audit src/auth.js  # specific file
 ```
 
-Read-only mode. Enforces **Distrust-in-Review**: assumes the implementer was optimistic. In copilot mode: reviews against copilot-intent.md.
+**Intelligent-dispatch structural context** injected before reviewing: decisions.md rulings, patterns.md conventions, antipatterns.md known issues form the checklist. Read-only mode. Enforces **Distrust-in-Review**: assumes the implementer was optimistic. In copilot mode: reviews against copilot-intent.md.
 
 Stage 1 -- Spec compliance (required first). STOPS if violations found.
 Stage 2 -- Code quality (only if Stage 1 passes).
@@ -833,6 +880,7 @@ Read-only analysis -> numbered plan with file:line references + risk level -> ap
 /ship "feat: add JWT refresh token rotation"
 ```
 
+**Intelligent-dispatch risk scan (Step 0):** problem-architect checks what changed and flags unmet pre-conditions before touching git. Then:
 1. IDE diagnostics -- STOP if errors
 2. Tests pass -- STOP if EXIT != 0
 3. Docs sync check
@@ -874,7 +922,7 @@ Evidence-tagged, order-independent, length-independent. See [The Intelligence Sy
 /copilot
 ```
 
-The core command. Reads plan.md, finds next milestone, implements it, tests, commits, pushes. Every 3 milestones runs `/reflexes analyze` + `/evolve`. When all done: `/audit` -> `/ship` -> `COPILOT_COMPLETE`. See [Copilot Mode](#copilot-mode-autonomous).
+The core command. If `.claude/agents/orchestrator.md` exists → delegates to orchestrator agent (three-tier intelligent team). Otherwise runs built-in loop. Orchestrator: reads plan.md, consults problem-architect for each milestone, dispatches milestone-builders, monitors results, triggers /evolve every 3 milestones. When all done: `/audit` -> `/ship` -> `COPILOT_COMPLETE`. See [Copilot Mode](#copilot-mode-autonomous).
 
 ---
 
@@ -970,7 +1018,7 @@ Schedules via CronCreate. Use `/loop stop` to cancel.
 /refactor extract validation logic from auth.js
 ```
 
-Tests before AND after. Maps all references. High-risk changes use worktree isolation.
+**Intelligent-dispatch pre-flight:** problem-architect maps full dependency graph before the manual scan, flags structural risks. Tests before AND after. Maps all references. High-risk changes use worktree isolation.
 
 ---
 

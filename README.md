@@ -21,7 +21,7 @@
 
 ## What is AZCLAUDE?
 
-An AI coding environment you install into any project. It gives Claude Code (or Gemini CLI, Codex, OpenCode, Cursor) **26 commands, 8 auto-invoked skills, 7 agents, memory across sessions, learned reflexes, and self-evolving infrastructure**.
+An AI coding environment you install into any project. It gives Claude Code (or Gemini CLI, Codex, OpenCode, Cursor) **26 commands, 8 auto-invoked skills, 10 agents, memory across sessions, learned reflexes, and self-evolving infrastructure**.
 
 Zero dependencies. One install. Works on any stack.
 
@@ -115,13 +115,21 @@ npx azclaude-copilot .              # resume existing copilot run
 |  Restarts Claude Code sessions until COPILOT_COMPLETE.    |
 |  Reads nothing. Decides nothing. Just loops.              |
 +-----------------------------------------------------------+
-|  LAYER 2: THE BRAIN (AZCLAUDE inside each session)        |
+|  LAYER 2: THE TEAM (intelligent copilot, v0.4+)           |
+|  Orchestrator: reads plan.md, consults architect,         |
+|  dispatches builders, monitors results, triggers /evolve  |
+|  Problem-Architect: analyzes each milestone before work   |
+|  (Team Spec: agents, skills, files, risks, complexity)    |
+|  Milestone-Builder: pre-reads, implements, verifies,      |
+|  self-corrects, commits, reports back                     |
++-----------------------------------------------------------+
+|  LAYER 3: THE BRAIN (all commands, every session)         |
 |  Reads goals.md, plan.md, checkpoint, patterns,           |
 |  blockers, decisions, reflexes, context artifacts          |
-|  Decides what to do next. Builds. Tests. Commits.         |
-|  Updates all state files before session ends.             |
+|  intelligent-dispatch: pre-flight before /add /fix        |
+|  /dream /audit /refactor /ship — no more blind jumps      |
 +-----------------------------------------------------------+
-|  LAYER 3: THE ENVIRONMENT (accumulates across sessions)   |
+|  LAYER 4: THE ENVIRONMENT (accumulates across sessions)   |
 |  Project agents emerge from git evidence (/evolve)        |
 |  Reflexes learned from tool-use observations              |
 |  Skills created when patterns repeat                      |
@@ -130,30 +138,33 @@ npx azclaude-copilot .              # resume existing copilot run
 +-----------------------------------------------------------+
 ```
 
-Runner loops. AZCLAUDE accumulates. Claude thinks.
+Runner loops. Team thinks. AZCLAUDE accumulates. Claude builds.
 
 ---
 
-## The Pipeline
+## The Intelligent Copilot Pipeline (v0.4+)
 
 Every command detects copilot mode automatically (`[ -f .claude/copilot-intent.md ]`) and skips human interaction -- no approval gates, no prompts, no pauses.
 
 ```
-Session 1:  /dream -> /blueprint -> /add M1 -> /add M2 -> /add M3 -> /snapshot
-Session 2:  /evolve -> /add M4 -> /add M5 -> /add M6 -> /snapshot
-Session 3:  /evolve -> /add M7 -> /add M8 -> /add M9 -> /snapshot
+Session 1:  /dream -> /blueprint (problem-architect annotates each milestone)
+                   -> orchestrator dispatches milestone-builder M1,M2,M3 -> /snapshot
+Session 2:  /evolve (new agents created -> orchestrator unblocks plan)
+                   -> orchestrator dispatches M4,M5 (parallel) -> M6 -> /snapshot
+Session 3:  /evolve -> orchestrator dispatches M7,M8,M9 -> /snapshot
 Session 4:  /evolve -> /audit -> /ship -> COPILOT_COMPLETE
 ```
 
-### Per Milestone
+### Per Milestone (Intelligent Dispatch)
 
-1. Read milestone from `plan.md` (description, expected files, dependencies)
-2. Implement using `/add` (follows `patterns.md`, reads context artifacts, uses project agents)
-3. Run tests -- fix if failing (2 attempts max)
-4. If still failing -- log to `blockers.md`, skip, continue
-5. Commit: `{type}: {what} -- {why}`
-6. Push + update `plan.md` status to `done`
-7. `/snapshot` (compaction protection)
+1. **Orchestrator** reads plan.md, selects next milestone wave
+2. **Problem-Architect** analyzes the milestone → returns Team Spec:
+   agents needed, skills to load, files to pre-read, files to write (parallel safety), risks, complexity
+3. **Orchestrator** dispatches **Milestone-Builder** with fully packaged context
+4. **Milestone-Builder** pre-reads all specified files, implements, runs tests
+5. Fix if failing (2 attempts SIMPLE/MEDIUM, 3 for COMPLEX)
+6. If budget exhausted → log to `blockers.md`, orchestrator moves to next milestone
+7. Commit: `{type}: {what} -- {why}` + push + update plan.md status → `done`
 
 ### Self-Healing
 
@@ -266,7 +277,27 @@ Session 4:
   Full evolved environment. /audit -> /ship -> deploy. COPILOT_COMPLETE
 ```
 
-System agents (code-reviewer, test-writer, orchestrator-init) run the framework. Project agents emerge from the work. Two separate layers.
+System agents (orchestrator, problem-architect, milestone-builder, code-reviewer, test-writer, orchestrator-init) run the framework. Project agents (cc-*) emerge from the work. Two separate layers.
+
+### Intelligent Dispatch — Pre-Flight for Every Command
+
+`shared/intelligent-dispatch.md` is the universal pre-flight protocol. Every non-trivial command loads it before touching code.
+
+**Commands that now spawn problem-architect before acting:**
+
+| Command | What pre-analysis adds |
+|---------|----------------------|
+| `/add` | What files to pre-read, which skills to load, pre-conditions, patterns to follow |
+| `/fix` | Bug scope (which files are involved), relevant antipatterns, pre-conditions |
+| `/dream` | Scan existing codebase before generating vision (what already exists, established patterns) |
+| `/audit` | Inject decisions.md + patterns.md + antipatterns.md as the review checklist |
+| `/refactor` | Full dependency graph before touching code (catches missed references) |
+| `/ship` | Risk scan — unmet pre-conditions block the push |
+| `/blueprint` | Annotates every plan.md milestone with: Complexity, Files Written, Pre-conditions, Risks |
+| `/evolve` | After creating new agents: orchestrator re-evaluates plan.md, unblocks blocked milestones |
+| `/setup` | Cold-start: problem-architect recommends agents when < 5 git commits exist |
+
+Every command used to jump in blind. Now they ask "what do I need to know first?"
 
 ### Context Artifacts
 
@@ -469,7 +500,7 @@ azclaude-copilot/
 ├── DOCS.md                          <- full user guide
 ├── SECURITY.md                      <- security policy + architecture
 ├── tests/
-│   └── test-features.sh          ← 1070 tests
+│   └── test-features.sh          ← 1135 tests
 ```
 
 ---
@@ -495,11 +526,11 @@ The runner is stateless. These files ARE the state.
 
 ## Verified
 
-1070 tests. Every template, command, capability, agent, and CLI feature verified.
+1135 tests. Every template, command, capability, agent, and CLI feature verified.
 
 ```bash
 bash tests/test-features.sh
-# Results: 1070 passed, 0 failed, 1070 total
+# Results: 1135 passed, 0 failed, 1135 total
 ```
 
 ---
