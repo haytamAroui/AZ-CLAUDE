@@ -1092,6 +1092,20 @@ check        "hooks: post-tool-use caches git diff 5s"    "templates/hooks/post-
 check        "hooks: tiered install --full flag"          "bin/cli.js"                       "fullInstall\|--full"
 check        "hooks: CORE_CAP_DIRS vs FULL_CAP_DIRS"      "bin/cli.js"                       "CORE_CAP_DIRS\|FULL_CAP_DIRS"
 
+# ─── Memory rotation ────────────────────────────────────────────────────────
+echo ""
+echo "─── Memory rotation ───"
+check        "rotation: post-tool-use threshold 30"        "templates/hooks/post-tool-use.js" "ROTATE_THRESHOLD\|>= 30\|=== 30"
+check        "rotation: post-tool-use keeps newest 15"     "templates/hooks/post-tool-use.js" "KEEP_NEWEST\|slice.*15\|15.*slice"
+check        "rotation: post-tool-use archives to sessions" "templates/hooks/post-tool-use.js" "sessions.*edits\.md"
+check        "rotation: post-tool-use uses appendFileSync"  "templates/hooks/post-tool-use.js" "appendFileSync.*archivePath\|archivePath.*appendFileSync"
+check        "rotation: stop trims Done section to 20"     "templates/hooks/stop.js"          "DONE_KEEP\|doneEntries.*20\|> DONE_KEEP"
+check        "rotation: stop archives done overflow"       "templates/hooks/stop.js"          "sessions.*edits\.md"
+check        "rotation: stop resets edit counter"          "templates/hooks/stop.js"          "azclaude-edit-count\|counterPath.*0\|writeFileSync.*counterPath"
+check        "rotation: stop cleans empty In progress"     "templates/hooks/stop.js"          "new RegExp.*IN_PROGRESS\|replace.*IN_PROGRESS.*\\\\n"
+check_absent "rotation: checkpoint reminder not stdout"    "templates/hooks/post-tool-use.js" "process\.stdout\.write.*edits this session"
+check        "rotation: checkpoint reminder on stderr"     "templates/hooks/post-tool-use.js" "process\.stderr\.write.*edits this session"
+
 # ─── TDD opt-in signals ───────────────────────────────────────────────────────
 echo ""
 echo "─── TDD opt-in ───"

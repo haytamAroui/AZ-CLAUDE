@@ -123,6 +123,33 @@ if (!content.includes(HEADING)) {
 
 try { fs.writeFileSync(goalsPath, content); } catch (_) {}
 
+// ── Memory rotation — keep ## In progress bounded at 30 entries ──────────────
+const ROTATE_THRESHOLD = 30;
+const KEEP_NEWEST      = 15;
+const rotLines   = content.split('\n');
+const rotHIdx    = rotLines.findIndex(l => l.trim() === HEADING);
+if (rotHIdx !== -1) {
+  const ipEntries = [];
+  for (let i = rotHIdx + 1; i < rotLines.length; i++) {
+    if (rotLines[i].startsWith('## ')) break;
+    if (rotLines[i].startsWith('- ')) ipEntries.push({ line: rotLines[i], idx: i });
+  }
+  if (ipEntries.length >= ROTATE_THRESHOLD) {
+    const toArchive   = ipEntries.slice(KEEP_NEWEST);
+    const archiveTs   = new Date().toISOString().slice(0, 16);
+    const archiveDate = new Date().toISOString().slice(0, 10);
+    const archivePath = path.join(cfg, 'memory', 'sessions', `${archiveDate}-edits.md`);
+    try { fs.mkdirSync(path.join(cfg, 'memory', 'sessions'), { recursive: true }); } catch (_) {}
+    const header  = `\n<!-- archived: ${archiveTs} source: post-tool-use -->\n`;
+    const payload = toArchive.map(e => e.line).join('\n') + '\n';
+    try { fs.appendFileSync(archivePath, header + payload); } catch (_) {}
+    // Rewrite goals.md keeping only newest 15 entries
+    const archivedSet = new Set(toArchive.map(e => e.idx));
+    const pruned = rotLines.filter((_, i) => !archivedSet.has(i));
+    try { fs.writeFileSync(goalsPath, pruned.join('\n')); } catch (_) {}
+  }
+}
+
 } // end isFileTool goals tracking
 
 // ── Reflex observation capture (standard/strict only) ───────────────────────
@@ -192,5 +219,5 @@ let editCount = 1;
 try { editCount = parseInt(fs.readFileSync(counterPath, 'utf8'), 10) + 1; } catch (_) {}
 try { fs.writeFileSync(counterPath, String(editCount)); } catch (_) {}
 if (editCount > 0 && editCount % 15 === 0) {
-  process.stdout.write(`\n⚠ ${editCount} edits this session — run /snapshot before context compaction loses your reasoning\n`);
+  process.stderr.write(`\n⚠ ${editCount} edits this session — run /snapshot before context compaction loses your reasoning\n`);
 }

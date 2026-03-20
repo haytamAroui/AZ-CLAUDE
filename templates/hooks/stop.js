@@ -10,6 +10,7 @@
  */
 const fs   = require('fs');
 const path = require('path');
+const os   = require('os');
 
 // ── Hook profile gate ───────────────────────────────────────────────────────
 // AZCLAUDE_HOOK_PROFILE=minimal|standard|strict (default: standard)
@@ -62,14 +63,40 @@ if (content.includes(IN_PROGRESS)) {
 
     content = withoutIP.join('\n');
   } else {
-    // Empty In progress — just remove the heading
-    content = content.replace(`\n${IN_PROGRESS}\n`, '\n');
+    // Empty In progress — just remove the heading + any trailing blank lines
+    content = content.replace(new RegExp('\\n' + IN_PROGRESS + '\\n(\\n)*', 'g'), '\n');
+  }
+}
+
+// ── Trim "Done this session" to max 20 entries (overflow → archive) ──────────
+const DONE_KEEP  = 20;
+const trimLines  = content.split('\n');
+const dTrimIdx   = trimLines.findIndex(l => l.trim() === DONE);
+if (dTrimIdx !== -1) {
+  const doneEntries = [];
+  for (let i = dTrimIdx + 1; i < trimLines.length; i++) {
+    if (trimLines[i].startsWith('## ')) break;
+    if (trimLines[i].startsWith('- ')) doneEntries.push({ line: trimLines[i], idx: i });
+  }
+  if (doneEntries.length > DONE_KEEP) {
+    const toArchive   = doneEntries.slice(DONE_KEEP);
+    const archivePath = path.join(cfg, 'memory', 'sessions', `${today}-edits.md`);
+    try { fs.mkdirSync(path.join(cfg, 'memory', 'sessions'), { recursive: true }); } catch (_) {}
+    const header  = `\n<!-- archived: ${today} source: stop -->\n`;
+    const payload = toArchive.map(e => e.line).join('\n') + '\n';
+    try { fs.appendFileSync(archivePath, header + payload); } catch (_) {}
+    const archivedSet = new Set(toArchive.map(e => e.idx));
+    content = trimLines.filter((_, i) => !archivedSet.has(i)).join('\n');
   }
 }
 
 // ── Stamp today's date ────────────────────────────────────────────────────────
 content = content.replace(/^Updated: .*/m, `Updated: ${today}`);
 try { fs.writeFileSync(goalsPath, content); } catch (_) {}
+
+// ── Reset edit counter so checkpoint reminder starts fresh next session ───────
+const counterPath = path.join(os.tmpdir(), `.azclaude-edit-count-${process.ppid || process.pid}`);
+try { fs.writeFileSync(counterPath, '0'); } catch (_) {}
 
 // ── Warn if /persist was not run (only in AZCLAUDE projects with obs dir) ──
 const obsDir = path.join('ops', 'observations');
