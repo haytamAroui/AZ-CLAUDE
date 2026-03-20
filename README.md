@@ -380,7 +380,16 @@ Three layers work silently. Context compaction stops being a problem.
 | Reasoning snapshot | /snapshot -> checkpoints/ | Yes -- WHY decisions were made | Manual, every 15-20 turns |
 | Session narrative | /persist -> sessions/ | Yes -- full summary + next actions | Manual, before closing |
 
-`UserPromptSubmit` hook injects `goals.md` + latest checkpoint before every message. Token cost: ~500 tokens fixed, regardless of project history length.
+`UserPromptSubmit` hook injects before your first message every session:
+
+| What | When | Profile |
+|------|------|---------|
+| `goals.md` (capped at 20 done + 30 in-progress) | Every session | all |
+| Latest checkpoint (capped at 50 lines) | Every session | all |
+| Plan status: `X/N done, Y in-progress, Z blocked` | Copilot mode only | standard + strict |
+| Learned reflexes (confidence ≥ 0.8, max 5) | Always | strict only |
+
+Token cost: ~500 tokens fixed. goals.md is bounded at 80 lines by auto-rotation — same cost at session 5 or session 500.
 
 ---
 
@@ -404,8 +413,18 @@ Control hook behavior via environment variable:
 ```bash
 AZCLAUDE_HOOK_PROFILE=minimal  claude   # goals.md tracking only
 AZCLAUDE_HOOK_PROFILE=standard claude   # all features (default)
-AZCLAUDE_HOOK_PROFILE=strict   claude   # all features + extra validation
+AZCLAUDE_HOOK_PROFILE=strict   claude   # all + reflex guidance injection
 ```
+
+| Feature | minimal | standard | strict |
+|---------|---------|----------|--------|
+| goals.md tracking | ✓ | ✓ | ✓ |
+| Checkpoint injection | ✓ | ✓ | ✓ |
+| Reflex observations | — | ✓ | ✓ |
+| Cost tracking | — | ✓ | ✓ |
+| Plan status (copilot) | — | ✓ | ✓ |
+| Reflex guidance (≥0.8) | — | — | ✓ |
+| Memory rotation | ✓ | ✓ | ✓ |
 
 ### Doctor Audit
 
@@ -450,7 +469,7 @@ azclaude-copilot/
 ├── DOCS.md                          <- full user guide
 ├── SECURITY.md                      <- security policy + architecture
 ├── tests/
-│   └── test-features.sh          ← 1058 tests
+│   └── test-features.sh          ← 1070 tests
 ```
 
 ---
@@ -476,11 +495,11 @@ The runner is stateless. These files ARE the state.
 
 ## Verified
 
-1058 tests. Every template, command, capability, agent, and CLI feature verified.
+1070 tests. Every template, command, capability, agent, and CLI feature verified.
 
 ```bash
 bash tests/test-features.sh
-# Results: 1058 passed, 0 failed, 1058 total
+# Results: 1070 passed, 0 failed, 1070 total
 ```
 
 ---

@@ -1105,6 +1105,8 @@ check        "rotation: stop resets edit counter"          "templates/hooks/stop
 check        "rotation: stop cleans empty In progress"     "templates/hooks/stop.js"          "new RegExp.*IN_PROGRESS\|replace.*IN_PROGRESS.*\\\\n"
 check_absent "rotation: checkpoint reminder not stdout"    "templates/hooks/post-tool-use.js" "process\.stdout\.write.*edits this session"
 check        "rotation: checkpoint reminder on stderr"     "templates/hooks/post-tool-use.js" "process\.stderr\.write.*edits this session"
+check        "inject: plan status copilot mode only"      "templates/hooks/user-prompt.js"   "copilot-intent\.md\|PLAN STATUS"
+check        "inject: reflex guidance strict profile"     "templates/hooks/user-prompt.js"   "HOOK_PROFILE.*strict\|=== 'strict'.*reflex\|reflex.*strict"
 
 # ─── TDD opt-in signals ───────────────────────────────────────────────────────
 echo ""

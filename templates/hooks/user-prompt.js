@@ -94,3 +94,51 @@ if (fs.existsSync(checkpointDir)) {
     console.log('--- END CHECKPOINT ---');
   }
 }
+
+// ── Plan status (standard + strict, copilot mode only) ────────────────────────
+// Only fires when .claude/copilot-intent.md exists — copilot mode signal
+if (HOOK_PROFILE !== 'minimal') {
+  const intentPath = path.join('.claude', 'copilot-intent.md');
+  if (fs.existsSync(intentPath)) {
+    const planPath = path.join('.claude', 'plan.md');
+    if (fs.existsSync(planPath)) {
+      try {
+        const planContent  = fs.readFileSync(planPath, 'utf8');
+        const doneCount    = (planContent.match(/Status:\s*done/gi) || []).length;
+        const blockedCount = (planContent.match(/Status:\s*blocked/gi) || []).length;
+        const ipCount      = (planContent.match(/Status:\s*in-progress/gi) || []).length;
+        const pendingCount = (planContent.match(/Status:\s*pending/gi) || []).length;
+        const total = doneCount + blockedCount + ipCount + pendingCount;
+        if (total > 0) {
+          console.log('');
+          console.log(`--- PLAN STATUS: ${doneCount}/${total} done, ${ipCount} in-progress, ${blockedCount} blocked ---`);
+        }
+      } catch (_) {}
+    }
+  }
+}
+
+// ── Reflex guidance (strict profile only — confidence >= 0.8) ─────────────────
+if (HOOK_PROFILE === 'strict') {
+  const reflexDir = path.join('.claude', 'memory', 'reflexes');
+  if (fs.existsSync(reflexDir)) {
+    try {
+      const reflexFiles   = fs.readdirSync(reflexDir).filter(f => f.endsWith('.md'));
+      const strongReflexes = [];
+      for (const rf of reflexFiles) {
+        const rfContent  = fs.readFileSync(path.join(reflexDir, rf), 'utf8');
+        const confMatch  = rfContent.match(/confidence:\s*([\d.]+)/);
+        if (confMatch && parseFloat(confMatch[1]) >= 0.8) {
+          const actionMatch = rfContent.match(/action:\s*"?(.+?)"?\s*$/m);
+          if (actionMatch) strongReflexes.push(`• ${actionMatch[1].trim()}`);
+        }
+      }
+      if (strongReflexes.length > 0) {
+        console.log('');
+        console.log('--- LEARNED REFLEXES (confidence >= 0.8) ---');
+        console.log(strongReflexes.slice(0, 5).join('\n'));
+        console.log('--- END REFLEXES ---');
+      }
+    } catch (_) {}
+  }
+}

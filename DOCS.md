@@ -1,6 +1,6 @@
 # AZCLAUDE -- Complete User Guide
 
-> Version 0.2.1 · 1055 tests passing · AI coding environment
+> Version 0.3.8 · 1070 tests passing · AI coding environment
 
 ---
 
@@ -647,21 +647,33 @@ PostToolUse also captures tool-use observations to `.claude/memory/reflexes/obse
 
 ### Hook 2: UserPromptSubmit -> Context Injection
 
-**When:** Before Claude processes the user's first message -- every session.
+**When:** Once per session (keyed by parent PID). Fires before Claude processes the first message.
 
-**What it does:**
-1. Reads `goals.md` (what you were working on)
-2. Reads the latest file from `checkpoints/` (why you made decisions)
-3. Strips prompt injection patterns (security)
-4. Prints both to stdout
+**What it injects:**
 
-Claude sees this BEFORE your message. Memory is physically injected into the context window -- not a suggestion, a mechanism.
+| What | Profile | When |
+|------|---------|------|
+| `goals.md` (20 done + 30 in-progress cap) | all | every session |
+| Latest checkpoint (50-line cap) | all | every session |
+| Plan status: `X/N done, Y in-progress, Z blocked` | standard + strict | copilot mode only |
+| Learned reflexes with confidence ≥ 0.8 (max 5) | strict only | when reflexes exist |
 
-### Hook 3: Stop -> Migration
+**Security:** Strips prompt injection patterns (`curl|bash`, `ignore previous instructions`, `system prompt`) before printing.
+
+**Interrupted session recovery:** If `## In progress` entries survived the previous session, warns Claude before starting new work.
+
+Claude sees all of this BEFORE your message. Memory is physically injected into the context window -- not a suggestion, a mechanism.
+
+### Hook 3: Stop -> Migration + Trimming
 
 **When:** When Claude stops responding.
 
-**What it does:** Migrates "In progress" items in goals.md to "Done." Warns if no `/persist` was run.
+**What it does:**
+1. Migrates `## In progress` entries → `## Done this session`
+2. Trims `## Done this session` to 20 entries — overflow archived to `sessions/{date}-edits.md`
+3. Stamps `Updated: {today}` in goals.md
+4. Resets edit counter so checkpoint reminder starts fresh next session
+5. Warns if no `/persist` was run
 
 ### /snapshot -- Mid-Session Reasoning Snapshot
 
@@ -676,13 +688,16 @@ Run before closing. Writes updated goals.md, friction log (only when there's act
 ```
 AZCLAUDE memory cost per session:
 
-  goals.md injection:        ~200 tokens
-  checkpoint injection:      ~300 tokens
-  ------------------------------------
-  Total:                     ~500 tokens (fixed)
+  goals.md injection:          ~200 tokens  (bounded: 30 in-progress + 20 done max)
+  checkpoint injection:        ~300 tokens  (capped at 50 lines)
+  plan status (copilot mode):  ~20 tokens   (standard + strict)
+  reflex guidance:             ~50 tokens   (strict only, max 5 reflexes)
+  -------------------------------------------------------
+  Total (standard):            ~500 tokens  (fixed)
+  Total (strict + copilot):    ~570 tokens  (fixed)
 ```
 
-Same cost whether your project has 5 sessions or 500.
+goals.md is auto-rotated at 30 in-progress entries — oldest 15 archived to `sessions/{date}-edits.md`, newest 15 kept. Same injection cost at session 5 or session 500.
 
 ### Memory Summary
 
@@ -1120,8 +1135,19 @@ Control hook behavior via environment variable:
 ```bash
 AZCLAUDE_HOOK_PROFILE=minimal  claude   # goals.md tracking only (fastest)
 AZCLAUDE_HOOK_PROFILE=standard claude   # all features (default)
-AZCLAUDE_HOOK_PROFILE=strict   claude   # all features + extra validation
+AZCLAUDE_HOOK_PROFILE=strict   claude   # all + reflex guidance injection
 ```
+
+| Feature | minimal | standard | strict |
+|---------|---------|----------|--------|
+| goals.md edit tracking | ✓ | ✓ | ✓ |
+| Memory rotation (30-line cap) | ✓ | ✓ | ✓ |
+| Checkpoint injection | ✓ | ✓ | ✓ |
+| Reflex observations (observations.jsonl) | — | ✓ | ✓ |
+| Cost tracking (metrics/costs.jsonl) | — | ✓ | ✓ |
+| Checkpoint reminder every 15 edits | — | ✓ | ✓ |
+| Plan status injection (copilot mode) | — | ✓ | ✓ |
+| Reflex guidance injection (≥0.8, max 5) | — | — | ✓ |
 
 ### Copilot Mode Security
 
