@@ -57,6 +57,23 @@ Read `.claude/capabilities/manifest.md` if it exists.
 
 Detect current level (0–7) from what's present.
 
+**Existing project deep scan (intelligent-dispatch):**
+
+If `.claude` directory exists and project has code files — load `shared/intelligent-dispatch.md` and spawn problem-architect:
+```
+Task: dream — analyze existing codebase before generating vision
+Current state: {what files, agents, skills already exist}
+Available agents: {list}
+Available skills: {list}
+```
+Use returned Team Spec to understand:
+- What agents/skills already cover (don't regenerate what exists)
+- Co-change clusters (candidate future agents)
+- Established patterns (vision must not conflict with them)
+- Structural decisions already made (decisions.md)
+
+If clean slate (no .claude dir): skip problem-architect, proceed to Phase 3.
+
 **ExitPlanMode** — ready to build.
 
 ---

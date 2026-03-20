@@ -14,6 +14,20 @@ Load: shared/tdd.md + shared/completion-rule.md before starting.
 
 ---
 
+## Pre-Flight Analysis (intelligent-dispatch)
+
+Load `shared/intelligent-dispatch.md`.
+
+After reproducing the error — before investigating — spawn problem-architect if available:
+→ Task: "fix — {error description}"
+→ Current state: {files involved in the failure}
+→ Use returned Team Spec: pre-read the affected files, load patterns/antipatterns for this area
+→ Pre-conditions check prevents fixing a symptom instead of the root cause
+
+If problem-architect not installed: proceed with Phase 2 manual investigation as normal.
+
+---
+
 ## Phase 1: REPRODUCE
 
 **First: check IDE diagnostics (instant, no build needed)**

@@ -18,6 +18,19 @@ Load: shared/tdd.md + shared/completion-rule.md
 
 ---
 
+## Pre-Flight Analysis (intelligent-dispatch)
+
+Load `shared/intelligent-dispatch.md`.
+
+If task will touch 3+ files OR crosses module boundaries:
+→ Spawn problem-architect (see intelligent-dispatch protocol)
+→ Use returned Team Spec: load skills, pre-read files, check pre-conditions, note risks
+→ If Structural Decision: YES → run /debate before Phase 4
+
+If problem-architect not installed: proceed with Phase 1 as normal (manual scan in Phase 2).
+
+---
+
 ## Copilot Mode Detection
 
 ```bash

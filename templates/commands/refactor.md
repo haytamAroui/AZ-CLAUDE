@@ -18,6 +18,27 @@ Load: shared/completion-rule.md
 
 ---
 
+## Pre-Flight Analysis (intelligent-dispatch)
+
+Load `shared/intelligent-dispatch.md`.
+
+Spawn problem-architect before any scan:
+```
+Task: refactor — {what's being refactored}
+Current state: {target file/function + surrounding directory}
+Available agents: {list}
+Available skills: {list}
+```
+Use returned Team Spec:
+- Pre-Read Files → read these BEFORE grepping for references (architect already knows the dependency graph)
+- Risks → structural risks the refactor may trigger (e.g., type exports used downstream)
+- Files Written → exhaustive list of files the refactor will touch
+- If Structural Decision: YES → run /debate (refactors sometimes expose architectural choices)
+
+If problem-architect not installed: proceed with Phase 1 manual scan.
+
+---
+
 ## Phase 1: Understand Current State
 
 If $ARGUMENTS is blank, use **AskUserQuestion**:

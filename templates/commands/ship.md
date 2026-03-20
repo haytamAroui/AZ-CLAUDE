@@ -15,6 +15,26 @@ $ARGUMENTS
 
 ---
 
+## Step 0: Risk Scan (intelligent-dispatch)
+
+Load `shared/intelligent-dispatch.md`.
+
+If problem-architect available — spawn it for a pre-ship risk scan:
+```
+Task: ship — pre-ship risk assessment
+Current state: {output of: git diff --stat HEAD}
+Available agents: {list}
+Available skills: {list}
+```
+Use returned Team Spec:
+- Risks → must address before shipping (not suggestions)
+- Structural Decision: YES → a decision was made without /debate → log it to decisions.md now
+- Pre-Conditions → any unmet condition blocks ship (e.g., migration not run, env var not set)
+
+If problem-architect not installed OR git diff is only docs/config: skip and proceed to Pre-Ship Gate.
+
+---
+
 ## Pre-Ship Gate (runs before any commit)
 
 **1. IDE diagnostics** — use `mcp__ide__getDiagnostics` if available.

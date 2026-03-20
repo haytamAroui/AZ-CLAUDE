@@ -48,6 +48,27 @@ If `COPILOT_MODE`:
 
 ---
 
+## Step 1b: Structural Context (intelligent-dispatch)
+
+Load `shared/intelligent-dispatch.md`.
+
+If problem-architect available — spawn it before reviewing:
+```
+Task: audit — structural context for spec compliance review
+Current state: {what's changed, what the diff covers}
+Available agents: {list}
+Available skills: {list}
+```
+Use returned Team Spec to inject:
+- `decisions.md` rulings to check against (architectural commitments)
+- `patterns.md` conventions the code should follow
+- `antipatterns.md` known failure patterns to scan for
+- Risks flagged by architect → include in audit checklist
+
+If problem-architect not installed: proceed with manual review using available memory files.
+
+---
+
 ## Step 2: Spec Compliance (REQUIRED FIRST)
 
 **Assume the implementation may be incomplete or optimistic. Verify independently.**
