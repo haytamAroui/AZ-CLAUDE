@@ -104,7 +104,33 @@ When running inside `/copilot` (detected by: `.claude/copilot-intent.md` exists)
 - Include `Files:` with expected paths
 - Include `Commit:` with conventional commit format
 - Write `## Summary` with counts at the bottom
-- After writing plan.md, return control to /copilot
+
+### Problem-Architect Validation (if available)
+
+After writing plan.md, check:
+```bash
+ls .claude/agents/problem-architect.md 2>/dev/null
+```
+
+If problem-architect.md exists — spawn it for EACH milestone in plan.md:
+```
+Analyze this milestone for the Team Spec:
+Milestone: {description from plan.md}
+Current state: {what files exist in the project}
+Available agents: {list of .claude/agents/}
+Available skills: {list of .claude/skills/}
+```
+
+For each milestone, append the returned Team Spec fields directly into plan.md:
+- `Complexity:` SIMPLE / MEDIUM / COMPLEX
+- `Files Written:` exact paths the builder will touch (critical for parallel safety)
+- `Pre-conditions:` checklist before starting
+- `Risks:` and mitigation
+- `Structural Decision:` YES/NO (if YES → orchestrator must /debate before dispatching)
+
+This pre-annotation makes orchestrator dispatch faster and prevents parallel file collision.
+
+After all milestones annotated — return control to /copilot.
 
 ---
 

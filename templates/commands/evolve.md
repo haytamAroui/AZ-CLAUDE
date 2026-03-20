@@ -203,6 +203,26 @@ ls .claude/commands/*.md .claude/agents/*.md .claude/skills/*/SKILL.md 2>/dev/nu
 Skip creation if a skill/agent already covers the same workflow.
 Update existing ones if they're missing steps discovered in recent sessions.
 
+### 7e: Orchestrator re-evaluation (if intelligent copilot installed)
+
+After generating new agents/skills, check:
+```bash
+ls .claude/agents/orchestrator.md .claude/plan.md 2>/dev/null
+```
+
+If BOTH exist — spawn orchestrator with:
+```
+Re-evaluate plan.md after /evolve created new agents and skills.
+Focus on: which blocked milestones can now be unblocked?
+New agents available: {list of newly created agents}
+New skills available: {list of newly created skills}
+Check blockers.md for each blocked milestone — does a new agent cover the missing capability?
+Update plan.md status for any milestone that is now unblockable (blocked → pending).
+Report: milestones unblocked + reason.
+```
+
+This closes the loop: /evolve creates capability → orchestrator immediately re-routes blocked work.
+
 ---
 
 ## Step 8: Promote GENERAL Skills

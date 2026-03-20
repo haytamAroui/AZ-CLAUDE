@@ -121,6 +121,27 @@ Read `.claude/capabilities/level-builders/level5-agents.md` for agent design gui
 
 Skip if project has < 10 files or < 5 commits.
 
+### Problem-Architect Supplement (new projects with zero git history)
+
+If the project has < 5 commits (no co-change data), check:
+```bash
+ls .claude/agents/problem-architect.md 2>/dev/null
+```
+
+If problem-architect.md exists — spawn it to analyze the project structure directly:
+```
+Analyze this project to recommend agents and skills.
+No git history available — use file structure and stack signals instead.
+Project stack: {from env-scan.sh output}
+Files found: {top-level structure}
+Domain: {from CLAUDE.md}
+Available agents already installed: {list .claude/agents/}
+Return: recommended cc- agents (with directory claims) + skills to generate
+```
+
+Use the returned recommendations as the basis for agent/skill generation.
+This fills the gap when git history is too thin for co-change analysis.
+
 ---
 
 ## Step 7: Quality Gate

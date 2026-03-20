@@ -1164,6 +1164,9 @@ check      "setup: generates project skills"           "templates/commands/setup
 check      "setup: generates project agents"           "templates/commands/setup.md" "level5-agents\|Generate.*Agent\|project-specific.*agent"
 check      "setup: stack-specific skill defaults"      "templates/commands/setup.md" "Next.js.*React\|FastAPI\|new-endpoint\|new-page\|new-component"
 check      "setup: exam/content skills"                "templates/commands/setup.md" "exam\|content\|validate-content\|validate-exam"
+check      "setup: problem-architect supplement"      "templates/commands/setup.md" "problem-architect"
+check      "setup: zero git history fallback"         "templates/commands/setup.md" "zero git\|< 5 commits\|no.*history\|zero.*history"
+check      "setup: problem-architect recommends agents" "templates/commands/setup.md" "recommend.*agent\|returned recommendations"
 
 # ─── /evolve quick mode ───────────────────────────────────────────────────────
 echo ""
@@ -1181,6 +1184,9 @@ check      "evolve: checks existing before creating"  "templates/commands/evolve
 check      "evolve: promotes GENERAL to shared-skills" "templates/commands/evolve.md" "shared-skills\|GENERAL.*promote\|Promoted to"
 check      "evolve: adds discovered_in on promote"  "templates/commands/evolve.md" "discovered_in"
 check      "evolve: checksums on promote"            "templates/commands/evolve.md" "checksums\|sha256"
+check      "evolve: orchestrator re-evaluates plan"  "templates/commands/evolve.md" "orchestrator.*re-evaluat\|re-evaluat.*plan\|unblocked\|unblock"
+check      "evolve: checks for orchestrator+plan"    "templates/commands/evolve.md" "orchestrator\.md.*plan\.md\|plan\.md.*orchestrator"
+check      "evolve: reports unblocked milestones"    "templates/commands/evolve.md" "unblock\|blocked.*pending\|pending"
 check      "cli: creates evolution-log.md"           "bin/cli.js" "evolution-log\.md"
 check      "cli: --full flag for advanced install"    "bin/cli.js" "npx azclaude --full\|fullInstall\|--full"
 check      "cli: --update flag for refreshing"       "bin/cli.js" "forceUpdate\|--update"
@@ -1446,6 +1452,11 @@ echo "─── /blueprint copilot mode ───"
 check      "blueprint: copilot mode section"           "$CMD/blueprint.md" "Copilot Mode"
 check      "blueprint: writes to plan.md"              "$CMD/blueprint.md" "plan\.md.*structured\|Write.*plan.*plan\.md"
 check      "blueprint: references plan-tracker"        "$CMD/blueprint.md" "plan-tracker"
+check      "blueprint: spawns problem-architect"       "$CMD/blueprint.md" "problem-architect"
+check      "blueprint: annotates files-written"        "$CMD/blueprint.md" "Files Written"
+check      "blueprint: annotates complexity"           "$CMD/blueprint.md" "Complexity.*SIMPLE\|SIMPLE.*MEDIUM.*COMPLEX"
+check      "blueprint: annotates pre-conditions"       "$CMD/blueprint.md" "Pre-conditions\|Pre-Conditions"
+check      "blueprint: structural decision flag"       "$CMD/blueprint.md" "Structural Decision"
 
 # ─── CLI copilot routing ────────────────────────────────────────────────────
 echo ""
