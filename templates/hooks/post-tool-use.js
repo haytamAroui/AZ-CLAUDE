@@ -221,3 +221,26 @@ try { fs.writeFileSync(counterPath, String(editCount)); } catch (_) {}
 if (editCount > 0 && editCount % 15 === 0) {
   process.stdout.write(`\n⚠ ${editCount} edits this session — run /snapshot before context compaction loses your reasoning\n`);
 }
+
+// ── Rapid-edit detection — same file edited 5+ times in <5 min ───────────────
+// Signal: unclear spec before coding. Warn once, suggest /blueprint.
+if (isFileTool && rel) {
+  const rapidPath = path.join(os.tmpdir(), `.azclaude-rapid-${process.ppid || process.pid}`);
+  let rapidLog = {};
+  try { rapidLog = JSON.parse(fs.readFileSync(rapidPath, 'utf8')); } catch (_) {}
+  const fileLog = rapidLog[rel] || { count: 0, firstTs: Date.now(), warned: false };
+  const elapsed = Date.now() - fileLog.firstTs;
+  if (elapsed > 5 * 60 * 1000) {
+    // Reset window
+    rapidLog[rel] = { count: 1, firstTs: Date.now(), warned: false };
+  } else {
+    fileLog.count += 1;
+    if (fileLog.count >= 5 && !fileLog.warned) {
+      fileLog.warned = true;
+      const shortName = path.basename(rel);
+      process.stdout.write(`\n⚠ ${fileLog.count} edits to ${shortName} in ${Math.round(elapsed/60000)}min — unclear spec? Consider /blueprint before continuing\n`);
+    }
+    rapidLog[rel] = fileLog;
+  }
+  try { fs.writeFileSync(rapidPath, JSON.stringify(rapidLog)); } catch (_) {}
+}

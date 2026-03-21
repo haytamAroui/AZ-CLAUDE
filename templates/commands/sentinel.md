@@ -77,6 +77,8 @@ Compute SHA-256 of the `hooks` key in settings.json and compare.
 - Mismatch → +0 pts — **BLOCK** "Hook integrity mismatch — hooks modified outside AZCLAUDE"
 - Missing integrity file → +15 pts — "No integrity baseline (run `npx azclaude install` to establish one)"
 
+Note: AZCLAUDE registers hooks in `.claude/settings.local.json` (project-level), not `~/.claude/settings.json` (global). The integrity baseline must be computed against `settings.local.json` — comparing against global settings will always produce a hash mismatch (MEDIUM finding).
+
 Check each hook script for dangerous patterns:
 ```bash
 ls .claude/hooks/ 2>/dev/null || ls "$HOME/.claude/hooks/" 2>/dev/null
@@ -119,7 +121,10 @@ Score: start at 20, subtract per finding: HIGH −8, MEDIUM −3, LOW −1 (floo
 
 ```bash
 cat .mcp.json 2>/dev/null
-cat "$HOME/.claude/mcp.json" 2>/dev/null
+# Windows: %APPDATA%\Claude\mcp.json — Unix/Mac: ~/.claude/mcp.json
+MCP_GLOBAL="${APPDATA:+$APPDATA/Claude/mcp.json}"
+MCP_GLOBAL="${MCP_GLOBAL:-$HOME/.claude/mcp.json}"
+cat "$MCP_GLOBAL" 2>/dev/null
 ```
 
 For each MCP server entry, check:
@@ -180,6 +185,10 @@ Also scan for:
 - `AIza[0-9A-Za-z-_]{35}` (Google API key)
 - `sk_live_` (Stripe secret), `SG\.` (SendGrid)
 - `-----BEGIN.*PRIVATE KEY` (private keys)
+
+**IMPORTANT — Secret redaction in output:** Never print full secret values in the report.
+Always truncate: show first 8 chars + `...` + last 3 chars. Example: `AIzaSyCM...VNM`.
+The report may be logged, shared, or appear in conversation transcripts.
 
 If `.env` exists: check it is in `.gitignore`:
 ```bash

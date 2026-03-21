@@ -35,7 +35,7 @@ ls .claude/agents/loop-controller.md 2>/dev/null
 **If loop-controller.md exists**: delegate evolution work to it via Agent tool:
 ```
 Run a full evolution cycle: re-derivation check, then Cycle 1 (detect/generate/evaluate),
-Cycle 2 (knowledge consolidation if 3+ sessions), Cycle 3 (topology if friction detected).
+Cycle 2 (knowledge consolidation if 2+ sessions), Cycle 3 (topology if friction detected).
 Show the full cycle report when done.
 ```
 **After loop-controller finishes**: continue to Step 7 (Generate Project-Specific Skills and Agents).

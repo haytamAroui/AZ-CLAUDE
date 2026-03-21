@@ -16,6 +16,26 @@ If `.claude/agents/orchestrator.md` does not exist (fallback — run built-in lo
 
 ---
 
+## Step 0: Intent Check
+
+Check if `.claude/copilot-intent.md` exists:
+```bash
+ls .claude/copilot-intent.md 2>/dev/null && echo "intent=found" || echo "intent=missing"
+```
+
+If `intent=missing`:
+```
+⚠ No copilot-intent.md found.
+
+Run /dream first to define your product? (recommended — provides test strategy, done criteria, deployment target)
+Or continue inferring intent from CLAUDE.md? (faster, less precise for complex projects)
+
+Proceeding without copilot-intent.md — inferring from CLAUDE.md and plan.md.
+```
+Continue to Step 1 either way — do NOT block. Log the absence in goals.md as a note.
+
+---
+
 ## Step 1: Read State
 
 Read these files (skip any that don't exist):

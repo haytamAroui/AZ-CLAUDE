@@ -41,7 +41,7 @@ If problem-architect not installed OR git diff is only docs/config: skip and pro
 ```bash
 ls .claude/agents/security-auditor.md 2>/dev/null && echo "agent=found" || echo "agent=missing"
 ```
-If `agent=found`: spawn `security-auditor` agent. If verdict is `BLOCKED` → STOP.
+If `agent=found`: read `.claude/agents/security-auditor.md` and execute the secrets scan inline using its rules. If verdict is `BLOCKED` → STOP.
 ```
 ✗ Pre-ship blocked: security-auditor found BLOCKED findings. Run /sentinel for details.
 ```
