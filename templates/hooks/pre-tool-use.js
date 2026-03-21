@@ -96,7 +96,7 @@ const RULES = [
   },
   {
     id:      'hardcoded-secret',
-    test:    /AKIA[A-Z0-9]{16}|sk-[a-z0-9]{20,}|ghp_[A-Za-z0-9]{36}/,
+    test:    /AKIA[A-Z0-9]{16}|sk-[a-zA-Z0-9]{20,}|ghp_[A-Za-z0-9]{36}|glpat-[A-Za-z0-9_-]{20}|xoxb-[0-9]|xoxp-[0-9]|npm_[A-Za-z0-9]{36}|AIza[0-9A-Za-z_-]{35}|sk_live_[0-9a-zA-Z]{24}|SG\.[A-Za-z0-9_-]{22}\.|-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY/,
     message: 'Hardcoded secret pattern detected',
     block:   true,
   },

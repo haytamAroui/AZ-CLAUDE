@@ -17,6 +17,7 @@
 const fs   = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const crypto        = require('crypto');
 
 // ── Args ─────────────────────────────────────────────────────────────────────
 
@@ -162,6 +163,38 @@ console.log('  ⚠  See SECURITY.md for mitigations');
 console.log('════════════════════════════════════════════════');
 console.log(`\n  Intent: ${intent.slice(0, 120)}${intent.length > 120 ? '...' : ''}\n`);
 
+// ── Session State ─────────────────────────────────────────────────────────────
+// Persists to disk — survives runner crash. Tracks plan progress for stall detection.
+
+const statePath = path.join(claudeDir, 'copilot-state.json');
+
+function loadState() {
+  try { return JSON.parse(fs.readFileSync(statePath, 'utf8')); } catch (_) {}
+  return { planHash: '', stalls: 0, stuckMilestones: {}, retries: 0 };
+}
+
+function saveState(state) {
+  try { fs.writeFileSync(statePath, JSON.stringify(state, null, 2)); } catch (_) {}
+}
+
+function hashPlan() {
+  if (!fs.existsSync(planPath)) return '';
+  return crypto.createHash('md5').update(fs.readFileSync(planPath)).digest('hex');
+}
+
+function getInProgressMilestones() {
+  if (!fs.existsSync(planPath)) return [];
+  const milestones = [];
+  let currentTitle = '';
+  for (const line of fs.readFileSync(planPath, 'utf8').split('\n')) {
+    if (/^#{1,3}\s/.test(line)) currentTitle = line.replace(/^#+\s*/, '').trim();
+    if (/Status:\s*in-progress/i.test(line) && currentTitle) milestones.push(currentTitle);
+  }
+  return milestones;
+}
+
+const state = loadState();
+
 // ── Session Loop ─────────────────────────────────────────────────────────────
 
 const sessionStartTimes = [];
@@ -173,6 +206,10 @@ for (let session = 1; session <= maxSessions; session++) {
     ? Math.round((sessionStart - sessionStartTimes[0]) / 60000)
     : 0;
   console.log(`\n── Session ${session}/${maxSessions} ${elapsed > 0 ? `(${elapsed}min elapsed)` : ''} ──`);
+
+  // Snapshot plan state before session — for stall + stuck milestone detection
+  const prevHash        = hashPlan();
+  const prevInProgress  = getInProgressMilestones();
 
   // Build state-aware prompt
   // IMPORTANT: In -p mode, slash commands (/setup, /copilot) don't work.
@@ -192,11 +229,22 @@ for (let session = 1; session <= maxSessions; session++) {
     prompt += '\nDo NOT declare COPILOT_COMPLETE until deep checks pass.';
   }
 
+  // Inject stall hint if plan hasn't changed
+  if (state.stalls > 0) {
+    prompt += `\n\nWARNING: Plan.md has not changed for ${state.stalls} consecutive session(s). You may be stuck. Complete at least one pending milestone and update its Status to "done" in plan.md before this session ends.`;
+  }
+
+  // Inject stuck milestone hint
+  const stuckList = Object.entries(state.stuckMilestones || {}).filter(([, c]) => c >= 2).map(([m]) => m);
+  if (stuckList.length > 0) {
+    prompt += `\n\nSTUCK MILESTONES (in-progress for 2+ sessions without progress): ${stuckList.join(', ')}. Either complete them fully now, or mark Status: blocked with a specific reason in .claude/memory/blockers.md. Do not leave them in-progress again.`;
+  }
+
   if (resuming || session > 1) {
     // Parse plan.md for milestone progress
     if (fs.existsSync(planPath)) {
       const planContent = fs.readFileSync(planPath, 'utf8');
-      const statuses = [...planContent.matchAll(/^- Status: (\w+)/gm)].map(m => m[1]);
+      const statuses = [...planContent.matchAll(/^- Status: ([\w-]+)/gm)].map(m => m[1]);
       const done = statuses.filter(s => s === 'done').length;
       const blocked = statuses.filter(s => s === 'blocked').length;
       const pending = statuses.filter(s => s === 'pending' || s === 'in-progress').length;
@@ -212,30 +260,69 @@ for (let session = 1; session <= maxSessions; session++) {
     prompt += '\n\nNo plan yet. Read .claude/commands/setup.md and follow it, then read .claude/commands/blueprint.md to create milestones.';
   }
 
-  // Run Claude Code session
-  const result = spawnSync('claude', [
+  // Run Claude Code session — retry once on non-timeout failure (API hiccup, rate limit, etc.)
+  const claudeArgs = [
     '--dangerously-skip-permissions',
     '-p', prompt,
     '--output-format', 'text',
     ...(deepMode ? ['--model', 'claude-opus-4-6'] : [])
-  ], {
-    cwd: projectDir,
-    stdio: 'inherit',
-    timeout: 1800000, // 30 minutes per session (large milestones need time)
-  });
+  ];
+  const spawnOpts = { cwd: projectDir, stdio: 'inherit', timeout: 1800000 };
+
+  let result = spawnSync('claude', claudeArgs, spawnOpts);
+
+  // Retry once on abnormal non-zero exit (not timeout, not spawn failure)
+  if (result.status !== 0 && !result.error) {
+    state.retries = (state.retries || 0) + 1;
+    saveState(state);
+    console.log(`  Session ${session} exited ${result.status} — retrying once (retry #${state.retries} total)...`);
+    result = spawnSync('claude', claudeArgs, spawnOpts);
+  }
 
   if (result.error) {
     console.error(`  Session ${session} error: ${result.error.message}`);
     if (result.error.code === 'ETIMEDOUT') {
       console.log('  Session timed out (30 min). Restarting...');
+      saveState(state);
       continue;
     }
   }
+
+  // ── Stall detection ────────────────────────────────────────────────────────
+  const newHash = hashPlan();
+  if (session > 1 && prevHash !== '' && newHash === prevHash) {
+    state.stalls = (state.stalls || 0) + 1;
+    console.log(`  ⚠ No plan progress detected (stall ${state.stalls}/3)`);
+    if (state.stalls >= 3) {
+      console.log('\n════════════════════════════════════════════════');
+      console.log('  STALLED — plan.md unchanged for 3 consecutive sessions.');
+      console.log('  Likely stuck in a loop. Human review required.');
+      console.log(`  State: ${statePath}`);
+      console.log('════════════════════════════════════════════════\n');
+      saveState(state);
+      process.exit(1);
+    }
+  } else {
+    state.stalls = 0;
+  }
+  state.planHash = newHash;
+
+  // ── Stuck milestone detection ───────────────────────────────────────────────
+  const newInProgress  = getInProgressMilestones();
+  const stillStuck     = newInProgress.filter(m => prevInProgress.includes(m));
+  const freshStuck     = state.stuckMilestones || {};
+  for (const m of stillStuck) { freshStuck[m] = (freshStuck[m] || 0) + 1; }
+  for (const m of Object.keys(freshStuck)) {
+    if (!stillStuck.includes(m)) delete freshStuck[m];
+  }
+  state.stuckMilestones = freshStuck;
+  saveState(state);
 
   // Check completion
   if (fs.existsSync(goalsPath)) {
     const goals = fs.readFileSync(goalsPath, 'utf8');
     if (goals.includes('COPILOT_COMPLETE')) {
+      try { fs.unlinkSync(statePath); } catch (_) {} // clean up state on success
       console.log('\n════════════════════════════════════════════════');
       const totalMin = Math.round((Date.now() - sessionStartTimes[0]) / 60000);
       console.log('  COPILOT COMPLETE');
@@ -253,7 +340,7 @@ for (let session = 1; session <= maxSessions; session++) {
   // Check if plan.md shows all done or all blocked
   if (fs.existsSync(planPath)) {
     const plan = fs.readFileSync(planPath, 'utf8');
-    const statuses = [...plan.matchAll(/^- Status: (\w+)/gm)].map(m => m[1]);
+    const statuses = [...plan.matchAll(/^- Status: ([\w-]+)/gm)].map(m => m[1]);
     if (statuses.length > 0) {
       const allDoneOrBlocked = statuses.every(s => s === 'done' || s === 'blocked' || s === 'skipped');
       const allBlocked = statuses.every(s => s === 'blocked');

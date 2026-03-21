@@ -37,6 +37,22 @@ If problem-architect not installed OR git diff is only docs/config: skip and pro
 
 ## Pre-Ship Gate (runs before any commit)
 
+**0. Security scan** — check if `security-auditor` agent is installed:
+```bash
+ls .claude/agents/security-auditor.md 2>/dev/null && echo "agent=found" || echo "agent=missing"
+```
+If `agent=found`: spawn `security-auditor` agent. If verdict is `BLOCKED` → STOP.
+```
+✗ Pre-ship blocked: security-auditor found BLOCKED findings. Run /sentinel for details.
+```
+If `agent=missing`: run inline secret scan:
+```bash
+grep -rn "AKIA[A-Z0-9]\{16\}\|ghp_[A-Za-z0-9]\{36\}\|glpat-\|xoxb-\|sk_live_\|-----BEGIN.*PRIVATE KEY" \
+  --include='*.js' --include='*.ts' --include='*.py' --include='*.json' \
+  . 2>/dev/null | grep -v node_modules | grep -v ".git/"
+```
+If any match: STOP. `✗ Pre-ship blocked: hardcoded secret detected. Fix before shipping.`
+
 **1. IDE diagnostics** — use `mcp__ide__getDiagnostics` if available.
 If unavailable or empty: skip this check.
 If errors exist: STOP.

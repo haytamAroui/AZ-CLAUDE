@@ -36,3 +36,9 @@
 **Why**: Separation enforces read-before-write mechanically (tool restriction), plan.md owned by one agent prevents status corruption, architect spec is explicit artifact (logged to decisions.md), parallel dispatch justified for 12-milestone projects
 **Reconsider when**: Projects under 6 milestones or single-domain → flat loop is sufficient
 **Critical gap to fix**: Architect spec must include "Files Written" section; orchestrator must check overlap before parallel dispatch or silent file corruption occurs
+
+## Security Auditor Architecture — 2026-03-21
+**Context**: STANDARD scale, developer tooling, Claude Code environment scanner
+**Choice**: One `security-auditor` agent (not split into 5 sub-agents)
+**Why**: All 5 categories (secrets/permissions/hooks/MCP/agent-configs) share same tools (Read, Grep, Bash), same output format (Security Report), same invocation path (/sentinel + /ship). Splitting would require an orchestrator to aggregate — unnecessary complexity at STANDARD scale. Agent differs from /sentinel command in that it runs as a subprocess with isolated context, returns a structured Security Report for programmatic consumption, and can be invoked by orchestrator before /ship. /sentinel dispatches to the agent when installed; falls back to inline layers when agent is missing.
+**Reconsider when**: 5+ category specialists needed with different models per category, or MCP scanning requires live server interaction

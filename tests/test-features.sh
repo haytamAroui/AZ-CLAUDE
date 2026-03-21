@@ -71,6 +71,7 @@ check_file "orchestrator-init.md exists"                 "$ORCH"
 check_file "loop-controller.md exists"                   "$ROOT/agents/loop-controller.md"
 check_file "code-reviewer.md exists"                     "$ROOT/agents/code-reviewer.md"
 check_file "test-writer.md exists"                       "$ROOT/agents/test-writer.md"
+check_file "security-auditor.md exists"                  "$ROOT/agents/security-auditor.md"
 check_file "env-scan.sh script exists"                   "$ROOT/scripts/env-scan.sh"
 check_file "shared/tdd.md exists"                        "$SHARED/tdd.md"
 check_file "shared/completion-rule.md exists"            "$SHARED/completion-rule.md"
@@ -241,6 +242,21 @@ check "hookify: hook script generation"                 "$HOOKIFY" "hooks/\|\.sh
 check "hookify: warn vs block decision"                 "$HOOKIFY" "Warn.*block\|warn.*Block\|Block.*warn"
 check "hookify: settings.json registration"             "$HOOKIFY" "settings.json\|hooks config"
 check "reflect: categorizes findings"                    "$REFLECT" "Missing rule\|Vague rule\|Dead rule"
+
+# ─────────────────────────────────────────────
+echo ""
+echo "[ Commands — /sentinel ]"
+# ─────────────────────────────────────────────
+SENTINEL="$CMD/sentinel.md"
+check_file "commands/sentinel.md exists"                "$SENTINEL"
+check "sentinel: hook integrity layer"                  "$SENTINEL" "integrity\|Integrity"
+check "sentinel: permission audit layer"                "$SENTINEL" "Permission.*Audit\|permission.*audit\|allowedTools\|allowed.*Tools"
+check "sentinel: MCP server scan layer"                 "$SENTINEL" "MCP\|mcp\.json"
+check "sentinel: agent config review layer"             "$SENTINEL" "Agent.*Config\|agent.*config\|prompt injection"
+check "sentinel: secrets scan layer"                    "$SENTINEL" "Secrets.*Scan\|secrets.*scan\|AKIA\|glpat"
+check "sentinel: scoring A-F grade"                     "$SENTINEL" "grade\|Grade\|A.*B.*C.*D.*F\|A–F\|A-F"
+check "sentinel: blocking verdict on findings"          "$SENTINEL" "VERDICT.*BLOCKED\|BLOCK.*finding\|block.*ship"
+check "sentinel: read-only EnterPlanMode"               "$SENTINEL" "EnterPlanMode\|read-only"
 check "reflect: waits for user approval"                 "$REFLECT" "approval\|Apply which"
 check "reflect: logs to observations"                    "$REFLECT" "observations"
 
@@ -733,7 +749,7 @@ echo "[ CLI Installer — bin/cli.js ]"
 CLI="$(cd "$(dirname "$0")/.." && pwd)/bin/cli.js"
 check_file "bin/cli.js exists"                   "$CLI"
 check "CORE_COMMANDS array defined"              "$CLI" "CORE_COMMANDS.*=.*setup.*fix.*add.*audit"
-check "EXTENDED_COMMANDS array defined"          "$CLI" "EXTENDED_COMMANDS.*=.*dream.*refactor.*doc.*hookify"
+check "EXTENDED_COMMANDS array defined"          "$CLI" "EXTENDED_COMMANDS.*=.*dream.*refactor.*doc.*hookify.*sentinel"
 check "ADVANCED_COMMANDS array defined"          "$CLI" "ADVANCED_COMMANDS.*=.*evolve.*debate"
 check "CLI_TABLE with 5 entries"                 "$CLI" "CLI_TABLE"
 check "Claude Code entry in CLI_TABLE"           "$CLI" "Claude Code"
@@ -889,6 +905,27 @@ check      "test-writer: runs tests after writing"     "$TW" "Run and Verify\|ru
 check      "test-writer: never modifies source"        "$TW" "Never modify source\|test files only"
 check      "test-writer: self-correction"              "$TW" "Self-Correction\|2 attempts"
 check      "cli: AGENTS array includes all agents"     "bin/cli.js" "code-reviewer.*test-writer\|AGENTS.*code-reviewer"
+check      "cli: AGENTS array includes security-auditor" "bin/cli.js" "security-auditor"
+
+# ─── security-auditor agent ──────────────────────────────────────────────────
+SA="$ROOT/agents/security-auditor.md"
+check_file "security-auditor: agent exists"                   "$SA"
+check      "security-auditor: has all 5 layers"               "$SA" "Layer 5"
+check      "security-auditor: read-only permissions"          "$SA" "plan\|disallowedTools.*Write"
+check      "security-auditor: covers secrets category"        "$SA" "S1\|S2\|AKIA\|ghp_"
+check      "security-auditor: covers permissions category"    "$SA" "P1\|P2\|bypassPermission\|allowedTools"
+check      "security-auditor: covers hooks category"          "$SA" "H1\|H2\|exfiltration\|Exfiltration"
+check      "security-auditor: covers MCP category"            "$SA" "M1\|M8\|mcp\.json\|MCP"
+check      "security-auditor: covers agent configs category"  "$SA" "A1\|A2\|prompt injection\|Prompt Injection"
+check      "security-auditor: 102 rules total"                "$SA" "102"
+check      "security-auditor: scored output 0-100"            "$SA" "0–100\|0-100\|score.*100\|100"
+check      "security-auditor: grade A-F"                      "$SA" "A.*B.*C.*D.*F\|A–F\|grade"
+check      "security-auditor: BLOCKED severity"               "$SA" "BLOCKED"
+check      "security-auditor: structured verdict output"      "$SA" "VERDICT.*BLOCKED\|Verdict.*BLOCKED\|CLEAR\|PROCEED"
+check      "security-auditor: file:line references required"  "$SA" "file:line\|file.*line"
+check      "security-auditor: no false positives rule"        "$SA" "false positive\|uncertain\|confirmed"
+check      "sentinel: dispatches to security-auditor agent"   "$CMD/sentinel.md" "security-auditor"
+check      "sentinel: fallback when no agent"                 "$CMD/sentinel.md" "agent=missing\|fallback\|missing"
 
 # ─── cc-template-author agent ────────────────────────────────────────────────
 CTA="$ROOT/agents/cc-template-author.md"
@@ -1101,7 +1138,7 @@ check_file "install: agent-creator scaffold script"      "$IDIR/.claude/skills/a
 check_file "install: agent-creator references"           "$IDIR/.claude/skills/agent-creator/references/agent-engineering-guide.md"
 check_file "install: agent-creator examples"             "$IDIR/.claude/skills/agent-creator/examples/sample-agent.md"
 INSTALLED=$(ls "$IDIR/.claude/commands/" | wc -l | tr -d ' ')
-EXPECTED_CMDS=26
+EXPECTED_CMDS=27
 if [ "$INSTALLED" -eq "$EXPECTED_CMDS" ]; then
   echo "  ✓ install: all $EXPECTED_CMDS commands present"
   PASS=$((PASS + 1))
@@ -1163,6 +1200,11 @@ check        "hooks: pre-tool-use warns dangerouslySetInnerHTML" "templates/hook
 check        "hooks: pre-tool-use warns pickle.load"         "templates/hooks/pre-tool-use.js"  "pickle\.load"
 check        "hooks: pre-tool-use warns child_process.exec"  "templates/hooks/pre-tool-use.js"  "child_process\.exec\|child_process"
 check        "hooks: pre-tool-use blocks hardcoded secrets"  "templates/hooks/pre-tool-use.js"  "AKIA\|ghp_\|sk-"
+check        "hooks: pre-tool-use blocks GitLab tokens"     "templates/hooks/pre-tool-use.js"  "glpat-"
+check        "hooks: pre-tool-use blocks Slack tokens"      "templates/hooks/pre-tool-use.js"  "xoxb-\|xoxp-"
+check        "hooks: pre-tool-use blocks npm tokens"        "templates/hooks/pre-tool-use.js"  "npm_"
+check        "hooks: pre-tool-use blocks private keys"      "templates/hooks/pre-tool-use.js"  "PRIVATE KEY\|BEGIN.*PRIVATE"
+check        "hooks: pre-tool-use blocks Google API keys"   "templates/hooks/pre-tool-use.js"  "AIza"
 check        "hooks: pre-tool-use exit 2 to block"          "templates/hooks/pre-tool-use.js"  "exit.*2\|process\.exit(2)"
 check        "hooks: pre-tool-use session dedup"             "templates/hooks/pre-tool-use.js"  "azclaude-sec\|dedup\|warned"
 check        "hooks: pre-tool-use warns GH Actions injection" "templates/hooks/pre-tool-use.js" "github\.event\|Actions.*inject\|workflow.*inject"
@@ -1753,6 +1795,21 @@ check      "audit: content audit for educational projects"  "$CMD/audit.md" "Con
 check      "copilot: --deep flag support"                   "bin/copilot.js" "deepMode\|--deep"
 check      "copilot: deep mode prompt additions"            "bin/copilot.js" "DEEP MODE.*audit\|Content accuracy audit\|Accessibility audit"
 check      "copilot: --deep uses Opus model"               "bin/copilot.js" "claude-opus-4-6\|deepMode.*opus\|opus.*deepMode"
+
+# ─── Copilot runner resilience ────────────────────────────────────────────────
+echo ""
+echo "─── Copilot runner resilience ───"
+check "copilot: stall detection via plan hash"        "bin/copilot.js" "stalls\|stall.*detect\|newHash.*prevHash\|planHash"
+check "copilot: stall limit exits runner"             "bin/copilot.js" "stalls >= 3\|stall.*3\|3.*stall"
+check "copilot: stall hint injected into prompt"      "bin/copilot.js" "Plan.md has not changed\|unchanged.*session\|stalls > 0"
+check "copilot: stuck milestone detection"            "bin/copilot.js" "stuckMilestones\|stuck.*milestone\|stillStuck"
+check "copilot: stuck milestone hint in prompt"       "bin/copilot.js" "STUCK MILESTONES\|in-progress for 2"
+check "copilot: retry on non-zero exit"               "bin/copilot.js" "retrying once\|retry.*once\|Retrying"
+check "copilot: session state file"                   "bin/copilot.js" "copilot-state\.json\|statePath\|saveState"
+check "copilot: state persists across crash"          "bin/copilot.js" "loadState\|JSON\.parse.*statePath\|readFileSync.*statePath"
+check "copilot: state cleaned on complete"            "bin/copilot.js" "unlinkSync.*statePath\|clean up state"
+check "stop: checkpoint pruning to 5"                 "templates/hooks/stop.js" "MAX_CHECKPOINTS\|5.*checkpoint\|checkpoint.*5\|cpFiles\.slice"
+check "stop: checkpoint prune deletes old files"      "templates/hooks/stop.js" "unlinkSync.*checkpointDir\|pruned"
 
 # ─── Pulse health snapshot ───────────────────────────────────────────────────
 echo ""

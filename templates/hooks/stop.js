@@ -94,6 +94,22 @@ if (dTrimIdx !== -1) {
 content = content.replace(/^Updated: .*/m, `Updated: ${today}`);
 try { fs.writeFileSync(goalsPath, content); } catch (_) {}
 
+// ── Prune old checkpoints — keep 5 most recent, delete the rest ──────────────
+// Older checkpoints are superseded by goals.md "Current threads" entries.
+const checkpointDir = path.join(cfg, 'memory', 'checkpoints');
+if (fs.existsSync(checkpointDir)) {
+  try {
+    const cpFiles = fs.readdirSync(checkpointDir)
+      .filter(f => f.endsWith('.md'))
+      .sort()
+      .reverse(); // newest first (YYYY-MM-DD-HH-MM.md sorts correctly)
+    const MAX_CHECKPOINTS = 5;
+    for (const f of cpFiles.slice(MAX_CHECKPOINTS)) {
+      try { fs.unlinkSync(path.join(checkpointDir, f)); } catch (_) {}
+    }
+  } catch (_) {}
+}
+
 // ── Reset edit counter so checkpoint reminder starts fresh next session ───────
 const counterPath = path.join(os.tmpdir(), `.azclaude-edit-count-${process.ppid || process.pid}`);
 try { fs.writeFileSync(counterPath, '0'); } catch (_) {}

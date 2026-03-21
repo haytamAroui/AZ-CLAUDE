@@ -1,6 +1,6 @@
 # AZCLAUDE -- Complete User Guide
 
-> Version 0.4.2 · 1135 tests passing · AI coding environment
+> Version 0.4.2 · 1196 tests passing · AI coding environment
 
 ---
 
@@ -79,7 +79,7 @@ Auto-detects your CLI and installs to the correct paths.
 npx azclaude doctor
 ```
 
-Runs 32 checks: Node.js version, project hooks, settings integrity, project structure, all 26 commands present. Exits 0 if healthy. Exits 1 with a specific fix hint if anything is wrong.
+Runs 32 checks: Node.js version, project hooks, settings integrity, project structure, all 27 commands present. Exits 0 if healthy. Exits 1 with a specific fix hint if anything is wrong.
 
 ### See it working before committing
 
@@ -267,7 +267,7 @@ AZCLAUDE builds progressively. You don't need all 10 levels. You need the right 
 |-------|-------------|-------------|
 | **1** | CLAUDE.md -- project conventions in 30 lines | ~30 tokens |
 | **2** | MCP servers -- database, browser, API tools | ~150 tokens |
-| **3** | 26 commands + lazy-loaded capabilities | ~380 tokens per task |
+| **3** | 27 commands + lazy-loaded capabilities | ~380 tokens per task |
 | **4** | Memory -- goals, checkpoints, sessions | ~200 tokens per session |
 | **5** | Custom agents -- specialists with clear scope | ~400 tokens per agent |
 | **6** | Hooks -- auto-tracking, injection, friction detection | ~0 tokens (global) |
@@ -1220,7 +1220,7 @@ Doctor runs 32 checks across 6 categories. Each failure includes the exact fix c
 - **Project hooks** -- UserPromptSubmit, PostToolUse, Stop hooks wired
 - **Hook freshness** -- hook scripts match latest version
 - **Settings integrity** -- SHA-256 hash matches install-time hash
-- **Commands** -- all 26 commands present
+- **Commands** -- all 27 commands present
 - **Memory** -- goals.md exists, checkpoints directory exists, git repo initialized
 - **Project** -- CLAUDE.md exists and has no unfilled `{{placeholders}}`
 

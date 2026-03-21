@@ -1,15 +1,41 @@
 # Goals — AZCLAUDE
-Updated: 2026-03-20
+Updated: 2026-03-21
 
 ## Current threads
+- [checkpoint] 02:00 — v0.4.5-security-auditor-sentinel → .claude/memory/checkpoints/2026-03-21-02-00.md
+- [checkpoint] 01:00 — v0.4.4-security-hook-published → .claude/memory/checkpoints/2026-03-21-01-00.md
 - [checkpoint] 17:20 — v0.3.5-ci-added → .claude/memory/checkpoints/2026-03-19-17-20.md
 - [checkpoint] 05:30 — v0.3.3-all-gaps-resolved → .claude/memory/checkpoints/2026-03-19-05-30.md
-- Published to npm: azclaude-copilot@0.3.5 (19 releases total)
-- 1058 tests, 49 commits
+- Published to npm: azclaude-copilot@0.4.4 (20+ releases total)
+- 1151 tests, 54+ commits
 - Tested on certification project — 18/18 verification checks pass
 - GitHub Actions CI live — Node 18/20/22 matrix
 
 ## Done this session
+- 01:55 — tests\node-smoke.test.js (+83/-0)
+- 01:54 — bin\copilot.js (+96/-9) — /^- Status: ([\w-]+)/gm
+- 01:52 — tests\test-features.sh (+59/-2)
+- 01:51 — templates\hooks\stop.js (+16/-0)
+- 01:40 — .claude\memory\checkpoints\2026-03-21-02-00.md
+- 01:35 — .github\workflows\tests.yml (+40/-6) — name: Verify package structure (agents ship correctly)
+- 01:27 — tests\test-features.sh (+44/-2)
+- 01:26 — templates\commands\sentinel.md — /sentinel — Environment Security Scan
+- 01:26 — bin\cli.js (+2/-2)
+- 01:26 — templates\agents\security-auditor.md
+- 01:15 — tests\test-features.sh (+22/-2) — EXPECTED_CMDS=27
+- 01:11 — bin\cli.js (+1/-1)
+- 01:10 — templates\hooks\pre-tool-use.js (+1/-1) — {
+- 01:10 — templates\commands\sentinel.md
+- 00:57 — tests\test-features.sh (+1/-0)
+- 00:57 — bin\copilot.js (+2/-1) — const result = spawnSync('claude', [
+- 00:56 — .github\workflows\tests.yml (+2/-0) — const required = [
+- 00:51 — .claude\memory\checkpoints\2026-03-21-01-00.md
+- 00:42 — package.json (+1/-1) — "version": "0.4.4",
+- 00:38 — tests\test-features.sh (+18/-0)
+- 00:34 — bin\cli.js (+5/-3) — function buildHookEntries(scriptsDir) {
+- 00:28 — templates\hooks\pre-tool-use.js
+- 00:27 — templates\capabilities\shared\security.md (+3/-1)
+- 00:12 — README.md (+318/-368)
 - 00:06 — .github\workflows\tests.yml (+43/-0)
 - 00:03 — package.json (+1/-1) — "version": "0.4.3",
 - 00:02 — DOCS.md (+72/-24)
@@ -67,4 +93,4 @@ Updated: 2026-03-20
 - None
 
 ## In progress
-- 00:12 — README.md (+318/-368)
+- 02:07 — templates\commands\ship.md (+16/-0) — Pre-Ship Gate (runs before any commit)

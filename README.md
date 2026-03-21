@@ -476,11 +476,11 @@ See [SECURITY.md](SECURITY.md) for full details.
 
 ## Verified
 
-1135 tests. Every template, command, capability, agent, hook, and CLI feature verified.
+1196 tests. Every template, command, capability, agent, hook, and CLI feature verified.
 
 ```bash
 bash tests/test-features.sh
-# Results: 1135 passed, 0 failed, 1135 total
+# Results: 1196 passed, 0 failed, 1196 total
 ```
 
 ---

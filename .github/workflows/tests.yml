@@ -34,9 +34,11 @@ jobs:
               'templates/agents/orchestrator.md',
               'templates/agents/problem-architect.md',
               'templates/agents/milestone-builder.md',
+              'templates/agents/security-auditor.md',
               'templates/capabilities/shared/intelligent-dispatch.md',
               'templates/capabilities/shared/security.md',
               'templates/hooks/pre-tool-use.js',
+              'templates/commands/sentinel.md',
               'bin/cli.js',
               'bin/copilot.js'
             ];
@@ -51,20 +53,52 @@ jobs:
             console.log('Package structure OK — all', required.length, 'required files present');
           "
 
-      - name: Verify CLI registers new agents
+      - name: Verify CLI registers all agents and commands
         run: |
           node -e "
             const src = require('fs').readFileSync('bin/cli.js', 'utf8');
-            const required = ['orchestrator', 'problem-architect', 'milestone-builder'];
+            const requiredAgents = [
+              'orchestrator', 'problem-architect', 'milestone-builder', 'security-auditor'
+            ];
+            const requiredCmds = ['sentinel'];
             let missing = [];
-            for (const a of required) {
-              if (!src.includes(a)) missing.push(a);
+            for (const a of requiredAgents) {
+              if (!src.includes(a)) missing.push('agent:' + a);
+            }
+            for (const c of requiredCmds) {
+              if (!src.includes(c)) missing.push('cmd:' + c);
             }
             if (missing.length > 0) {
-              console.error('CLI AGENTS array missing:', missing);
+              console.error('CLI registration missing:', missing);
               process.exit(1);
             }
-            console.log('CLI agent registration OK');
+            console.log('CLI registration OK — agents and commands verified');
+          "
+
+      - name: Verify security-auditor covers all 5 categories
+        run: |
+          node -e "
+            const src = require('fs').readFileSync('templates/agents/security-auditor.md', 'utf8');
+            const checks = [
+              ['Secrets Detection',    /secrets.*detection|Category 1/i],
+              ['Permission Audit',     /permission.*audit|Category 2/i],
+              ['Hook Analysis',        /hook.*analysis|Category 3/i],
+              ['MCP Server Scan',      /MCP.*scan|Category 4/i],
+              ['Agent Config Review',  /agent.*config|Category 5/i],
+              ['102 rules',            /102/],
+              ['Scoring A-F',          /grade.*A|A.*grade|A.*B.*C.*D.*F/i],
+              ['BLOCKED severity',     /BLOCKED/],
+              ['file:line output',     /file:line/],
+            ];
+            let failed = [];
+            for (const [label, re] of checks) {
+              if (!re.test(src)) failed.push(label);
+            }
+            if (failed.length > 0) {
+              console.error('security-auditor missing:', failed);
+              process.exit(1);
+            }
+            console.log('security-auditor integrity OK — all', checks.length, 'checks pass');
           "
 
       - name: Dry-run npm pack (verify publish structure)
