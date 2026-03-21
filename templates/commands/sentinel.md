@@ -30,13 +30,8 @@ ls .claude/agents/security-auditor.md 2>/dev/null && echo "agent=found" || echo 
 ```
 
 If `agent=found`:
-```
-Spawn security-auditor agent with:
-  Task: Full security scan — all 5 categories, 102 rules
-  Scope: $ARGUMENTS (default: --all)
-  Return: Security Report in standard format
-```
-Display the returned Security Report and **ExitPlanMode**. Done — do not run layers below.
+Read `.claude/agents/security-auditor.md` and execute the full scan inline using the agent's instructions and rule set. This gives the full 102-rule scan without requiring a subprocess.
+Display the Security Report and **ExitPlanMode**. Done — do not run layers below.
 
 If `agent=missing`: continue with manual layers below.
 
@@ -63,7 +58,12 @@ Check if hooks were modified outside of AZCLAUDE.
 
 ```bash
 INTEGRITY="$HOME/.claude/.azclaude-integrity"
-SETTINGS="$HOME/.claude/settings.json"
+# Windows stores settings at %APPDATA%\Claude\settings.json, Unix/Mac at ~/.claude/settings.json
+if [ -n "$APPDATA" ]; then
+  SETTINGS="$APPDATA/Claude/settings.json"
+else
+  SETTINGS="$HOME/.claude/settings.json"
+fi
 [ -f "$INTEGRITY" ] && echo "integrity_file=found" || echo "integrity_file=missing"
 [ -f "$SETTINGS"  ] && echo "settings_file=found"  || echo "settings_file=missing"
 ```
@@ -95,7 +95,10 @@ For each `.js` / `.sh` hook found, flag:
 Check Claude Code settings for over-permissioned configurations.
 
 ```bash
-cat "$HOME/.claude/settings.json" 2>/dev/null | head -80
+# Windows: %APPDATA%\Claude\settings.json — Unix/Mac: ~/.claude/settings.json
+SETTINGS="${APPDATA:+$APPDATA/Claude/settings.json}"
+SETTINGS="${SETTINGS:-$HOME/.claude/settings.json}"
+cat "$SETTINGS" 2>/dev/null | head -80
 cat .claude/settings.local.json 2>/dev/null
 ```
 
