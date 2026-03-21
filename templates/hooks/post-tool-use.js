@@ -219,7 +219,7 @@ let editCount = 1;
 try { editCount = parseInt(fs.readFileSync(counterPath, 'utf8'), 10) + 1; } catch (_) {}
 try { fs.writeFileSync(counterPath, String(editCount)); } catch (_) {}
 if (editCount > 0 && editCount % 15 === 0) {
-  process.stdout.write(`\n⚠ ${editCount} edits this session — run /snapshot before context compaction loses your reasoning\n`);
+  process.stderr.write(`\n⚠ ${editCount} edits this session — run /snapshot before context compaction loses your reasoning\n`);
 }
 
 // ── Rapid-edit detection — same file edited 5+ times in <5 min ───────────────
