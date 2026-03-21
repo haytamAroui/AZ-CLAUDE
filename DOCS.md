@@ -1,6 +1,6 @@
 # AZCLAUDE -- Complete User Guide
 
-> Version 0.4.2 · 1196 tests passing · AI coding environment
+> Version 0.4.6 · 1196 tests passing · AI coding environment
 
 ---
 
@@ -42,7 +42,7 @@ Beyond copilot mode, AZCLAUDE is a complete AI coding environment that:
 - **Improves itself** (`/evolve` finds and fixes gaps in the environment)
 - **Routes to the right capability** without loading everything (~380 tokens per task)
 
-After `npx azclaude` + `/setup` you have:
+After `npm install -g azclaude-copilot@latest` + `azclaude-copilot setup --full` you have:
 
 ```
 CLAUDE.md -- 30-line dispatch table filled with your project's details
@@ -58,41 +58,34 @@ Evolution system -- scans for gaps, generates fixes, quality-gates them
 
 ## Installation
 
-### Option 1 -- Claude Code Marketplace (1 click)
-
-Search "AZCLAUDE" in the Claude Code plugin marketplace and click Install.
-Hooks, commands, and capabilities are active immediately.
-Then run `/setup` in your project to build the project-specific layer.
-
-### Option 2 -- npx (all CLIs)
+### Step 1 — Install from your terminal
 
 ```bash
-npx azclaude
+npm install -g azclaude-copilot@latest
 ```
 
-Works with Claude Code, Gemini CLI, Codex, OpenCode, and Cursor.
-Auto-detects your CLI and installs to the correct paths.
+This installs the `azclaude` and `azclaude-copilot` commands globally on your machine.
+
+### Step 2 — Run setup inside Claude Code
+
+```bash
+azclaude-copilot setup --full
+```
+
+This installs the full AZCLAUDE environment into your project: 26 commands, 8 skills, 10 agents, memory system, hooks, reflexes, and evolution capabilities. Run this once per project inside a Claude Code session.
 
 ### Verify the install
 
 ```bash
-npx azclaude doctor
+azclaude-copilot doctor
 ```
 
 Runs 32 checks: Node.js version, project hooks, settings integrity, project structure, all 27 commands present. Exits 0 if healthy. Exits 1 with a specific fix hint if anything is wrong.
 
-### See it working before committing
-
-```bash
-npx azclaude demo
-```
-
-Runs the actual hook scripts on a temp project. Shows PostToolUse writing to goals.md, simulates context compaction, shows UserPromptSubmit injecting context back. Real execution, no mocks, cleans up after itself. Takes 30 seconds.
-
 ### Doctor Audit
 
 ```bash
-npx azclaude doctor --audit
+azclaude-copilot doctor --audit
 ```
 
 Runs all standard checks plus efficiency and security scoring. Reports hook profile compliance, stale patterns, and potential improvements.

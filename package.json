@@ -1,7 +1,7 @@
 {
   "name": "azclaude-copilot",
-  "version": "0.4.6",
-  "description": "AI coding environment — 26 commands, 8 skills, 10 agents, memory, reflexes, evolution. Install once, works on any stack.",
+  "version": "0.4.7",
+  "description": "AI coding environment — 26 commands, 8 skills, 10 agents, memory, reflexes, evolution. Install: npm install -g azclaude-copilot@latest, then in Claude Code: azclaude-copilot setup --full",
   "bin": {
     "azclaude": "bin/cli.js",
     "azclaude-copilot": "bin/copilot.js"

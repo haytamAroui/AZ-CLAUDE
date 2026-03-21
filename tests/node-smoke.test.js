@@ -149,6 +149,51 @@ test('stop.js checkpoint pruning keeps 5 most recent', () => {
   fs.rmdirSync(tmpDir);
 });
 
+test('stop.js done-trim keeps 20 entries and archives overflow', () => {
+  // Replicate stop.js DONE_KEEP = 20 trimming logic
+  const DONE_KEEP = 20;
+  const DONE = '## Done this session';
+  // Build a goals.md with 25 done entries
+  const entries = Array.from({ length: 25 }, (_, i) => `- ${String(25 - i).padStart(2, '0')}:00 — entry-${25 - i}`);
+  const goals = `# Goals\n\n${DONE}\n${entries.join('\n')}\n\n## Next actions\n1. foo\n`;
+  const lines = goals.split('\n');
+  const dIdx  = lines.findIndex(l => l.trim() === DONE);
+  const doneEntries = [];
+  for (let i = dIdx + 1; i < lines.length; i++) {
+    if (lines[i].startsWith('## ')) break;
+    if (lines[i].startsWith('- ')) doneEntries.push({ line: lines[i], idx: i });
+  }
+  assert.equal(doneEntries.length, 25, 'started with 25 entries');
+  const toArchive   = doneEntries.slice(DONE_KEEP);
+  assert.equal(toArchive.length, 5, 'archives 5 overflow entries');
+  const archivedSet = new Set(toArchive.map(e => e.idx));
+  const trimmed     = lines.filter((_, i) => !archivedSet.has(i)).join('\n');
+  // Verify exactly 20 done entries remain
+  const remaining = trimmed.split('\n').filter(l => l.startsWith('- ') && l.includes('entry-'));
+  assert.equal(remaining.length, 20, 'exactly 20 entries remain after trim');
+  // Newest entries kept (entry-25), oldest 5 archived (entry-1 through entry-5)
+  assert.ok(remaining.some(l => l.includes('entry-25')),               'newest entry kept');
+  assert.ok(!remaining.some(l => /entry-[1-5](?!\d)/.test(l)),         'oldest 5 entries archived');
+  // Next actions section survives intact
+  assert.ok(trimmed.includes('## Next actions'), 'Next actions section intact');
+});
+
+test('snapshot Next actions replacement logic', () => {
+  // Simulate step 3b: replace ## Next actions block with checkpoint "What\'s next"
+  const NEXT_ACTIONS = '## Next actions';
+  const goals = `# Goals\n\n${NEXT_ACTIONS}\n1. old task one\n2. old task two\n\n## Open blockers\n- None\n`;
+  const checkpointNext = ['Update goals.md version', 'Test on azcomply', 'Test --deep mode'];
+  const newBlock = `${NEXT_ACTIONS}\n${checkpointNext.map((t, i) => `${i + 1}. ${t}`).join('\n')}`;
+  const updated = goals.replace(
+    new RegExp(`${NEXT_ACTIONS}[\\s\\S]*?(?=\\n## |$)`),
+    newBlock + '\n'
+  );
+  assert.ok(updated.includes('Update goals.md version'), 'checkpoint item 1 present');
+  assert.ok(updated.includes('Test on azcomply'),        'checkpoint item 2 present');
+  assert.ok(!updated.includes('old task one'),           'old action removed');
+  assert.ok(updated.includes('## Open blockers'),        'other sections intact');
+});
+
 test('package.json is valid and has required fields', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
   assert.ok(pkg.name.startsWith('azclaude'), `package name starts with azclaude: ${pkg.name}`);

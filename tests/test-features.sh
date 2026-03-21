@@ -1419,6 +1419,7 @@ check      "snapshot: captures current reasoning"        "$CKPT" "What I'm doing
 check      "snapshot: captures decisions + why"          "$CKPT" "key decisions\|Why"
 check      "snapshot: captures what's next"              "$CKPT" "What's next"
 check      "snapshot: updates goals.md thread"           "$CKPT" "Current threads\|goals\.md"
+check      "snapshot: updates Next actions from checkpoint" "$CKPT" "Next actions"
 check      "snapshot: cli includes snapshot command"     "bin/cli.js" "snapshot"
 check      "snapshot: CLAUDE.md dispatch entry"          "templates/CLAUDE.md" "snapshot"
 check      "checkpoint: user-prompt injects latest"      "templates/hooks/user-prompt.js" "checkpoints\|checkpoint"

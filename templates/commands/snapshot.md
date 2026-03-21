@@ -56,10 +56,20 @@ Create the directory if needed: `.claude/memory/checkpoints/`
 
 ## Step 3: Update goals.md
 
-Add one line to the top of `## Current threads`:
+**3a.** Add one line to the top of `## Current threads`:
 ```
 - [checkpoint] {HH:MM} — {label} → .claude/memory/checkpoints/{date}-{HH:MM}.md
 ```
+
+**3b.** Replace the `## Next actions` block with the "What's next" list from the checkpoint:
+```
+## Next actions
+1. {item 1 from checkpoint "What's next"}
+2. {item 2}
+3. {item 3}
+```
+
+This keeps goals.md current — `/snapshot` owns mid-session state, `/persist` owns end-of-session.
 
 ---
 

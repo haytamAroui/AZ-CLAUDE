@@ -45,21 +45,22 @@ One install. Any stack. Zero dependencies.
 
 ## Install
 
-```bash
-npx azclaude-copilot          # core install — 26 commands, memory, hooks, reflexes
-npx azclaude-copilot --full   # full install — adds debate engine, pipeline, ELO
-```
-
-Then in Claude Code:
-
-```
-/setup    # analyze your project, fill CLAUDE.md, build environment
-```
-
-That's it. Your project now has AZCLAUDE in `.claude/`.
+**Step 1 — Install globally from your terminal:**
 
 ```bash
-npx azclaude-copilot doctor   # 32 checks — verify everything is wired correctly
+npm install -g azclaude-copilot@latest
+```
+
+**Step 2 — Run setup inside Claude Code to get the full capabilities:**
+
+```bash
+azclaude-copilot setup --full
+```
+
+That's it. Your project now has AZCLAUDE in `.claude/` — 26 commands, memory, hooks, reflexes, agents, and skills.
+
+```bash
+azclaude-copilot doctor   # 32 checks — verify everything is wired correctly
 ```
 
 ---
@@ -476,11 +477,11 @@ See [SECURITY.md](SECURITY.md) for full details.
 
 ## Verified
 
-1196 tests. Every template, command, capability, agent, hook, and CLI feature verified.
+1197 tests. Every template, command, capability, agent, hook, and CLI feature verified.
 
 ```bash
 bash tests/test-features.sh
-# Results: 1196 passed, 0 failed, 1196 total
+# Results: 1197 passed, 0 failed, 1197 total
 ```
 
 ---

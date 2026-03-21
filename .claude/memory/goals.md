@@ -2,16 +2,25 @@
 Updated: 2026-03-21
 
 ## Current threads
+- [checkpoint] 03:00 — v0.4.6-published-all-gaps-closed → .claude/memory/checkpoints/2026-03-21-03-00.md
 - [checkpoint] 02:00 — v0.4.5-security-auditor-sentinel → .claude/memory/checkpoints/2026-03-21-02-00.md
 - [checkpoint] 01:00 — v0.4.4-security-hook-published → .claude/memory/checkpoints/2026-03-21-01-00.md
 - [checkpoint] 17:20 — v0.3.5-ci-added → .claude/memory/checkpoints/2026-03-19-17-20.md
 - [checkpoint] 05:30 — v0.3.3-all-gaps-resolved → .claude/memory/checkpoints/2026-03-19-05-30.md
-- Published to npm: azclaude-copilot@0.4.4 (20+ releases total)
-- 1151 tests, 54+ commits
+- Published to npm: azclaude-copilot@0.4.6 (22+ releases total)
+- 1196 tests, 56+ commits
 - Tested on certification project — 18/18 verification checks pass
 - GitHub Actions CI live — Node 18/20/22 matrix
 
 ## Done this session
+- 18:16 — DOCS.md (+12/-19)
+- 18:15 — package.json (+1/-1)
+- 18:14 — README.md (+10/-9) — Install
+- 03:48 — tests\node-smoke.test.js (+45/-0)
+- 03:07 — tests\test-features.sh (+1/-0)
+- 03:07 — templates\commands\snapshot.md (+11/-1) — Step 3: Update goals.md
+- 02:58 — .claude\memory\checkpoints\2026-03-21-03-00.md
+- 02:07 — templates\commands\ship.md (+16/-0) — Pre-Ship Gate (runs before any commit)
 - 01:55 — tests\node-smoke.test.js (+83/-0)
 - 01:54 — bin\copilot.js (+96/-9) — /^- Status: ([\w-]+)/gm
 - 01:52 — tests\test-features.sh (+59/-2)
@@ -93,4 +102,4 @@ Updated: 2026-03-21
 - None
 
 ## In progress
-- 02:07 — templates\commands\ship.md (+16/-0) — Pre-Ship Gate (runs before any commit)
+- 18:16 — package.json (+2/-2) — "version": "0.4.7",
