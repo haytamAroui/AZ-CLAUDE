@@ -1,6 +1,6 @@
 # AZCLAUDE -- Complete User Guide
 
-> Version 0.4.12 · 1196 tests passing · AI coding environment
+> Version 0.4.12 · 1197 tests passing · AI coding environment
 
 ---
 
@@ -19,12 +19,13 @@
 11. [Custom Agents](#custom-agents)
 12. [The Memory System](#the-memory-system)
 13. [Native Tool Orchestration (MCP)](#native-tool-orchestration-mcp)
-14. [All 27 Commands](#all-27-commands)
-15. [Skills (Auto-Invoked)](#skills-auto-invoked)
-16. [Behavioral Defenses (Pressure Testing)](#behavioral-defenses-pressure-testing)
-17. [Multi-CLI Support](#multi-cli-support)
-18. [Security](#security)
-19. [Troubleshooting](#troubleshooting)
+14. [Intelligent Dispatch](#intelligent-dispatch)
+15. [All 27 Commands](#all-27-commands)
+16. [Skills (Auto-Invoked)](#skills-auto-invoked)
+17. [Behavioral Defenses (Pressure Testing)](#behavioral-defenses-pressure-testing)
+18. [Multi-CLI Support](#multi-cli-support)
+19. [Security](#security)
+20. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -644,20 +645,57 @@ Detection is automatic. Vocabulary flows into CLAUDE.md, agent definitions, comm
 
 AZCLAUDE creates agents from evidence, not guessing.
 
-### How agent boundaries are determined
+### Skills first. Agents only when needed.
 
-```bash
-git log --name-only --format="" --diff-filter=M | sort | uniq -c | sort -rn
+Claude Code is already capable. The question is never "what agent should I create?" — it's "what does Claude not know about this project that it needs to know?"
+
+**Skills answer that question cheaply.** A skill fires automatically when triggered, gives Claude the project-specific context it's missing, and costs nothing when not needed. It's a markdown file, not a subprocess.
+
+**Agents are for parallelism and isolation.** They run as separate sub-processes with their own context. Use one when work needs to happen concurrently, or when isolation from the main session is the point (experiments, reviews, security scans). Not for storing knowledge — skills do that better and cheaper.
+
+**The decision test:**
+
+| Ask this | If YES | If NO |
+|----------|--------|-------|
+| Does this work benefit from parallel execution? | Create an agent | Create a skill |
+| Does this need strict isolation from main context? | Create an agent | Create a skill |
+| Is there 5+ files worth of domain knowledge unique to this area? | Create an agent | Create a skill |
+| Is it just context Claude needs before implementing? | Create a skill | — |
+
+**What a good skill looks like:**
+
+Skills are project-specific guidance — not boilerplate. The best SKILL.md answers: *"In this project, when doing X, what does Claude need to know that it can't read from the code alone?"*
+
+```markdown
+# auth skill (good — project-specific)
+This project uses RS256 (not HS256) — the private key is in infra/keys/.
+All auth errors must return RFC 7807 problem+json format.
+Rate limiting is handled by the nginx layer — don't add it in the app.
 ```
 
-Files that change together in git history -> same agent. If `auth.js` and `auth.test.js` always change together, one agent owns both.
+```markdown
+# auth skill (bad — boilerplate Claude already knows)
+Use JWT for authentication.
+Validate all inputs.
+Write tests for your code.
+```
 
-**Rule: Testing is a responsibility, not a role.** The agent that writes the code writes the tests.
+`/setup` and `/evolve` generate skills by running `problem-architect` first — it reads your actual file structure, co-change patterns, and existing conventions before generating anything. Skills are tailored to this project's actual gaps. Generic templates are not installed.
 
 **When NOT to create an agent:**
-- Do not use agents for routing (routing belongs in `CLAUDE.md`)
-- Do not create an agent if a simple skill with direct tool calls can do the work
-- Do not create an agent to just read a file and return its content
+- Routing decisions belong in `CLAUDE.md`, not an agent
+- If a well-written skill + Claude's native capability handles it — use the skill
+- If you'd create it just to "have one for auth" or "have one for the frontend" — don't
+- If the agent's instructions are things Claude already knows without being told — skip it
+
+**The order that works:**
+```
+1. Identify what Claude consistently gets wrong in this project
+2. Write a skill that gives it the missing context (specific, not generic)
+3. Watch /reflexes — if the same workflow recurs across sessions, that's a skill candidate
+4. If the work can be parallelized or isolated → promote to an agent
+5. Let /evolve read your git history and make the call from co-change evidence
+```
 
 > **Important:** `.claude/agents/*.md` files are routing references for Claude to read and follow — they are NOT callable via `subagent_type`. Only system-registered agent types work with the `Agent` tool's `subagent_type` parameter. To invoke a project agent: pass its file content as context to the appropriate built-in agent (e.g., dev-frontend, dev-backend).
 
@@ -939,6 +977,59 @@ AZCLAUDE hardwires its logic directly into the host CLI's built-in MCP capabilit
 
 ---
 
+## Intelligent Dispatch
+
+A pre-flight system that runs **before** non-trivial tasks. Referenced in `/fix`, `/add`, `/audit`, `/ship`, `/dream`, and `/copilot` — here's what it actually does.
+
+### What it is
+
+Before touching any code, intelligent-dispatch checks whether the task is complex enough to need structured analysis. If yes, it spawns `problem-architect` to scope the work and return a **Team Spec** — a structured package that contains everything the implementer needs to succeed without making blind guesses.
+
+### When it fires
+
+| Condition | Fires? |
+|-----------|--------|
+| Task touches 3+ files | Yes |
+| Structural change (schema, API contract, auth, architecture) | Yes |
+| Task crosses directory boundaries | Yes |
+| First time in this part of the codebase this session | Yes |
+| 1-2 files, clearly scoped | No |
+| Pure config/docs change | No |
+| Already in copilot mode with annotated plan.md | No (Team Spec already exists) |
+
+### What problem-architect returns (Team Spec)
+
+```
+Skills to Load:        [auth-skill, validation-skill]
+Pre-Read Files:        [schema.prisma, src/auth/index.js, tests/auth.test.js, patterns.md]
+Files Written:         [src/auth/jwt.js, tests/auth/jwt.test.js]  ← parallel safety check
+Pre-Conditions:        [DB migration run, JWT_SECRET set in .env]
+Structural Decision:   NO  ← YES triggers /debate before any code is written
+Risks:                 [token rotation breaks existing sessions — add migration guide]
+Complexity:            MEDIUM  ← sets fix attempt budget: 2 for SIMPLE/MEDIUM, 3 for COMPLEX
+```
+
+### What happens next
+
+Each field is acted on before implementation starts:
+- **Skills to Load** → loaded into context
+- **Pre-Read Files** → read in order: schema → source → tests → patterns → antipatterns
+- **Pre-Conditions** → verified; STOP if any unmet
+- **Files Written** → noted for parallel safety (orchestrator checks for overlap before parallel dispatch)
+- **Structural Decision: YES** → `/debate` runs first, result logged to `decisions.md`
+- **Risks** → mitigation applied to implementation approach
+
+The rule it enforces: **context-blind implementation is the most common failure mode.** Intelligent dispatch eliminates it by forcing pre-read before any edit.
+
+### Escalation to Orchestrator
+
+If `.claude/agents/orchestrator.md` exists:
+- Task spans 2+ milestones → delegate to orchestrator
+- Multiple independent workstreams → orchestrator manages parallel dispatch
+- Structural decision needed → orchestrator triggers `/debate`
+
+---
+
 ## All 27 Commands
 
 ### /dream
@@ -948,7 +1039,31 @@ AZCLAUDE hardwires its logic directly into the host CLI's built-in MCP capabilit
 /dream I want to build a compliance tracking API with FastAPI and Postgres
 ```
 
-Structured intake → environment scan → **intelligent-dispatch deep scan for existing projects** (problem-architect analyzes what agents/skills/patterns already exist before generating vision) → build levels 1-6 → domain advisor generation → quality gate. Detects domain, generates domain advisor for non-dev domains. Use for greenfield projects or projects with existing code that need a full environment.
+Four phases — none skippable:
+
+**Phase 1 — Structured Intake**
+Uses `AskUserQuestion` to collect four answers in one shot:
+1. What do you want to build? (the problem it solves, not just the feature list)
+2. Tech stack (or "help me choose")
+3. Who uses this? (developers / end users / internal team)
+4. What is explicitly OUT of scope for v1? (prevents scope creep from the start)
+
+If `$ARGUMENTS` already answers one clearly, it's pre-filled. In copilot mode, reads `.claude/copilot-intent.md` instead of asking.
+
+**Phase 2 — Environment Scan (read-only)**
+Enters `PlanMode`. Detects current level (0-7) from what's already present.
+
+For existing projects (`.claude/` dir found): runs **intelligent-dispatch** — spawns `problem-architect` to analyze what agents, skills, and patterns already exist. Vision generation will not conflict with or duplicate what's already there.
+
+For clean slate (no `.claude/`): skips problem-architect, goes straight to Phase 3.
+
+**Phase 3 — Build Level by Level**
+Creates a task per level (L1–L6). Builds each in sequence — reads the matching `level{N}.md` capability, executes it with Phase 1 answers as input, shows what was created. Spawns `orchestrator-init` to fill CLAUDE.md and goals.md with actual project data.
+
+After building: generates a **domain advisor skill** for non-developer domains (compliance, medical, finance, legal, marketing, research, logistics). Developer projects get `architecture-advisor` by default.
+
+**Phase 4 — Quality Gate**
+Runs all checks from `quality-check.md`. Must pass before printing "project ready." Shows: created CLAUDE.md, goals.md, level checklist, and first task to work on.
 
 ---
 
@@ -1313,7 +1428,22 @@ Analyzes patterns and generates PreToolUse or PostToolUse hooks. Classifies into
 
 ## Skills (Auto-Invoked)
 
-Skills fire automatically based on context -- no slash command needed. AZCLAUDE installs 8 skills:
+Skills fire automatically based on context — no slash command needed.
+
+### What a skill actually is
+
+A skill is guidance, not instructions. Claude already knows how to write code — a skill tells it what's true about **this project** that it can't derive from reading the files.
+
+The question a skill answers: *"What does Claude need to know here that generic training doesn't cover?"*
+
+- Stack-level knowledge Claude has → not in a skill
+- This project's conventions, constraints, and non-obvious patterns → in a skill
+- Generic best practices → not in a skill
+- The specific tradeoffs already decided for this codebase → in a skill
+
+**Skills generated by `/setup` and `/evolve` are tailored.** `problem-architect` reads your actual file structure, co-change history, and existing patterns before writing anything. There are no generic templates dropped in without reading the project first.
+
+### The 8 installed skills
 
 | Skill | Triggers on |
 |---|---|
@@ -1324,9 +1454,9 @@ Skills fire automatically based on context -- no slash command needed. AZCLAUDE 
 | security | Credentials, auth, payments, .env files, secrets, before /ship |
 | skill-creator | "Create a skill", "add capability", repeated workflows |
 | agent-creator | "Create an agent", agent boundaries, 5-layer structure |
-| architecture-advisor | Architecture decisions, database choice, rendering strategy, testing approach -- by project scale |
+| architecture-advisor | Architecture decisions, database choice, rendering strategy, testing approach — by project scale |
 
-Each skill has: `SKILL.md` (lean workflow), `references/` (deep content), `examples/` (concrete output), `scripts/` (deterministic work).
+Each skill has: `SKILL.md` (lean trigger + workflow), `references/` (deep content loaded on demand), `examples/` (concrete output), `scripts/` (deterministic work).
 
 ---
 
