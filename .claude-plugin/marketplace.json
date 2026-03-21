@@ -9,7 +9,7 @@
     {
       "name": "azclaude",
       "description": "The operating system for Claude Code. Memory, auto-tracking, agents, skills, intelligence, evolution — orchestrating Claude Code's native architecture. Zero external dependencies. One command to set up.",
-      "version": "1.0.0",
+      "version": "0.4.12",
       "source": {
         "source": "github",
         "repo": "haytamAroui/AZ-CLAUDE",
