@@ -6,8 +6,8 @@
     "name": "haytamAroui",
     "url": "https://github.com/haytamAroui"
   },
-  "homepage": "https://github.com/haytamAroui/AZ-CLAUDE/blob/main/DOCS.md",
-  "repository": "https://github.com/haytamAroui/AZ-CLAUDE",
+  "homepage": "https://github.com/haytamAroui/AZ-CLAUDE-COPILOT/blob/main/DOCS.md",
+  "repository": "https://github.com/haytamAroui/AZ-CLAUDE-COPILOT",
   "license": "MIT",
   "keywords": ["memory", "setup", "agents", "commands", "context", "lazy-loading", "hooks", "domain-aware"],
   "commands": "./templates/commands/",
