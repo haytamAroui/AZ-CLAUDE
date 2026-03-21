@@ -101,6 +101,52 @@ jobs:
             console.log('security-auditor integrity OK — all', checks.length, 'checks pass');
           "
 
+      - name: Verify v0.4.10 features
+        run: |
+          node -e "
+            const fs = require('fs');
+            const checks = [
+              // #4 rapid-edit detection in hook
+              ['post-tool-use.js: rapid-edit detection',
+                /rapid-edit detection|azclaude-rapid/,
+                'templates/hooks/post-tool-use.js'],
+              // #7 copilot intent check Step 0
+              ['copilot.md: Step 0 intent check',
+                /Step 0.*Intent|copilot-intent\.md.*missing/s,
+                'templates/commands/copilot.md'],
+              // #3 sentinel secret redaction
+              ['sentinel.md: secret redaction instruction',
+                /truncate.*first.*8|first 8 chars/i,
+                'templates/commands/sentinel.md'],
+              // #2 Windows path for MCP in sentinel
+              ['sentinel.md: Windows MCP path',
+                /APPDATA.*Claude.*mcp|mcp.*APPDATA/i,
+                'templates/commands/sentinel.md'],
+              // #8 Cycle 2 threshold 2+ sessions
+              ['evolve.md: Cycle 2 threshold 2+ sessions',
+                /2\+ sessions/,
+                'templates/commands/evolve.md'],
+              // #1 ship.md inline execution (not spawn agent)
+              ['ship.md: inline security execution',
+                /execute.*inline|inline.*rules/i,
+                'templates/commands/ship.md'],
+              // #6 sentinel integrity note about settings.local.json
+              ['sentinel.md: integrity baseline note',
+                /settings\.local\.json.*not.*global|hooks.*registered.*settings\.local/i,
+                'templates/commands/sentinel.md'],
+            ];
+            let failed = [];
+            for (const [label, re, file] of checks) {
+              const src = fs.readFileSync(file, 'utf8');
+              if (!re.test(src)) failed.push(label + ' (' + file + ')');
+            }
+            if (failed.length > 0) {
+              console.error('v0.4.10 feature checks failed:', failed);
+              process.exit(1);
+            }
+            console.log('v0.4.10 features OK —', checks.length, 'checks pass');
+          "
+
       - name: Dry-run npm pack (verify publish structure)
         run: npm pack --dry-run 2>&1 | grep -E "files|kB|total" | tail -5
         if: matrix.node-version == '22'
