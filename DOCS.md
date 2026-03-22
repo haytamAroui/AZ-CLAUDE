@@ -1,6 +1,6 @@
 # AZCLAUDE -- Complete User Guide
 
-> Version 0.4.12 · 1197 tests passing · AI coding environment
+> Version 0.4.13 · 1353 tests passing · AI coding environment
 
 ---
 
@@ -20,7 +20,8 @@
 12. [The Memory System](#the-memory-system)
 13. [Native Tool Orchestration (MCP)](#native-tool-orchestration-mcp)
 14. [Intelligent Dispatch](#intelligent-dispatch)
-15. [All 27 Commands](#all-27-commands)
+14b. [Spec-Driven Development](#spec-driven-development)
+15. [All 33 Commands](#all-33-commands)
 16. [Skills (Auto-Invoked)](#skills-auto-invoked)
 17. [Behavioral Defenses (Pressure Testing)](#behavioral-defenses-pressure-testing)
 18. [Multi-CLI Support](#multi-cli-support)
@@ -31,7 +32,7 @@
 
 ## What AZCLAUDE Is
 
-AZCLAUDE is an AI coding environment. 27 commands, 8 skills, 13 agents, memory, reflexes, evolution. Install once, works on any stack. Copilot mode builds autonomously across sessions using a three-tier intelligent team (orchestrator → problem-architect → milestone-builder). Zero human input after the first message.
+AZCLAUDE is an AI coding environment. 33 commands, 8 skills, 15 agents, memory, reflexes, evolution. Install once, works on any stack. Copilot mode builds autonomously across sessions using a three-tier intelligent team (orchestrator → problem-architect → milestone-builder). Zero human input after the first message.
 
 The hero feature is **copilot mode**: a Node.js runner (`bin/copilot.js`) that restarts Claude Code sessions in a loop, while the AZCLAUDE environment inside each session decides what to build next, implements it, tests it, commits, and evolves the environment. The runner is stateless and dumb on purpose. All intelligence lives in the templates.
 
@@ -50,9 +51,9 @@ After `npm install -g azclaude-copilot@latest` + `azclaude-copilot setup --full`
 ```
 CLAUDE.md -- 30-line dispatch table filled with your project's details
 goals.md -- session memory, auto-injected before your first message every session
-27 commands -- /fix, /add, /audit, /blueprint, /ship, /evolve, /sentinel, /copilot, /reflexes...
+33 commands -- /fix, /add, /audit, /blueprint, /ship, /evolve, /sentinel, /copilot, /spec, /constitute...
 4 hooks -- block secrets before writes, track every edit, inject context on start, migrate on stop
-13 agents -- orchestrator team + framework agents + project agents from your git history
+15 agents -- orchestrator team + spec-reviewer + constitution-guard + framework agents
 37 capabilities -- lazy-loaded, only what the task needs
 Evolution system -- scans for gaps, generates fixes, quality-gates them
 Self-improving loop -- /reflect + /reflexes + /evolve find and fix their own blind spots
@@ -76,7 +77,7 @@ This installs the `azclaude` and `azclaude-copilot` commands globally on your ma
 azclaude-copilot setup --full
 ```
 
-This installs the full AZCLAUDE environment into your project: 27 commands, 8 skills, 13 agents, memory system, 4 hooks, reflexes, and evolution capabilities. Run this once per project inside a Claude Code session.
+This installs the full AZCLAUDE environment into your project: 33 commands, 8 skills, 15 agents, memory system, 4 hooks, reflexes, and evolution capabilities. Run this once per project inside a Claude Code session.
 
 ### Verify the install
 
@@ -84,7 +85,7 @@ This installs the full AZCLAUDE environment into your project: 27 commands, 8 sk
 azclaude-copilot doctor
 ```
 
-Runs 32 checks: Node.js version, project hooks, settings integrity, project structure, all 27 commands present. Exits 0 if healthy. Exits 1 with a specific fix hint if anything is wrong.
+Runs 32 checks: Node.js version, project hooks, settings integrity, project structure, all 33 commands present. Exits 0 if healthy. Exits 1 with a specific fix hint if anything is wrong.
 
 ### Doctor Audit
 
@@ -131,11 +132,12 @@ The runner (`bin/copilot.js`) is a Node.js loop. It is stateless and cross-platf
 ### The Intelligent Pipeline (v0.4+)
 
 ```
-Session 1:  /dream -> /blueprint (problem-architect annotates each milestone with Team Spec)
-                   -> orchestrator dispatches milestone-builder M1,M2,M3 -> /snapshot
-Session 2:  /evolve (new agents -> orchestrator unblocks plan) -> M4+M5 (parallel) -> M6
-Session 3:  /evolve -> M7,M8,M9 -> /snapshot
-Session 4:  /evolve -> /audit -> /ship -> COPILOT_COMPLETE
+Session 0:  /constitute (ground rules) -> /spec (requirements) -> /clarify (open questions)
+                   -> /blueprint (spec-reviewer gates quality) -> plan.md with traced milestones
+Session 1:  /copilot -> constitution-guard validates each milestone -> M1, M2, M3 -> /snapshot
+Session 2:  /evolve (new agents unblock plan) -> M4+M5 (parallel) -> M6 -> /analyze -> /snapshot
+Session 3:  /evolve -> M7, M8, M9 -> /snapshot
+Session 4:  /evolve -> /analyze (ghost check) -> /audit -> /ship -> COPILOT_COMPLETE
 ```
 
 Every command detects copilot mode automatically (`[ -f .claude/copilot-intent.md ]`) and skips human interaction.
@@ -279,7 +281,7 @@ AZCLAUDE builds progressively. You don't need all 10 levels. You need the right 
 |-------|-------------|-------------|
 | **1** | CLAUDE.md -- project conventions in 30 lines | ~30 tokens |
 | **2** | MCP servers -- database, browser, API tools | ~150 tokens |
-| **3** | 27 commands + lazy-loaded capabilities | ~380 tokens per task |
+| **3** | 33 commands + lazy-loaded capabilities | ~380 tokens per task |
 | **4** | Memory -- goals, checkpoints, sessions | ~200 tokens per session |
 | **5** | Custom agents -- specialists with clear scope | ~400 tokens per agent |
 | **6** | Hooks -- auto-tracking, injection, secret blocking | ~0 tokens (global) |
@@ -726,15 +728,24 @@ Layer 5 -- DOMAIN:       "Uses Passport.js, JWT (RS256), bcrypt, Redis sessions.
 
 ### Built-in Agents
 
-AZCLAUDE ships with 13 agent templates:
+AZCLAUDE ships with 15 agent templates:
 
 **Intelligent Copilot Team (v0.4+):**
 
 | Agent | Model | Purpose |
 |-------|-------|---------|
-| **orchestrator** | sonnet (opus with --deep) | Tech lead for copilot mode. Owns plan.md. Dispatches builders, monitors results, triggers /evolve every 3 milestones. NEVER writes code. |
-| **problem-architect** | sonnet | Analyzes each milestone before dispatch. Returns Team Spec: agents, skills, pre-read files, Files Written (parallel safety), pre-conditions, risks, complexity. NEVER implements. |
-| **milestone-builder** | sonnet | Base builder: pre-read protocol, 5-step implementation loop, fix attempt budget (2/3), report format. Receives full context from orchestrator. |
+| **orchestrator** | sonnet (opus with --deep) | Tech lead for copilot mode. Reads constitution.md. Runs constitution-guard before every dispatch. Owns plan.md. NEVER writes code. |
+| **problem-architect** | sonnet | Analyzes each milestone before dispatch. Returns Team Spec: agents, skills, pre-read files, Files Written, pre-conditions, risks, complexity. NEVER implements. |
+| **milestone-builder** | sonnet | Reads constitution.md FIRST. Pre-reads all files, implements, verifies, self-corrects (fix budget 2/3), commits, reports. |
+
+**Spec-Driven Gates (v0.4.13+):**
+
+| Agent | Model | Mode | Purpose |
+|-------|-------|------|---------|
+| **spec-reviewer** | haiku | read-only | Validates spec quality before /blueprint. 7 criteria (goal clarity, ≥2 user stories, ≥3 testable ACs, out-of-scope, failure modes). Verdict: APPROVED / NEEDS_CLARIFY / INCOMPLETE. Max 300 words. |
+| **constitution-guard** | haiku | read-only | Checks each milestone against constitution.md before orchestrator dispatches it. 4 checks: non-negotiables, architectural commitments, required patterns, definition of done. Verdict: APPROVED / VIOLATION. |
+
+Both gate agents use haiku — fast and cheap because they run frequently (once per spec / once per milestone). They are blocking gates, not builders.
 
 **Framework Agents:**
 
@@ -1030,7 +1041,214 @@ If `.claude/agents/orchestrator.md` exists:
 
 ---
 
-## All 27 Commands
+## Spec-Driven Development
+
+> v0.4.13 — The spec-driven workflow solves the most common cause of wasted work: building the wrong thing correctly.
+
+### The Problem It Solves
+
+Without spec-driven workflow:
+- `/blueprint` guesses at requirements from informal descriptions
+- `/copilot` builds milestones without checking project rules first
+- Plan says "done" but the files were deleted or renamed — ghost milestones ship silently
+- Open questions get resolved arbitrarily during implementation instead of before it
+
+With spec-driven workflow:
+- Every milestone traces to an acceptance criterion
+- `constitution-guard` blocks milestones that violate non-negotiables before any code is written
+- `/analyze` detects ghost milestones before they ship
+- `spec-reviewer` blocks `/blueprint` until the spec is actually complete
+
+### The Workflow
+
+```
+/constitute    Write ground rules first
+     ↓
+/spec          Write a structured spec (goal, user stories, acceptance criteria, out-of-scope)
+     ↓
+/clarify       Resolve open questions (5-question interrogation loop)
+     ↓
+/blueprint     Derive milestone plan — spec-reviewer validates first
+     ↓
+/copilot       Build — constitution-guard checks each milestone before dispatch
+     ↓
+/analyze       Check consistency (ghost milestones, drift)
+     ↓
+/ship          Ghost check → security scan → tests → commit → push
+```
+
+### /constitute — Ground Rules Before Planning
+
+```
+/constitute
+```
+
+Guided interview (5 groups, one at a time). Writes `.claude/constitution.md`:
+
+```markdown
+## Non-Negotiables
+- No third-party analytics in the EU build — GDPR compliance is blocking
+- All DB writes must be in transactions — data integrity is non-negotiable
+
+## Architectural Commitments
+- REST API only (no GraphQL) — mobile team is locked into REST
+- Supabase for auth — changing this requires a full migration
+
+## Required Patterns
+- All errors return RFC 7807 problem+json
+- Every endpoint must have at least one integration test
+
+## Definition of Done
+- Feature complete per acceptance criteria
+- No IDE errors, no failing tests
+- Reviewed by code-reviewer agent
+```
+
+Once constitution.md exists, every milestone in `/copilot` is checked against it by `constitution-guard` before dispatch. Violations are blocked and logged to `blockers.md`.
+
+### /spec — Structured Spec Before /blueprint
+
+```
+/spec "user authentication with JWT"
+```
+
+Writes `.claude/specs/{N}-{slug}.md`:
+
+```markdown
+# Spec: user-authentication
+status: ready-for-blueprint
+
+## Goal
+Allow users to log in with email + password and receive a JWT for subsequent requests.
+
+## User Stories
+- As a new user, I want to register with email + password so I can access the platform
+- As a returning user, I want to log in so I can access my account
+
+## Acceptance Criteria
+1. Given valid credentials, when POST /auth/login, then returns 200 + JWT + refresh token
+2. Given invalid credentials, when POST /auth/login, then returns 401 + RFC 7807 error body
+3. Given expired JWT, when any authenticated request, then returns 401 with refresh hint
+
+## Out of Scope (this version)
+- OAuth / social login
+- Multi-factor authentication
+- Password reset flow
+```
+
+After writing, `spec-reviewer` validates:
+- Goal is clear and specific
+- ≥ 2 user stories
+- ≥ 3 acceptance criteria, all independently verifiable
+- Out-of-scope not empty
+- No open questions remaining
+
+Verdict `APPROVED` → `/blueprint .claude/specs/{N}-{slug}.md`
+Verdict `NEEDS_CLARIFY` → status downgraded to `draft`, redirect to `/clarify`
+Verdict `INCOMPLETE` → lists missing sections, re-run Phase 3
+
+### /clarify — Resolve Open Questions
+
+```
+/clarify .claude/specs/01-auth.md
+```
+
+Structured interrogation of the spec. Asks one question at a time (max 5). Categorized by:
+- Goal — what is the exact success condition?
+- Scope boundary — what is the hard edge of this feature?
+- Acceptance criteria — is each criterion independently verifiable?
+- Failure modes — what happens when X fails?
+- Constraints — performance, security, backwards compatibility?
+
+Writes answers back into the spec. When all questions resolved → upgrades status to `ready-for-blueprint`.
+
+### /analyze — Cross-Artifact Consistency
+
+```
+/analyze
+/analyze plan     ← focus on ghost milestone detection
+/analyze spec     ← focus on spec vs. implementation drift
+```
+
+Three checks (read-only):
+
+**Ghost Milestone Detection** — scan plan.md for milestones marked `done` where the committed files no longer exist.
+```
+GHOST: M5 — "Add rate limiting middleware"
+  plan.md: status = done
+  file: src/middleware/rate-limit.ts — NOT FOUND
+  Recommendation: set status → pending, re-implement or remove
+```
+
+**Spec vs. Implementation** — check if acceptance criteria from spec files are reflected in the codebase.
+
+**Intent vs. Codebase** — compare copilot-intent.md against what was actually built.
+
+Runs automatically in `/ship` (pre-commit gate) and `/audit` (before code quality check).
+
+### /tasks — Dependency Graph + Wave Groups
+
+```
+/tasks
+```
+
+Reads plan.md, builds dependency graph, outputs parallelizable wave groups:
+
+```
+Wave 1 (parallel — no dependencies):
+  M1: Database schema
+  M2: Auth middleware
+
+Wave 2 (parallel — depend on Wave 1):
+  M3: User endpoints    (depends on M1)
+  M4: Auth endpoints    (depends on M2)
+
+Wave 3 (sequential — depends on both Wave 1 and 2):
+  M5: Integration tests
+
+Critical path: M1 → M3 → M5 (3 milestones)
+Max parallelism: 2 milestones simultaneously
+```
+
+Orchestrator reads this to decide dispatch order. `/tasks` output feeds directly into the orchestrator's parallel safety check.
+
+### /issues — plan.md → GitHub Issues
+
+```
+/issues
+```
+
+Pre-flight: checks `gh auth status`, `git remote`, `plan.md` exists.
+
+Creates a GitHub Issue for each `pending` milestone:
+- Label: `azclaude` + `copilot-milestone`
+- Body: milestone description, acceptance criteria (if spec linked), dependencies
+- Deduplication: checks for existing issue with same title, skips if found
+- Writes issue number back to `plan.md`: `M3: #42 — pending`
+
+Does NOT create issues for `done` milestones. Does NOT delete existing issues.
+
+### How the Spec-Driven Workflow Integrates Automatically
+
+Every major command now checks for constitution + spec context:
+
+| Command | What changed |
+|---------|-------------|
+| `/add` | Reads constitution non-negotiables before implementing. If spec file provided, loads ACs as implementation checklist. |
+| `/fix` | Reads constitution non-negotiables — fix must not violate project rules. |
+| `/refactor` | Reads architectural commitments — refactor must move toward required patterns. |
+| `/blueprint` | spec-reviewer gates quality before planning. Suggests /constitute if missing. |
+| `/copilot` | Reads constitution.md on startup. constitution-guard checks each milestone. |
+| `/evolve` | Drift analysis after skill generation. Reopens ghost milestones. |
+| `/ship` | Ghost milestone check before commit. Blocks on plan drift. |
+| `/audit` | Plan consistency check before code review. |
+| `architecture-advisor` | Reads architectural commitments before advising. Flags deviations. |
+| `orchestrator` | Reads constitution.md in Step 1. Runs constitution-guard in Step 3. |
+| `milestone-builder` | Reads constitution.md FIRST in pre-read. Keeps non-negotiables visible. |
+
+---
+
+## All 33 Commands
 
 ### /dream
 **New project from idea.**
@@ -1116,6 +1334,8 @@ Clarify scope → **intelligent-dispatch pre-flight** (spawns problem-architect 
 /audit src/auth.js  # specific file
 ```
 
+**Step 1a — Plan Consistency Check:** scans plan.md for ghost milestones before reviewing code. Ghost findings included in the report (not blocking, but flagged clearly).
+
 **Intelligent-dispatch structural context** injected before reviewing: decisions.md rulings, patterns.md conventions, antipatterns.md known issues form the checklist. Read-only mode. Enforces **Distrust-in-Review**: assumes the implementer was optimistic. In copilot mode: reviews against copilot-intent.md.
 
 Stage 1 -- Spec compliance (required first). STOPS if violations found.
@@ -1142,7 +1362,12 @@ IDE diagnostics first -> detect framework -> run with exit-code gate -> classify
 
 ```
 /blueprint refactor the authentication module to use refresh tokens
+/blueprint .claude/specs/01-auth.md    # spec-driven mode (recommended)
 ```
+
+**Spec-driven mode:** if a spec file is provided, spawns `spec-reviewer` first. APPROVED → build plan tracing each milestone to an acceptance criterion. NEEDS_CLARIFY → block, redirect to `/clarify`. INCOMPLETE → block, list missing sections.
+
+**Step 3b — Constitution check:** if `constitution.md` exists, verifies plan doesn't violate non-negotiables. Suggests `/constitute` if missing.
 
 Read-only analysis -> numbered plan with file:line references + risk level -> approval gate (skipped in copilot mode). Generates `plan.md` with milestone descriptions, expected files, and dependencies.
 
@@ -1157,13 +1382,14 @@ Read-only analysis -> numbered plan with file:line references + risk level -> ap
 ```
 
 **Intelligent-dispatch risk scan (Step 0):** problem-architect checks what changed and flags unmet pre-conditions before touching git. Then:
-1. Security scan (security-auditor if installed, inline scan if not) -- STOP if BLOCKED
-2. IDE diagnostics -- STOP if errors
-3. Tests pass -- STOP if EXIT != 0
-4. Docs sync check
-5. Secrets scan -- reject .env, keys, tokens
-6. Commit
-7. Push
+1. **Ghost milestone check (Step 0a):** `/analyze plan` inline — blocks on ghost milestones. Plan drift cannot ship.
+2. Security scan (security-auditor if installed, inline scan if not) -- STOP if BLOCKED
+3. IDE diagnostics -- STOP if errors
+4. Tests pass -- STOP if EXIT != 0
+5. Docs sync check
+6. Secrets scan -- reject .env, keys, tokens
+7. Commit
+8. Push
 
 In copilot mode: auto-deploys to Vercel/Railway if deploy target in intent.
 
@@ -1245,6 +1471,76 @@ Evidence-tagged, order-independent, length-independent. See [The Intelligence Sy
 ```
 
 The core command. If `.claude/agents/orchestrator.md` exists → reads the agent file and follows its instructions inline (three-tier intelligent team). Orchestrator: reads plan.md, consults problem-architect for each milestone, dispatches milestone-builders, monitors results, triggers /evolve every 3 milestones. When all done: `/audit` -> `/ship` -> `COPILOT_COMPLETE`. See [Copilot Mode](#copilot-mode-autonomous).
+
+---
+
+### /constitute
+**Define project ground rules. Copilot enforces them.**
+
+```
+/constitute
+```
+
+Guided interview (5 groups). Writes `.claude/constitution.md` with non-negotiables, architectural commitments, required patterns, definition of done, priority hierarchy. Wires itself into `CLAUDE.md` Rules section. Run once before `/blueprint`. See [Spec-Driven Development](#spec-driven-development).
+
+---
+
+### /spec
+**Write a structured spec before /blueprint.**
+
+```
+/spec "user authentication with JWT"
+/spec           # blank — will ask what you're building
+```
+
+Writes `.claude/specs/{N}-{slug}.md` with goal, user stories (≥2), acceptance criteria (≥3 with "given/when/then" format), out-of-scope, failure modes, constraints, and open questions. After writing, `spec-reviewer` validates. Status: `draft` (open questions remain) or `ready-for-blueprint`. See [Spec-Driven Development](#spec-driven-development).
+
+---
+
+### /clarify
+**Resolve open questions in a spec before blueprinting.**
+
+```
+/clarify .claude/specs/01-auth.md
+/clarify              # finds spec files automatically
+```
+
+Structured interrogation loop (max 5 questions). One question at a time. Writes answers back into the spec. When all questions resolved → upgrades status to `ready-for-blueprint`. See [Spec-Driven Development](#spec-driven-development).
+
+---
+
+### /analyze
+**Cross-artifact consistency check. Read-only.**
+
+```
+/analyze              # full check (plan + spec + intent)
+/analyze plan         # ghost milestone detection only
+/analyze spec         # spec vs. implementation drift
+```
+
+Three checks: ghost milestones (marked done, files missing), spec vs. code, intent vs. codebase. Outputs consistency score (%). Runs automatically in `/ship` and `/audit`. See [Spec-Driven Development](#spec-driven-development).
+
+---
+
+### /tasks
+**Build dependency graph and parallelizable wave groups from plan.md.**
+
+```
+/tasks
+```
+
+Reads plan.md, builds dependency graph, outputs wave groups (sets of milestones that can run simultaneously with no dependency or file conflicts). Shows critical path length and max parallelism. Read-only. See [Spec-Driven Development](#spec-driven-development).
+
+---
+
+### /issues
+**Convert plan.md milestones to GitHub Issues.**
+
+```
+/issues
+```
+
+Pre-flight: `gh auth status`, `git remote`, `plan.md`. Creates issues for pending milestones, deduplicates, writes issue numbers back to `plan.md`. Labels: `azclaude`, `copilot-milestone`. See [Spec-Driven Development](#spec-driven-development).
 
 ---
 
@@ -1570,7 +1866,7 @@ Doctor runs 32 checks across 6 categories. Each failure includes the exact fix c
 - **Project hooks** -- UserPromptSubmit, PreToolUse, PostToolUse, Stop hooks wired
 - **Hook freshness** -- hook scripts match latest version
 - **Settings integrity** -- SHA-256 hash matches install-time hash
-- **Commands** -- all 27 commands present
+- **Commands** -- all 33 commands present
 - **Memory** -- goals.md exists, checkpoints directory exists, git repo initialized
 - **Project** -- CLAUDE.md exists and has no unfilled `{{placeholders}}`
 

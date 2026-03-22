@@ -12,9 +12,10 @@
     <a href="#the-core-idea">Core Idea</a> ·
     <a href="#zero-setup-grows-with-your-project">Zero Setup</a> ·
     <a href="#what-you-get">What You Get</a> ·
+    <a href="#spec-driven-workflow">Spec-Driven</a> ·
     <a href="#memory-system">Memory</a> ·
     <a href="#self-improving-loop">Self-Improving Loop</a> ·
-    <a href="#all-27-commands">Commands</a> ·
+    <a href="#all-33-commands">Commands</a> ·
     <a href="#autonomous-mode">Autonomous Mode</a> ·
     <a href="DOCS.md">Full Docs</a>
   </p>
@@ -41,6 +42,9 @@ Loses reasoning mid-session.          /snapshot saves WHY — auto-injected next
 CLAUDE.md drifts from reality.        /reflect finds stale rules and fixes them.
 Builds the same agent repeatedly.     patterns.md encodes what worked.
 Can't work autonomously.              /copilot builds, tests, commits, ships — unattended.
+Plans without requirements.           /spec writes structured specs before any code is planned.
+Milestones violate project rules.     constitution-guard blocks non-compliant milestones.
+Plan drifts from what was built.      /analyze catches ghost milestones before they ship.
 ```
 
 One install. Any stack. Zero dependencies.
@@ -118,7 +122,7 @@ npm install -g azclaude-copilot@latest
 azclaude-copilot setup --full
 ```
 
-That's it. Your project now has AZCLAUDE in `.claude/` — 27 commands, 4 hooks, memory, reflexes, agents, and skills.
+That's it. Your project now has AZCLAUDE in `.claude/` — 33 commands, 4 hooks, memory, reflexes, agents, and skills.
 
 ```bash
 azclaude-copilot doctor   # 32 checks — verify everything is wired correctly
@@ -128,14 +132,14 @@ azclaude-copilot doctor   # 32 checks — verify everything is wired correctly
 
 ## What You Get
 
-**27 commands** · **8 auto-invoked skills** · **13 agents** · **4 hooks** · **memory across sessions** · **learned reflexes** · **self-evolving environment**
+**33 commands** · **8 auto-invoked skills** · **15 agents** · **4 hooks** · **memory across sessions** · **learned reflexes** · **self-evolving environment**
 
 ```
 .claude/
 ├── CLAUDE.md                 ← dispatch table: conventions, stack, routing
-├── commands/                 ← 27 slash commands (/add, /fix, /copilot, /sentinel...)
+├── commands/                 ← 33 slash commands (/add, /fix, /copilot, /spec, /sentinel...)
 ├── skills/                   ← 8 skills (test-first, security, architecture-advisor...)
-├── agents/                   ← 13 agents (orchestrator, code-reviewer, security-auditor...)
+├── agents/                   ← 15 agents (orchestrator, spec-reviewer, constitution-guard...)
 ├── capabilities/             ← 37 files, lazy-loaded via manifest.md (~380 tokens/task)
 ├── hooks/
 │   ├── user-prompt.js        ← injects goals.md + checkpoint before your first message
@@ -188,6 +192,56 @@ Phase 4: Quality gate — won't say "ready" without passing all checks
 ```
 
 If your domain is compliance, finance, or medical — it generates a domain-specific advisor skill with decision matrices, thresholds, and anti-patterns automatically.
+
+### 4. Spec-Driven Workflow — build what you actually meant to build
+
+The biggest cause of wasted work: building the wrong thing correctly. `/dream` gives you an environment. The spec-driven workflow ensures you build what the environment is *for*.
+
+```
+/constitute    — define ground rules before any planning
+                 Non-negotiables, required patterns, definition of done.
+                 Copilot checks this before every milestone. Violations are blocked, not ignored.
+
+/spec          — write a structured spec before /blueprint
+                 User stories, acceptance criteria (3+), out-of-scope, failure modes.
+                 spec-reviewer (haiku) validates quality — if incomplete, /blueprint is blocked.
+
+/clarify       — resolve open questions in a spec
+                 Structured interrogation (max 5 questions). Writes answers back into the spec.
+
+/blueprint     — derive a milestone plan from the spec
+                 Each milestone traces to an acceptance criterion.
+                 spec-reviewer gates quality before planning starts.
+
+/analyze       — cross-artifact consistency check
+                 Detects ghost milestones (marked done, files missing),
+                 spec vs. implementation drift, plan vs. reality gaps.
+                 Runs automatically in /ship and /audit.
+
+/tasks         — build a dependency graph from plan.md
+                 Shows parallelizable wave groups and critical path length.
+                 Tells orchestrator which milestones can run simultaneously.
+
+/issues        — convert plan.md milestones to GitHub Issues
+                 Creates labels (azclaude, copilot-milestone), deduplicates,
+                 writes issue numbers back to plan.md for traceability.
+```
+
+**The full sequence:**
+```
+/constitute → /spec → /clarify → /blueprint → /copilot → /analyze → /ship
+```
+
+**What the gates actually prevent:**
+
+| Without spec-driven | With spec-driven |
+|---------------------|-----------------|
+| Plan milestones that don't trace to requirements | spec-reviewer blocks /blueprint if ACs < 3 or goal unclear |
+| Copilot builds things that violate project rules | constitution-guard blocks each milestone before dispatch |
+| Ship code where plan.md says "done" but files are missing | /analyze catches ghost milestones; /ship blocks on them |
+| Open questions resolved arbitrarily in implementation | /clarify forces answers before planning starts |
+
+---
 
 ### 3. `/copilot` — walk away, come back to a product
 
@@ -551,12 +605,13 @@ Build step fails →
   Never fail silently.
 ```
 
-**Copilot pipeline:**
+**Copilot pipeline (with spec-driven workflow):**
 ```
-Session 1:  /dream → /blueprint (architect annotates milestones) → M1, M2, M3 → /snapshot
-Session 2:  /evolve (new agents unblock plan) → M4+M5 parallel → M6 → /snapshot
+Session 0:  /constitute → /spec → /clarify → /blueprint (spec-reviewed, constitution-checked)
+Session 1:  /copilot → constitution-guard validates each milestone → M1, M2, M3 → /snapshot
+Session 2:  /evolve → M4+M5 parallel → M6 → /analyze (ghost check) → /snapshot
 Session 3:  /evolve → M7, M8, M9 → /snapshot
-Session 4:  /evolve → /audit → /ship → COPILOT_COMPLETE
+Session 4:  /evolve → /analyze → /audit → /ship → COPILOT_COMPLETE
 ```
 
 **Every 3 milestones:** `/reflexes analyze` + `/evolve` + orchestrator re-evaluates blocked milestones.
@@ -571,7 +626,7 @@ Session 4:  /evolve → /audit → /ship → COPILOT_COMPLETE
 
 ---
 
-## All 27 Commands
+## All 33 Commands
 
 ### Build and Ship
 
@@ -582,21 +637,32 @@ Session 4:  /evolve → /audit → /ship → COPILOT_COMPLETE
 | `/setup` | Analyze existing project. Detect domain + stack + scale. Build environment. |
 | `/add` | Add a feature. Pre-analyzes scope via intelligent-dispatch before touching code. |
 | `/fix` | REPRODUCE → INVESTIGATE → HYPOTHESIZE → FIX. Show passing tests. Never guesses. |
-| `/audit` | Spec-first code review (read-only). Injects decisions.md + patterns.md as checklist. |
+| `/audit` | Spec-first code review (read-only). Ghost milestone check + decisions.md + patterns.md. |
 | `/test` | IDE diagnostics, framework detection, exit-code gate, failure classification. |
-| `/blueprint` | Read-only analysis → structured plan.md. Architect annotates each milestone in copilot mode. |
-| `/ship` | Risk scan → tests → secrets scan → commit → push. Auto-deploys in copilot mode. |
-| `/refactor` | Safe restructuring. Tests before + after. Worktree isolation for high-risk changes. |
+| `/blueprint` | Read-only analysis → structured plan.md. spec-reviewer gates quality before planning. |
+| `/ship` | Ghost check → risk scan → tests → secrets scan → commit → push. Auto-deploys in copilot mode. |
+| `/refactor` | Safe restructuring. Constitution pre-flight. Tests before + after. Worktree for high-risk. |
 | `/doc` | Generate docs from code. Matches existing style. |
 | `/migrate` | Upgrade deps/frameworks. Researches breaking changes. Worktree for major versions. |
 | `/deps` | Audit: outdated, vulnerable, unused packages. |
+
+### Spec-Driven Development
+
+| Command | What it does |
+|---------|-------------|
+| `/constitute` | Define project ground rules before any planning. Non-negotiables, required patterns, definition of done. Copilot enforces on every milestone. |
+| `/spec` | Write a structured spec: goal, user stories (≥2), acceptance criteria (≥3), out-of-scope, failure modes. spec-reviewer validates before /blueprint. |
+| `/clarify` | Structured interrogation loop (max 5 questions). Resolves open questions in a spec file. Required before /blueprint if any questions remain open. |
+| `/analyze` | Cross-artifact consistency check. Finds ghost milestones (marked done, files missing), spec vs. code drift, plan vs. reality gaps. Read-only. |
+| `/tasks` | Build dependency graph from plan.md. Shows parallelizable wave groups and critical path. Tells orchestrator which milestones can run simultaneously. |
+| `/issues` | Convert plan.md milestones to GitHub Issues. Deduplicates, creates labels, writes issue numbers back to plan.md for traceability. |
 
 ### Think and Improve
 
 | Command | What it does |
 |---------|-------------|
 | `/debate` | Adversarial debate with evidence scoring (AceMAD). Order-independent, length-independent. |
-| `/evolve` | Detect gaps → generate fixes → quality-gate → create agents from evidence. 3 cycles. |
+| `/evolve` | Detect gaps → generate fixes → quality-gate → create agents from evidence. Drift analysis. |
 | `/sentinel` | Security scan — 5 layers, 102 rules, scored 0–100 (grade A–F). Blocks /ship on findings. |
 | `/reflexes` | View, analyze, promote learned behavioral patterns. Confidence scoring. |
 | `/reflect` | Self-improve CLAUDE.md. Reads friction logs + session history. Proposes exact rule edits. |
@@ -617,15 +683,17 @@ Session 4:  /evolve → /audit → /ship → COPILOT_COMPLETE
 
 ---
 
-## 13 Agents
+## 15 Agents
 
 **Framework agents** (ship with AZCLAUDE, always available):
 
 | Agent | Role |
 |-------|------|
-| `orchestrator` | Tech lead for `/copilot`. Owns plan.md. Dispatches, monitors, triggers /evolve. Never writes code. |
+| `orchestrator` | Tech lead for `/copilot`. Owns plan.md. Reads constitution.md. Runs constitution-guard before every dispatch. Never writes code. |
 | `problem-architect` | Pre-flight analyst. Returns Team Spec (agents/skills/files/risks/complexity) before every dispatch. Never implements. |
-| `milestone-builder` | Base builder. Pre-reads all files, implements, verifies, self-corrects (fix budget), commits, reports. |
+| `milestone-builder` | Base builder. Reads constitution.md FIRST. Pre-reads all files, implements, verifies, self-corrects, commits. |
+| `spec-reviewer` | **New — haiku model.** Validates spec quality before /blueprint runs. 7 criteria. Verdict: APPROVED / NEEDS_CLARIFY / INCOMPLETE. Read-only gate. |
+| `constitution-guard` | **New — haiku model.** Checks each milestone against constitution.md before dispatch. Verdict: APPROVED / VIOLATION. Blocks on violations. Read-only gate. |
 | `orchestrator-init` | Runs once during `/setup`. Scans project, fills CLAUDE.md, creates goals.md. Exits permanently. |
 | `loop-controller` | Level 10 autonomous agent. 3 cycles: evolution, knowledge consolidation, topology optimization. |
 | `evolution-module` | Called by orchestrator to run /evolve and /level-up at Level 10. Delegates to loop-controller. |
@@ -730,6 +798,10 @@ Run `/level-up` at any time to see your current level and build the next one.
 | Agent specialization | None | Project agents emerge from git evidence, not guessing |
 | Autonomous building | Not possible | /copilot — three-tier intelligent team |
 | Self-improvement | Not possible | /evolve + /reflect + /reflexes — 3-layer environment evolution |
+| Requirements traceability | None | /spec + acceptance criteria → every milestone traces to a requirement |
+| Governance enforcement | None | constitution-guard blocks milestones that violate non-negotiables |
+| Plan vs. reality drift | Invisible | /analyze detects ghost milestones before they ship |
+| Spec quality gate | None | spec-reviewer (haiku) validates before /blueprint starts planning |
 | Any stack | Yes | Yes |
 | You own the code | Yes | Yes |
 | Zero dependencies | — | Yes (0 in package.json) |
@@ -738,11 +810,11 @@ Run `/level-up` at any time to see your current level and build the next one.
 
 ## Verified
 
-1197 tests. Every template, command, capability, agent, hook, and CLI feature verified.
+1353 tests. Every template, command, capability, agent, hook, and CLI feature verified.
 
 ```bash
 bash tests/test-features.sh
-# Results: 1197 passed, 0 failed, 1197 total
+# Results: 1353 passed, 0 failed, 1353 total
 ```
 
 ---
