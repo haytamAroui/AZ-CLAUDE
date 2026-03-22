@@ -1,7 +1,7 @@
 # AZCLAUDE
 
 ## Identity
-AI coding environment — 26 commands, 8 skills, 7 agents, memory, reflexes, evolution.
+AI coding environment — 33 commands, 8 skills, 13 agents, memory, reflexes, evolution.
 Install once, works on any stack. Copilot mode (/copilot) enables full autonomous building.
 Domain: Developer tooling | Stack: Node.js CLI, Markdown templates | Scale: STANDARD
 
@@ -10,6 +10,7 @@ Domain: Developer tooling | Stack: Node.js CLI, Markdown templates | Scale: STAN
 2. **Precision** — Reference code as `file:line`. Never describe in prose.
 3. **Tests** — Every template change must be covered by `tests/test-features.sh`. Run it before every commit.
 4. **No over-engineering** — Templates are instructions for Claude. Keep them precise, not exhaustive.
+5. **Constitution** — Read `.claude/constitution.md` before any implementation. Non-negotiables override all other instructions.
 
 ## Session State
 Read `.claude/memory/goals.md` at the start of every session.
@@ -23,7 +24,7 @@ templates/CLAUDE.md     — template installed into user projects
 templates/commands/     — command files (copilot, reflexes, etc.)
 templates/skills/       — 8 SKILL.md files with references/
 templates/capabilities/ — manifest + shared + level-builders + evolution + intelligence
-templates/agents/       — orchestrator-init + loop-controller + code-reviewer + test-writer + cc-template-author + cc-cli-integrator + cc-test-maintainer
+templates/agents/       — orchestrator-init + orchestrator + loop-controller + code-reviewer + test-writer + cc-template-author + cc-cli-integrator + cc-test-maintainer + milestone-builder + problem-architect + security-auditor + spec-reviewer + constitution-guard
 templates/scripts/      — env-scan.sh (JSON output, ~200 tokens)
 tests/test-features.sh  — grep-based tests, all must pass before commit
 ```
@@ -33,6 +34,8 @@ Read `.claude/capabilities/manifest.md` to find what to load.
 Load ONLY files relevant to the current task.
 
 Quick dispatch:
+- Doc-only change (README/DOCS/package.json description) → edit, commit, push, npm publish — no test run needed
+- Hook change (templates/hooks/*.js) → edit, run tests/test-features.sh, commit — note: existing installs need `azclaude-copilot setup --full` to pick up hook changes
 - Template change → read the file, edit, run tests/test-features.sh, commit
 - New command → templates/commands/{name}.md, add to CORE/EXTENDED/ADVANCED_COMMANDS in bin/cli.js, add tests
 - New skill → templates/skills/{name}/SKILL.md, add to SKILLS in bin/cli.js, add tests
@@ -53,9 +56,9 @@ When priorities conflict:
 
 ## Release Process
 1. Edit code
-2. Run `bash tests/test-features.sh` — all must pass
+2. Run `bash tests/test-features.sh` — all must pass. Do not proceed if any fail.
 3. Bump version in `package.json`
-4. Commit with test count in message
+4. Commit with actual test count from step 2 output in message
 5. `git push origin main`
 6. `npm publish`
 

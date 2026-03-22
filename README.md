@@ -117,7 +117,7 @@ npx azclaude-copilot@latest
 ```
 
 That's it. One command, no flags. Auto-detects whether this is a fresh install or an upgrade:
-- **First time** → full install (33 commands, 4 hooks, 15 agents, 8 skills, memory, reflexes)
+- **First time** → full install (33 commands, 4 hooks, 13 agents, 8 skills, memory, reflexes)
 - **Already installed, older version** → auto-upgrades everything to latest templates
 - **Already up to date** → verifies, no overwrites
 
@@ -129,14 +129,14 @@ npx azclaude-copilot@latest doctor   # 32 checks — verify everything is wired 
 
 ## What You Get
 
-**33 commands** · **8 auto-invoked skills** · **15 agents** · **4 hooks** · **memory across sessions** · **learned reflexes** · **self-evolving environment**
+**33 commands** · **8 auto-invoked skills** · **13 agents** · **4 hooks** · **memory across sessions** · **learned reflexes** · **self-evolving environment**
 
 ```
 .claude/
 ├── CLAUDE.md                 ← dispatch table: conventions, stack, routing
 ├── commands/                 ← 33 slash commands (/add, /fix, /copilot, /spec, /sentinel...)
 ├── skills/                   ← 8 skills (test-first, security, architecture-advisor...)
-├── agents/                   ← 15 agents (orchestrator, spec-reviewer, constitution-guard...)
+├── agents/                   ← 13 agents (orchestrator, spec-reviewer, constitution-guard...)
 ├── capabilities/             ← 37 files, lazy-loaded via manifest.md (~380 tokens/task)
 ├── hooks/
 │   ├── user-prompt.js        ← injects goals.md + checkpoint before your first message
