@@ -66,7 +66,7 @@ Self-improving loop -- /reflect + /reflexes + /evolve find and fix their own bli
 ### Step 1 — Run in your project directory
 
 ```bash
-npx azclaude-copilot
+npx azclaude-copilot@latest
 ```
 
 No global install required. `npx` fetches the latest version and installs AZCLAUDE into your project's `.claude/` directory.
@@ -74,7 +74,7 @@ No global install required. `npx` fetches the latest version and installs AZCLAU
 ### Step 2 — Run in your project directory
 
 ```bash
-npx azclaude-copilot
+npx azclaude-copilot@latest
 ```
 
 One command, no flags. Auto-detects the right mode:
@@ -221,7 +221,7 @@ System agents (code-reviewer, test-writer, orchestrator-init) run the framework.
 ## First Steps After Install
 
 ```
-1. npx azclaude-copilot            # install or upgrade — auto-detected
+1. npx azclaude-copilot@latest            # install or upgrade — auto-detected
 2. /setup                          # scan project, build environment
 3. /pulse                          # see what was built and what's next
 4. /fix [error] or /add [feature]  # start working
@@ -1876,10 +1876,10 @@ Doctor runs 32 checks across 6 categories. Each failure includes the exact fix c
 - **Project** -- CLAUDE.md exists and has no unfilled `{{placeholders}}`
 
 Common fixes:
-- **Hook not wired** -> re-run `npx azclaude-copilot`
-- **Stale hooks** -> re-run `npx azclaude-copilot` (auto-upgrades on version mismatch)
+- **Hook not wired** -> re-run `npx azclaude-copilot@latest`
+- **Stale hooks** -> re-run `npx azclaude-copilot@latest` (auto-upgrades on version mismatch)
 - **Placeholders in CLAUDE.md** -> run `/setup`
-- **Missing commands** -> re-run `npx azclaude-copilot`
+- **Missing commands** -> re-run `npx azclaude-copilot@latest`
 
 ### Goals.md not injecting at session start
 
@@ -1901,7 +1901,7 @@ Run `/evolve` after 2+ sessions of real use when friction logs and patterns have
 
 The integrity baseline was computed against a different settings file than where your hooks are registered. Re-run:
 ```bash
-npx azclaude-copilot
+npx azclaude-copilot@latest
 ```
 This re-establishes the baseline against the correct project-level `settings.local.json`.
 
@@ -1911,7 +1911,7 @@ AZCLAUDE hooks use Node.js (not bash) and detect Windows paths automatically:
 - Unix/Mac: `~/.claude/settings.json`
 - Windows: `%APPDATA%\Claude\settings.json`
 
-If issues persist, verify Node.js is in your PATH and re-run `npx azclaude-copilot`.
+If issues persist, verify Node.js is in your PATH and re-run `npx azclaude-copilot@latest`.
 
 ### /copilot not finding copilot-intent.md
 

@@ -1221,5 +1221,5 @@ if (onboardingPath === 'RESUME') {
 console.log('');
 console.log('  ─────────────────────────────────────────────');
 console.log('  docs:    github.com/haytamAroui/AZ-CLAUDE-COPILOT');
-console.log('  upgrade: npx azclaude-copilot  (auto-detects)');
+console.log('  upgrade: npx azclaude-copilot@latest');
 console.log('════════════════════════════════════════════════\n');

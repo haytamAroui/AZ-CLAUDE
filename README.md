@@ -58,7 +58,7 @@ Most AI coding tools require upfront decisions: which agents to create, what pro
 AZCLAUDE inverts this. **You start with almost nothing. The environment builds itself from evidence.**
 
 ```bash
-npx azclaude-copilot   # one command. that's it.
+npx azclaude-copilot@latest   # one command. that's it.
 ```
 
 No agent files to write. No skills to configure. No prompt engineering. `npx azclaude-copilot` installs 33 commands, 4 hooks, memory structure, and a manifest. The rest is generated from your actual codebase as you work. Run the same command again later — it auto-detects whether to skip, install, or upgrade.
@@ -113,7 +113,7 @@ Claude reads the manifest (one file), finds which 1-3 capability files apply, lo
 **Step 1 — Install globally from your terminal:**
 
 ```bash
-npx azclaude-copilot
+npx azclaude-copilot@latest
 ```
 
 That's it. One command, no flags. Auto-detects whether this is a fresh install or an upgrade:
@@ -122,7 +122,7 @@ That's it. One command, no flags. Auto-detects whether this is a fresh install o
 - **Already up to date** → verifies, no overwrites
 
 ```bash
-npx azclaude-copilot doctor   # 32 checks — verify everything is wired correctly
+npx azclaude-copilot@latest doctor   # 32 checks — verify everything is wired correctly
 ```
 
 ---
