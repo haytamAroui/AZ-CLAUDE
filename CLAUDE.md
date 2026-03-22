@@ -1,7 +1,7 @@
 # AZCLAUDE
 
 ## Identity
-AI coding environment — 33 commands, 8 skills, 13 agents, memory, reflexes, evolution.
+AI coding environment — 33 commands, 9 skills, 13 agents, memory, reflexes, evolution.
 Install once, works on any stack. Copilot mode (/copilot) enables full autonomous building.
 Domain: Developer tooling | Stack: Node.js CLI, Markdown templates | Scale: STANDARD
 
@@ -22,7 +22,7 @@ bin/cli.js              — CLI installer (inherited from AZCLAUDE)
 bin/copilot.js          — outer loop runner (restarts Claude Code sessions until done)
 templates/CLAUDE.md     — template installed into user projects
 templates/commands/     — command files (copilot, reflexes, etc.)
-templates/skills/       — 8 SKILL.md files with references/
+templates/skills/       — 9 SKILL.md files with references/
 templates/capabilities/ — manifest + shared + level-builders + evolution + intelligence
 templates/agents/       — orchestrator-init + orchestrator + loop-controller + code-reviewer + test-writer + cc-template-author + cc-cli-integrator + cc-test-maintainer + milestone-builder + problem-architect + security-auditor + spec-reviewer + constitution-guard
 templates/scripts/      — env-scan.sh (JSON output, ~200 tokens)
@@ -58,9 +58,16 @@ When priorities conflict:
 1. Edit code
 2. Run `bash tests/test-features.sh` — all must pass. Do not proceed if any fail.
 3. Bump version in `package.json`
-4. Commit with actual test count from step 2 output in message
-5. `git push origin main`
-6. `npm publish`
+4. **Sync all docs before pushing** — all 6 files must reflect the new version:
+   - `README.md` — skill/agent counts
+   - `DOCS.md` — version badge, skill/agent counts, skills table
+   - `CLAUDE.md` — Identity line counts
+   - `package.json` — description field counts
+   - `.claude-plugin/plugin.json` — version + description counts
+   - `.claude-plugin/marketplace.json` — version + description counts
+5. Commit with actual test count from step 2 output in message
+6. `git push origin main`
+7. `npm publish`
 
 ## Available Commands
 /dream · /setup · /fix · /add · /audit · /test · /blueprint · /evolve · /debate · /snapshot · /persist · /level-up · /ship · /pulse · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect · /hookify · /copilot · /reflexes · /sentinel · /spec · /clarify · /constitute · /analyze · /issues · /tasks
