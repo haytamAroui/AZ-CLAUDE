@@ -58,10 +58,10 @@ Most AI coding tools require upfront decisions: which agents to create, what pro
 AZCLAUDE inverts this. **You start with almost nothing. The environment builds itself from evidence.**
 
 ```bash
-azclaude-copilot setup --full   # one command. that's it.
+npx azclaude-copilot   # one command. that's it.
 ```
 
-No agent files to write. No skills to configure. No prompt engineering. `setup --full` installs 27 commands, 4 hooks, memory structure, and a manifest. The rest is generated from your actual codebase as you work.
+No agent files to write. No skills to configure. No prompt engineering. `npx azclaude-copilot` installs 33 commands, 4 hooks, memory structure, and a manifest. The rest is generated from your actual codebase as you work. Run the same command again later — it auto-detects whether to skip, install, or upgrade.
 
 **What the environment looks like across sessions:**
 
@@ -113,19 +113,16 @@ Claude reads the manifest (one file), finds which 1-3 capability files apply, lo
 **Step 1 — Install globally from your terminal:**
 
 ```bash
-npm install -g azclaude-copilot@latest
+npx azclaude-copilot
 ```
 
-**Step 2 — Run setup inside Claude Code:**
+That's it. One command, no flags. Auto-detects whether this is a fresh install or an upgrade:
+- **First time** → full install (33 commands, 4 hooks, 15 agents, 8 skills, memory, reflexes)
+- **Already installed, older version** → auto-upgrades everything to latest templates
+- **Already up to date** → verifies, no overwrites
 
 ```bash
-azclaude-copilot setup --full
-```
-
-That's it. Your project now has AZCLAUDE in `.claude/` — 33 commands, 4 hooks, memory, reflexes, agents, and skills.
-
-```bash
-azclaude-copilot doctor   # 32 checks — verify everything is wired correctly
+npx azclaude-copilot doctor   # 32 checks — verify everything is wired correctly
 ```
 
 ---
@@ -772,10 +769,10 @@ AZCLAUDE builds capability progressively — start simple, grow into complexity:
 | 3 | Skills — project-specific commands | `/setup` generates ≥ 2 |
 | 4 | Memory — goals.md, patterns, antipatterns | `/setup` |
 | 5 | Agents — from git co-change analysis | `/evolve` after 5+ commits |
-| 6 | Hooks — stateful session tracking | `azclaude-copilot setup` |
+| 6 | Hooks — stateful session tracking | `npx azclaude-copilot` |
 | 7 | External MCP servers | `/level-up` |
 | 8 | Orchestrated pipeline — multi-agent with problem-architect | `/level-up` |
-| 9 | Intelligence — debate, OPRO, ELO, pipeline isolation | `setup --full` |
+| 9 | Intelligence — debate, OPRO, ELO, pipeline isolation | `npx azclaude-copilot` |
 | 10 | Self-evolving — loop-controller, 3-cycle autonomous evolution | `/evolve` sustained |
 
 Run `/level-up` at any time to see your current level and build the next one.
@@ -810,11 +807,11 @@ Run `/level-up` at any time to see your current level and build the next one.
 
 ## Verified
 
-1353 tests. Every template, command, capability, agent, hook, and CLI feature verified.
+1357 tests. Every template, command, capability, agent, hook, and CLI feature verified.
 
 ```bash
 bash tests/test-features.sh
-# Results: 1353 passed, 0 failed, 1353 total
+# Results: 1357 passed, 0 failed, 1357 total
 ```
 
 ---

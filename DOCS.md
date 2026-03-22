@@ -1,6 +1,6 @@
 # AZCLAUDE -- Complete User Guide
 
-> Version 0.4.13 · 1353 tests passing · AI coding environment
+> Version 0.4.14 · 1357 tests passing · AI coding environment
 
 ---
 
@@ -46,7 +46,7 @@ Beyond copilot mode, AZCLAUDE is a complete AI coding environment that:
 - **Routes to the right capability** without loading everything (~380 tokens per task)
 - **Protects you from yourself** (pre-write secret blocking, pre-ship security scan, prompt injection defense)
 
-After `npm install -g azclaude-copilot@latest` + `azclaude-copilot setup --full` you have:
+After `npx azclaude-copilot` you have:
 
 ```
 CLAUDE.md -- 30-line dispatch table filled with your project's details
@@ -63,21 +63,26 @@ Self-improving loop -- /reflect + /reflexes + /evolve find and fix their own bli
 
 ## Installation
 
-### Step 1 — Install from your terminal
+### Step 1 — Run in your project directory
 
 ```bash
-npm install -g azclaude-copilot@latest
+npx azclaude-copilot
 ```
 
-This installs the `azclaude` and `azclaude-copilot` commands globally on your machine.
+No global install required. `npx` fetches the latest version and installs AZCLAUDE into your project's `.claude/` directory.
 
-### Step 2 — Run setup inside Claude Code
+### Step 2 — Run in your project directory
 
 ```bash
-azclaude-copilot setup --full
+npx azclaude-copilot
 ```
 
-This installs the full AZCLAUDE environment into your project: 33 commands, 8 skills, 15 agents, memory system, 4 hooks, reflexes, and evolution capabilities. Run this once per project inside a Claude Code session.
+One command, no flags. Auto-detects the right mode:
+- **First time** → full install (33 commands, 8 skills, 15 agents, 4 hooks, memory, reflexes, evolution)
+- **Already installed, older version** → auto-upgrades all templates to latest
+- **Already up to date** → verifies, no overwrites
+
+Run the same command again after any AZCLAUDE release — it handles the upgrade automatically.
 
 ### Verify the install
 
@@ -216,7 +221,7 @@ System agents (code-reviewer, test-writer, orchestrator-init) run the framework.
 ## First Steps After Install
 
 ```
-1. azclaude-copilot setup --full   # install
+1. npx azclaude-copilot            # install or upgrade — auto-detected
 2. /setup                          # scan project, build environment
 3. /pulse                          # see what was built and what's next
 4. /fix [error] or /add [feature]  # start working
@@ -1871,10 +1876,10 @@ Doctor runs 32 checks across 6 categories. Each failure includes the exact fix c
 - **Project** -- CLAUDE.md exists and has no unfilled `{{placeholders}}`
 
 Common fixes:
-- **Hook not wired** -> re-run `azclaude-copilot setup --full`
-- **Stale hooks** -> re-run `azclaude-copilot setup --full` (always overwrites)
+- **Hook not wired** -> re-run `npx azclaude-copilot`
+- **Stale hooks** -> re-run `npx azclaude-copilot` (auto-upgrades on version mismatch)
 - **Placeholders in CLAUDE.md** -> run `/setup`
-- **Missing commands** -> re-run `azclaude-copilot setup --full`
+- **Missing commands** -> re-run `npx azclaude-copilot`
 
 ### Goals.md not injecting at session start
 
@@ -1896,7 +1901,7 @@ Run `/evolve` after 2+ sessions of real use when friction logs and patterns have
 
 The integrity baseline was computed against a different settings file than where your hooks are registered. Re-run:
 ```bash
-azclaude-copilot setup --full
+npx azclaude-copilot
 ```
 This re-establishes the baseline against the correct project-level `settings.local.json`.
 
@@ -1906,7 +1911,7 @@ AZCLAUDE hooks use Node.js (not bash) and detect Windows paths automatically:
 - Unix/Mac: `~/.claude/settings.json`
 - Windows: `%APPDATA%\Claude\settings.json`
 
-If issues persist, verify Node.js is in your PATH and re-run `azclaude-copilot setup --full`.
+If issues persist, verify Node.js is in your PATH and re-run `npx azclaude-copilot`.
 
 ### /copilot not finding copilot-intent.md
 
