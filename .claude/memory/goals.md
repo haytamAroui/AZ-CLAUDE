@@ -17,9 +17,18 @@ Updated: 2026-03-22
 - v0.4.18 tagged on GitHub, v0.4.19 published to npm
 
 ## Next actions
-1. Post to Claude Code communities (Reddit r/ClaudeAI, Discord, X) — posts written and ready since earlier session
-2. Tag v0.4.19 on GitHub
+1. Commit /evolve fixes on azclaude/evolve-2026-03-22 branch and merge to main (doc-only — no version bump, no npm publish)
+2. Post to Claude Code communities (Reddit r/ClaudeAI, Discord, X) — posts written and ready since earlier session
 3. Test npx azclaude-copilot@latest on azcomply — install new agents (spec-reviewer, constitution-guard), then run /spec + /copilot
 
 ## Open blockers
 - Marketplace listing approval pending (no timeline known)
+
+## In progress
+- 22:32 — ops\evolution-log.md
+- 22:32 — .claude\memory\sessions\2026-03-22-cycle2.md
+- 22:22 — .claude\capabilities\manifest.md — last_updated: 2026-03-22
+- 22:21 — DOCS.md (+20/-1) — Hook I/O Contract (stdout vs stderr)
+- 22:21 — CLAUDE.md (+1/-1)
+- 22:21 — .claude-plugin\plugin.json (+1/-1) — "version": "0.4.19",
+- 22:20 — .claude-plugin\marketplace.json (+1/-1) — "version": "0.4.19",
