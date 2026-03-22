@@ -173,6 +173,15 @@ check "skill-creator: references progressive disclosure" "$SKC" "references/skil
 check "skill-creator: script invocation"                 "$SKC" "scaffold.sh"
 check "skill-creator: disable-model-invocation guidance" "$SKC" "disable-model-invocation"
 
+FD="$SKILLS_DIR/frontend-design/SKILL.md"
+check_file "skills/frontend-design/SKILL.md exists"         "$FD"
+check_file "skills/frontend-design/references/ exists"      "$SKILLS_DIR/frontend-design/references/aesthetic-directions.md"
+check      "frontend-design: anti-pattern forbidden fonts"  "$FD" "Inter\|Roboto\|Arial"
+check      "frontend-design: 12 aesthetic directions"       "$FD" "Brutally Minimal\|Cyberpunk\|Retro-Futuristic"
+check      "frontend-design: index.html requirement"        "$FD" "index.html"
+check      "frontend-design: complexity budget"             "$FD" "60-70\|maximalist\|minimalist"
+check      "frontend-design: cli.js wired"                  "bin/cli.js" "frontend-design"
+
 check "engineering guide: pushy description formula"     "$SKILLS_DIR/skill-creator/references/skill-engineering-guide.md" "ACTIONS.*trigger\|OBJECTS.*applies\|CONTEXTS.*fire"
 check "engineering guide: 2000 word limit"               "$SKILLS_DIR/skill-creator/references/skill-engineering-guide.md" "2.000 words\|2,000 words"
 check "engineering guide: script pattern"                "$SKILLS_DIR/skill-creator/references/skill-engineering-guide.md" "deterministic\|black box"

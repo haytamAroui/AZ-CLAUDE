@@ -373,7 +373,7 @@ function installCommands(projectDir, cfg) {
 
 // ─── Skills (SKILL.md — model-auto-invoked) ──────────────────────────────────
 
-const SKILLS = ['session-guard', 'test-first', 'env-scanner', 'debate', 'security', 'skill-creator', 'agent-creator', 'architecture-advisor'];
+const SKILLS = ['session-guard', 'test-first', 'env-scanner', 'debate', 'security', 'skill-creator', 'agent-creator', 'architecture-advisor', 'frontend-design'];
 
 function installSkills(projectDir, cfg) {
   const skillsDir = path.join(projectDir, cfg, 'skills');
