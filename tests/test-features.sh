@@ -962,9 +962,10 @@ check      "cli: AGENTS includes project agents"         "bin/cli.js" "cc-templa
 check      "cli: AGENTS includes orchestrator"           "bin/cli.js" "orchestrator[',]"
 check      "cli: AGENTS includes problem-architect"      "bin/cli.js" "problem-architect"
 check      "cli: AGENTS includes milestone-builder"      "bin/cli.js" "milestone-builder"
-check      "cli: upgrade subcommand sets fullInstall"    "bin/cli.js" "isUpgrade.*fullInstall\|isUpgrade || process"
-check      "cli: upgrade subcommand sets forceUpdate"    "bin/cli.js" "isUpgrade.*forceUpdate\|isUpgrade || process"
-check      "cli: upgrade subcommand detected"            "bin/cli.js" "argv\[2\].*upgrade\|upgrade.*argv"
+check      "cli: auto-upgrade: reads installed version"  "bin/cli.js" "azclaude-version\|installedVer"
+check      "cli: auto-upgrade: detects outdated version" "bin/cli.js" "needsUpgrade\|installedVer !== currentVer"
+check      "cli: auto-upgrade: writes version marker"    "bin/cli.js" "writeFileSync.*versionFile\|versionFile.*currentVer"
+check      "cli: upgrade subcommand still supported"     "bin/cli.js" "argv\[2\].*upgrade\|upgrade.*argv"
 
 # ─── orchestrator agent (intelligent copilot tier 1) ─────────────────────────
 ORCH2="$ROOT/agents/orchestrator.md"

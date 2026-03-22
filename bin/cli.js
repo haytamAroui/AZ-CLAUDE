@@ -1054,17 +1054,31 @@ if (process.argv[2] === 'copilot') {
   process.exit(result.status || 0);
 }
 
-const isUpgrade   = process.argv[2] === 'upgrade';
-const fullInstall = isUpgrade || process.argv.includes('--full');
-const forceUpdate = isUpgrade || process.argv.includes('--update');
 const projectDir  = process.cwd();
 const cli         = detectCLI();
+
+// ─── Smart version detection ──────────────────────────────────────────────────
+// If AZCLAUDE already installed in this project, read the version it was installed with.
+// Compare to current package version. If outdated (or missing version marker) → auto-upgrade.
+const pkg         = require('../package.json');
+const currentVer  = pkg.version;
+const versionFile = path.join(projectDir, cli.cfg, '.azclaude-version');
+const installedVer = fs.existsSync(versionFile) ? fs.readFileSync(versionFile, 'utf8').trim() : null;
+const isFirstInstall = !fs.existsSync(path.join(projectDir, cli.cfg, 'commands'));
+const needsUpgrade   = !isFirstInstall && installedVer !== currentVer;
+
+// explicit flags still work as overrides
+const explicitUpgrade = process.argv[2] === 'upgrade' || process.argv.includes('--update');
+const fullInstall = explicitUpgrade || isFirstInstall || needsUpgrade || process.argv.includes('--full');
+const forceUpdate = explicitUpgrade || needsUpgrade;
 
 console.log('\n════════════════════════════════════════════════');
 console.log('  AZCLAUDE — AI Coding Environment');
 console.log(`  CLI: ${cli.name} → installing to ${cli.cfg}/`);
-if (isUpgrade)    console.log('  Mode: upgrade (full reinstall + refresh all templates)');
-else if (forceUpdate) console.log('  Mode: --update (refreshing all templates)');
+if (isFirstInstall)  console.log(`  Mode: fresh install (v${currentVer})`);
+else if (needsUpgrade) console.log(`  Mode: auto-upgrade ${installedVer} → ${currentVer}`);
+else if (forceUpdate)  console.log(`  Mode: forced refresh (v${currentVer})`);
+else                   console.log(`  Mode: verify (v${currentVer} already current)`);
 console.log('════════════════════════════════════════════════\n');
 
 // ── Detect conflicting installations ─────────────────────────────────────────
@@ -1109,6 +1123,9 @@ if (!fs.existsSync(evolLogPath)) {
   try { fs.writeFileSync(evolLogPath, header); } catch (_) {}
 }
 
+// ── Write version marker (used by auto-upgrade detection on next run) ────────
+fs.writeFileSync(versionFile, currentVer);
+
 // ── Post-install capability reference verification ───────────────────────────
 verifyCapabilityReferences(projectDir, cli.cfg);
 
@@ -1128,19 +1145,14 @@ if (fs.existsSync(postInstallValidator)) {
 }
 
 console.log('\n════════════════════════════════════════════════');
-console.log(`  Install mode: ${fullInstall ? 'full (all capabilities)' : 'core (shared + level-builders)'}`);
+console.log(`  v${currentVer} — ${isFirstInstall ? 'installed' : needsUpgrade ? 'upgraded' : 'up to date'}`);
 console.log('  Architecture: lazy-loaded, manifest-driven');
 console.log('  Token cost per task: ~200-600 (vs ~21,000 monolith)');
 console.log('');
-if (!fullInstall) {
-  console.log('  Next steps:');
-  console.log('    1. npx azclaude-copilot upgrade   (upgrade to latest — all templates refreshed)');
-  console.log('    2. Open Claude Code and run /setup');
-} else if (isUpgrade) {
-  console.log('  All templates upgraded to latest version.');
+if (isFirstInstall || needsUpgrade) {
   console.log('  Next step: open Claude Code and run /setup');
 } else {
-  console.log('  Next step: open Claude Code and run /setup');
-  console.log('  Tip: npx azclaude-copilot upgrade   (refresh all templates to latest)');
+  console.log('  Already up to date. Run /setup in Claude Code to configure.');
 }
+console.log(`  To upgrade later: npx azclaude-copilot@latest  (auto-detects version)`);
 console.log('════════════════════════════════════════════════\n');
