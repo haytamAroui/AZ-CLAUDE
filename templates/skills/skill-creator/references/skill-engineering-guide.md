@@ -62,15 +62,29 @@ description: >
 
 ### The formula:
 ```
-description = 
+description =
   WHAT it does (1 sentence)
   + ACTIONS that trigger it (write, review, fix, audit, check, scan...)
   + OBJECTS it applies to (keys, tokens, passwords, .env, connections...)
   + PATTERNS it detects (injection, XSS, CSRF, eval, exec...)
   + COMMANDS that invoke it (/audit, /ship, security...)
+  + INPUT CONSTRAINTS where it does NOT apply (e.g., "not for non-JS projects")
   + CONTEXTS where it should fire even without explicit request
   + "Even if the user doesn't explicitly mention X, use this skill when Y"
+  + "Do NOT trigger when: [anti-triggers — prevents false positives]"
 ```
+
+### Input constraints (stolen from production skill templates):
+Most skills trigger too broadly without explicit boundaries.
+Add a `Do NOT trigger when:` line to the frontmatter description:
+```yaml
+description: >
+  ...all the trigger keywords...
+  Do NOT trigger when: user is asking a conceptual question (not building),
+  when a design system already exists in the project (defer to it),
+  or when the request is a code review (use code-reviewer instead).
+```
+This prevents false positive triggering that wastes context and confuses the user.
 
 The last line is critical. Anthropic's own docs say:
 "Claude has a tendency to undertrigger skills. Make descriptions pushy."
@@ -116,8 +130,23 @@ Numbered steps. Imperative form. What Claude DOES, not what Claude SHOULD do.
 - Written as positive directives: "Always X" not "Don't do Y"
 - Specific, testable, unambiguous
 
+## Ambiguity Protocol
+*Every skill should define what happens when input is unclear.*
+
+If input is vague (no framework specified, no target stated):
+→ Ask: "[specific question, e.g., 'Which framework — React, Vue, or vanilla HTML?']"
+
+If input is malformed or out of scope:
+→ Say: "[specific message, e.g., 'This skill handles UI creation. For code review, use /audit instead.']"
+
+If a required prerequisite is missing (e.g., no CLAUDE.md, no design system):
+→ Do: "[specific fallback, e.g., 'Assume stack from package.json, proceed with default aesthetic']"
+
+**Rule:** Never silently fail or produce partial output. Either ask, redirect, or state the assumption explicitly.
+
 ## Examples
 One concrete input → output example that shows the expected behavior.
+Include at least one edge case / failure case: what happens when input is ambiguous, malformed, or out of scope.
 
 ## References
 For detailed [topic], read: `references/detailed-guide.md`
@@ -266,6 +295,8 @@ From Anthropic's skill-development skill + AZCLAUDE's debate engine research:
 ```
 □ Description has 30+ trigger keywords (pushy, not modest)
 □ Description ends with "even if the user doesn't explicitly ask"
+□ Description includes "Do NOT trigger when:" anti-trigger line
+□ Ambiguity Protocol defined: what to ask/do when input is vague, malformed, or missing prereqs
 □ SKILL.md body is under 2,000 words
 □ All detailed content is in references/, not SKILL.md
 □ Workflow uses imperative form ("Run X" not "You should run X")

@@ -9,6 +9,9 @@ description: >
   "modern design", or any task where the primary deliverable is a rendered
   interface. Also fires when /copilot reaches a milestone whose files include
   index.html, .jsx, .tsx, .css, or .scss.
+  Do NOT trigger when: user asks to review existing UI (use code-reviewer),
+  request is code-only with no visual deliverable, or a strict brand guide
+  already defines all visual decisions.
 ---
 
 # Frontend Design Skill
@@ -114,6 +117,22 @@ Match animation/visual code ratio to the chosen direction.
 | Mid-complexity (Editorial, Deco, Industrial) | 40-50% | 50-60% |
 
 Do not apply maximalist code budget to a minimalist direction. The restraint IS the design.
+
+---
+
+## Ambiguity Protocol
+
+If the request is vague (no content, no purpose stated):
+→ Ask: "What does this interface do, and who uses it? One sentence."
+
+If no framework is specified and CLAUDE.md has no stack:
+→ Default to vanilla HTML/CSS/JS. State this assumption before writing.
+
+If the user asks for "something beautiful" with no further constraint:
+→ Pick a direction from the aesthetic table, state it explicitly ("Going with Brutally Minimal — here's why"), then proceed. Do not ask for permission.
+
+If a request conflicts with constitution.md visual constraints:
+→ Flag the conflict: "constitution.md restricts X — I'll use Y instead." Do not silently override.
 
 ---
 
