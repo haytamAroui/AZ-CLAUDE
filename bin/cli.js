@@ -1144,15 +1144,82 @@ if (fs.existsSync(postInstallValidator)) {
   } catch (_) {}
 }
 
-console.log('\n════════════════════════════════════════════════');
-console.log(`  v${currentVer} — ${isFirstInstall ? 'installed' : needsUpgrade ? 'upgraded' : 'up to date'}`);
-console.log('  Architecture: lazy-loaded, manifest-driven');
-console.log('  Token cost per task: ~200-600 (vs ~21,000 monolith)');
-console.log('');
-if (isFirstInstall || needsUpgrade) {
-  console.log('  Next step: open Claude Code and run /setup');
-} else {
-  console.log('  Already up to date. Run /setup in Claude Code to configure.');
+// ── Detect project state for smart onboarding ────────────────────────────────
+const planPath   = path.join(projectDir, cli.cfg, 'plan.md');
+const intentPath = path.join(projectDir, cli.cfg, 'copilot-intent.md');
+const hasPlan    = fs.existsSync(planPath);
+const hasIntent  = fs.existsSync(intentPath);
+
+// Check for pending milestones in plan.md
+let hasPendingMilestones = false;
+if (hasPlan) {
+  try {
+    const planContent = fs.readFileSync(planPath, 'utf8');
+    hasPendingMilestones = /status:\s*pending/i.test(planContent);
+  } catch (_) {}
 }
-console.log(`  To upgrade later: npx azclaude-copilot@latest  (auto-detects version)`);
+
+// Check for existing code files (not empty project)
+const codeExtensions = ['.ts', '.tsx', '.js', '.jsx', '.py', '.go', '.rs', '.java', '.rb', '.cs'];
+let hasCode = false;
+try {
+  const entries = fs.readdirSync(projectDir);
+  for (const entry of entries) {
+    if (entry.startsWith('.') || entry === 'node_modules') continue;
+    const ext = path.extname(entry);
+    if (codeExtensions.includes(ext)) { hasCode = true; break; }
+    // check one level deep
+    const sub = path.join(projectDir, entry);
+    try {
+      if (fs.statSync(sub).isDirectory()) {
+        const subEntries = fs.readdirSync(sub);
+        if (subEntries.some(f => codeExtensions.includes(path.extname(f)))) {
+          hasCode = true; break;
+        }
+      }
+    } catch (_) {}
+  }
+} catch (_) {}
+
+// Determine onboarding path
+let onboardingPath;
+if (hasPlan && hasPendingMilestones) {
+  onboardingPath = 'RESUME';
+} else if (hasPlan || hasCode || hasIntent) {
+  onboardingPath = 'EXISTING';
+} else {
+  onboardingPath = 'NEW';
+}
+
+console.log('\n════════════════════════════════════════════════');
+console.log(`  AZCLAUDE v${currentVer} — ${isFirstInstall ? 'installed' : needsUpgrade ? 'upgraded' : 'up to date'}`);
+console.log('');
+console.log('  Open Claude Code in this directory, then:');
+console.log('');
+
+if (onboardingPath === 'RESUME') {
+  console.log('  You have a plan with pending work:');
+  console.log('');
+  console.log('    /copilot          resume autonomous build');
+  console.log('    /pulse            see current state first');
+  console.log('    /analyze plan     verify plan vs reality');
+} else if (onboardingPath === 'EXISTING') {
+  console.log('  Existing project detected:');
+  console.log('');
+  console.log('    /setup            scan + configure this project');
+  console.log('    /dream            define what to build next');
+  console.log('    /blueprint        plan the next feature');
+  console.log('    /copilot .        build autonomously');
+} else {
+  console.log('  New project:');
+  console.log('');
+  console.log('    /setup            configure this project');
+  console.log('    /add [feature]    start building immediately');
+  console.log('    /dream            plan a full product first');
+}
+
+console.log('');
+console.log('  ─────────────────────────────────────────────');
+console.log('  docs:    github.com/haytamAroui/AZ-CLAUDE-COPILOT');
+console.log('  upgrade: npx azclaude-copilot  (auto-detects)');
 console.log('════════════════════════════════════════════════\n');
