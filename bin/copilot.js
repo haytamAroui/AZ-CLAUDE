@@ -25,15 +25,18 @@ const args       = process.argv.slice(2);
 
 // ── Subcommand routing ──────────────────────────────────────────────────────
 // Catch `npx azclaude-copilot setup` and similar — run the installer instead
-const SUBCOMMANDS = ['setup', 'init', 'install', 'doctor'];
+// Also: no arguments at all → run installer (auto-detect install vs upgrade)
+const SUBCOMMANDS = ['setup', 'init', 'install', 'doctor', 'upgrade'];
 const CLI_FLAGS   = ['--update', '--full', '--audit'];
-if (args[0] && SUBCOMMANDS.includes(args[0].toLowerCase())) {
+const noArgs = args.length === 0 || (args.length === 1 && CLI_FLAGS.includes(args[0]));
+if (noArgs || (args[0] && SUBCOMMANDS.includes(args[0].toLowerCase()))) {
   const subFlags = args.filter(a => CLI_FLAGS.includes(a));
-  const subPositional = args.slice(1).filter(a => !CLI_FLAGS.includes(a));
+  const subPositional = (noArgs ? [] : args.slice(1)).filter(a => !CLI_FLAGS.includes(a));
   const subDir = path.resolve(subPositional[0] || '.');
-  console.log(`\n  Running AZCLAUDE installer on ${subDir}...${subFlags.length ? ' (' + subFlags.join(' ') + ')' : ''}\n`);
+  if (!noArgs) console.log(`\n  Running AZCLAUDE installer on ${subDir}...${subFlags.length ? ' (' + subFlags.join(' ') + ')' : ''}\n`);
   const cliPath = path.join(__dirname, 'cli.js');
-  const subArgs = args[0].toLowerCase() === 'doctor'
+  const isDoctor = !noArgs && args[0].toLowerCase() === 'doctor';
+  const subArgs = isDoctor
     ? [cliPath, subDir, '--doctor', ...subFlags]
     : [cliPath, subDir, ...subFlags];
   const r = spawnSync('node', subArgs, { cwd: subDir, stdio: 'inherit' });
@@ -51,8 +54,9 @@ if (args.includes('--help') || args.includes('-h')) {
   AZCLAUDE — Autonomous Mode
 
   Usage:
-    npx azclaude-copilot <project-dir> <intent> [max-sessions]
-    npx azclaude-copilot setup [dir]      # install AZCLAUDE into project
+    npx azclaude-copilot                  # install or upgrade (auto-detected)
+    npx azclaude-copilot . <intent>       # autonomous mode — build from intent
+    npx azclaude-copilot .                # autonomous mode — resume existing plan
     npx azclaude-copilot doctor [dir]     # run health check
 
   Examples:
