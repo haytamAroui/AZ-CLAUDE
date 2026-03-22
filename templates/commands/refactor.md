@@ -18,6 +18,18 @@ Load: shared/completion-rule.md
 
 ---
 
+## Pre-Flight: Constitution Check
+
+```bash
+[ -f .claude/constitution.md ] && echo "constitution=found" || echo "no constitution"
+```
+
+If found: read `## Architectural Commitments` and `## Required Patterns`.
+Refactoring often changes structure — ensure the refactor moves TOWARD required patterns, not away from them.
+If the refactor would conflict with an architectural commitment → flag before starting Phase 1. Do not proceed silently.
+
+---
+
 ## Pre-Flight Analysis (intelligent-dispatch)
 
 Load `shared/intelligent-dispatch.md`.

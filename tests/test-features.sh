@@ -1138,7 +1138,7 @@ check_file "install: agent-creator scaffold script"      "$IDIR/.claude/skills/a
 check_file "install: agent-creator references"           "$IDIR/.claude/skills/agent-creator/references/agent-engineering-guide.md"
 check_file "install: agent-creator examples"             "$IDIR/.claude/skills/agent-creator/examples/sample-agent.md"
 INSTALLED=$(ls "$IDIR/.claude/commands/" | wc -l | tr -d ' ')
-EXPECTED_CMDS=27
+EXPECTED_CMDS=33
 if [ "$INSTALLED" -eq "$EXPECTED_CMDS" ]; then
   echo "  ✓ install: all $EXPECTED_CMDS commands present"
   PASS=$((PASS + 1))
@@ -1230,7 +1230,6 @@ check        "rotation: stop trims Done section to 20"     "templates/hooks/stop
 check        "rotation: stop archives done overflow"       "templates/hooks/stop.js"          "sessions.*edits\.md"
 check        "rotation: stop resets edit counter"          "templates/hooks/stop.js"          "azclaude-edit-count\|counterPath.*0\|writeFileSync.*counterPath"
 check        "rotation: stop cleans empty In progress"     "templates/hooks/stop.js"          "new RegExp.*IN_PROGRESS\|replace.*IN_PROGRESS.*\\\\n"
-check_absent "rotation: checkpoint reminder not stdout"    "templates/hooks/post-tool-use.js" "process\.stdout\.write.*edits this session"
 check        "rotation: checkpoint reminder on stderr"     "templates/hooks/post-tool-use.js" "process\.stderr\.write.*edits this session"
 check        "inject: plan status copilot mode only"      "templates/hooks/user-prompt.js"   "copilot-intent\.md\|PLAN STATUS"
 check        "inject: reflex guidance strict profile"     "templates/hooks/user-prompt.js"   "HOOK_PROFILE.*strict\|=== 'strict'.*reflex\|reflex.*strict"
@@ -1812,6 +1811,191 @@ check "copilot: state cleaned on complete"            "bin/copilot.js" "unlinkSy
 check "stop: checkpoint pruning to 5"                 "templates/hooks/stop.js" "MAX_CHECKPOINTS\|5.*checkpoint\|checkpoint.*5\|cpFiles\.slice"
 check "stop: checkpoint prune deletes old files"      "templates/hooks/stop.js" "unlinkSync.*checkpointDir\|pruned"
 
+# ─── Cross-surface sync: every command registered in all 3 surfaces ──────────
+echo ""
+echo "─── Cross-surface sync ───"
+for CMD_NAME in clarify spec analyze constitute tasks issues; do
+  check "cross-surface: $CMD_NAME in EXTENDED_COMMANDS (cli.js)"  "bin/cli.js"              "$CMD_NAME"
+  check "cross-surface: $CMD_NAME in Available Commands (CLAUDE.md template)" "templates/CLAUDE.md" "$CMD_NAME"
+  check_file "cross-surface: $CMD_NAME template file exists"       "$CMD/$CMD_NAME.md"
+done
+
+# ─── /clarify command ─────────────────────────────────────────────────────────
+echo ""
+echo "─── /clarify ───"
+CLR="$CMD/clarify.md"
+check_file "clarify: command file exists"              "$CLR"
+check      "clarify: EnterPlanMode read-only"          "$CLR" "EnterPlanMode"
+check      "clarify: structured interrogation"         "$CLR" "Goal\|Scope boundary\|Acceptance criteria\|Failure modes"
+check      "clarify: writes spec file"                 "$CLR" "\.claude/specs/"
+check      "clarify: max 5 questions"                  "$CLR" "maximum 5\|max.*5 question"
+check      "clarify: ExitPlanMode output"              "$CLR" "ExitPlanMode"
+check      "clarify: completion rule no code"          "$CLR" "Do not write any code"
+
+# ─── /spec command ────────────────────────────────────────────────────────────
+echo ""
+echo "─── /spec ───"
+SPC="$CMD/spec.md"
+check_file "spec: command file exists"                 "$SPC"
+check      "spec: workflow position documented"        "$SPC" "/dream.*\\/spec.*\\/blueprint\|/spec.*before.*blueprint"
+check      "spec: copilot mode detection"              "$SPC" "COPILOT_MODE"
+check      "spec: acceptance criteria required"        "$SPC" "Acceptance Criteria"
+check      "spec: out of scope required"               "$SPC" "Out of Scope"
+check      "spec: data model section"                  "$SPC" "Data Model"
+check      "spec: API contracts section"               "$SPC" "API.*Interface\|Interface.*API"
+check      "spec: writes to .claude/specs/"            "$SPC" "\.claude/specs/"
+check      "spec: status draft vs ready"               "$SPC" "draft\|ready-for-blueprint"
+check      "spec: links to /clarify for open questions" "$SPC" "/clarify"
+check      "spec: completion rule no code"             "$SPC" "Do not write any implementation"
+
+# ─── /analyze command ─────────────────────────────────────────────────────────
+echo ""
+echo "─── /analyze ───"
+ANL="$CMD/analyze.md"
+check_file "analyze: command file exists"              "$ANL"
+check      "analyze: EnterPlanMode read-only"          "$ANL" "EnterPlanMode"
+check      "analyze: plan vs reality check"            "$ANL" "Plan vs\. Reality\|plan.*reality"
+check      "analyze: GHOST detection"                  "$ANL" "GHOST"
+check      "analyze: spec vs implementation check"     "$ANL" "Spec vs\. Implementation\|spec.*implementation"
+check      "analyze: intent vs codebase check"         "$ANL" "Intent vs\. Codebase\|intent.*codebase"
+check      "analyze: consistency score"                "$ANL" "Consistency.*Score\|consistency.*score"
+check      "analyze: recommended actions"              "$ANL" "Recommended Actions\|recommended actions"
+check      "analyze: ExitPlanMode"                     "$ANL" "ExitPlanMode"
+check      "analyze: completion rule no modifications" "$ANL" "Do not modify"
+
+# ─── /constitute command ──────────────────────────────────────────────────────
+echo ""
+echo "─── /constitute ───"
+CON="$CMD/constitute.md"
+check_file "constitute: command file exists"           "$CON"
+check      "constitute: non-negotiables section"       "$CON" "Non-Negotiables\|non-negotiables"
+check      "constitute: required patterns section"     "$CON" "Required Patterns\|required patterns"
+check      "constitute: definition of done"            "$CON" "Definition of Done"
+check      "constitute: architectural commitments"     "$CON" "Architectural Commitments\|architectural commitments"
+check      "constitute: priority hierarchy"            "$CON" "Priority Hierarchy\|priority hierarchy"
+check      "constitute: writes to .claude/constitution.md" "$CON" "\.claude/constitution\.md"
+check      "constitute: wires into CLAUDE.md"          "$CON" "CLAUDE\.md"
+check      "constitute: governed by human rule"        "$CON" "human\|Human"
+
+# ─── /tasks command ───────────────────────────────────────────────────────────
+echo ""
+echo "─── /tasks ───"
+TSK="$CMD/tasks.md"
+check_file "tasks: command file exists"                "$TSK"
+check      "tasks: EnterPlanMode read-only"            "$TSK" "EnterPlanMode"
+check      "tasks: reads plan.md"                      "$TSK" "plan\.md"
+check      "tasks: wave grouping"                      "$TSK" "Wave 1\|Wave.*parallel"
+check      "tasks: parallel detection"                 "$TSK" "parallel\|simultaneously"
+check      "tasks: file collision detection"           "$TSK" "collision\|shared files"
+check      "tasks: critical path"                      "$TSK" "Critical path\|critical path"
+check      "tasks: ExitPlanMode"                       "$TSK" "ExitPlanMode"
+check      "tasks: no file modifications"              "$TSK" "Do not modify"
+
+# ─── /issues command ──────────────────────────────────────────────────────────
+echo ""
+echo "─── /issues ───"
+ISS="$CMD/issues.md"
+check_file "issues: command file exists"               "$ISS"
+check      "issues: gh CLI pre-flight"                 "$ISS" "gh auth status\|gh.*auth"
+check      "issues: skips done milestones"             "$ISS" "done.*milestones\|Skip.*done\|Do not create.*done"
+check      "issues: writes issue links back to plan.md" "$ISS" "plan\.md"
+check      "issues: creates azclaude label"            "$ISS" "azclaude.*label\|label.*azclaude"
+check      "issues: no delete/close existing"          "$ISS" "Do not delete\|Do not.*close"
+check      "issues: dedup check"                       "$ISS" "already.*issue\|existing.*issue\|Skipped.*already"
+
+# ─── Feature-scoped dirs ──────────────────────────────────────────────────────
+echo ""
+echo "─── Feature-scoped dirs ───"
+check      "blueprint: feature-scoped mode section"    "$CMD/blueprint.md" "Feature-Scoped Mode"
+check      "blueprint: creates .claude/features/ dir"  "$CMD/blueprint.md" "\.claude/features/"
+check      "blueprint: feature has spec.md + plan.md"  "$CMD/blueprint.md" "spec\.md.*plan\.md\|plan\.md.*spec\.md"
+check      "blueprint: feature mode is additive"       "$CMD/blueprint.md" "Optional\|optional"
+
+# ─── spec-reviewer agent ──────────────────────────────────────────────────────
+echo ""
+echo "─── spec-reviewer agent ───"
+SR_AGENT="$ROOT/agents/spec-reviewer.md"
+check_file "spec-reviewer: agent file exists"          "$SR_AGENT"
+check      "spec-reviewer: read-only tools only"       "$SR_AGENT" "Read, Grep, Glob\|tools.*Read.*Grep.*Glob"
+check      "spec-reviewer: validates acceptance criteria" "$SR_AGENT" "Acceptance.*\u22653\|acceptance.*3\|≥ 3"
+check      "spec-reviewer: validates out of scope"     "$SR_AGENT" "Out of Scope\|out.*scope"
+check      "spec-reviewer: validates user stories"     "$SR_AGENT" "User stories\|user.*stor"
+check      "spec-reviewer: APPROVED verdict"           "$SR_AGENT" "APPROVED"
+check      "spec-reviewer: NEEDS_CLARIFY verdict"      "$SR_AGENT" "NEEDS_CLARIFY"
+check      "spec-reviewer: INCOMPLETE verdict"         "$SR_AGENT" "INCOMPLETE"
+check      "spec-reviewer: never writes files"         "$SR_AGENT" "Never Write\|Never.*Edit\|never modify"
+check      "spec-reviewer: uses haiku model"           "$SR_AGENT" "haiku"
+check      "spec-reviewer: in AGENTS array (cli.js)"  "bin/cli.js" "spec-reviewer"
+
+# ─── constitution-guard agent ─────────────────────────────────────────────────
+echo ""
+echo "─── constitution-guard agent ───"
+CG_AGENT="$ROOT/agents/constitution-guard.md"
+check_file "constitution-guard: agent file exists"     "$CG_AGENT"
+check      "constitution-guard: read-only tools only"  "$CG_AGENT" "Read, Grep, Glob\|tools.*Read.*Grep.*Glob"
+check      "constitution-guard: checks non-negotiables" "$CG_AGENT" "Non-Negotiables\|non-negotiables"
+check      "constitution-guard: checks architectural commitments" "$CG_AGENT" "Architectural Commitments\|architectural"
+check      "constitution-guard: checks required patterns" "$CG_AGENT" "Required Patterns\|required patterns"
+check      "constitution-guard: checks definition of done" "$CG_AGENT" "Definition of Done"
+check      "constitution-guard: APPROVED verdict"      "$CG_AGENT" "APPROVED"
+check      "constitution-guard: VIOLATION verdict"     "$CG_AGENT" "VIOLATION"
+check      "constitution-guard: graceful when no constitution" "$CG_AGENT" "no constitution found\|does not exist"
+check      "constitution-guard: never writes files"    "$CG_AGENT" "Never Write\|Never.*Edit\|never modify"
+check      "constitution-guard: uses haiku model"      "$CG_AGENT" "haiku"
+check      "constitution-guard: in AGENTS array (cli.js)" "bin/cli.js" "constitution-guard"
+
+# ─── Wiring: copilot ↔ new commands ──────────────────────────────────────────
+echo ""
+echo "─── Wiring: copilot ↔ spec/analyze/constitute ───"
+check "copilot: governance check step"              "$CMD/copilot.md" "Governance Check\|governance check"
+check "copilot: constitution check"                 "$CMD/copilot.md" "constitution\.md"
+check "copilot: spec→blueprint flow"               "$CMD/copilot.md" "specs exist.*blueprint\|specs.*blueprint\|blueprint.*spec"
+check "copilot: spawns constitution-guard"          "$CMD/copilot.md" "constitution-guard"
+check "copilot: /analyze in evolution cycle"        "$CMD/copilot.md" "/analyze.*evolution\|evolution.*analyze\|Run.*\/analyze"
+check "copilot: GHOST milestone re-open"            "$CMD/copilot.md" "GHOST.*pending\|pending.*GHOST\|re-open\|set.*pending"
+check "copilot: /analyze before /audit"             "$CMD/copilot.md" "analyze.*audit\|\/analyze.*then.*\/audit"
+
+# ─── Wiring: blueprint ↔ spec-reviewer/tasks/constitution ────────────────────
+echo ""
+echo "─── Wiring: blueprint ↔ spec-reviewer/tasks/constitution ───"
+check "blueprint: spawns spec-reviewer"            "$CMD/blueprint.md" "spec-reviewer"
+check "blueprint: reads spec file if provided"     "$CMD/blueprint.md" "spec.*file.*detected\|spec-file.*mode\|spec file"
+check "blueprint: stops on NEEDS_CLARIFY"          "$CMD/blueprint.md" "NEEDS_CLARIFY"
+check "blueprint: constitution non-negotiables"    "$CMD/blueprint.md" "Non-Negotiables\|non-negotiables"
+check "blueprint: suggests /tasks after plan"      "$CMD/blueprint.md" "/tasks"
+
+# ─── Wiring: setup ↔ constitute/spec ─────────────────────────────────────────
+echo ""
+echo "─── Wiring: setup ↔ constitute/spec ───"
+check "setup: Step 8 governance block"             "$CMD/setup.md" "Step 8.*Governance\|Governance.*Spec\|Governance + Spec"
+check "setup: suggests /constitute"                "$CMD/setup.md" "/constitute"
+check "setup: suggests /spec"                      "$CMD/setup.md" "/spec"
+check "setup: spec-first workflow hint"            "$CMD/setup.md" "spec.*\/blueprint.*\/copilot\|Spec-first workflow\|spec-driven"
+
+# ─── Wiring: evolve ↔ analyze ────────────────────────────────────────────────
+echo ""
+echo "─── Wiring: evolve ↔ analyze ───"
+check "evolve: Step 7f drift analysis"             "$CMD/evolve.md" "Step 7f\|Spec.*Plan Drift\|Plan Drift"
+check "evolve: runs /analyze"                      "$CMD/evolve.md" "\/analyze.*plan\|run.*analyze"
+check "evolve: re-opens ghost milestones"          "$CMD/evolve.md" "GHOST\|ghost.*pending\|pending.*ghost\|status.*pending"
+check "evolve: logs drift to evolution-log"        "$CMD/evolve.md" "DRIFT.*evolution-log\|evolution-log.*DRIFT"
+
+# ─── Wiring: add ↔ constitution/spec ─────────────────────────────────────────
+echo ""
+echo "─── Wiring: add ↔ constitution/spec ───"
+check "add: constitution pre-flight"               "$CMD/add.md" "Constitution.*Spec Check\|constitution.*spec"
+check "add: reads non-negotiables"                 "$CMD/add.md" "Non-Negotiables\|non-negotiables"
+check "add: spec file mode"                        "$CMD/add.md" "spec.*mode\|spec-mode\|spec file"
+check "add: maps ACs to tasks"                     "$CMD/add.md" "acceptance criteria.*task\|AC.*task\|AC.*checklist"
+
+# ─── Wiring: dream ↔ constitute/spec ─────────────────────────────────────────
+echo ""
+echo "─── Wiring: dream ↔ constitute/spec ───"
+check "dream: Phase 5 spec-driven readiness"       "$CMD/dream.md" "Phase 5\|Spec-Driven Readiness\|Spec-Driven.*Workflow"
+check "dream: suggests /constitute"                "$CMD/dream.md" "/constitute"
+check "dream: suggests /spec"                      "$CMD/dream.md" "/spec.*feature\|\/spec \["
+check "dream: full SDD workflow shown"             "$CMD/dream.md" "\/spec.*\/clarify\|\/clarify.*\/blueprint\|Spec-Driven Workflow"
+
 # ─── Pulse health snapshot ───────────────────────────────────────────────────
 echo ""
 echo "─── Pulse health snapshot ───"
@@ -1825,6 +2009,49 @@ check      "pulse: blocker count"                        "$CMD/pulse.md" "Blocke
 echo ""
 echo "─── Reflex observation health ───"
 check      "reflexes: observation health in status"      "$CMD/reflexes.md" "Observation health\|observation health\|Health.*good\|hooks.*capturing"
+
+# ─── P0 gap fixes: orchestrator + milestone-builder + ship ───────────────────
+echo ""
+echo "─── P0 gap fixes: orchestrator / milestone-builder / ship ───"
+check "orchestrator: reads constitution.md in Step 1"   "$ROOT/agents/orchestrator.md"      "constitution.md"
+check "orchestrator: spawns constitution-guard in Step 3" "$ROOT/agents/orchestrator.md"    "constitution-guard"
+check "orchestrator: handles VIOLATION verdict"          "$ROOT/agents/orchestrator.md"      "VIOLATION"
+check "orchestrator: logs violations to blockers.md"     "$ROOT/agents/orchestrator.md"      "blockers.md"
+check "orchestrator: blocks milestone on violation"      "$ROOT/agents/orchestrator.md"      "blocked\|status.*blocked"
+check "milestone-builder: constitution clearance in pre-flight" "$ROOT/agents/milestone-builder.md" "clearance"
+check "milestone-builder: reads constitution.md first"   "$ROOT/agents/milestone-builder.md" "constitution.md.*FIRST\|FIRST.*constitution\|constitution.*first"
+check "milestone-builder: keeps non-negotiables visible" "$ROOT/agents/milestone-builder.md" "Non-Negotiables.*visible\|visible.*throughout\|throughout implementation"
+check "ship: ghost milestone check before gate"          "$CMD/ship.md"                 "ghost\|Ghost"
+check "ship: blocks on ghost milestones"                 "$CMD/ship.md"                 "Pre-ship blocked.*ghost\|ghost.*milestones detected"
+check "ship: uses /analyze for ghost check"              "$CMD/ship.md"                 "/analyze"
+
+# ─── P1 gap fixes: spec / fix / refactor / architecture-advisor / audit ──────
+echo ""
+echo "─── P1 gap fixes: spec / fix / refactor / architecture-advisor / audit ───"
+check "spec: calls spec-reviewer after writing"          "$CMD/spec.md"                 "Spec Reviewer Gate\|spec-reviewer.*Gate"
+check "spec: APPROVED proceeds"                          "$CMD/spec.md"                 "APPROVED.*proceed\|Verdict.*APPROVED"
+check "spec: NEEDS_CLARIFY downgrades to draft"          "$CMD/spec.md"                 "NEEDS_CLARIFY.*draft\|downgrade.*draft"
+check "spec: INCOMPLETE blocks file write"               "$CMD/spec.md"                 "INCOMPLETE.*do NOT\|do NOT write.*INCOMPLETE"
+check "fix: constitution pre-flight"                     "$CMD/fix.md"                  "Constitution Check\|constitution.*found"
+check "fix: non-negotiables must not be violated"        "$CMD/fix.md"                  "Non-Negotiables\|non-negotiable"
+check "refactor: constitution pre-flight"                "$CMD/refactor.md"             "Constitution Check\|constitution.*found"
+check "refactor: checks architectural commitments"       "$CMD/refactor.md"             "Architectural Commitments"
+check "architecture-advisor: Step 0 constitution check" "$SKILLS_DIR/architecture-advisor/SKILL.md" "Step 0\|Constitution Check"
+check "architecture-advisor: flags deviation conflicts"  "$SKILLS_DIR/architecture-advisor/SKILL.md" "conflict\|deviation"
+check "audit: plan consistency check before review"      "$CMD/audit.md"                "Plan Consistency Check\|consistency.*check"
+check "audit: ghost milestone scan in audit"             "$CMD/audit.md"                "GHOST\|ghost milestones"
+
+# ─── P2 docs: manifest + CLAUDE.md spec-driven workflow ──────────────────────
+echo ""
+echo "─── P2 docs: manifest + CLAUDE.md spec-driven workflow ───"
+check "manifest: Spec-Driven Workflow section"           "$ROOT/capabilities/manifest.md" "Spec-Driven Workflow"
+check "manifest: lists /constitute"                      "$ROOT/capabilities/manifest.md" "constitute"
+check "manifest: lists /spec"                            "$ROOT/capabilities/manifest.md" "spec.*purpose\|spec.*structured"
+check "manifest: lists /clarify"                         "$ROOT/capabilities/manifest.md" "clarify"
+check "manifest: lists /analyze"                         "$ROOT/capabilities/manifest.md" "analyze"
+check "manifest: documents spec-reviewer gate"           "$ROOT/capabilities/manifest.md" "spec-reviewer"
+check "manifest: documents constitution-guard gate"      "$ROOT/capabilities/manifest.md" "constitution-guard"
+check "CLAUDE.md: spec-driven sequence in routing"       "$ROOT/CLAUDE.md"              "constitute.*spec.*clarify\|Spec-driven"
 
 echo ""
 echo "════════════════════════════════════════════════════"

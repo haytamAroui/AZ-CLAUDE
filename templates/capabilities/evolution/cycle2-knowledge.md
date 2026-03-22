@@ -22,9 +22,9 @@ Read only what's recent and relevant:
 
 ### CONSOLIDATE
 Group harvested content by pattern:
-- Same friction appearing in 3+ sessions → candidate for re-derivation
-- Same workflow appearing in 3+ sessions → candidate for skill
-- Same fact referenced in 3+ files → candidate for knowledge-index entry
+- Same friction appearing in 2+ sessions → candidate for re-derivation
+- Same workflow appearing in 2+ sessions → candidate for skill
+- Same fact referenced in 2+ files → candidate for knowledge-index entry
 
 Rules:
 - Do not consolidate single-occurrence items — they are noise

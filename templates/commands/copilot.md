@@ -49,17 +49,33 @@ Read these files (skip any that don't exist):
 
 ---
 
+## Step 1b: Governance Check
+
+```bash
+[ -f .claude/constitution.md ] && echo "constitution=found" || echo "constitution=missing"
+ls .claude/specs/*.md 2>/dev/null | head -5
+```
+
+If constitution missing → note in goals.md: "No constitution — run /constitute to define project rules"
+(Do NOT block execution — constitution is recommended, not required)
+
+---
+
 ## Step 2: Decide What To Do
 
 Follow this decision tree in order:
 
 1. **No CLAUDE.md filled?** → Run `/setup` with the intent from copilot-intent.md
-2. **No plan.md?** → Run `/blueprint` to generate a milestone plan
-3. **Plan has incomplete milestones?** → Find the next one (respecting dependencies), implement it
-4. **3 milestones done since last /evolve?** → Run `/evolve` first, then continue
-5. **All milestones done?** → Run `/audit` on the full project
-6. **Review passes?** → Run `/ship` and deploy
-7. **Deploy succeeds?** → Write `COPILOT_COMPLETE` to goals.md, generate copilot-report.md
+2. **No plan.md but specs exist?** → Run `/blueprint .claude/specs/{latest-spec}` to derive plan from spec
+3. **No plan.md, no specs?** → Run `/blueprint` to generate a milestone plan from intent
+4. **Plan has incomplete milestones?** → Find the next one (respecting dependencies):
+   - If `constitution.md` exists → spawn `constitution-guard` agent with milestone details before implementing
+   - If constitution-guard returns VIOLATION → log to `blockers.md`, skip this milestone, continue to next
+   - If APPROVED (or no constitution) → implement the milestone
+5. **3 milestones done since last /evolve?** → Run `/evolve` first, then continue
+6. **All milestones done?** → Run `/analyze` then `/audit` on the full project
+7. **Review passes?** → Run `/ship` and deploy
+8. **Deploy succeeds?** → Write `COPILOT_COMPLETE` to goals.md, generate copilot-report.md
 
 ---
 
@@ -92,18 +108,24 @@ For each milestone in plan.md:
 After every 3 completed milestones:
 1. Run `/reflexes analyze` — detect patterns from tool-use observations, create/update reflexes
 2. Run `/evolve` — scans git history for patterns, creates agents if evidence found
-3. Check if CLAUDE.md conventions need updating
-4. Re-read plan.md — re-evaluate remaining milestone priorities
-5. If a blocked milestone can now be unblocked (new agents/context available) → retry it
+3. Run `/analyze` — check for GHOST milestones (marked done but not implemented) and spec→plan drift
+   - If GHOST milestones found → set their status back to `pending` in plan.md, add back to queue
+   - If spec drift found → log gap to `.claude/memory/blockers.md` as a fix milestone
+4. Check if CLAUDE.md conventions need updating
+5. Re-read plan.md — re-evaluate remaining milestone priorities
+6. If a blocked milestone can now be unblocked (new agents/context available) → retry it
 
 ---
 
 ## Step 5: Final Review
 
 When all milestones show status `done` (or `blocked` with no unblock path):
-1. Run `/audit` on the full project against copilot-intent.md
-2. If review finds gaps → create fix milestones, add to plan.md, continue building
-3. If review passes → proceed to ship
+1. Run `/analyze` — verify all done milestones are actually implemented (no GHOSTs)
+   - If GHOST milestones found → re-open them, add as fix milestones, continue building
+   - If /analyze shows consistency ≥ 90% → proceed
+2. Run `/audit` on the full project against copilot-intent.md
+3. If review finds gaps → create fix milestones, add to plan.md, continue building
+4. If review passes → proceed to ship
 
 ---
 

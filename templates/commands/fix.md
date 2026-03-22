@@ -14,6 +14,18 @@ Load: shared/tdd.md + shared/completion-rule.md before starting.
 
 ---
 
+## Pre-Flight: Constitution Check
+
+```bash
+[ -f .claude/constitution.md ] && echo "constitution=found" || echo "no constitution"
+```
+
+If found: read `## Non-Negotiables` before fixing.
+The fix must not violate a non-negotiable — a "fix" that breaks a project rule is not a fix.
+Flag any conflict explicitly before proceeding to Phase 1.
+
+---
+
 ## Pre-Flight Analysis (intelligent-dispatch)
 
 Load `shared/intelligent-dispatch.md`.

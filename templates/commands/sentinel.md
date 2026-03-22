@@ -57,12 +57,23 @@ Parse $ARGUMENTS:
 Check if hooks were modified outside of AZCLAUDE.
 
 ```bash
-INTEGRITY="$HOME/.claude/.azclaude-integrity"
-# Windows stores settings at %APPDATA%\Claude\settings.json, Unix/Mac at ~/.claude/settings.json
+# Project-level (preferred) — hooks are registered in .claude/settings.local.json
+PROJECT_INTEGRITY=".claude/.azclaude-integrity"
+PROJECT_SETTINGS=".claude/settings.local.json"
+# Global fallback
+GLOBAL_INTEGRITY="$HOME/.claude/.azclaude-integrity"
 if [ -n "$APPDATA" ]; then
-  SETTINGS="$APPDATA/Claude/settings.json"
+  GLOBAL_SETTINGS="$APPDATA/Claude/settings.json"
 else
-  SETTINGS="$HOME/.claude/settings.json"
+  GLOBAL_SETTINGS="$HOME/.claude/settings.json"
+fi
+# Use project-level if both project files exist; otherwise fall back to global
+if [ -f "$PROJECT_INTEGRITY" ] && [ -f "$PROJECT_SETTINGS" ]; then
+  INTEGRITY="$PROJECT_INTEGRITY"; SETTINGS="$PROJECT_SETTINGS"
+  echo "integrity_scope=project"
+else
+  INTEGRITY="$GLOBAL_INTEGRITY"; SETTINGS="$GLOBAL_SETTINGS"
+  echo "integrity_scope=global"
 fi
 [ -f "$INTEGRITY" ] && echo "integrity_file=found" || echo "integrity_file=missing"
 [ -f "$SETTINGS"  ] && echo "settings_file=found"  || echo "settings_file=missing"
@@ -70,14 +81,12 @@ fi
 
 If both exist:
 ```bash
-cat "$HOME/.claude/.azclaude-integrity"
+cat "$INTEGRITY"
 ```
-Compute SHA-256 of the `hooks` key in settings.json and compare.
+Compute SHA-256 of the `hooks` key in `$SETTINGS` and compare.
 - Match → +25 pts — "Hook integrity verified"
 - Mismatch → +0 pts — **BLOCK** "Hook integrity mismatch — hooks modified outside AZCLAUDE"
 - Missing integrity file → +15 pts — "No integrity baseline (run `npx azclaude install` to establish one)"
-
-Note: AZCLAUDE registers hooks in `.claude/settings.local.json` (project-level), not `~/.claude/settings.json` (global). The integrity baseline must be computed against `settings.local.json` — comparing against global settings will always produce a hash mismatch (MEDIUM finding).
 
 Check each hook script for dangerous patterns:
 ```bash

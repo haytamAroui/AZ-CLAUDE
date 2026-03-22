@@ -90,7 +90,7 @@ If PLAN is empty: skip to Cycle 2.
 
 ---
 
-## Cycle 2: Knowledge Consolidation (if sessions ≥ 3 since last consolidation)
+## Cycle 2: Knowledge Consolidation (if sessions ≥ 2 since last consolidation)
 
 Read `capabilities/evolution/cycle2-knowledge.md` and run.
 Outputs: consolidated patterns, pruned stale memory, enriched knowledge-index
@@ -222,6 +222,28 @@ Report: milestones unblocked + reason.
 ```
 
 This closes the loop: /evolve creates capability → orchestrator immediately re-routes blocked work.
+
+---
+
+## Step 7f: Spec and Plan Drift Analysis
+
+After generating/updating skills and agents, check for documentation drift:
+
+```bash
+ls .claude/plan.md .claude/specs/*.md 2>/dev/null
+```
+
+If plan.md exists → run `/analyze plan`:
+- Identifies GHOST milestones (marked done but files missing)
+- Surfaces dependency violations
+
+Append drift findings to `ops/evolution-log.md`:
+```
+| {date} | DRIFT | {N ghost milestones} | {N unplanned capabilities} | {1-line summary} |
+```
+
+If GHOST milestones found → set their status back to `pending` in plan.md.
+This closes a common drift loop: code gets deleted or renamed, plan.md still says done.
 
 ---
 

@@ -18,6 +18,29 @@ Load: shared/tdd.md + shared/completion-rule.md
 
 ---
 
+## Pre-Flight: Constitution + Spec Check
+
+```bash
+# Check constitution
+[ -f .claude/constitution.md ] && echo "constitution=found" || echo "no constitution"
+
+# Check if $ARGUMENTS is a spec file
+[ -f "$ARGUMENTS" ] && grep -q "Acceptance Criteria" "$ARGUMENTS" && echo "spec-mode" || echo "inline-mode"
+```
+
+**If constitution found:**
+Read `## Non-Negotiables` and `## Required Patterns` before implementing.
+Keep these rules visible throughout Phases 2-4. Flag any implementation choice that would violate them.
+
+**If spec file provided** (e.g., `/add .claude/specs/02-payment.md`):
+- Skip Phase 1 clarification — the spec IS the clarification
+- Load acceptance criteria as the implementation checklist
+- Each AC becomes a task in TaskCreate
+- Phase 3 (TDD): write tests that directly verify each AC
+- Phase 5 (Verify): output maps to ACs explicitly ("AC1 ✓", "AC2 ✓", etc.)
+
+---
+
 ## Pre-Flight Analysis (intelligent-dispatch)
 
 Load `shared/intelligent-dispatch.md`.

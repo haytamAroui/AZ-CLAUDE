@@ -57,3 +57,18 @@ Load only the files that match the current task. Never load the full list.
 | intelligence/elo.md | Need a defensible rank order across multiple options, agents, or skills | ~200 |
 | intelligence/pipeline.md | 3+ agents must chain output — context bleed is a risk | ~350 |
 | intelligence/experiment.md | Trying a risky approach that must not touch main branch — "try this safely" | ~80 |
+
+## Spec-Driven Workflow — load in sequence
+| Command | Purpose | Loads |
+|---------|---------|-------|
+| /constitute | Define project ground rules before any planning | commands/constitute.md |
+| /spec | Write structured feature spec (goal → ACs → failure modes) | commands/spec.md |
+| /clarify | Resolve open questions in a spec before blueprinting | commands/clarify.md |
+| /blueprint | Derive milestone plan from a spec (spec-reviewer validates first) | commands/blueprint.md |
+| /analyze | Cross-artifact consistency check — ghost milestones, spec vs. code | commands/analyze.md |
+| /tasks | Build dependency graph + wave groups from plan.md | commands/tasks.md |
+| /issues | Convert plan.md milestones to GitHub Issues | commands/issues.md |
+
+**Typical sequence**: /constitute → /spec → /clarify → /blueprint → /copilot → /analyze
+**Gates**: spec-reviewer (haiku) blocks /blueprint if spec is incomplete; constitution-guard (haiku) blocks milestones that violate non-negotiables
+**Agents**: spec-reviewer validates spec quality; constitution-guard checks each milestone before dispatch

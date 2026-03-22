@@ -126,12 +126,43 @@ All ✓ required before printing "project ready."
 
 ---
 
+## Phase 5: Spec-Driven Readiness
+
+After quality gate passes, check and suggest the spec-driven workflow:
+
+```bash
+[ -f .claude/constitution.md ] && echo "constitution=found" || echo "constitution=missing"
+ls .claude/specs/*.md 2>/dev/null | head -3
+```
+
+Always output this next-steps block:
+
+```
+─── Spec-Driven Workflow: Next Steps ────────────────────
+  1. /constitute          — define project ground rules (non-negotiables, required patterns,
+                            definition of done). Copilot checks this before every milestone.
+
+  2. /spec [feature]      — write a structured spec for your first feature.
+                            Produces: user stories + acceptance criteria + out-of-scope.
+                            Feeds directly into /blueprint for a better plan.
+
+  3. /clarify [spec]      — resolve any open questions in the spec before planning.
+
+  4. /blueprint [spec]    — derive a milestone plan from the spec.
+                            spec-reviewer validates quality before planning starts.
+
+  5. /copilot             — autonomous execution: spec → plan → build → test → ship.
+─────────────────────────────────────────────────────────
+```
+
+---
+
 ## Completion Rule
 
 Show:
 1. The created `CLAUDE.md` (full content)
 2. The created `goals.md` (full content)
 3. The level checklist (what was built)
-4. First task to work on
+4. The spec-driven next steps block (always — even for existing projects)
 
 Do not say "project ready" without showing these four outputs.

@@ -48,6 +48,18 @@ If `COPILOT_MODE`:
 
 ---
 
+## Step 1a: Plan Consistency Check
+
+```bash
+[ -f .claude/plan.md ] && echo "plan=found" || echo "plan=missing"
+```
+
+If `plan=found`: run `/analyze plan` inline — scan for GHOST milestones before reviewing code quality.
+Ghost milestones in the plan mean the audit is reviewing against a false baseline.
+Output ghost findings in the report; do not block audit, but flag them clearly.
+
+---
+
 ## Step 1b: Structural Context (intelligent-dispatch)
 
 Load `shared/intelligent-dispatch.md`.

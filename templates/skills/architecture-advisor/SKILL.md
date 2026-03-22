@@ -25,6 +25,21 @@ HOW to code — it guides WHEN to use WHICH approach based on project context an
 Any decision where the right answer depends on project scale, team size, domain, or
 deployment target — not just technical preference.
 
+## Step 0: Constitution Check
+
+```bash
+[ -f .claude/constitution.md ] && echo "constitution=found" || echo "no constitution"
+```
+
+If found: read `## Architectural Commitments` before advising.
+Recommendations must not contradict an existing architectural commitment.
+If the user's question asks to deviate from a committed decision:
+1. State the conflict explicitly: "constitution.md commits to {X}, this recommendation would change that"
+2. Offer two paths: (a) recommendation within the constraint, (b) what amending the constitution would require
+3. Do NOT silently recommend the deviation without flagging the conflict.
+
+---
+
 ## Step 1: Detect Project Context
 
 Read these signals (skip what doesn't exist):

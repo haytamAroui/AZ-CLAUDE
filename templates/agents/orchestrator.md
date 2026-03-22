@@ -26,6 +26,7 @@ Read these files (skip if absent):
 - `.claude/memory/blockers.md` — what's stuck
 - `.claude/memory/decisions.md` — prior architecture choices
 - `.claude/memory/patterns.md` — established conventions
+- `.claude/constitution.md` — non-negotiables and required patterns (if present)
 
 If no plan.md → run `/blueprint` first.
 If CLAUDE.md unfilled → run `/setup` with intent from copilot-intent.md first.
@@ -65,6 +66,28 @@ Review the returned Team Spec:
 - Pre-conditions realistic?
 - `Structural Decision Required: YES`? → run `/debate` BEFORE dispatching.
   Log decision to `.claude/memory/decisions.md`.
+
+**Constitution Guard** (if `.claude/constitution.md` exists AND `constitution-guard` agent is installed):
+
+Spawn constitution-guard for each selected milestone:
+```
+Milestone: {description from plan.md}
+Constitution: .claude/constitution.md
+```
+
+If verdict is `VIOLATION`:
+- Log to `.claude/memory/blockers.md`:
+  ```
+  BLOCKED [constitution]: Milestone {N} — {title}
+  Rule violated: {rule}
+  How: {how it triggers it}
+  Fix: revise milestone OR amend constitution via /constitute
+  ```
+- Set milestone status → `blocked` in plan.md
+- Skip dispatch for this milestone — move to next
+- Do NOT override constitution violations. Constitution is the authority.
+
+If verdict is `APPROVED` or `APPROVED (no constitution found)`: proceed to Step 4.
 
 ---
 

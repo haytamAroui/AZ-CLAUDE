@@ -37,7 +37,25 @@ If problem-architect not installed OR git diff is only docs/config: skip and pro
 
 ## Pre-Ship Gate (runs before any commit)
 
-**0. Security scan** — check if `security-auditor` agent is installed:
+**0a. Ghost Milestone Check** — catch plan drift before it ships:
+
+```bash
+[ -f .claude/plan.md ] && echo "plan=found" || echo "plan=missing"
+```
+
+If `plan=found`: run `/analyze plan` inline:
+- Scan for milestones marked `done` where the committed files no longer exist
+- If ANY ghost milestones found → STOP:
+  ```
+  ✗ Pre-ship blocked: ghost milestones detected (marked done, files missing).
+    Run /analyze to see full list. Fix plan.md before shipping.
+  ```
+- If constitution.md exists: also verify no `pending` milestones violate a non-negotiable
+  (a quick grep is sufficient — full constitution-guard runs per-milestone during /copilot)
+
+If `plan=missing`: skip ghost check.
+
+**0b. Security scan** — check if `security-auditor` agent is installed:
 ```bash
 ls .claude/agents/security-auditor.md 2>/dev/null && echo "agent=found" || echo "agent=missing"
 ```

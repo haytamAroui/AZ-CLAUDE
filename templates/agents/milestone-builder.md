@@ -28,6 +28,7 @@ Before writing a single line, confirm you received:
 - [ ] Anti-patterns to avoid (from antipatterns.md)
 - [ ] Architecture decisions relevant to this milestone
 - [ ] Fix attempt budget (2 for SIMPLE/MEDIUM, 3 for COMPLEX)
+- [ ] Constitution clearance (orchestrator confirms constitution-guard approved this milestone)
 
 If any item is missing → ask orchestrator before proceeding.
 
@@ -38,11 +39,15 @@ If any item is missing → ask orchestrator before proceeding.
 ### Step 1: Pre-Read (REQUIRED — no exceptions)
 
 Read every file in the pre-read list. Order matters:
-1. Schema / config files (structural constraints)
-2. Related source files (existing patterns to match)
-3. Related test files (test framework + naming conventions)
-4. patterns.md entries for this area
-5. antipatterns.md entries for this area
+1. `.claude/constitution.md` — non-negotiables (if present — read FIRST, constraints before code)
+2. Schema / config files (structural constraints)
+3. Related source files (existing patterns to match)
+4. Related test files (test framework + naming conventions)
+5. patterns.md entries for this area
+6. antipatterns.md entries for this area
+
+If constitution.md exists: keep its Non-Negotiables visible throughout implementation.
+Flag any implementation choice that would violate them BEFORE writing — do not discover violations after the fact.
 
 Do NOT skip pre-reads. Context-blind implementation is the most common failure mode.
 

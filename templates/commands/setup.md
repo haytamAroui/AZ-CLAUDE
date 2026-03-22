@@ -159,6 +159,47 @@ All ✓ required before printing "Setup complete."
 
 ---
 
+## Step 8: Governance + Spec Readiness
+
+After quality gate passes, check governance state:
+
+```bash
+# Constitution check
+[ -f .claude/constitution.md ] && echo "constitution=found" || echo "constitution=missing"
+
+# Spec directory check
+ls .claude/specs/*.md 2>/dev/null | head -3
+```
+
+Output a next-steps block:
+
+```
+─── Recommended Next Steps ──────────────────────────────
+```
+
+If constitution missing:
+```
+  ⚠ No project constitution found.
+    Run: /constitute
+    Why: defines non-negotiables, required patterns, definition of done.
+    Copilot checks this before every milestone implementation.
+```
+
+If no specs found:
+```
+  · No feature specs found.
+    Run: /spec [feature name]
+    Why: structured spec → /blueprint derives a better plan → /copilot builds the right thing.
+    Spec-first workflow: /spec → /clarify → /blueprint → /copilot
+```
+
+If both exist:
+```
+  ✓ Constitution and specs found. Ready for /copilot.
+```
+
+---
+
 ## If Running Again on an Existing Project
 
 Do not overwrite CLAUDE.md — read it first and update only the placeholders that are still unfilled.

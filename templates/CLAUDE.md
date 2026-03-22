@@ -35,6 +35,10 @@ Quick dispatch (core — used most sessions):
 Extended (load command file on use):
 - /setup · /dream · /snapshot · /persist · /refactor · /doc · /loop
 - /migrate · /deps · /find · /create · /reflect · /hookify
+- Spec-driven: /constitute → /spec → /clarify → /blueprint → /copilot
+  - /analyze: cross-artifact consistency check (ghost milestones, spec vs. code drift)
+  - /tasks: dependency graph + parallel wave groups from plan.md
+  - /issues: convert plan.md milestones to GitHub Issues
 
 Advanced (Level 5+):
 - /evolve · /debate · /level-up
@@ -48,4 +52,4 @@ When priorities conflict:
 3. {{PRIORITY_3}}
 
 ## Available Commands
-/dream · /setup · /fix · /add · /audit · /test · /blueprint · /evolve · /debate · /snapshot · /persist · /level-up · /ship · /pulse · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect · /hookify
+/dream · /setup · /fix · /add · /audit · /test · /blueprint · /evolve · /debate · /snapshot · /persist · /level-up · /ship · /pulse · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect · /hookify · /spec · /clarify · /analyze · /constitute · /tasks · /issues
