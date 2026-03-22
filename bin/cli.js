@@ -1016,7 +1016,7 @@ function runDoctor() {
     const hasGitFail     = failures.some(f => /uncommitted/.test(f));
     const hasMemoryFail  = failures.some(f => /checkpoints|sessions|codebase-map|goals/.test(f));
     console.log('');
-    if (hasCommandFail || hasHookFail) console.log('  Fix: re-run  npx azclaude-copilot  to install missing files');
+    if (hasCommandFail || hasHookFail) console.log('  Fix: run  npx azclaude-copilot upgrade  to install/refresh all files');
     if (hasHookFail)                   console.log('  If hooks still fail: check that Node.js ≥ 16 is in PATH');
     if (hasGitFail)                    console.log('  Git: commit or stash uncommitted changes');
     if (hasMemoryFail)                 console.log('  Memory: run /setup or /persist to create missing files');
@@ -1054,15 +1054,17 @@ if (process.argv[2] === 'copilot') {
   process.exit(result.status || 0);
 }
 
-const fullInstall = process.argv.includes('--full');
-const forceUpdate = process.argv.includes('--update');
+const isUpgrade   = process.argv[2] === 'upgrade';
+const fullInstall = isUpgrade || process.argv.includes('--full');
+const forceUpdate = isUpgrade || process.argv.includes('--update');
 const projectDir  = process.cwd();
 const cli         = detectCLI();
 
 console.log('\n════════════════════════════════════════════════');
 console.log('  AZCLAUDE — AI Coding Environment');
 console.log(`  CLI: ${cli.name} → installing to ${cli.cfg}/`);
-if (forceUpdate) console.log('  Mode: --update (refreshing all templates)');
+if (isUpgrade)    console.log('  Mode: upgrade (full reinstall + refresh all templates)');
+else if (forceUpdate) console.log('  Mode: --update (refreshing all templates)');
 console.log('════════════════════════════════════════════════\n');
 
 // ── Detect conflicting installations ─────────────────────────────────────────
@@ -1132,9 +1134,13 @@ console.log('  Token cost per task: ~200-600 (vs ~21,000 monolith)');
 console.log('');
 if (!fullInstall) {
   console.log('  Next steps:');
-  console.log('    1. npx azclaude-copilot --full   (Level 5+: debate, pipeline, ELO)');
+  console.log('    1. npx azclaude-copilot upgrade   (upgrade to latest — all templates refreshed)');
   console.log('    2. Open Claude Code and run /setup');
+} else if (isUpgrade) {
+  console.log('  All templates upgraded to latest version.');
+  console.log('  Next step: open Claude Code and run /setup');
 } else {
   console.log('  Next step: open Claude Code and run /setup');
+  console.log('  Tip: npx azclaude-copilot upgrade   (refresh all templates to latest)');
 }
 console.log('════════════════════════════════════════════════\n');
