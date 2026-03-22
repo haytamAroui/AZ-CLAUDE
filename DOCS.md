@@ -1,6 +1,6 @@
 # AZCLAUDE -- Complete User Guide
 
-> Version 0.4.18 · 1357 tests passing · AI coding environment
+> Version 0.4.18 · 1359 tests passing · AI coding environment
 
 ---
 
@@ -969,6 +969,25 @@ goals.md is auto-rotated at 30 in-progress entries — oldest 15 archived to `se
 | Session narrative | /persist -> sessions/ | Full summary + next steps | Manual | Yes |
 | Context injection | UserPromptSubmit | Delivers goals + checkpoint | Yes | Yes |
 | Ledger cleanup | Stop -> migration | Keeps goals.md current | Yes | Yes |
+
+### Hook I/O Contract (stdout vs stderr)
+
+This distinction is not obvious and causes reasoning errors if assumed incorrectly:
+
+| Stream | Who sees it | Effect |
+|--------|-------------|--------|
+| `process.stdout.write(...)` | Claude Code — injected into Claude's context window | Claude reads it as part of its context |
+| `process.stderr.write(...)` | Terminal only — shown to the user | Claude never sees it; no context injection |
+
+**Rule**: Use `stderr` for user-facing messages (checkpoint reminders, warnings, prompts). Use `stdout` only when you explicitly want Claude to receive the content as injected context.
+
+All AZCLAUDE hooks follow this contract:
+- `PreToolUse` (secret blocking) → `stderr` (user sees the block reason; Claude already decided to write)
+- `PostToolUse` (breadcrumb, reflex capture, cost tracking) → internal state only (no stdout/stderr output)
+- `UserPromptSubmit` (context injection) → `stdout` (goals.md + checkpoint injected into Claude's context)
+- `Stop` (migration, trimming, persist reminder) → `stderr` (user-facing warnings only)
+
+---
 
 ### Hook Reliability
 
