@@ -1,6 +1,6 @@
 {
   "name": "azclaude-copilot",
-  "version": "0.4.28",
+  "version": "0.4.29",
   "description": "AI coding environment — 34 commands, 9 skills, 15 agents, memory, reflexes, evolution. Install: npx azclaude-copilot@latest, then open Claude Code.",
   "bin": {
     "azclaude": "bin/cli.js",
