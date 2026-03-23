@@ -1,6 +1,6 @@
 # AZCLAUDE -- Complete User Guide
 
-> Version 0.4.25 · 1421 tests passing · AI coding environment
+> Version 0.4.26 · 1421 tests passing · AI coding environment
 
 ---
 

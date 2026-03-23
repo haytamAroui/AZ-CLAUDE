@@ -101,6 +101,30 @@ const RULES = [
     block:   false,
   },
   {
+    id:      'weak-crypto',
+    test:    /\bMD5\b|\bSHA-?1\b|\bDES\b|\bMath\.random\s*\(\)/,
+    message: 'Weak cryptographic primitive detected — MD5/SHA1/DES are broken; Math.random() is not cryptographically secure. Use SHA-256+, AES-GCM, or crypto.randomBytes() / secrets.token_bytes().',
+    block:   false,
+  },
+  {
+    id:      'prototype-pollution',
+    test:    /__proto__|\bconstructor\.prototype\b/,
+    message: 'Prototype pollution pattern detected — assigning to __proto__ or constructor.prototype can corrupt shared object state. Use Object.create(null) or Object.freeze().',
+    block:   false,
+  },
+  {
+    id:      'yaml-unsafe-load',
+    test:    /\byaml\.load\s*\(/,
+    message: 'yaml.load() detected — unsafe YAML deserialization allows arbitrary code execution. Use yaml.safe_load() instead.',
+    block:   false,
+  },
+  {
+    id:      'path-traversal',
+    test:    /\.\.[/\\]/,
+    message: 'Path traversal sequence (../) detected — user-controlled paths may escape the project root. Validate with path.resolve() and check against an allowed base directory.',
+    block:   false,
+  },
+  {
     id:      'hardcoded-secret',
     test:    /AKIA[A-Z0-9]{16}|sk-[a-zA-Z0-9]{20,}|ghp_[A-Za-z0-9]{36}|glpat-[A-Za-z0-9_-]{20}|xoxb-[0-9]|xoxp-[0-9]|npm_[A-Za-z0-9]{36}|AIza[0-9A-Za-z_-]{35}|sk_live_[0-9a-zA-Z]{24}|SG\.[A-Za-z0-9_-]{22}\.|-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY/,
     message: 'Hardcoded secret pattern detected',

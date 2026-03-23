@@ -15,6 +15,10 @@ Warnings → stderr (write proceeds). Secrets → exit 2 (write blocked).
 | `dom-xss` | `document.write(` / `.innerHTML =` | JS/TS | DOM XSS | Warn |
 | `pickle-deserialization` | `pickle.load(` / `pickle.loads(` | Python | Arbitrary code execution | Warn |
 | `os-system` | `os.system(` | Python | Command injection | Warn |
+| `weak-crypto` | `MD5`, `SHA1`, `DES`, `Math.random()` | Any | Broken crypto / insecure tokens | Warn |
+| `prototype-pollution` | `__proto__`, `constructor.prototype` | JS/TS | Object state corruption / RCE | Warn |
+| `yaml-unsafe-load` | `yaml.load(` | Python | Arbitrary code execution | Warn |
+| `path-traversal` | `../` in file paths | Any | Arbitrary file read/write | Warn |
 | `hardcoded-secret` | AWS/GH/GL/Slack/npm/GCP/Stripe/SendGrid/PEM key tokens | Any | Credential exposure | **Block** |
 
 **Fix guidance per pattern:**
@@ -24,6 +28,10 @@ Warnings → stderr (write proceeds). Secrets → exit 2 (write blocked).
 - `pickle.*` → use `json.loads()` for serialization; never unpickle external data
 - `os.system` → use `subprocess.run(['cmd', 'arg1'], shell=False)`
 - `gh-actions-injection` → store event data in env vars before using in `run:` steps
+- `weak-crypto` → use `crypto.randomBytes()` / `secrets.token_bytes()`, SHA-256+, AES-GCM
+- `prototype-pollution` → use `Object.create(null)`, `Object.freeze()`, avoid dynamic key assignment
+- `yaml-unsafe-load` → use `yaml.safe_load()` — always
+- `path-traversal` → use `path.resolve()` + validate result starts with allowed base dir
 - `hardcoded-secret` → use environment variables (`process.env.MY_SECRET` / `os.environ['MY_SECRET']`)
 
 ---
