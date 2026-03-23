@@ -45,7 +45,7 @@ Claude plans & calls tools
 [pre-tool-use.js]  — intercepts 3 tool types before execution:
   Bash  → blocks curl|bash RCE, destructive rm; warns npm install, env var echo
   Read  → warns on credential file access (.env, secrets.json, id_rsa, .pem)
-  Write → 14 code vulnerability pattern rules (see Write Gate below)
+  Write → 19 code vulnerability pattern rules (see Write Gate below)
        ↓                          ↓
 [post-tool-use.js]        /tmp/.azclaude-seclog-{PID}
   behavioral sequences:          ↑ shared session JSONL event log
@@ -235,7 +235,7 @@ AZCLAUDE_HOOK_PROFILE=strict claude
 1. **No sandboxing** — copilot.js runs Claude with full filesystem access in the project directory
 2. **No cost limits** — no spending cap on Claude API usage during autonomous runs
 3. **No network isolation** — Claude can access the internet (for deploy, npm install, etc.)
-4. **Regex-only write scanning** — the 14 write-gate rules use pattern matching, not AST analysis; obfuscated code may bypass them
+4. **Regex-only write scanning** — the 19 write-gate rules use pattern matching, not AST analysis; obfuscated code may bypass them
 5. **Bash gate is tool-scoped** — detects dangerous commands Claude runs via the Bash tool; does not scan scripts Claude writes that a human later executes manually
 6. **Template-based enforcement** — markdown templates are instructions for Claude, not hard runtime enforcement at the OS level
 
@@ -244,7 +244,7 @@ AZCLAUDE_HOOK_PROFILE=strict claude
 ## Verification
 
 ```bash
-# Run all 1449 tests
+# Run all 1462 tests
 bash tests/test-features.sh
 
 # Run environment security scan (scored 0-100)

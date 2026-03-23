@@ -15,7 +15,7 @@ Claude plans & calls tools
 [pre-tool-use.js] — intercepts 3 tool types before execution:
   Bash  → blocks curl|bash RCE, destructive rm; warns npm install, env var echo
   Read  → warns on credential file access (.env, secrets.json, id_rsa, .pem)
-  Write → 14 code vulnerability pattern rules (see table below)
+  Write → 19 code vulnerability pattern rules (see table below)
        ↓                          ↓
 [post-tool-use.js]         /tmp/.azclaude-seclog-{PID}
   behavioral sequence             ↑ shared session event log
@@ -106,6 +106,10 @@ Scans all Edit/Write/MultiEdit operations. Warnings → stderr. Secrets → exit
 - `yaml-unsafe-load` → use `yaml.safe_load()` — always
 - `path-traversal` → use `path.resolve()` + validate result starts with allowed base dir
 - `prompt-injection-write` → review content before writing to files that will be read by AI agents; never embed instruction-like text in project files
+- `c-gets` → use `fgets(buf, sizeof(buf), stdin)` or `getline()` — always specify buffer bounds
+- `php-shell-exec` → use `escapeshellarg()` / `escapeshellcmd()`, or avoid shell calls entirely
+- `java-runtime-exec` → use `new ProcessBuilder(List.of("cmd", "arg1")).start()` with a String array
+- `jinja2-ssti` → use `render_template("file.html", ...)` with a file-based template, never render raw strings
 - `hardcoded-secret` → use environment variables (`process.env.MY_SECRET` / `os.environ['MY_SECRET']`)
 
 ---
