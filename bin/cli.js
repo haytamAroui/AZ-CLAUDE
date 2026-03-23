@@ -1194,32 +1194,44 @@ if (hasPlan && hasPendingMilestones) {
 console.log('\n════════════════════════════════════════════════');
 console.log(`  AZCLAUDE v${currentVer} — ${isFirstInstall ? 'installed' : needsUpgrade ? 'upgraded' : 'up to date'}`);
 console.log('');
+
+// First-time users get a one-liner orientation
+if (isFirstInstall) {
+  console.log('  AI coding commands for Claude Code: /setup, /add, /fix,');
+  console.log('  /copilot, /ship and 29 more. Run them inside Claude Code.');
+  console.log('');
+}
+
 console.log('  Open Claude Code in this directory, then:');
 console.log('');
 
 if (onboardingPath === 'RESUME') {
-  console.log('  You have a plan with pending work:');
+  console.log('  A plan with pending work was found:');
   console.log('');
-  console.log('    /copilot          resume autonomous build');
   console.log('    /pulse            see current state first');
+  console.log('    /copilot          resume autonomous build');
   console.log('    /analyze plan     verify plan vs reality');
+  console.log('');
+  console.log('  Starting fresh instead?');
+  console.log('');
+  console.log('    /setup            (re)configure this project');
 } else if (onboardingPath === 'EXISTING') {
   console.log('  Existing project detected:');
   console.log('');
-  console.log('    /setup            scan + configure this project');
-  console.log('    /dream            define what to build next');
-  console.log('    /blueprint        plan the next feature');
-  console.log('    /copilot .        build autonomously');
+  console.log('    /setup            scan + configure this project  ← start here');
+  console.log('    /add [feature]    start building immediately');
+  console.log('    /dream            plan a full product first');
+  console.log('    /copilot          build autonomously');
 } else {
   console.log('  New project:');
   console.log('');
-  console.log('    /setup            configure this project');
+  console.log('    /setup            configure this project  ← start here');
   console.log('    /add [feature]    start building immediately');
   console.log('    /dream            plan a full product first');
 }
 
 console.log('');
 console.log('  ─────────────────────────────────────────────');
-console.log('  docs:    github.com/haytamAroui/AZ-CLAUDE-COPILOT');
-console.log('  upgrade: npx azclaude-copilot@latest');
+console.log('  all commands: /help  ·  docs: github.com/haytamAroui/AZ-CLAUDE-COPILOT');
+console.log('  upgrade:      npx azclaude-copilot@latest');
 console.log('════════════════════════════════════════════════\n');
