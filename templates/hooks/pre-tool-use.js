@@ -192,6 +192,30 @@ const RULES = [
     block:   false,
   },
   {
+    id:      'c-gets',
+    test:    /\bgets\s*\(/,
+    message: 'gets() detected — buffer overflow vulnerability (removed from C11). Use fgets() or getline() with explicit bounds.',
+    block:   false,
+  },
+  {
+    id:      'php-shell-exec',
+    test:    /\bshell_exec\s*\(/,
+    message: 'shell_exec() detected — command injection risk. Use escapeshellarg() or avoid shell execution entirely.',
+    block:   false,
+  },
+  {
+    id:      'java-runtime-exec',
+    test:    /Runtime\.getRuntime\(\)\.exec\s*\(/,
+    message: 'Runtime.exec() detected — command injection risk. Use ProcessBuilder with a String[] argument array instead.',
+    block:   false,
+  },
+  {
+    id:      'jinja2-ssti',
+    test:    /render_template_string\s*\(/,
+    message: 'render_template_string() detected — server-side template injection risk. Use render_template() with a file-based template instead.',
+    block:   false,
+  },
+  {
     id:      'subprocess-shell-true',
     test:    /subprocess\.(run|Popen|call|check_output)\s*\([^)]*shell\s*=\s*True/,
     message: 'subprocess with shell=True detected — command injection via shell metacharacters. Use list args with shell=False instead.',

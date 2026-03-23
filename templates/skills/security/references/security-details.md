@@ -88,6 +88,10 @@ Scans all Edit/Write/MultiEdit operations. Warnings → stderr. Secrets → exit
 | `path-traversal` | `../` in file paths | Any | Arbitrary file read/write | Warn |
 | `prompt-injection-write` | `ignore previous instructions` / `{"role":"user","content":` | Any | AI context hijack (CVE-2025-54794) | Warn |
 | `subprocess-shell-true` | `subprocess.run(..., shell=True)` / `subprocess.Popen(..., shell=True)` | Python | Command injection via shell metacharacters | Warn |
+| `c-gets` | `gets(` | C/C++ | Buffer overflow (removed from C11) | Warn |
+| `php-shell-exec` | `shell_exec(` | PHP | Command injection | Warn |
+| `java-runtime-exec` | `Runtime.getRuntime().exec(` | Java/Kotlin | Command injection | Warn |
+| `jinja2-ssti` | `render_template_string(` | Python/Flask | Server-side template injection | Warn |
 | `hardcoded-secret` | AWS/GH/GL/Slack/npm/GCP/Stripe/SendGrid/PEM key tokens | Any | Credential exposure | **Block** |
 
 **Fix guidance per pattern:**

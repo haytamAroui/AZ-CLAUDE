@@ -83,7 +83,7 @@ Warns when Claude reads files matching credential patterns:
 
 Deduplicated per session — one warning per file, not per read.
 
-### Pre-Tool-Use: Write Gate (15 rules)
+### Pre-Tool-Use: Write Gate (19 rules)
 
 Scans all Edit/Write/MultiEdit content before writing.
 
@@ -103,6 +103,10 @@ Scans all Edit/Write/MultiEdit content before writing.
 | `path-traversal` | `../` in file paths | Warn |
 | `prompt-injection-write` | `ignore previous instructions` / `{"role":"user","content":` | Warn |
 | `subprocess-shell-true` | `subprocess.run(..., shell=True)` / `subprocess.Popen(..., shell=True)` | Warn |
+| `c-gets` | `gets(` | Warn |
+| `php-shell-exec` | `shell_exec(` | Warn |
+| `java-runtime-exec` | `Runtime.getRuntime().exec(` | Warn |
+| `jinja2-ssti` | `render_template_string(` | Warn |
 | `hardcoded-secret` | AWS/GH/GL/Slack/npm/GCP/Stripe/SendGrid/PEM key tokens | **Block** (exit 2) |
 
 Patterns derived from: Anthropic security-guidance plugin, OWASP Top 10, CVE-2025-54794/54795.
