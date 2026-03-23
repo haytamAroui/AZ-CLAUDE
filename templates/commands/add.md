@@ -29,7 +29,13 @@ Load: shared/tdd.md + shared/completion-rule.md
 
 # Check if $ARGUMENTS is a spec file
 [ -f "$ARGUMENTS" ] && grep -q "Acceptance Criteria" "$ARGUMENTS" && echo "spec-mode" || echo "inline-mode"
+
+# Check if Context7 MCP is available (live library docs — prevents stale API usage)
+claude mcp list 2>/dev/null | grep -q "context7" && echo "context7=active" || echo "context7=inactive"
 ```
+
+**If context7=active**: before writing any library calls, use `mcp__context7__resolve-library-id` then `mcp__context7__get-library-docs` to fetch current docs. Pass `use context7` in the tool call.
+**If context7=inactive**: proceed normally — consider running `/mcp` after this task to prevent stale API usage in future sessions.
 
 **If constitution found:**
 Read `## Non-Negotiables` and `## Required Patterns` before implementing.

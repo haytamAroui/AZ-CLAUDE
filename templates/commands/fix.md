@@ -67,6 +67,12 @@ Read the code. Do not guess.
 - Check recent changes: `git log --oneline -10 -- {file}`
 - Read test framework config: `package.json` / `requirements.txt` / `Cargo.toml`
 
+**If the error involves an external library or unknown error code**: check if Brave Search MCP is available:
+```bash
+claude mcp list 2>/dev/null | grep -q "brave" && echo "brave=active" || echo "brave=inactive"
+```
+If active: use `mcp__brave-search__brave_web_search` to look up the exact error message — often finds GitHub issues, Stack Overflow answers, or library changelogs that resolve ambiguity before you guess at a root cause.
+
 Antipattern check — if `antipatterns.md` exists, read it before proceeding.
 
 Rules:

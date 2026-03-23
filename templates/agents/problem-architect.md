@@ -128,6 +128,12 @@ If YES: topic = {what orchestrator must /debate before dispatching}
 ### Estimated Complexity
 SIMPLE (< 3 files) | MEDIUM (3-8 files) | COMPLEX (8+ files)
 COMPLEX → orchestrator gives builder 3 fix attempts instead of 2
+
+### Parallel Safe
+YES | NO
+If NO: reason = {specific conflict — shared file, schema dependency, runtime ordering}
+The orchestrator uses this to decide whether to use worktree isolation or sequential dispatch.
+Parallel Safe = YES requires: isolated directories, no shared config/schema, no runtime dependency on a sibling milestone.
 ```
 
 ---

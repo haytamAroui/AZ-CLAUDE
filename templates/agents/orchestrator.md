@@ -35,13 +35,21 @@ If CLAUDE.md unfilled → run `/setup` with intent from copilot-intent.md first.
 
 ### Step 2: Select Next Milestone Wave
 
+**If plan.md has `Wave:` fields** (blueprint wrote them — read directly):
+```bash
+grep "Wave:" .claude/plan.md
+```
+Find the lowest wave number where all milestones have `status = pending` and all `Depends:` are `done`.
+This is the next wave to dispatch.
+
+**If plan.md has NO `Wave:` fields** (older plan format — compute from scratch):
 Find milestones where `status = pending` AND all dependencies have `status = done`.
 
-**Parallel candidates:** milestones with independent dependencies.
+**Parallel candidates:** milestones in the same wave with `Parallel: yes` (or computed as independent).
 
-**REQUIRED parallel safety check:** Before dispatching in parallel, get `Files Written`
-from problem-architect for each candidate. If any two candidates share a written file
-→ dispatch sequentially. Silent file corruption otherwise.
+**REQUIRED parallel safety check:** Even if `Parallel: yes`, verify `Files Written` from problem-architect
+for each candidate don't overlap. `Files Written` is more precise than `Files:` — use it.
+If any two candidates share a written file → dispatch sequentially. Silent file corruption otherwise.
 
 - All done → SHIP
 - All remaining blocked → BLOCKER RECOVERY
@@ -93,6 +101,18 @@ If verdict is `APPROVED` or `APPROVED (no constitution found)`: proceed to Step 
 
 ### Step 4: Dispatch Milestone Builder(s)
 
+**Parallel dispatch (2+ milestones in wave with disjoint Files Written):**
+
+Load `capabilities/shared/parallel-coordination.md` first.
+
+1. Write `.claude/ownership.md` table (branch, directories, status) for every agent in this wave
+2. Spawn each builder via Task with `isolation: "worktree"` in the same message (true parallel)
+3. Include worktree rules in every parallel prompt (see parallel-coordination.md Step 3)
+4. Wait for ALL agents in the wave before merging
+5. Merge branches sequentially (simplest milestone first) following the Merge Protocol
+
+**Sequential dispatch (single milestone OR overlapping files):**
+
 Spawn milestone-builder via Task with fully packaged context:
 
 ```
@@ -123,8 +143,8 @@ Fix attempts: {2 for SIMPLE/MEDIUM, 3 for COMPLEX}
 When done, report: files changed + test status + new patterns/anti-patterns.
 ```
 
-Independent milestones with disjoint `Files Written` → spawn in parallel.
-Dependent milestones OR overlapping `Files Written` → spawn sequentially.
+Independent milestones with disjoint `Files Written` AND `Parallel Safe: YES` → spawn in parallel with worktree isolation.
+Dependent milestones, overlapping `Files Written`, or `Parallel Safe: NO` → spawn sequentially.
 
 ---
 

@@ -191,14 +191,76 @@ When running inside `/copilot` (detected by: `.claude/copilot-intent.md` exists)
 - Include `Commit:` with conventional commit format
 - Write `## Summary` with counts at the bottom
 
-### Problem-Architect Validation (if available)
+### Parallel Optimization Pass — Layer 1 (REQUIRED before writing plan.md)
 
-After writing plan.md, check:
+**Design note — two-layer safety model:**
+This pass is Layer 1: fast, directory-level, runs before plan.md is written.
+Layer 2 is problem-architect (after plan.md): exact file paths, catches shared utilities.
+Layer 3 is the orchestrator at dispatch: final `Files Written:` overlap check.
+
+Layer 1 catches ~80% of conflicts cheaply. Layer 2 catches the rest (shared utils, shared config).
+Layer 1 does NOT spawn agents — it uses grep only.
+
+**Step 1: Assign waves**
+```
+Wave 1 = milestones with Depends: none
+Wave 2 = milestones that only depend on Wave 1
+Wave N = milestones that only depend on waves 1..N-1
+```
+
+**Step 2: Directory-level isolation check (Layer 1a)**
+
+For each wave with 2+ milestones:
+- Does each milestone own a distinct top-level directory? (e.g., `src/auth/` vs `src/users/` vs `src/email/`)
+- Does any milestone touch shared config (`package.json`, `prisma/schema.prisma`, `tsconfig.json`, `go.mod`, `Cargo.toml`)?
+
+If two milestones share a top-level directory → add `Depends:` to split them into different waves.
+
+**Step 3: Shared-utility grep (Layer 1b)**
+
+For each same-wave pair, check if they likely share utility files:
+```bash
+# Find shared utility dirs that multiple features import from
+grep -r "from.*utils\|import.*utils\|require.*utils\|from.*shared\|from.*common\|from.*lib" \
+  src/ --include="*.ts" --include="*.py" --include="*.js" -l 2>/dev/null | head -20
+```
+
+If a `utils/`, `shared/`, `common/`, or `lib/` directory exists AND two parallel milestones
+both need to CREATE or MODIFY files there → set `Parallel: no` for both and add a Depends: relationship.
+
+**Do NOT spawn problem-architect here.** The grep is sufficient for Layer 1. Problem-architect
+runs after plan.md is written and handles the cases Layer 1 misses.
+
+**Step 4: Set Dirs: and Parallel: fields, write plan.md**
+
+```
+- Dirs:     top-level directories this milestone exclusively owns
+- Parallel: yes — safe at directory level + no shared utility writes
+- Parallel: no  — touches shared config, shared utility, schema, or depends on sibling
+- Wave:     {N}
+```
+
+A well-designed plan for a 6-feature product:
+```
+Wave 1: M1 (foundation/schema) — Parallel: no
+Wave 2: M2, M3, M4, M5 (independent features) — Parallel: yes (4 agents simultaneously)
+Wave 3: M6 (integration/E2E) — Parallel: no
+```
+
+---
+
+### Problem-Architect Validation — Layer 2 (after plan.md is written)
+
+Layer 2 refines Layer 1 with exact file-level analysis. Catches shared utilities that
+Layer 1's directory check missed (e.g., `src/utils/jwt.ts` shared by M2 and M3 even though
+their `Dirs:` are `src/auth/` and `src/users/`).
+
+Check if problem-architect is available:
 ```bash
 ls .claude/agents/problem-architect.md 2>/dev/null
 ```
 
-If problem-architect.md exists — spawn it for EACH milestone in plan.md:
+If available, spawn it for EACH milestone:
 ```
 Analyze this milestone for the Team Spec:
 Milestone: {description from plan.md}
@@ -207,16 +269,28 @@ Available agents: {list of .claude/agents/}
 Available skills: {list of .claude/skills/}
 ```
 
-For each milestone, append the returned Team Spec fields directly into plan.md:
+For each milestone, append the returned Team Spec fields to plan.md:
+- `Files Written:` exact paths (this is the authoritative list — supersedes `Files:`)
+- `Parallel Safe:` YES/NO with reason
 - `Complexity:` SIMPLE / MEDIUM / COMPLEX
-- `Files Written:` exact paths the builder will touch (critical for parallel safety)
-- `Pre-conditions:` checklist before starting
+- `Pre-conditions:` checklist
 - `Risks:` and mitigation
-- `Structural Decision:` YES/NO (if YES → orchestrator must /debate before dispatching)
+- `Structural Decision:` YES/NO
 
-This pre-annotation makes orchestrator dispatch faster and prevents parallel file collision.
+**Correction pass — when Layer 2 contradicts Layer 1:**
 
-After all milestones annotated — return control to /copilot.
+If problem-architect returns `Parallel Safe: NO` for milestone M_X but Layer 1 wrote `Parallel: yes`:
+
+1. Read the reason: `Parallel Safe: NO — reason: {both M_X and M_Y write src/utils/jwt.ts}`
+2. Identify the conflicting pair (M_X and M_Y)
+3. Update plan.md:
+   - Add `Depends: M_X` to M_Y (or vice versa — whichever is simpler first)
+   - Update `Wave:` for M_Y to the next wave
+   - Change `Parallel: yes` → `Parallel: no` for affected milestones
+   - Update `## Summary` wave count
+4. This is a plan.md correction, not a failure — blueprint is refining its initial estimate
+
+After all milestones annotated and corrections applied → return control to /copilot.
 
 ---
 

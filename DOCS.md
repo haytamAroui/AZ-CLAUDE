@@ -1,6 +1,6 @@
 # AZCLAUDE -- Complete User Guide
 
-> Version 0.4.33 · 1473 tests passing · AI coding environment
+> Version 0.4.35 · 1526 tests passing · AI coding environment
 
 ---
 
@@ -21,7 +21,9 @@
 13. [Native Tool Orchestration (MCP)](#native-tool-orchestration-mcp)
 14. [Intelligent Dispatch](#intelligent-dispatch)
 14b. [Spec-Driven Development](#spec-driven-development)
-15. [All 33 Commands](#all-33-commands)
+14c. [Parallel Execution](#parallel-execution)
+14d. [MCP Integration](#mcp-integration)
+15. [All 36 Commands](#all-36-commands)
 16. [Skills (Auto-Invoked)](#skills-auto-invoked)
 17. [Behavioral Defenses (Pressure Testing)](#behavioral-defenses-pressure-testing)
 18. [Multi-CLI Support](#multi-cli-support)
@@ -32,7 +34,7 @@
 
 ## What AZCLAUDE Is
 
-AZCLAUDE is an AI coding environment. 34 commands, 10 skills, 15 agents, memory, reflexes, evolution. Install once, works on any stack. Copilot mode builds autonomously across sessions using a three-tier intelligent team (orchestrator → problem-architect → milestone-builder). Zero human input after the first message.
+AZCLAUDE is an AI coding environment. 36 commands, 10 skills, 15 agents, memory, reflexes, evolution. Install once, works on any stack. Copilot mode builds autonomously across sessions using a three-tier intelligent team (orchestrator → problem-architect → milestone-builder). Zero human input after the first message.
 
 The hero feature is **copilot mode**: a Node.js runner (`bin/copilot.js`) that restarts Claude Code sessions in a loop, while the AZCLAUDE environment inside each session decides what to build next, implements it, tests it, commits, and evolves the environment. The runner is stateless and dumb on purpose. All intelligence lives in the templates.
 
@@ -51,10 +53,10 @@ After `npx azclaude-copilot` you have:
 ```
 CLAUDE.md -- 30-line dispatch table filled with your project's details
 goals.md -- session memory, auto-injected before your first message every session
-34 commands -- /fix, /add, /audit, /blueprint, /ship, /evolve, /sentinel, /copilot, /spec, /constitute, /driven...
+36 commands -- /fix, /add, /audit, /blueprint, /ship, /evolve, /sentinel, /copilot, /parallel, /mcp, /spec, /constitute, /driven...
 4 hooks -- block secrets before writes, track every edit, inject context on start, migrate on stop
 15 agents -- orchestrator team + spec-reviewer + constitution-guard + framework agents
-37 capabilities -- lazy-loaded, only what the task needs
+38 capabilities -- lazy-loaded, only what the task needs (incl. parallel-coordination.md)
 Evolution system -- scans for gaps, generates fixes, quality-gates them
 Self-improving loop -- /reflect + /reflexes + /evolve find and fix their own blind spots
 ```
@@ -78,7 +80,7 @@ npx azclaude-copilot@latest
 ```
 
 One command, no flags. Auto-detects the right mode:
-- **First time** → full install (34 commands, 10 skills, 15 agents, 4 hooks, memory, reflexes, evolution)
+- **First time** → full install (36 commands, 10 skills, 15 agents, 4 hooks, memory, reflexes, evolution)
 - **Already installed, older version** → auto-upgrades all templates to latest
 - **Already up to date** → verifies, no overwrites
 
@@ -90,7 +92,7 @@ Run the same command again after any AZCLAUDE release — it handles the upgrade
 azclaude-copilot doctor
 ```
 
-Runs 32 checks: Node.js version, project hooks, settings integrity, project structure, all 34 commands present. Exits 0 if healthy. Exits 1 with a specific fix hint if anything is wrong.
+Runs 32 checks: Node.js version, project hooks, settings integrity, project structure, all 36 commands present. Exits 0 if healthy. Exits 1 with a specific fix hint if anything is wrong.
 
 ### Doctor Audit
 
@@ -155,6 +157,8 @@ Every command detects copilot mode automatically (`[ -f .claude/copilot-intent.m
 | 2 | **Problem-Architect** | Analyzes each milestone → Team Spec (agents, skills, files-written, pre-conditions, risks, complexity) | Implements |
 | 3 | **Milestone-Builder** | Pre-reads, implements, verifies, self-corrects, commits, reports back | Decides what to build |
 
+**Key mechanism — Parallel Waves:** `/blueprint` assigns each milestone a `Wave:` number and `Parallel: yes/no` field using a three-layer safety check. The orchestrator reads these fields directly — no recomputation. Same-wave milestones with `Parallel: yes` are dispatched simultaneously using `isolation: "worktree"`, each agent on its own branch. Branches merge sequentially after the full wave completes. A final `Files Written:` overlap check at dispatch time (Layer 3) is the unconditional safety gate.
+
 **Key mechanism — Files Written:** Problem-Architect returns the exact list of files each milestone will touch. Orchestrator checks for overlap before parallel dispatch → prevents silent file collision.
 
 ### Per Milestone
@@ -206,7 +210,8 @@ System agents (code-reviewer, test-writer, orchestrator-init) run the framework.
 | File | Written by | Read by | Purpose |
 |------|-----------|---------|---------|
 | `.claude/copilot-intent.md` | Runner | /dream, /copilot | Original product description |
-| `.claude/plan.md` | /blueprint | /copilot, /add | Milestone tracker with status |
+| `.claude/plan.md` | /blueprint | /copilot, /add | Milestone tracker — status, Wave:, Dirs:, Parallel:, Files Written: |
+| `.claude/ownership.md` | orchestrator | orchestrator, /parallel | Active parallel session — branch/directory/status per agent. Written pre-dispatch, cleaned post-merge. |
 | `.claude/memory/goals.md` | Hooks | Every session start | File breadcrumbs + session state |
 | `.claude/memory/checkpoints/*` | /snapshot | Every session start | Reasoning snapshots |
 | `.claude/memory/patterns.md` | /evolve, agents | Agents, /add | What works |
@@ -286,7 +291,7 @@ AZCLAUDE builds progressively. You don't need all 10 levels. You need the right 
 |-------|-------------|-------------|
 | **1** | CLAUDE.md -- project conventions in 30 lines | ~30 tokens |
 | **2** | MCP servers -- database, browser, API tools | ~150 tokens |
-| **3** | 34 commands + lazy-loaded capabilities | ~380 tokens per task |
+| **3** | 36 commands + lazy-loaded capabilities | ~380 tokens per task |
 | **4** | Memory -- goals, checkpoints, sessions | ~200 tokens per session |
 | **5** | Custom agents -- specialists with clear scope | ~400 tokens per agent |
 | **6** | Hooks -- auto-tracking, injection, secret blocking | ~0 tokens (global) |
@@ -1272,7 +1277,82 @@ Every major command now checks for constitution + spec context:
 
 ---
 
-## All 33 Commands
+## Parallel Execution
+
+Multiple Claude Code agents running simultaneously on the same codebase — without file corruption or test interference. Each agent works in an isolated git worktree on its own branch. Changes merge sequentially after all agents complete.
+
+### How it works
+
+**1. `/blueprint` writes a parallel-annotated plan.md**
+
+Every milestone gets three new fields:
+- `Wave:` — execution order (same wave = simultaneous)
+- `Dirs:` — directories this milestone exclusively owns
+- `Parallel:` — yes/no safety verdict
+
+Blueprint runs a two-layer safety check before writing these fields:
+- Layer 1a: directory isolation check (fast, no agents)
+- Layer 1b: shared-utility grep (`from.*utils`, `from.*shared`) — catches shared files that directories alone miss
+- If a conflict is found: adds `Depends:` to split milestones into different waves
+
+After writing plan.md, problem-architect validates each milestone (Layer 2): returns exact `Files Written:` paths and `Parallel Safe: YES/NO`. If `NO` → blueprint runs a correction pass: updates `Wave:`, `Dirs:`, `Depends:` in plan.md to match.
+
+**2. `/tasks` shows the wave graph**
+
+```
+/tasks
+→  Wave 1: M1 (schema) — start now
+→  Wave 2: M2 (auth), M3 (profile), M4 (email), M5 (dashboard) — all run simultaneously
+→  Wave 3: M6 (E2E tests) — after Wave 2
+→  Max parallel: 4  |  Critical path: 3 waves
+```
+
+**3. Automatic via `/copilot`**
+
+Orchestrator reads `Wave:` from plan.md. Same-wave milestones with `Parallel: yes`:
+1. Runs Layer 3 safety check: `Files Written:` overlap for every pair
+2. Writes `.claude/ownership.md` (branch/directories/status per agent)
+3. Dispatches all agents in a single message with `isolation: "worktree"`
+4. Waits for all to complete
+5. Merges branches sequentially (simplest first), tests after each merge
+6. Cleans up worktree branches
+
+**4. Manual via `/parallel M2 M3 M4 M5`**
+
+Explicitly run a subset of milestones in parallel. Same execution model as above but user-triggered.
+
+See `docs/parallel-feature.md` for the complete reference including conflict resolution ladder.
+
+---
+
+## MCP Integration
+
+`/mcp` detects your stack and recommends the right Model Context Protocol servers.
+
+### Universal (free, no API key)
+
+| MCP | What it fixes | Auto-wired in |
+|-----|--------------|---------------|
+| **Context7** | `/add` writes against stale training data — wrong API signatures, deprecated methods. Context7 fetches live docs at prompt time. | `/add` pre-flight |
+| **Sequential Thinking** | `/blueprint` and `/copilot` make better multi-step decisions with iterative branching. | `/blueprint` copilot mode |
+
+### Stack-specific
+
+| If stack contains | Recommend | Wired in |
+|------------------|-----------|---------|
+| Any GitHub repo | GitHub MCP | `/ship` push/PR |
+| Any web project | Playwright MCP | qa-engineer, `/test` |
+| Supabase in deps | Supabase MCP | schema introspection |
+| postgres/prisma | PostgreSQL MCP | query during dev |
+| Heavy `/fix` usage | Brave Search | `/fix` Phase 2 error lookup |
+
+### Discovery
+
+`/setup` runs `claude mcp list` at the end. If 0 servers: shows install commands for Context7 + Sequential Thinking. If N servers: nudges to run `/mcp` for stack-specific recommendations.
+
+---
+
+## All 36 Commands
 
 ### /dream
 **New project from idea.**
@@ -1565,6 +1645,28 @@ Reads plan.md, builds dependency graph, outputs wave groups (sets of milestones 
 ```
 
 Pre-flight: `gh auth status`, `git remote`, `plan.md`. Creates issues for pending milestones, deduplicates, writes issue numbers back to `plan.md`. Labels: `azclaude`, `copilot-milestone`. See [Spec-Driven Development](#spec-driven-development).
+
+---
+
+### /parallel
+**Run multiple milestones simultaneously using git worktree isolation.**
+
+```
+/parallel M2 M3 M4 M5
+```
+
+Dispatches multiple milestone-builder agents in a single message, each in its own worktree branch (`parallel/{slug}`). Three-layer file collision safety. Merges branches sequentially after all agents complete. Agents commit locally only — orchestrator pushes after all merges pass. See [Parallel Execution](#parallel-execution).
+
+---
+
+### /mcp
+**Recommend and install MCP servers based on your stack.**
+
+```
+/mcp
+```
+
+Detects stack from `package.json` + `CLAUDE.md`. Step 1: always recommends Context7 + Sequential Thinking (free, no API key). Step 2: stack-specific — GitHub MCP (any repo), Playwright (web), Supabase, PostgreSQL, Brave Search (heavy `/fix` usage). Step 3: shows exact `claude mcp add` commands. Step 4: security rules (no hardcoded secrets, pin versions, run `/sentinel`). See [MCP Integration](#mcp-integration).
 
 ---
 
@@ -1891,7 +1993,7 @@ Doctor runs 32 checks across 6 categories. Each failure includes the exact fix c
 - **Project hooks** -- UserPromptSubmit, PreToolUse, PostToolUse, Stop hooks wired
 - **Hook freshness** -- hook scripts match latest version
 - **Settings integrity** -- SHA-256 hash matches install-time hash
-- **Commands** -- all 34 commands present
+- **Commands** -- all 36 commands present
 - **Memory** -- goals.md exists, checkpoints directory exists, git repo initialized
 - **Project** -- CLAUDE.md exists and has no unfilled `{{placeholders}}`
 

@@ -244,7 +244,7 @@ AZCLAUDE_HOOK_PROFILE=strict claude
 ## Verification
 
 ```bash
-# Run all 1462 tests
+# Run all 1526 tests
 bash tests/test-features.sh
 
 # Run environment security scan (scored 0-100)

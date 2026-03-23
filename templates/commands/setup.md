@@ -209,6 +209,24 @@ If all three exist:
   ✓ Constitution, coding rules, and specs found. Ready for /copilot.
 ```
 
+Always append MCP check (regardless of other states):
+```bash
+claude mcp list 2>/dev/null | grep -c "." || echo "0"
+```
+
+```
+  · MCP servers configured: {N}
+    Run: /mcp
+    Why: Context7 fixes stale API docs in /add and /copilot.
+         Sequential Thinking improves /blueprint and /copilot planning.
+         Both are free — no API key needed.
+```
+
+If N ≥ 1, show instead:
+```
+  · {N} MCP server(s) active. Run /mcp to check stack-specific recommendations.
+```
+
 ---
 
 ## If Running Again on an Existing Project

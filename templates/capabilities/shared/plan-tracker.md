@@ -18,14 +18,20 @@ Every plan.md must follow this structure exactly. The copilot runner parses it.
 
 ### M1: {title}
 - Status: {pending|in-progress|done|blocked|skipped}
-- Files: {expected files to create/modify}
+- Wave: {1|2|3|...} — execution wave (same wave = runs in parallel)
+- Files: {expected files to create/modify — be specific, e.g. src/auth/login.ts}
+- Dirs: {top-level directories this milestone owns — e.g. src/auth/, tests/auth/}
 - Depends: {M-numbers this depends on, or "none"}
+- Parallel: {yes|no} — yes = safe to run alongside other same-wave milestones
 - Commit: {expected commit message}
 
 ### M2: {title}
 - Status: pending
+- Wave: 2
 - Files: ...
+- Dirs: src/users/, tests/users/
 - Depends: M1
+- Parallel: yes
 - Commit: ...
 
 ## Summary
@@ -33,7 +39,18 @@ Total: {N} milestones
 Done: {N}/{total}
 In progress: {N}/{total}
 Blocked: {N}/{total}
+Waves: {N} (max parallel in one wave: {N})
 ```
+
+### Field Definitions
+
+| Field | Purpose |
+|-------|---------|
+| `Wave:` | Which execution wave. Same number = can run simultaneously. Wave 1 always first. |
+| `Dirs:` | Directories this milestone exclusively owns. Two milestones in the same wave MUST have non-overlapping `Dirs:`. |
+| `Files:` | Expected file paths to create/modify. Blueprint's estimate — problem-architect refines to `Files Written:`. |
+| `Parallel: yes` | Orchestrator may dispatch with worktree isolation alongside other Wave N milestones. |
+| `Parallel: no` | Reasons: touches shared config, schema change, or has runtime dep on sibling milestone. |
 
 ## Status Values
 

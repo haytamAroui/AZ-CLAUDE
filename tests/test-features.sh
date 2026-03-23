@@ -1185,7 +1185,7 @@ check_file "install: agent-creator scaffold script"      "$IDIR/.claude/skills/a
 check_file "install: agent-creator references"           "$IDIR/.claude/skills/agent-creator/references/agent-engineering-guide.md"
 check_file "install: agent-creator examples"             "$IDIR/.claude/skills/agent-creator/examples/sample-agent.md"
 INSTALLED=$(ls "$IDIR/.claude/commands/" | wc -l | tr -d ' ')
-EXPECTED_CMDS=34
+EXPECTED_CMDS=36
 if [ "$INSTALLED" -eq "$EXPECTED_CMDS" ]; then
   echo "  ✓ install: all $EXPECTED_CMDS commands present"
   PASS=$((PASS + 1))
@@ -1606,6 +1606,10 @@ check      "plan-tracker: milestone status values"     "$PT2" "pending\|in-progr
 check      "plan-tracker: dependency rules"            "$PT2" "Depends\|dependency\|dependencies"
 check      "plan-tracker: finding next milestone"      "$PT2" "next milestone\|Next Milestone"
 check      "plan-tracker: plan.md format"              "$PT2" "plan\.md\|## Milestones"
+check      "plan-tracker: Wave field defined"           "$PT2" "Wave:"
+check      "plan-tracker: Dirs field defined"           "$PT2" "Dirs:"
+check      "plan-tracker: Parallel field defined"       "$PT2" "Parallel:"
+check      "plan-tracker: field definitions table"      "$PT2" "same wave\|execution wave"
 check      "plan-tracker: in manifest"                 "templates/capabilities/manifest.md" "plan-tracker"
 
 # ─── /blueprint copilot mode ──────────────────────────────────────────────────
@@ -1619,6 +1623,17 @@ check      "blueprint: annotates files-written"        "$CMD/blueprint.md" "File
 check      "blueprint: annotates complexity"           "$CMD/blueprint.md" "Complexity.*SIMPLE\|SIMPLE.*MEDIUM.*COMPLEX"
 check      "blueprint: annotates pre-conditions"       "$CMD/blueprint.md" "Pre-conditions\|Pre-Conditions"
 check      "blueprint: structural decision flag"       "$CMD/blueprint.md" "Structural Decision"
+check      "blueprint: parallel optimization pass"    "$CMD/blueprint.md" "Parallel Optimization"
+check      "blueprint: two-layer safety model"        "$CMD/blueprint.md" "Layer 1\|Layer 2\|two-layer\|two.layer"
+check      "blueprint: Layer 1 no agent spawn"        "$CMD/blueprint.md" "NOT spawn\|no.*spawn\|grep.*sufficient\|grep is sufficient"
+check      "blueprint: shared-utility grep"           "$CMD/blueprint.md" "utils.*shared\|shared.*utils\|from.*utils\|from.*shared\|common.*lib"
+check      "blueprint: assigns Wave fields"           "$CMD/blueprint.md" "Wave.*{N}\|Wave:.*wave\|Wave.*field"
+check      "blueprint: directory isolation check"     "$CMD/blueprint.md" "distinct.*director\|separate.*director\|top-level dir"
+check      "blueprint: correction pass when PA says NO" "$CMD/blueprint.md" "Correction pass\|correction.*Layer 2\|Layer 2.*contradict"
+check      "blueprint: updates Wave and Depends on correction" "$CMD/blueprint.md" "Update.*Wave\|update.*Depends\|Depends.*correction\|correction.*Depends"
+check      "blueprint: Parallel Safe from PA"         "$CMD/blueprint.md" "Parallel Safe.*YES\|Parallel Safe.*NO"
+check      "orchestrator: reads Wave from plan.md"    "$ROOT/agents/orchestrator.md" "Wave:.*fields\|Wave.*plan\.md"
+check      "orchestrator: falls back no Wave field"   "$ROOT/agents/orchestrator.md" "NO.*Wave\|has NO\|older plan"
 
 # ─── CLI copilot routing ────────────────────────────────────────────────────
 echo ""
@@ -2006,6 +2021,54 @@ check      "/setup: suggests /driven when missing"        "$CMD/setup.md" "/driv
 check      "/setup: explains code-rules benefit"          "$CMD/setup.md" "code-rules\.md\|coding rules"
 check      "milestone-builder: reads code-rules in pre-read" "$ROOT/agents/milestone-builder.md" "code-rules\.md"
 check      "milestone-builder: code-rules second in read order" "$ROOT/agents/milestone-builder.md" "read SECOND\|SECOND.*style"
+
+# ─── /mcp command + MCP wiring ───────────────────────────────────────────────
+echo ""
+echo "─── /mcp command + MCP wiring ───"
+check_file "/mcp: command file exists"                        "$CMD/mcp.md"
+check      "/mcp: loads mcp skill"                           "$CMD/mcp.md" "skills/mcp/SKILL\.md\|mcp.*skill"
+check      "/mcp: in EXTENDED_COMMANDS"                      "bin/cli.js"  "EXTENDED_COMMANDS.*mcp\|mcp.*EXTENDED"
+check      "/add: checks context7 MCP in pre-flight"         "$CMD/add.md" "context7"
+check      "/add: uses context7 for library docs"            "$CMD/add.md" "context7.*docs\|resolve-library-id\|get-library-docs"
+check      "/fix: checks brave search in Phase 2"            "$CMD/fix.md" "brave\|brave-search"
+check      "/fix: uses brave search for error lookup"        "$CMD/fix.md" "brave_web_search\|web_search"
+check      "/setup: recommends /mcp in next steps"           "$CMD/setup.md" "/mcp"
+check      "/setup: Context7 benefit described"              "$CMD/setup.md" "Context7\|context7"
+check      "template CLAUDE.md: /mcp in Available Commands"  "$ROOT/CLAUDE.md" "/mcp"
+check      "template CLAUDE.md: /mcp in Extended routing"    "$ROOT/CLAUDE.md" "mcp.*recommends\|/mcp.*MCP servers"
+check      "CLAUDE.md: /mcp in Available Commands"           "CLAUDE.md"   "/mcp"
+
+# ─── /parallel command + parallel coordination ────────────────────────────────
+echo ""
+echo "─── /parallel command + parallel coordination ───"
+PARA_CMD="$CMD/parallel.md"
+PARA_CAP="$ROOT/capabilities/shared/parallel-coordination.md"
+check_file "/parallel: command file exists"                      "$PARA_CMD"
+check_file "parallel-coordination.md: capability exists"        "$PARA_CAP"
+check      "/parallel: in ADVANCED_COMMANDS (cli.js)"           "bin/cli.js"  "ADVANCED_COMMANDS.*parallel\|parallel.*ADVANCED"
+check      "/parallel: loads parallel-coordination.md"          "$PARA_CMD"   "parallel-coordination"
+check      "/parallel: safety check for file collisions"        "$PARA_CMD"   "Files Written\|Files:.*field\|file collision\|shared file"
+check      "/parallel: worktree isolation dispatch"             "$PARA_CMD"   "isolation.*worktree\|worktree.*isolated\|WORKTREE"
+check      "/parallel: merge protocol step"                     "$PARA_CMD"   "Merge\|merge.*branch\|git merge"
+check      "/parallel: ownership map written"                   "$PARA_CMD"   "ownership\.md"
+check      "/parallel: reports time saved"                      "$PARA_CMD"   "time saved\|wave complete\|Wave Complete"
+check      "parallel-coord: worktree required rationale"        "$PARA_CAP"   "worktree\|isolation"
+check      "parallel-coord: ownership map format"               "$PARA_CAP"   "ownership\.md\|Directories Owned"
+check      "parallel-coord: merge protocol defined"             "$PARA_CAP"   "Merge Protocol\|git merge"
+check      "parallel-coord: when NOT to parallelize"           "$PARA_CAP"   "When NOT\|package\.json\|schema"
+check      "parallel-coord: conflict resolution table"          "$PARA_CAP"   "Conflict Resolution\|conflict type"
+check      "orchestrator: loads parallel-coordination.md"      "$ROOT/agents/orchestrator.md" "parallel-coordination"
+check      "orchestrator: worktree dispatch mode"              "$ROOT/agents/orchestrator.md" "isolation.*worktree\|worktree.*isolation"
+check      "orchestrator: Parallel Safe field check"           "$ROOT/agents/orchestrator.md" "Parallel Safe"
+check      "orchestrator: merge after wave complete"           "$ROOT/agents/orchestrator.md" "Merge Protocol\|merge.*branch\|merge.*sequentially"
+check      "problem-architect: Parallel Safe in Team Spec"     "$ROOT/agents/problem-architect.md" "Parallel Safe"
+check      "milestone-builder: WORKTREE_MODE detection"        "$ROOT/agents/milestone-builder.md" "WORKTREE_MODE\|worktree.*mode\|worktree list"
+check      "milestone-builder: no push in worktree mode"       "$ROOT/agents/milestone-builder.md" "DO NOT.*push\|not push\|commit.*only"
+check      "milestone-builder: reports branch on completion"   "$ROOT/agents/milestone-builder.md" "Branch:.*parallel\|branch name"
+check      "milestone-builder: scope violation reporting"      "$ROOT/agents/milestone-builder.md" "scope violation\|outside.*scope\|outside my dir"
+check      "template CLAUDE.md: parallel agent rules"          "$ROOT/CLAUDE.md" "Parallel Agent Rules\|parallel.*rules"
+check      "template CLAUDE.md: /parallel in commands"         "$ROOT/CLAUDE.md" "/parallel"
+check      "CLAUDE.md: /parallel in Available Commands"        "CLAUDE.md"  "/parallel"
 
 # ─── Feature-scoped dirs ──────────────────────────────────────────────────────
 echo ""

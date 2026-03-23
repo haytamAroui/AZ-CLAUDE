@@ -111,8 +111,21 @@ Tests must PASS before reporting done. Show actual output — never summarize.
 
 ### Step 5: Commit and Report Back
 
-On success:
+**Detect execution mode:**
+```bash
+# Am I in a worktree (parallel mode)?
+git worktree list 2>/dev/null | grep -c "$(pwd)" | grep -q "^1$" \
+  && echo "WORKTREE_MODE" || echo "MAIN_MODE"
+```
 
+**If WORKTREE_MODE** (parallel dispatch with worktree isolation):
+```bash
+git add {files changed}
+git commit -m "{type}: {what} — {why}"
+# DO NOT push — orchestrator merges all parallel branches after wave completes
+```
+
+**If MAIN_MODE** (sequential dispatch):
 ```bash
 git add {files changed}
 git commit -m "{type}: {what} — {why}"
@@ -123,6 +136,10 @@ Report to orchestrator:
 
 ```
 ## Milestone {N} — {title}: COMPLETE
+
+### Execution Mode
+WORKTREE | MAIN
+Branch: {current branch name}  ← required for orchestrator merge tracking
 
 ### Files Changed
 - {file}: {create|modify} — {one-line description}
@@ -137,6 +154,11 @@ PASS — {N} tests passing
 ### New Anti-Patterns Discovered
 {anti-pattern description} — or "none"
 ```
+
+**Worktree coordination errors** (errors in files outside your declared scope):
+- DO NOT attempt to fix them
+- Report: "Scope violation detected: {file} outside my directories — possible parallel agent interference"
+- Orchestrator handles resolution
 
 ---
 

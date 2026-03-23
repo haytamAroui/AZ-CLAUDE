@@ -40,9 +40,20 @@ Extended (load command file on use):
   - /tasks: dependency graph + parallel wave groups from plan.md
   - /issues: convert plan.md milestones to GitHub Issues
 - Standards: /driven → generates .claude/code-rules.md (coding contract for /add and /fix)
+- MCP: /mcp → recommends and installs MCP servers based on your stack
 
 Advanced (Level 5+):
 - /evolve · /debate · /level-up
+- Parallel execution: /parallel → dispatch multiple milestones simultaneously (worktree isolation + auto-merge)
+  - /tasks → shows which milestones can run in parallel (wave groups)
+
+## Parallel Agent Rules
+When running parallel agents (/copilot with parallel waves, or /parallel):
+1. **Own your scope** — only write files in your declared directories. Touch nothing outside.
+2. **Errors in files you didn't modify** → do not fix them. Report "scope violation: {file}" to orchestrator.
+3. **Never push from a worktree** — commit locally only. Orchestrator merges after all agents complete.
+4. **Test in isolation** — run `{test framework} tests/{your-area}/` not the full suite. Cross-cutting failures are expected during parallel execution.
+5. **Report your branch** — always end completion report with "Branch: parallel/{slug}".
 
 Unknown capability → grep manifest.md by description, load match
 
@@ -53,4 +64,4 @@ When priorities conflict:
 3. {{PRIORITY_3}}
 
 ## Available Commands
-/dream · /setup · /fix · /add · /audit · /test · /blueprint · /evolve · /debate · /snapshot · /persist · /level-up · /ship · /pulse · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect · /hookify · /spec · /clarify · /analyze · /constitute · /tasks · /issues · /driven
+/dream · /setup · /fix · /add · /audit · /test · /blueprint · /evolve · /debate · /snapshot · /persist · /level-up · /ship · /pulse · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect · /hookify · /spec · /clarify · /analyze · /constitute · /tasks · /issues · /driven · /mcp · /parallel

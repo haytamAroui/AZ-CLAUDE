@@ -1,7 +1,7 @@
 # AZCLAUDE
 
 ## Identity
-AI coding environment — 34 commands, 10 skills, 15 agents, memory, reflexes, evolution.
+AI coding environment — 36 commands, 10 skills, 15 agents, memory, reflexes, evolution.
 Install once, works on any stack. Copilot mode (/copilot) enables full autonomous building.
 Domain: Developer tooling | Stack: Node.js CLI, Markdown templates | Scale: STANDARD
 
@@ -70,4 +70,4 @@ When priorities conflict:
 7. `npm publish`
 
 ## Available Commands
-/dream · /setup · /fix · /add · /audit · /test · /blueprint · /evolve · /debate · /snapshot · /persist · /level-up · /ship · /pulse · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect · /hookify · /copilot · /reflexes · /sentinel · /spec · /clarify · /constitute · /analyze · /issues · /tasks · /driven
+/dream · /setup · /fix · /add · /audit · /test · /blueprint · /evolve · /debate · /snapshot · /persist · /level-up · /ship · /pulse · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect · /hookify · /copilot · /reflexes · /sentinel · /spec · /clarify · /constitute · /analyze · /issues · /tasks · /driven · /mcp · /parallel
