@@ -1959,6 +1959,34 @@ check      "constitution-guard: never writes files"    "$CG_AGENT" "Never Write\
 check      "constitution-guard: uses haiku model"      "$CG_AGENT" "haiku"
 check      "constitution-guard: in AGENTS array (cli.js)" "bin/cli.js" "constitution-guard"
 
+# ─── devops-engineer agent ────────────────────────────────────────────────────
+DO="$ROOT/agents/devops-engineer.md"
+check_file "devops-engineer: agent file exists"          "$DO"
+check      "devops-engineer: has all 5 layers"           "$DO" "Layer 5"
+check      "devops-engineer: writes CI/CD configs"       "$DO" "CI/CD\|GitHub Actions"
+check      "devops-engineer: Docker support"             "$DO" "Dockerfile\|docker"
+check      "devops-engineer: no hardcoded secrets"       "$DO" "secret\|secrets manager"
+check      "devops-engineer: rollback plan"              "$DO" "rollback\|Rollback"
+check      "devops-engineer: health check requirement"   "$DO" "health check\|HEALTHCHECK"
+check      "devops-engineer: no latest tag rule"         "$DO" "latest\|pin"
+check      "devops-engineer: structured output format"   "$DO" "Files written\|Key decisions\|To deploy"
+check      "devops-engineer: self-correction"            "$DO" "Self-Correction"
+check      "devops-engineer: in AGENTS array (cli.js)"  "bin/cli.js" "devops-engineer"
+
+# ─── qa-engineer agent ────────────────────────────────────────────────────────
+QA="$ROOT/agents/qa-engineer.md"
+check_file "qa-engineer: agent file exists"              "$QA"
+check      "qa-engineer: has all 5 layers"               "$QA" "Layer 5"
+check      "qa-engineer: E2E test support"               "$QA" "Playwright\|Cypress\|playwright\|cypress"
+check      "qa-engineer: severity classification"        "$QA" "Critical\|High\|Medium\|Low"
+check      "qa-engineer: no flaky tests rule"            "$QA" "flaky\|Zero tolerance"
+check      "qa-engineer: risk matrix"                    "$QA" "Risk\|risk-based\|risk matrix"
+check      "qa-engineer: release readiness verdict"      "$QA" "READY\|BLOCKED\|Release Readiness"
+check      "qa-engineer: bug report format"              "$QA" "bug report\|severity"
+check      "qa-engineer: regression test rule"           "$QA" "regression test\|bug fix"
+check      "qa-engineer: self-correction"                "$QA" "Self-Correction"
+check      "qa-engineer: in AGENTS array (cli.js)"      "bin/cli.js" "qa-engineer"
+
 # ─── Wiring: copilot ↔ new commands ──────────────────────────────────────────
 echo ""
 echo "─── Wiring: copilot ↔ spec/analyze/constitute ───"

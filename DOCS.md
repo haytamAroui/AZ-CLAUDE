@@ -1,6 +1,6 @@
 # AZCLAUDE -- Complete User Guide
 
-> Version 0.4.21 · 1366 tests passing · AI coding environment
+> Version 0.4.22 · 1388 tests passing · AI coding environment
 
 ---
 
@@ -32,7 +32,7 @@
 
 ## What AZCLAUDE Is
 
-AZCLAUDE is an AI coding environment. 33 commands, 9 skills, 13 agents, memory, reflexes, evolution. Install once, works on any stack. Copilot mode builds autonomously across sessions using a three-tier intelligent team (orchestrator → problem-architect → milestone-builder). Zero human input after the first message.
+AZCLAUDE is an AI coding environment. 33 commands, 9 skills, 15 agents, memory, reflexes, evolution. Install once, works on any stack. Copilot mode builds autonomously across sessions using a three-tier intelligent team (orchestrator → problem-architect → milestone-builder). Zero human input after the first message.
 
 The hero feature is **copilot mode**: a Node.js runner (`bin/copilot.js`) that restarts Claude Code sessions in a loop, while the AZCLAUDE environment inside each session decides what to build next, implements it, tests it, commits, and evolves the environment. The runner is stateless and dumb on purpose. All intelligence lives in the templates.
 
@@ -53,7 +53,7 @@ CLAUDE.md -- 30-line dispatch table filled with your project's details
 goals.md -- session memory, auto-injected before your first message every session
 33 commands -- /fix, /add, /audit, /blueprint, /ship, /evolve, /sentinel, /copilot, /spec, /constitute...
 4 hooks -- block secrets before writes, track every edit, inject context on start, migrate on stop
-13 agents -- orchestrator team + spec-reviewer + constitution-guard + framework agents
+15 agents -- orchestrator team + spec-reviewer + constitution-guard + framework agents
 37 capabilities -- lazy-loaded, only what the task needs
 Evolution system -- scans for gaps, generates fixes, quality-gates them
 Self-improving loop -- /reflect + /reflexes + /evolve find and fix their own blind spots
@@ -78,7 +78,7 @@ npx azclaude-copilot@latest
 ```
 
 One command, no flags. Auto-detects the right mode:
-- **First time** → full install (33 commands, 9 skills, 13 agents, 4 hooks, memory, reflexes, evolution)
+- **First time** → full install (33 commands, 9 skills, 15 agents, 4 hooks, memory, reflexes, evolution)
 - **Already installed, older version** → auto-upgrades all templates to latest
 - **Already up to date** → verifies, no overwrites
 
