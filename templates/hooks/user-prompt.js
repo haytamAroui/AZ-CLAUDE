@@ -15,7 +15,26 @@ const os   = require('os');
 // AZCLAUDE_HOOK_PROFILE=minimal|standard|strict (default: standard)
 const HOOK_PROFILE = process.env.AZCLAUDE_HOOK_PROFILE || 'standard';
 
-// Fire once per session only — keyed by parent PID
+// ── Prompt injection scan — runs on EVERY prompt (before session gate) ────────
+// Scans the user's actual message for injection attempts.
+// Logs to shared session security log so stop.js can summarize.
+try {
+  const raw  = fs.readFileSync(0, 'utf8');
+  const data = JSON.parse(raw);
+  const promptText = data.prompt || '';
+  if (promptText) {
+    const PROMPT_INJECT = /ignore\s+(?:all\s+)?previous\s+instructions|disregard\s+(?:all\s+)?previous\s+instructions|override\s+(?:your\s+)?(?:rules|instructions|safety)|you\s+are\s+now\s+(?:a\s+)?(?:new|different|unrestricted)/i;
+    if (PROMPT_INJECT.test(promptText)) {
+      const sid      = process.ppid || process.pid;
+      const seclog   = path.join(os.tmpdir(), `.azclaude-seclog-${sid}`);
+      const entry    = JSON.stringify({ ts: new Date().toISOString(), hook: 'user-prompt', rule: 'prompt-injection-attempt', level: 'warn', target: promptText.slice(0, 80) });
+      try { fs.appendFileSync(seclog, entry + '\n'); } catch (_) {}
+      process.stderr.write('\n⚠ SECURITY: Prompt injection pattern detected in user input.\n');
+    }
+  }
+} catch (_) {}
+
+// ── Fire once per session only — keyed by parent PID
 const marker = path.join(os.tmpdir(), `.azclaude-session-${process.ppid || process.pid}`);
 if (fs.existsSync(marker)) process.exit(0);
 try { fs.writeFileSync(marker, ''); } catch (_) {}

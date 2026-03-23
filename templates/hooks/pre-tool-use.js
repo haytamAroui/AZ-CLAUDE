@@ -17,11 +17,13 @@ const os   = require('os');
 let toolName = '';
 let filePath = '';
 let content  = '';
+let command  = '';
 try {
   const raw  = fs.readFileSync(0, 'utf8'); // fd 0 = stdin
   const data = JSON.parse(raw);
   toolName   = data.tool_name || '';
   filePath   = data.tool_input?.file_path || data.tool_input?.path || '';
+  command    = data.tool_input?.command || '';
   // Edit uses new_string; Write/MultiEdit use content
   content    = data.tool_input?.new_string || data.tool_input?.content || '';
   // MultiEdit: scan all edits
@@ -30,6 +32,65 @@ try {
   }
 } catch (_) {
   process.exit(0); // malformed JSON — stay out of the way
+}
+
+// ── Session security event log (shared with post-tool-use, stop) ─────────────
+const _secSid     = process.ppid || process.pid;
+const _seclogPath = path.join(os.tmpdir(), `.azclaude-seclog-${_secSid}`);
+const _dedupPath  = path.join(os.tmpdir(), `.azclaude-sec-${_secSid}`);
+function _logSec(rule, level, target) {
+  try {
+    fs.appendFileSync(_seclogPath, JSON.stringify({
+      ts: new Date().toISOString(), hook: 'pre-tool-use', rule, level,
+      target: String(target).slice(0, 100)
+    }) + '\n');
+  } catch (_) {}
+}
+function _getDedup() { try { return JSON.parse(fs.readFileSync(_dedupPath, 'utf8')); } catch(_) { return {}; } }
+function _saveDedup(d) { try { fs.writeFileSync(_dedupPath, JSON.stringify(d)); } catch(_) {} }
+
+// ── Gate: Bash tool — scan shell commands ────────────────────────────────────
+if (toolName === 'Bash' && command) {
+  const BASH_RULES = [
+    { id: 'rce-curl-pipe',      test: /curl\s+.*\|\s*(bash|sh)\b/i,                                  message: 'curl|bash RCE pattern',                                                    block: true  },
+    { id: 'rce-wget-pipe',      test: /wget\s+.*\|\s*(bash|sh)\b/i,                                  message: 'wget|bash RCE pattern',                                                    block: true  },
+    { id: 'shadow-npm-install', test: /\bnpm\s+install\b(?!\s+--ignore-scripts)/,                    message: 'npm install without --ignore-scripts — slopsquatting / shadow IT risk. Add --ignore-scripts.',   block: false },
+    { id: 'env-var-echo',       test: /\becho\s+['"$]?\$[A-Z_]*(SECRET|TOKEN|KEY|PASSWORD|API)[A-Z_]*/i, message: 'Sensitive env var echo — credentials may appear in logs.',            block: false },
+    { id: 'destructive-rm',     test: /\brm\s+-[rf]{1,2}\s+[/~$](?!tmp[\/ $])/,                     message: 'Destructive rm on system or home path.',                                   block: true  },
+  ];
+  const dedup = _getDedup();
+  for (const rule of BASH_RULES) {
+    if (!rule.test.test(command)) continue;
+    _logSec(rule.id, rule.block ? 'block' : 'warn', command.slice(0, 80));
+    if (rule.block) {
+      process.stderr.write(`\n✗ SECURITY BLOCK [${rule.id}]: ${rule.message}\n  Command: ${command.slice(0, 120)}\n\n`);
+      process.exit(2);
+    }
+    const key = `bash:${rule.id}`;
+    if (!dedup[key]) {
+      dedup[key] = true; _saveDedup(dedup);
+      process.stderr.write(`\n⚠ SECURITY [${rule.id}]: ${rule.message}\n`);
+    }
+  }
+  process.exit(0);
+}
+
+// ── Gate: Read tool — warn on credential file access ─────────────────────────
+if (toolName === 'Read' && filePath) {
+  const CRED_FILE = /\.env$|\.env\.\w+$|secrets?\.(json|ya?ml)$|credentials?(\.json)?$|id_rsa$|\.pem$|\.p12$|\.pfx$|\.keystore$/i;
+  if (CRED_FILE.test(filePath)) {
+    const rel = path.relative(process.cwd(), path.resolve(filePath));
+    if (!rel.startsWith('..')) {
+      const key = `read-cred:${rel}`;
+      const dedup = _getDedup();
+      if (!dedup[key]) {
+        dedup[key] = true; _saveDedup(dedup);
+        _logSec('credential-file-read', 'warn', rel);
+        process.stderr.write(`\n⚠ SECURITY: Reading credential file ${rel} — ensure contents are not echoed to logs or external calls.\n`);
+      }
+    }
+  }
+  process.exit(0);
 }
 
 // ── Gate: only act on write-type tools ──────────────────────────────────────
@@ -177,6 +238,7 @@ for (const rule of RULES) {
 
   if (rule.block) {
     // Always emit the block message — secrets must never be silently swallowed
+    _logSec(rule.id, 'block', displayName);
     process.stderr.write(
       `\n✗ SECURITY BLOCK: ${rule.message} in ${displayName}.\n` +
       `  Use environment variables instead: process.env.MY_SECRET\n` +
@@ -190,6 +252,7 @@ for (const rule of RULES) {
   if (dedup[dedupKey]) continue;
   dedup[dedupKey] = true;
   saveDedup();
+  _logSec(rule.id, 'warn', displayName);
 
   process.stderr.write(
     `\n⚠ SECURITY: ${rule.message.split(' — ')[0]} in ${displayName} — ${rule.message.includes(' — ') ? rule.message.split(' — ')[1] : rule.message}\n`

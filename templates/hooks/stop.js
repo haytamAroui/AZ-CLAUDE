@@ -110,6 +110,29 @@ if (fs.existsSync(checkpointDir)) {
   } catch (_) {}
 }
 
+// ── Session security summary ──────────────────────────────────────────────────
+const seclogPath = path.join(os.tmpdir(), `.azclaude-seclog-${process.ppid || process.pid}`);
+if (fs.existsSync(seclogPath)) {
+  try {
+    const events = fs.readFileSync(seclogPath, 'utf8')
+      .split('\n').filter(Boolean)
+      .map(l => { try { return JSON.parse(l); } catch (_) { return null; } })
+      .filter(Boolean);
+    const blocks = events.filter(e => e.level === 'block');
+    const warns  = events.filter(e => e.level === 'warn');
+    if (blocks.length > 0 || warns.length > 0) {
+      const b = blocks.length, w = warns.length;
+      process.stdout.write(`\n🔒 Security: ${b} block${b !== 1 ? 's' : ''}, ${w} warning${w !== 1 ? 's' : ''} this session\n`);
+      blocks.forEach(e => process.stdout.write(`  ✗ BLOCKED  [${e.rule}] ${e.target || ''}\n`));
+      const seen = new Set();
+      warns.forEach(e => { if (!seen.has(e.rule)) { seen.add(e.rule); process.stdout.write(`  ⚠ WARNED   [${e.rule}]\n`); } });
+    } else {
+      process.stdout.write('\n🔒 Security: clean session — 0 events\n');
+    }
+    try { fs.unlinkSync(seclogPath); } catch (_) {} // cleanup
+  } catch (_) {}
+}
+
 // ── Reset edit counter so checkpoint reminder starts fresh next session ───────
 const counterPath = path.join(os.tmpdir(), `.azclaude-edit-count-${process.ppid || process.pid}`);
 try { fs.writeFileSync(counterPath, '0'); } catch (_) {}

@@ -178,6 +178,36 @@ if (HOOK_PROFILE !== 'minimal') {
       event: 'complete', seq: seq.join('→')
     });
     fs.appendFileSync(obsPath, obs + '\n');
+
+    // ── Behavioral security: detect dangerous tool sequences ─────────────────
+    // Maintain a security-focused seq separate from the reflex seq.
+    // Stores {tool, file} pairs to detect cross-tool exfiltration patterns.
+    const secSeqPath = path.join(os.tmpdir(), `.azclaude-secseq-${process.ppid || process.pid}`);
+    let secSeq = [];
+    try { secSeq = JSON.parse(fs.readFileSync(secSeqPath, 'utf8')); } catch (_) {}
+    secSeq.push({ tool, file: rel });
+    if (secSeq.length > 5) secSeq = secSeq.slice(-5);
+    try { fs.writeFileSync(secSeqPath, JSON.stringify(secSeq)); } catch (_) {}
+
+    if (secSeq.length >= 2) {
+      const prev = secSeq[secSeq.length - 2];
+      const curr = secSeq[secSeq.length - 1];
+      const CRED = /\.env$|secrets?\.(json|ya?ml)$|credentials?(\.json)?$|id_rsa$|\.pem$/i;
+      // Pattern: Read credential file → Bash or WebFetch
+      if (prev.tool === 'Read' && CRED.test(prev.file || '')
+          && (curr.tool === 'Bash' || curr.tool === 'WebFetch')) {
+        const seclogPath = path.join(os.tmpdir(), `.azclaude-seclog-${process.ppid || process.pid}`);
+        const entry = JSON.stringify({
+          ts: obsTs, hook: 'post-tool-use',
+          rule: 'credential-read-then-exec', level: 'warn',
+          target: `${path.basename(prev.file || '')} → ${curr.tool}`
+        });
+        try { fs.appendFileSync(seclogPath, entry + '\n'); } catch (_) {}
+        process.stderr.write(
+          `\n⚠ SECURITY: Credential file (${path.basename(prev.file || '')}) read then ${curr.tool} — verify no secrets are being transmitted.\n`
+        );
+      }
+    }
     // Auto-truncate: keep last 2000 lines max (prevent unbounded growth)
     try {
       const obsContent = fs.readFileSync(obsPath, 'utf8');
