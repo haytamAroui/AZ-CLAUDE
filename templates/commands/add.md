@@ -18,11 +18,14 @@ Load: shared/tdd.md + shared/completion-rule.md
 
 ---
 
-## Pre-Flight: Constitution + Spec Check
+## Pre-Flight: Constitution + Code Rules + Spec Check
 
 ```bash
 # Check constitution
 [ -f .claude/constitution.md ] && echo "constitution=found" || echo "no constitution"
+
+# Check coding contract
+[ -f .claude/code-rules.md ] && echo "code-rules=found" || echo "no code-rules"
 
 # Check if $ARGUMENTS is a spec file
 [ -f "$ARGUMENTS" ] && grep -q "Acceptance Criteria" "$ARGUMENTS" && echo "spec-mode" || echo "inline-mode"
@@ -31,6 +34,10 @@ Load: shared/tdd.md + shared/completion-rule.md
 **If constitution found:**
 Read `## Non-Negotiables` and `## Required Patterns` before implementing.
 Keep these rules visible throughout Phases 2-4. Flag any implementation choice that would violate them.
+
+**If code-rules found:**
+Read `.claude/code-rules.md` — apply the relevant sections (language, framework, testing, naming) while implementing.
+If a coding choice would violate a rule, flag it before writing the code — do not silently deviate.
 
 **If spec file provided** (e.g., `/add .claude/specs/02-payment.md`):
 - Skip Phase 1 clarification — the spec IS the clarification

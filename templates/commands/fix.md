@@ -14,15 +14,19 @@ Load: shared/tdd.md + shared/completion-rule.md before starting.
 
 ---
 
-## Pre-Flight: Constitution Check
+## Pre-Flight: Constitution + Code Rules Check
 
 ```bash
 [ -f .claude/constitution.md ] && echo "constitution=found" || echo "no constitution"
+[ -f .claude/code-rules.md ] && echo "code-rules=found" || echo "no code-rules"
 ```
 
-If found: read `## Non-Negotiables` before fixing.
+If constitution found: read `## Non-Negotiables` before fixing.
 The fix must not violate a non-negotiable — a "fix" that breaks a project rule is not a fix.
 Flag any conflict explicitly before proceeding to Phase 1.
+
+If code-rules found: read `.claude/code-rules.md`.
+The fix must not introduce violations. If the bug itself was caused by a rule violation, note that in the root-cause checkpoint.
 
 ---
 

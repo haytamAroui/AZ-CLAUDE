@@ -39,6 +39,7 @@ Extended (load command file on use):
   - /analyze: cross-artifact consistency check (ghost milestones, spec vs. code drift)
   - /tasks: dependency graph + parallel wave groups from plan.md
   - /issues: convert plan.md milestones to GitHub Issues
+- Standards: /driven → generates .claude/code-rules.md (coding contract for /add and /fix)
 
 Advanced (Level 5+):
 - /evolve · /debate · /level-up
@@ -52,4 +53,4 @@ When priorities conflict:
 3. {{PRIORITY_3}}
 
 ## Available Commands
-/dream · /setup · /fix · /add · /audit · /test · /blueprint · /evolve · /debate · /snapshot · /persist · /level-up · /ship · /pulse · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect · /hookify · /spec · /clarify · /analyze · /constitute · /tasks · /issues
+/dream · /setup · /fix · /add · /audit · /test · /blueprint · /evolve · /debate · /snapshot · /persist · /level-up · /ship · /pulse · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect · /hookify · /spec · /clarify · /analyze · /constitute · /tasks · /issues · /driven

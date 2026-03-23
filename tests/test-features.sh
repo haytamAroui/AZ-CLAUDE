@@ -1151,7 +1151,7 @@ check_file "install: agent-creator scaffold script"      "$IDIR/.claude/skills/a
 check_file "install: agent-creator references"           "$IDIR/.claude/skills/agent-creator/references/agent-engineering-guide.md"
 check_file "install: agent-creator examples"             "$IDIR/.claude/skills/agent-creator/examples/sample-agent.md"
 INSTALLED=$(ls "$IDIR/.claude/commands/" | wc -l | tr -d ' ')
-EXPECTED_CMDS=33
+EXPECTED_CMDS=34
 if [ "$INSTALLED" -eq "$EXPECTED_CMDS" ]; then
   echo "  ✓ install: all $EXPECTED_CMDS commands present"
   PASS=$((PASS + 1))
@@ -1829,7 +1829,7 @@ check "stop: checkpoint prune deletes old files"      "templates/hooks/stop.js" 
 # ─── Cross-surface sync: every command registered in all 3 surfaces ──────────
 echo ""
 echo "─── Cross-surface sync ───"
-for CMD_NAME in clarify spec analyze constitute tasks issues; do
+for CMD_NAME in clarify spec analyze constitute tasks issues driven; do
   check "cross-surface: $CMD_NAME in EXTENDED_COMMANDS (cli.js)"  "bin/cli.js"              "$CMD_NAME"
   check "cross-surface: $CMD_NAME in Available Commands (CLAUDE.md template)" "templates/CLAUDE.md" "$CMD_NAME"
   check_file "cross-surface: $CMD_NAME template file exists"       "$CMD/$CMD_NAME.md"
@@ -1917,6 +1917,27 @@ check      "issues: writes issue links back to plan.md" "$ISS" "plan\.md"
 check      "issues: creates azclaude label"            "$ISS" "azclaude.*label\|label.*azclaude"
 check      "issues: no delete/close existing"          "$ISS" "Do not delete\|Do not.*close"
 check      "issues: dedup check"                       "$ISS" "already.*issue\|existing.*issue\|Skipped.*already"
+
+# ─── /driven command ──────────────────────────────────────────────────────────
+echo ""
+echo "─── /driven ───"
+DRV="$CMD/driven.md"
+check_file "driven: command file exists"                  "$DRV"
+check      "driven: generates .claude/code-rules.md"      "$DRV" "code-rules\.md"
+check      "driven: 6-question interview"                 "$DRV" "Q1\|Q2\|Q3\|Q4\|Q5\|Q6"
+check      "driven: uses AskUserQuestion"                 "$DRV" "AskUserQuestion"
+check      "driven: DO/DO NOT format"                     "$DRV" "DO NOT\|DO:"
+check      "driven: stack detection"                      "$DRV" "stack\|Stack"
+check      "driven: constitution conflict check"          "$DRV" "constitution\.md\|constitution=found"
+check      "driven: update flow"                         "$DRV" "update"
+check      "driven: Default option in questions"          "$DRV" "Default"
+check      "driven: suggest commit not run it"            "$DRV" "Suggested commit\|git add.*code-rules"
+check      "driven: precedence hierarchy"                 "$DRV" "constitution.*wins\|governance wins\|Precedence"
+check      "driven: max rules per section"                "$DRV" "Max 8\|max 8\|8 rules"
+check      "driven: show subcommand"                      "$DRV" "show"
+check      "driven: in EXTENDED_COMMANDS (cli.js)"        "bin/cli.js" "driven"
+check      "/add: reads code-rules pre-flight"            "$CMD/add.md" "code-rules=found\|code-rules\.md"
+check      "/fix: reads code-rules pre-flight"            "$CMD/fix.md" "code-rules=found\|code-rules\.md"
 
 # ─── Feature-scoped dirs ──────────────────────────────────────────────────────
 echo ""
