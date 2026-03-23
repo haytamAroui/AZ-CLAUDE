@@ -1,5 +1,33 @@
 # Security Details — Full Reference
 
+## Code Vulnerability Patterns (pre-tool-use.js)
+
+AZCLAUDE's PreToolUse hook scans all Edit/Write/MultiEdit operations against these patterns.
+Warnings → stderr (write proceeds). Secrets → exit 2 (write blocked).
+
+| ID | Pattern | Language | Risk | Action |
+|----|---------|----------|------|--------|
+| `gh-actions-injection` | `${{ github.event.` | YAML | Command injection via untrusted event data | Warn |
+| `child-process-exec` | `child_process.exec(` | Node.js | Command injection (shell=true) | Warn |
+| `new-function` | `new Function(` | JS/TS | Dynamic code execution | Warn |
+| `eval` | `eval(` | JS/TS/Python | Code injection | Warn |
+| `dangerously-set-inner-html` | `dangerouslySetInnerHTML` | React/JSX | XSS | Warn |
+| `dom-xss` | `document.write(` / `.innerHTML =` | JS/TS | DOM XSS | Warn |
+| `pickle-deserialization` | `pickle.load(` / `pickle.loads(` | Python | Arbitrary code execution | Warn |
+| `os-system` | `os.system(` | Python | Command injection | Warn |
+| `hardcoded-secret` | AWS/GH/GL/Slack/npm/GCP/Stripe/SendGrid/PEM key tokens | Any | Credential exposure | **Block** |
+
+**Fix guidance per pattern:**
+- `child-process-exec` → use `execFile()` or `spawnSync(['cmd', ['arg1']])` (no shell interpolation)
+- `eval` / `new Function` → use `JSON.parse()` for data; avoid string→code entirely
+- `dangerouslySetInnerHTML` / `dom-xss` → use `textContent` or sanitize with DOMPurify
+- `pickle.*` → use `json.loads()` for serialization; never unpickle external data
+- `os.system` → use `subprocess.run(['cmd', 'arg1'], shell=False)`
+- `gh-actions-injection` → store event data in env vars before using in `run:` steps
+- `hardcoded-secret` → use environment variables (`process.env.MY_SECRET` / `os.environ['MY_SECRET']`)
+
+---
+
 ## Path Sanitization
 File paths with shell metacharacters can cause command injection in hooks.
 
