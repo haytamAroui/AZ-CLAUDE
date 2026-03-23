@@ -79,11 +79,11 @@ Intercepts all Bash tool calls before execution.
 ### Pre-Tool-Use: Read Gate
 
 Warns when Claude reads files matching credential patterns:
-`.env`, `.env.*`, `secrets.json`, `secrets.yaml`, `credentials.json`, `id_rsa`, `.pem`, `.p12`, `.pfx`, `.keystore`
+`.env`, `.env.*`, `secrets.json`, `secrets.yaml`, `credentials.json`, `id_rsa`, `id_ed25519`, `id_ecdsa`, `id_dsa`, `.pem`, `.p12`, `.pfx`, `.keystore`
 
 Deduplicated per session — one warning per file, not per read.
 
-### Pre-Tool-Use: Write Gate (14 rules)
+### Pre-Tool-Use: Write Gate (15 rules)
 
 Scans all Edit/Write/MultiEdit content before writing.
 
@@ -102,6 +102,7 @@ Scans all Edit/Write/MultiEdit content before writing.
 | `yaml-unsafe-load` | `yaml.load(` | Warn |
 | `path-traversal` | `../` in file paths | Warn |
 | `prompt-injection-write` | `ignore previous instructions` / `{"role":"user","content":` | Warn |
+| `subprocess-shell-true` | `subprocess.run(..., shell=True)` / `subprocess.Popen(..., shell=True)` | Warn |
 | `hardcoded-secret` | AWS/GH/GL/Slack/npm/GCP/Stripe/SendGrid/PEM key tokens | **Block** (exit 2) |
 
 Patterns derived from: Anthropic security-guidance plugin, OWASP Top 10, CVE-2025-54794/54795.

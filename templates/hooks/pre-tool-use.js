@@ -77,7 +77,7 @@ if (toolName === 'Bash' && command) {
 
 // ── Gate: Read tool — warn on credential file access ─────────────────────────
 if (toolName === 'Read' && filePath) {
-  const CRED_FILE = /\.env$|\.env\.\w+$|secrets?\.(json|ya?ml)$|credentials?(\.json)?$|id_rsa$|\.pem$|\.p12$|\.pfx$|\.keystore$/i;
+  const CRED_FILE = /\.env$|\.env\.\w+$|secrets?\.(json|ya?ml)$|credentials?(\.json)?$|id_rsa$|id_ed25519$|id_ecdsa$|id_dsa$|\.pem$|\.p12$|\.pfx$|\.keystore$/i;
   if (CRED_FILE.test(filePath)) {
     const rel = path.relative(process.cwd(), path.resolve(filePath));
     if (!rel.startsWith('..')) {
@@ -189,6 +189,12 @@ const RULES = [
     id:      'prompt-injection-write',
     test:    /ignore\s+(?:all\s+)?previous\s+instructions|disregard\s+(?:all\s+)?previous|{"role"\s*:\s*"(?:user|system)"\s*,\s*"content"\s*:/i,
     message: 'Prompt injection pattern detected in file being written — this content could hijack AI agent context when read. Matches known CVE-2025-54794 attack vector. Review before proceeding.',
+    block:   false,
+  },
+  {
+    id:      'subprocess-shell-true',
+    test:    /subprocess\.(run|Popen|call|check_output)\s*\([^)]*shell\s*=\s*True/,
+    message: 'subprocess with shell=True detected — command injection via shell metacharacters. Use list args with shell=False instead.',
     block:   false,
   },
   {

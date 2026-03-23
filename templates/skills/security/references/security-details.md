@@ -48,7 +48,7 @@ Levels: `block` (exit 2 — Claude Code refuses the action) · `warn` (exit 0 �
 
 ### Read Gate Rules (pre-tool-use.js)
 
-Files matching: `.env`, `.env.*`, `secrets.json`, `secrets.yaml`, `credentials.json`, `id_rsa`, `.pem`, `.p12`, `.pfx`, `.keystore`
+Files matching: `.env`, `.env.*`, `secrets.json`, `secrets.yaml`, `credentials.json`, `id_rsa`, `id_ed25519`, `id_ecdsa`, `id_dsa`, `.pem`, `.p12`, `.pfx`, `.keystore`
 → Warn once per session per file (deduplicated).
 
 ### Behavioral Sequence Detection (post-tool-use.js)
@@ -87,6 +87,7 @@ Scans all Edit/Write/MultiEdit operations. Warnings → stderr. Secrets → exit
 | `yaml-unsafe-load` | `yaml.load(` | Python | Arbitrary code execution | Warn |
 | `path-traversal` | `../` in file paths | Any | Arbitrary file read/write | Warn |
 | `prompt-injection-write` | `ignore previous instructions` / `{"role":"user","content":` | Any | AI context hijack (CVE-2025-54794) | Warn |
+| `subprocess-shell-true` | `subprocess.run(..., shell=True)` / `subprocess.Popen(..., shell=True)` | Python | Command injection via shell metacharacters | Warn |
 | `hardcoded-secret` | AWS/GH/GL/Slack/npm/GCP/Stripe/SendGrid/PEM key tokens | Any | Credential exposure | **Block** |
 
 **Fix guidance per pattern:**
@@ -94,7 +95,7 @@ Scans all Edit/Write/MultiEdit operations. Warnings → stderr. Secrets → exit
 - `eval` / `new Function` → use `JSON.parse()` for data; avoid string→code entirely
 - `dangerouslySetInnerHTML` / `dom-xss` → use `textContent` or sanitize with DOMPurify
 - `pickle.*` → use `json.loads()` for serialization; never unpickle external data
-- `os.system` → use `subprocess.run(['cmd', 'arg1'], shell=False)`
+- `os.system` / `subprocess-shell-true` → use `subprocess.run(['cmd', 'arg1'], shell=False)`
 - `gh-actions-injection` → store event data in env vars before using in `run:` steps
 - `weak-crypto` → use `crypto.randomBytes()` / `secrets.token_bytes()`, SHA-256+, AES-GCM
 - `prototype-pollution` → use `Object.create(null)`, `Object.freeze()`, avoid dynamic key assignment

@@ -45,14 +45,15 @@ All hooks share `/tmp/.azclaude-seclog-{PID}` (JSONL). Session summary printed a
 
 ## Read Gate (pre-tool-use.js)
 Warns (once per session) when Claude reads credential files:
-`.env`, `.env.*`, `secrets.json`, `secrets.yaml`, `credentials.json`, `id_rsa`, `.pem`, `.p12`, `.pfx`, `.keystore`
+`.env`, `.env.*`, `secrets.json`, `secrets.yaml`, `credentials.json`, `id_rsa`, `id_ed25519`, `id_ecdsa`, `id_dsa`, `.pem`, `.p12`, `.pfx`, `.keystore`
 
-## Write Gate — 14 Rules (pre-tool-use.js)
+## Write Gate — 15 Rules (pre-tool-use.js)
 Scans all Edit/Write content before writing. Secrets → **Block** (exit 2). Others → Warn.
 
 Key patterns: `eval(`, `child_process.exec(`, `dangerouslySetInnerHTML`, `pickle.load(`,
-`os.system(`, `MD5`/`SHA1`/`Math.random()`, `__proto__`, `yaml.load(`, `../` traversal,
-`ignore previous instructions`, AWS/GH/GL/Slack/npm/GCP/Stripe/SendGrid/PEM tokens.
+`os.system(`, `subprocess(..., shell=True)`, `MD5`/`SHA1`/`Math.random()`, `__proto__`,
+`yaml.load(`, `../` traversal, `ignore previous instructions`,
+AWS/GH/GL/Slack/npm/GCP/Stripe/SendGrid/PEM tokens.
 
 For fix guidance per pattern: `references/security-details.md`
 
