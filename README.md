@@ -807,11 +807,11 @@ Run `/level-up` at any time to see your current level and build the next one.
 
 ## Verified
 
-1407 tests. Every template, command, capability, agent, hook, and CLI feature verified.
+1455 tests. Every template, command, capability, agent, hook, and CLI feature verified.
 
 ```bash
 bash tests/test-features.sh
-# Results: 1407 passed, 0 failed, 1407 total
+# Results: 1455 passed, 0 failed, 1455 total
 ```
 
 ---
