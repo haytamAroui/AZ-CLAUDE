@@ -117,7 +117,7 @@ npx azclaude-copilot@latest
 ```
 
 That's it. One command, no flags. Auto-detects whether this is a fresh install or an upgrade:
-- **First time** → full install (34 commands, 4 hooks, 15 agents, 9 skills, memory, reflexes)
+- **First time** → full install (34 commands, 4 hooks, 15 agents, 10 skills, memory, reflexes)
 - **Already installed, older version** → auto-upgrades everything to latest templates
 - **Already up to date** → verifies, no overwrites
 
@@ -135,7 +135,7 @@ npx azclaude-copilot@latest doctor   # 32 checks — verify everything is wired 
 .claude/
 ├── CLAUDE.md                 ← dispatch table: conventions, stack, routing
 ├── commands/                 ← 33 slash commands (/add, /fix, /copilot, /spec, /sentinel...)
-├── skills/                   ← 9 skills (test-first, security, architecture-advisor, frontend-design...)
+├── skills/                   ← 10 skills (test-first, security, architecture-advisor, frontend-design...)
 ├── agents/                   ← 15 agents (orchestrator, spec-reviewer, constitution-guard...)
 ├── capabilities/             ← 37 files, lazy-loaded via manifest.md (~380 tokens/task)
 ├── hooks/
@@ -807,11 +807,11 @@ Run `/level-up` at any time to see your current level and build the next one.
 
 ## Verified
 
-1462 tests. Every template, command, capability, agent, hook, and CLI feature verified.
+1473 tests. Every template, command, capability, agent, hook, and CLI feature verified.
 
 ```bash
 bash tests/test-features.sh
-# Results: 1462 passed, 0 failed, 1462 total
+# Results: 1473 passed, 0 failed, 1473 total
 ```
 
 ---

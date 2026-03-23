@@ -1,7 +1,7 @@
 # AZCLAUDE
 
 ## Identity
-AI coding environment — 34 commands, 9 skills, 15 agents, memory, reflexes, evolution.
+AI coding environment — 34 commands, 10 skills, 15 agents, memory, reflexes, evolution.
 Install once, works on any stack. Copilot mode (/copilot) enables full autonomous building.
 Domain: Developer tooling | Stack: Node.js CLI, Markdown templates | Scale: STANDARD
 
@@ -22,7 +22,7 @@ bin/cli.js              — CLI installer (inherited from AZCLAUDE)
 bin/copilot.js          — outer loop runner (restarts Claude Code sessions until done)
 templates/CLAUDE.md     — template installed into user projects
 templates/commands/     — command files (copilot, reflexes, etc.)
-templates/skills/       — 9 SKILL.md files with references/
+templates/skills/       — 10 SKILL.md files with references/
 templates/capabilities/ — manifest + shared + level-builders + evolution + intelligence
 templates/agents/       — orchestrator-init + orchestrator + loop-controller + code-reviewer + test-writer + cc-template-author + cc-cli-integrator + cc-test-maintainer + milestone-builder + problem-architect + security-auditor + spec-reviewer + constitution-guard
 templates/scripts/      — env-scan.sh (JSON output, ~200 tokens)

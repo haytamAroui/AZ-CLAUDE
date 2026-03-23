@@ -1,6 +1,6 @@
 # AZCLAUDE -- Complete User Guide
 
-> Version 0.4.32 · 1462 tests passing · AI coding environment
+> Version 0.4.33 · 1473 tests passing · AI coding environment
 
 ---
 
@@ -32,7 +32,7 @@
 
 ## What AZCLAUDE Is
 
-AZCLAUDE is an AI coding environment. 34 commands, 9 skills, 15 agents, memory, reflexes, evolution. Install once, works on any stack. Copilot mode builds autonomously across sessions using a three-tier intelligent team (orchestrator → problem-architect → milestone-builder). Zero human input after the first message.
+AZCLAUDE is an AI coding environment. 34 commands, 10 skills, 15 agents, memory, reflexes, evolution. Install once, works on any stack. Copilot mode builds autonomously across sessions using a three-tier intelligent team (orchestrator → problem-architect → milestone-builder). Zero human input after the first message.
 
 The hero feature is **copilot mode**: a Node.js runner (`bin/copilot.js`) that restarts Claude Code sessions in a loop, while the AZCLAUDE environment inside each session decides what to build next, implements it, tests it, commits, and evolves the environment. The runner is stateless and dumb on purpose. All intelligence lives in the templates.
 
@@ -78,7 +78,7 @@ npx azclaude-copilot@latest
 ```
 
 One command, no flags. Auto-detects the right mode:
-- **First time** → full install (34 commands, 9 skills, 15 agents, 4 hooks, memory, reflexes, evolution)
+- **First time** → full install (34 commands, 10 skills, 15 agents, 4 hooks, memory, reflexes, evolution)
 - **Already installed, older version** → auto-upgrades all templates to latest
 - **Already up to date** → verifies, no overwrites
 
