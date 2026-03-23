@@ -185,6 +185,17 @@ If constitution missing:
     Copilot checks this before every milestone implementation.
 ```
 
+If no coding rules found:
+```bash
+[ -f .claude/code-rules.md ] && echo "code-rules=found" || echo "code-rules=missing"
+```
+```
+  · No coding rules contract found.
+    Run: /driven
+    Why: generates .claude/code-rules.md — your project's coding standards.
+    Every /add, /fix, /refactor, /audit, /test, /doc, /blueprint reads this before writing code.
+```
+
 If no specs found:
 ```
   · No feature specs found.
@@ -193,9 +204,9 @@ If no specs found:
     Spec-first workflow: /spec → /clarify → /blueprint → /copilot
 ```
 
-If both exist:
+If all three exist:
 ```
-  ✓ Constitution and specs found. Ready for /copilot.
+  ✓ Constitution, coding rules, and specs found. Ready for /copilot.
 ```
 
 ---

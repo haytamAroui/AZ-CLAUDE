@@ -121,8 +121,14 @@ Report violations only — no code quality feedback until spec is clean.
 If unavailable or empty: skip — proceed to manual checks.
 If returns results: include errors and warnings in the report.
 
+```bash
+[ -f .claude/code-rules.md ] && echo "code-rules=found" || echo "no code-rules"
+```
+
+**If code-rules found:** read `.claude/code-rules.md` — use it as the primary convention checklist for this step (naming, style, testing, git). It overrides generic CLAUDE.md conventions for style questions.
+
 Check:
-- Follows project conventions from CLAUDE.md
+- Follows project conventions from CLAUDE.md (and code-rules.md if present)
 - No security anti-patterns (see shared/security.md)
 - If developer domain: tests exist for new behavior (TDD Iron Law)
 - Minimum necessary complexity — no over-engineering

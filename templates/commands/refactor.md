@@ -18,15 +18,20 @@ Load: shared/completion-rule.md
 
 ---
 
-## Pre-Flight: Constitution Check
+## Pre-Flight: Constitution + Code Rules Check
 
 ```bash
 [ -f .claude/constitution.md ] && echo "constitution=found" || echo "no constitution"
+[ -f .claude/code-rules.md ] && echo "code-rules=found" || echo "no code-rules"
 ```
 
-If found: read `## Architectural Commitments` and `## Required Patterns`.
+If constitution found: read `## Architectural Commitments` and `## Required Patterns`.
 Refactoring often changes structure — ensure the refactor moves TOWARD required patterns, not away from them.
 If the refactor would conflict with an architectural commitment → flag before starting Phase 1. Do not proceed silently.
+
+If code-rules found: read `.claude/code-rules.md` — the refactor must move code TOWARD these rules, not away from them.
+The style, naming, and architecture sections define the TARGET state. Use them as the direction of the refactor.
+If the current code violates a rule, the refactor is an opportunity to fix it — note the correction explicitly.
 
 ---
 

@@ -16,6 +16,18 @@ $ARGUMENTS
 
 ---
 
+## Pre-Flight: Code Rules Check
+
+```bash
+[ -f .claude/code-rules.md ] && echo "code-rules=found" || echo "no code-rules"
+```
+
+If code-rules found: read the `## Testing` section before writing or interpreting any tests.
+Apply: TDD philosophy (mandatory / optional / test-after), test naming convention, coverage targets.
+If writing new tests: follow the naming pattern from code-rules, not generic conventions.
+
+---
+
 ## Step 1: IDE Diagnostics First
 
 Use `mcp__ide__getDiagnostics` if available.

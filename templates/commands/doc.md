@@ -16,6 +16,18 @@ $ARGUMENTS
 
 ---
 
+## Pre-Flight: Code Rules Check
+
+```bash
+[ -f .claude/code-rules.md ] && echo "code-rules=found" || echo "no code-rules"
+```
+
+If code-rules found: read the `## Documentation` section.
+It defines the required doc style (JSDoc on all public functions / inline comments only / none).
+This overrides inferred style — code-rules is the authoritative answer for this project.
+
+---
+
 ## Phase 1: Detect Scope
 
 If $ARGUMENTS is blank, use **AskUserQuestion**:

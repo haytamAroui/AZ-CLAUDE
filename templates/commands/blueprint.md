@@ -101,17 +101,23 @@ State the risk level. If risk = high → recommend `EnterWorktree` during implem
 
 ---
 
-## Step 3b: Constitution Check + Task Graph
+## Step 3b: Constitution + Code Rules Check + Task Graph
 
 After writing the plan (Step 3), check:
 ```bash
 [ -f .claude/constitution.md ] && echo "constitution=found" || echo "no constitution"
+[ -f .claude/code-rules.md ] && echo "code-rules=found" || echo "no code-rules"
 ```
 
 If constitution found → scan plan steps against non-negotiables:
 - Read `## Non-Negotiables` from constitution.md
 - Flag any plan step that could violate a rule
 - Add a note to flagged steps: `⚠ Constitution check: may conflict with "{rule}" — verify before implementing`
+
+If code-rules found → read `## Architecture` section:
+- The plan must respect the declared architecture pattern (Clean Architecture / DDD / MVC / etc.)
+- If a plan step would introduce a pattern that conflicts with the architecture rule — flag it
+- Add note: `⚠ Code rules: this step should follow {architecture pattern} — verify approach before implementing`
 
 Then run `/tasks` to show dependency waves:
 ```
