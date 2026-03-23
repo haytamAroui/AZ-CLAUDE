@@ -1,10 +1,10 @@
 ---
 name: security-auditor
 description: >
-  Autonomous security scanner for Claude Code environments. Covers 102 rules
-  across 5 categories: secrets (14), permissions (10), hooks (34), MCP servers (23),
-  agent configs (25). Read-only — never modifies files. Returns a structured
-  Security Report with score (0–100), grade (A–F), and per-finding file:line refs.
+  Autonomous security scanner for Claude Code environments. Covers 111 rules
+  across 6 categories: secrets (14), permissions (10), hooks (34), MCP servers (23),
+  agent configs (25), supply chain (5). Read-only — never modifies files. Returns a
+  structured Security Report with score (0–100), grade (A–F), and per-finding file:line refs.
   Spawned by /sentinel and /ship risk gate. All checks are native Claude Code tools —
   no npm install, no third-party binaries.
   Use when: security scan, before ship, check environment, audit hooks, check MCP,
@@ -281,13 +281,20 @@ Score: start 20. BLOCKED: −8. HIGH: −3. MEDIUM: −1. LOW: −0.5. Floor: 0.
 
 ### Category 5 — Agent Config Review (25 rules, weight: 15 pts)
 
-Read all agent `.md` files in `.claude/agents/` and `templates/agents/`.
+Read agent files **and all AI context surfaces** — these files are read by Claude and can carry injected instructions.
 
 ```bash
+# Agent definitions
 for f in .claude/agents/*.md templates/agents/*.md 2>/dev/null; do
   echo "=== $f ===" && cat "$f"
 done
+# Context-injection surfaces (CVE-2025-54794 / CVE-2025-54795 attack vectors)
+cat .clinerules 2>/dev/null && echo "--- .clinerules above ---"
+cat CLAUDE.md 2>/dev/null | head -100 && echo "--- CLAUDE.md (first 100 lines) above ---"
+ls .claude/commands/*.md 2>/dev/null | head -20
 ```
+
+Apply all A1–A25 rules to every file in the scan (agents + `.clinerules` + `CLAUDE.md` + `.claude/commands/*.md`).
 
 **Sub-group A: Prompt Injection (8 rules)**
 
@@ -340,6 +347,55 @@ done
 | A25 | `send.*credentials\|transmit.*key` | BLOCKED |
 
 Score: start 15. BLOCKED: −5. HIGH: −2. MEDIUM: −1. Floor: 0.
+
+---
+
+### Category 6 — Supply Chain Integrity (5 rules, advisory — findings only, no score deduction)
+
+Supply chain findings appear in the report as MEDIUM/HIGH/BLOCKED but do not reduce the 100-point score.
+This keeps the scoring model stable while surfacing real dependency risks.
+
+```bash
+# Lockfile check
+ls package-lock.json yarn.lock poetry.lock Pipfile.lock 2>/dev/null || echo "no_lockfile"
+# Loose pin check (Node.js)
+[ -f package.json ] && node -e "
+  const p=require('./package.json');
+  const d={...p.dependencies,...p.devDependencies};
+  const loose=Object.entries(d).filter(([,v])=>/[\^\~]/.test(v));
+  console.log('loose_pins='+loose.length);
+  loose.forEach(([k,v])=>console.log('  '+k+': '+v));
+" 2>/dev/null
+# npm audit (zero-dep — bundled with npm)
+command -v npm >/dev/null 2>&1 && npm audit --json 2>/dev/null \
+  | node -e "
+    let d=''; process.stdin.on('data',c=>d+=c).on('end',()=>{
+      try {
+        const r=JSON.parse(d);
+        const v=r.metadata&&r.metadata.vulnerabilities||{};
+        console.log('audit_critical='+( v.critical||0));
+        console.log('audit_high='+(v.high||0));
+        console.log('audit_moderate='+( v.moderate||0));
+      } catch(_){ console.log('audit=parse_error'); }
+    });
+  " || echo "npm_audit=unavailable"
+```
+
+| Rule | Check | Severity |
+|---|---|---|
+| SC1 | `package.json` present but no lockfile (`package-lock.json`, `yarn.lock`, `poetry.lock`) | MEDIUM |
+| SC2 | >5 loose version pins (`^` or `~`) in `package.json` | LOW |
+| SC3 | `npm audit` reports CRITICAL vulnerabilities | HIGH |
+| SC4 | `npm audit` reports HIGH vulnerabilities | MEDIUM |
+| SC5 | `.clinerules` or `CLAUDE.md` contains A1/A4/A7/A8 injection patterns | BLOCKED |
+
+For SC5, run:
+```bash
+grep -in "ignore.*previous.*instructions\|disregard.*rules\|DAN mode\|override.*safety" \
+  .clinerules CLAUDE.md 2>/dev/null
+```
+
+Include supply chain findings in the report under "### SUPPLY CHAIN (advisory)" section.
 
 ---
 

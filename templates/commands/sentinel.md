@@ -7,7 +7,7 @@ description: >
   Triggers on: "security scan", "audit environment", "check my hooks",
   "is my setup safe", "scan for secrets", "check permissions",
   "audit agents", "check mcp", "security check", "sentinel".
-argument-hint: "[--hooks | --mcp | --agents | --secrets | --all (default)]"
+argument-hint: "[--hooks | --mcp | --agents | --secrets | --supply-chain | --all (default)]"
 disable-model-invocation: true
 allowed-tools: Read, Grep, Bash, Glob
 ---
@@ -44,11 +44,12 @@ Each layer is scored independently. Final score = weighted average (0–100).
 Grade: A ≥ 90 · B ≥ 75 · C ≥ 60 · D ≥ 45 · F < 45
 
 Parse $ARGUMENTS:
-- `--hooks`   → run Layer 1 + 2 only
-- `--mcp`     → run Layer 3 only
-- `--agents`  → run Layer 4 only
-- `--secrets` → run Layer 5 only
-- blank / `--all` → run all five layers
+- `--hooks`        → run Layer 1 + 2 only
+- `--mcp`          → run Layer 3 only
+- `--agents`       → run Layer 4 only
+- `--secrets`      → run Layer 5 only
+- `--supply-chain` → run Layer 6 only
+- blank / `--all`  → run all six layers
 
 ---
 
@@ -162,10 +163,17 @@ For each agent file found, check the system prompt / instructions for:
 - **Base64 blocks > 200 chars** → MEDIUM — encoded payload
 - Write-permitted reviewer agents → MEDIUM — violates least-privilege
 
+Also scan **all AI context surfaces** for the same injection patterns (CVE-2025-54794/54795):
 ```bash
+# Scan agents
 grep -rl "ignore.*previous\|you are now\|curl.*|.*bash" .claude/agents/ 2>/dev/null
 grep -rl "ignore.*previous\|you are now\|curl.*|.*bash" templates/agents/ 2>/dev/null
+# Scan context-injection surfaces
+grep -in "ignore.*previous.*instructions\|disregard.*rules\|DAN mode\|override.*safety" \
+  .clinerules CLAUDE.md .claude/commands/*.md 2>/dev/null
 ```
+
+Any injection pattern found in `.clinerules`, `CLAUDE.md`, or `.claude/commands/*.md` → **BLOCK**
 
 Score: start at 15, subtract HIGH −10, MEDIUM −4, LOW −1 (floor: 0)
 
@@ -209,6 +217,42 @@ Any hardcoded secret → **BLOCK** — do not allow ship/deploy until resolved.
 
 ---
 
+## Layer 6 — Supply Chain Integrity (advisory — no score deduction)
+
+Findings here appear in WARNINGS but do not reduce the total score.
+
+```bash
+# Lockfile check
+ls package-lock.json yarn.lock poetry.lock Pipfile.lock 2>/dev/null || echo "no_lockfile=WARN"
+
+# Loose version pins (Node.js)
+[ -f package.json ] && node -e "
+  const p=require('./package.json');
+  const d={...p.dependencies,...p.devDependencies};
+  const loose=Object.entries(d||{}).filter(([,v])=>/[\^\~]/.test(v));
+  console.log('loose_pins='+loose.length);
+" 2>/dev/null
+
+# npm audit (zero external deps — bundled with npm)
+command -v npm >/dev/null 2>&1 && npm audit --json 2>/dev/null \
+  | node -e "
+    let d=''; process.stdin.on('data',c=>d+=c).on('end',()=>{
+      try {
+        const v=(JSON.parse(d).metadata||{}).vulnerabilities||{};
+        console.log('audit_critical='+(v.critical||0)+' audit_high='+(v.high||0));
+      } catch(_){ console.log('audit=unavailable'); }
+    });
+  " || echo "npm_audit=unavailable"
+```
+
+Flag:
+- No lockfile + `package.json` present → MEDIUM — supply chain attack surface
+- >5 loose pins (`^`/`~`) → LOW — dependency version drift risk
+- `npm audit` CRITICAL > 0 → HIGH — known exploitable vulnerability in deps
+- `npm audit` HIGH > 0 → MEDIUM — known high-severity vulnerability in deps
+
+---
+
 ## Scoring & Report
 
 Calculate total score:
@@ -223,11 +267,12 @@ Output format:
 ║          SENTINEL — Environment Security         ║
 ╚══════════════════════════════════════════════════╝
 
-Layer 1 — Hook Integrity       ··/25   [status]
-Layer 2 — Permission Audit     ··/20   [status]
-Layer 3 — MCP Server Scan      ··/20   [status]
-Layer 4 — Agent Config Review  ··/15   [status]
-Layer 5 — Secrets Scan         ··/20   [status]
+Layer 1 — Hook Integrity         ··/25   [status]
+Layer 2 — Permission Audit       ··/20   [status]
+Layer 3 — MCP Server Scan        ··/20   [status]
+Layer 4 — Agent Config Review    ··/15   [status]
+Layer 5 — Secrets Scan           ··/20   [status]
+Layer 6 — Supply Chain           advisory [status]
 ─────────────────────────────────────────────────
 Total Score:  ··/100   Grade: [A/B/C/D/F]
 

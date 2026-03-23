@@ -125,6 +125,12 @@ const RULES = [
     block:   false,
   },
   {
+    id:      'prompt-injection-write',
+    test:    /ignore\s+(?:all\s+)?previous\s+instructions|disregard\s+(?:all\s+)?previous|{"role"\s*:\s*"(?:user|system)"\s*,\s*"content"\s*:/i,
+    message: 'Prompt injection pattern detected in file being written — this content could hijack AI agent context when read. Matches known CVE-2025-54794 attack vector. Review before proceeding.',
+    block:   false,
+  },
+  {
     id:      'hardcoded-secret',
     test:    /AKIA[A-Z0-9]{16}|sk-[a-zA-Z0-9]{20,}|ghp_[A-Za-z0-9]{36}|glpat-[A-Za-z0-9_-]{20}|xoxb-[0-9]|xoxp-[0-9]|npm_[A-Za-z0-9]{36}|AIza[0-9A-Za-z_-]{35}|sk_live_[0-9a-zA-Z]{24}|SG\.[A-Za-z0-9_-]{22}\.|-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY/,
     message: 'Hardcoded secret pattern detected',
