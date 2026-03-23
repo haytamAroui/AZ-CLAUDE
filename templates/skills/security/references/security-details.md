@@ -1,9 +1,76 @@
 # Security Details — Full Reference
 
-## Code Vulnerability Patterns (pre-tool-use.js)
+## 4-Hook Security Pipeline Architecture
 
-AZCLAUDE's PreToolUse hook scans all Edit/Write/MultiEdit operations against these patterns.
-Warnings → stderr (write proceeds). Secrets → exit 2 (write blocked).
+AZCLAUDE uses Claude Code's native 4-hook infrastructure as a runtime security pipeline.
+Zero external dependencies. All state shared via `/tmp/.azclaude-seclog-{PID}` (JSONL).
+
+```
+User types prompt
+       ↓
+[user-prompt.js]  — scans EVERY prompt for injection attempts (before session gate)
+       ↓
+Claude plans & calls tools
+       ↓
+[pre-tool-use.js] — intercepts 3 tool types before execution:
+  Bash  → blocks curl|bash RCE, destructive rm; warns npm install, env var echo
+  Read  → warns on credential file access (.env, secrets.json, id_rsa, .pem)
+  Write → 14 code vulnerability pattern rules (see table below)
+       ↓                          ↓
+[post-tool-use.js]         /tmp/.azclaude-seclog-{PID}
+  behavioral sequence             ↑ shared session event log
+  Read(.env) → Bash = warn ───────┘ (all 4 hooks write here)
+       ↓
+[stop.js] — reads seclog, prints session summary, cleans up
+  "🔒 Security: 0 blocks, 2 warnings this session"
+```
+
+### Session Security Log Format
+
+Each hook appends JSON lines to `/tmp/.azclaude-seclog-{PID}`:
+```json
+{"ts":"2026-03-23T17:00:00Z","hook":"pre-tool-use","rule":"hardcoded-secret","level":"block","target":"config.js"}
+{"ts":"2026-03-23T17:01:00Z","hook":"post-tool-use","rule":"credential-read-then-exec","level":"warn","target":".env → Bash"}
+{"ts":"2026-03-23T17:02:00Z","hook":"user-prompt","rule":"prompt-injection-attempt","level":"warn","target":"ignore previous..."}
+```
+
+Levels: `block` (exit 2 — Claude Code refuses the action) · `warn` (exit 0 — proceeds with warning)
+
+### Bash Gate Rules (pre-tool-use.js)
+
+| ID | Pattern | Action |
+|----|---------|--------|
+| `rce-curl-pipe` | `curl ... \| bash` | **Block** |
+| `rce-wget-pipe` | `wget ... \| bash` | **Block** |
+| `destructive-rm` | `rm -rf /` or `rm -rf ~` | **Block** |
+| `shadow-npm-install` | `npm install` without `--ignore-scripts` | Warn |
+| `env-var-echo` | `echo $SECRET` / `echo $TOKEN` | Warn |
+
+### Read Gate Rules (pre-tool-use.js)
+
+Files matching: `.env`, `.env.*`, `secrets.json`, `secrets.yaml`, `credentials.json`, `id_rsa`, `.pem`, `.p12`, `.pfx`, `.keystore`
+→ Warn once per session per file (deduplicated).
+
+### Behavioral Sequence Detection (post-tool-use.js)
+
+| Sequence | Detection | Action |
+|----------|-----------|--------|
+| `Read(.env) → Bash` | Credential file read then shell execution | Warn |
+| `Read(.env) → WebFetch` | Credential file read then external HTTP | Warn |
+
+### Prompt Injection Detection (user-prompt.js)
+
+Fires on **every** user prompt (not just the first). Patterns:
+- `ignore [all] previous instructions`
+- `disregard [all] previous instructions`
+- `override your [rules/instructions/safety]`
+- `you are now [a new/different/unrestricted]`
+
+---
+
+## Code Vulnerability Patterns (pre-tool-use.js Write gate)
+
+Scans all Edit/Write/MultiEdit operations. Warnings → stderr. Secrets → exit 2 (blocked).
 
 | ID | Pattern | Language | Risk | Action |
 |----|---------|----------|------|--------|
@@ -19,6 +86,7 @@ Warnings → stderr (write proceeds). Secrets → exit 2 (write blocked).
 | `prototype-pollution` | `__proto__`, `constructor.prototype` | JS/TS | Object state corruption / RCE | Warn |
 | `yaml-unsafe-load` | `yaml.load(` | Python | Arbitrary code execution | Warn |
 | `path-traversal` | `../` in file paths | Any | Arbitrary file read/write | Warn |
+| `prompt-injection-write` | `ignore previous instructions` / `{"role":"user","content":` | Any | AI context hijack (CVE-2025-54794) | Warn |
 | `hardcoded-secret` | AWS/GH/GL/Slack/npm/GCP/Stripe/SendGrid/PEM key tokens | Any | Credential exposure | **Block** |
 
 **Fix guidance per pattern:**
@@ -32,6 +100,7 @@ Warnings → stderr (write proceeds). Secrets → exit 2 (write blocked).
 - `prototype-pollution` → use `Object.create(null)`, `Object.freeze()`, avoid dynamic key assignment
 - `yaml-unsafe-load` → use `yaml.safe_load()` — always
 - `path-traversal` → use `path.resolve()` + validate result starts with allowed base dir
+- `prompt-injection-write` → review content before writing to files that will be read by AI agents; never embed instruction-like text in project files
 - `hardcoded-secret` → use environment variables (`process.env.MY_SECRET` / `os.environ['MY_SECRET']`)
 
 ---
