@@ -266,7 +266,7 @@ for (let session = 1; session <= maxSessions; session++) {
 
   // Run Claude Code session — retry once on non-timeout failure (API hiccup, rate limit, etc.)
   const claudeArgs = [
-    '--dangerously-skip-permissions',
+    '--enable-auto-mode',
     '-p', prompt,
     '--output-format', 'text',
     ...(deepMode ? ['--model', 'claude-opus-4-6'] : [])

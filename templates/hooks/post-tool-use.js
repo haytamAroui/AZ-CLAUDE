@@ -29,8 +29,9 @@ try {
   toolName   = data.tool_name || '';
   filePath   = data.tool_input?.file_path || data.tool_input?.path || data.tool_input?.command || '';
   // Extract change summary from old_string/new_string diff hint (Edit tool)
-  const oldStr = data.tool_input?.old_string || '';
-  const newStr = data.tool_input?.new_string || '';
+  // MultiEdit: edits[] array — use first edit's new_string
+  const oldStr = data.tool_input?.old_string || data.tool_input?.edits?.[0]?.old_string || '';
+  const newStr = data.tool_input?.new_string || data.tool_input?.edits?.[0]?.new_string || '';
   if (oldStr && newStr) {
     // Summarize: first non-empty line of new content (what was added)
     const firstNew = newStr.split('\n').find(l => l.trim().length > 0) || '';
@@ -50,7 +51,7 @@ const goalsPath = path.join(cfg, 'memory', 'goals.md');
 if (!fs.existsSync(goalsPath)) process.exit(0); // not an AZCLAUDE project
 
 // For non-file tools (Bash, Grep without file_path), still capture observations but skip goals tracking
-const isFileTool = toolName === 'Write' || toolName === 'Edit' || (!toolName && filePath);
+const isFileTool = toolName === 'Write' || toolName === 'Edit' || toolName === 'MultiEdit' || (!toolName && filePath);
 const rel = filePath ? path.relative(process.cwd(), path.resolve(filePath)) : toolName || 'unknown';
 
 if (isFileTool) {
