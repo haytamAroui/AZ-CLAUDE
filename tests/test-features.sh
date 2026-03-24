@@ -1185,7 +1185,7 @@ check_file "install: agent-creator scaffold script"      "$IDIR/.claude/skills/a
 check_file "install: agent-creator references"           "$IDIR/.claude/skills/agent-creator/references/agent-engineering-guide.md"
 check_file "install: agent-creator examples"             "$IDIR/.claude/skills/agent-creator/examples/sample-agent.md"
 INSTALLED=$(ls "$IDIR/.claude/commands/" | wc -l | tr -d ' ')
-EXPECTED_CMDS=36
+EXPECTED_CMDS=37
 if [ "$INSTALLED" -eq "$EXPECTED_CMDS" ]; then
   echo "  ✓ install: all $EXPECTED_CMDS commands present"
   PASS=$((PASS + 1))
@@ -2069,6 +2069,48 @@ check      "milestone-builder: scope violation reporting"      "$ROOT/agents/mil
 check      "template CLAUDE.md: parallel agent rules"          "$ROOT/CLAUDE.md" "Parallel Agent Rules\|parallel.*rules"
 check      "template CLAUDE.md: /parallel in commands"         "$ROOT/CLAUDE.md" "/parallel"
 check      "CLAUDE.md: /parallel in Available Commands"        "CLAUDE.md"  "/parallel"
+
+# ─── /verify command + code-rules system ─────────────────────────────────────
+echo ""
+echo "─── /verify command + code-rules system ───"
+VRF="$CMD/verify.md"
+check_file "/verify: command file exists"                     "$VRF"
+check      "/verify: audits against code-rules.md"           "$VRF" "code-rules\.md"
+check      "/verify: reports violations at file:line"        "$VRF" "file.*line\|{file}.*{line}\|file:line"
+check      "/verify: uses DO NOT rules as search patterns"   "$VRF" "DO NOT\|grep.*DO NOT\|violat"
+check      "/verify: handles missing code-rules (fallback)"  "$VRF" "fallback\|no code-rules\|no.*code-rules"
+check      "/verify: targets git changed files by default"   "$VRF" "git diff.*name-only\|git diff --name"
+check      "/verify: auto-fix offer"                         "$VRF" "auto.fix\|Auto-fix\|Auto.*fix"
+check      "/verify: export report option"                   "$VRF" "verify-report\.md\|export"
+check      "/verify: in EXTENDED_COMMANDS"                   "bin/cli.js" "verify"
+check      "/verify: in CLAUDE.md Available Commands"        "CLAUDE.md" "/verify"
+check      "/verify: in templates CLAUDE.md commands"        "$ROOT/CLAUDE.md" "/verify"
+
+# ─── Per-stack rule capabilities ─────────────────────────────────────────────
+echo ""
+echo "─── Per-stack rule capabilities ───"
+RULES_DIR="$ROOT/capabilities/shared/rules"
+check_file "rules: typescript.md exists"                     "$RULES_DIR/typescript.md"
+check_file "rules: react.md exists"                         "$RULES_DIR/react.md"
+check_file "rules: python.md exists"                        "$RULES_DIR/python.md"
+check_file "rules: node.md exists"                          "$RULES_DIR/node.md"
+check      "rules/typescript: DO NOT use any"               "$RULES_DIR/typescript.md" "DO NOT.*any\|any.*DO NOT"
+check      "rules/typescript: explicit return types"        "$RULES_DIR/typescript.md" "return type\|return.*explicit"
+check      "rules/typescript: interface vs type guidance"   "$RULES_DIR/typescript.md" "interface\|type.*alias\|union"
+check      "rules/react: function components only"          "$RULES_DIR/react.md" "function component\|class component"
+check      "rules/react: hooks rules"                       "$RULES_DIR/react.md" "useEffect\|dependency\|hook"
+check      "rules/react: key prop guidance"                 "$RULES_DIR/react.md" "key.*index\|index.*key\|stable.*ID"
+check      "rules/python: type annotations"                 "$RULES_DIR/python.md" "type annotation\|type hint\|Annotated"
+check      "rules/python: no mutable defaults"              "$RULES_DIR/python.md" "mutable.*default\|default.*argument"
+check      "rules/python: no bare except"                   "$RULES_DIR/python.md" "bare.*except\|except:"
+check      "rules/node: async/await"                        "$RULES_DIR/node.md" "async.*await\|callback"
+check      "rules/node: parameterized queries"              "$RULES_DIR/node.md" "parameterized\|SQL.*injection\|raw SQL"
+check      "rules/node: no secrets in code"                 "$RULES_DIR/node.md" "process\.env\|hardcode\|secret"
+check      "manifest: rules section added"                  "$ROOT/capabilities/manifest.md" "Code Rules\|per-stack rule"
+check      "manifest: typescript.md entry"                  "$ROOT/capabilities/manifest.md" "rules/typescript"
+check      "manifest: react.md entry"                       "$ROOT/capabilities/manifest.md" "rules/react"
+check      "/driven: loads per-stack rule library"          "$CMD/driven.md" "rule library\|Rule Library\|rule.*library"
+check      "/driven: typescript capability reference"       "$CMD/driven.md" "rules/typescript\|typescript\.md"
 
 # ─── Feature-scoped dirs ──────────────────────────────────────────────────────
 echo ""

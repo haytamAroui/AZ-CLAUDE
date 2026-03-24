@@ -40,6 +40,7 @@ Extended (load command file on use):
   - /tasks: dependency graph + parallel wave groups from plan.md
   - /issues: convert plan.md milestones to GitHub Issues
 - Standards: /driven → generates .claude/code-rules.md (coding contract for /add and /fix)
+  - /verify → audits existing code against code-rules.md (file:line violations + auto-fix)
 - MCP: /mcp → recommends and installs MCP servers based on your stack
 
 Advanced (Level 5+):
@@ -64,4 +65,4 @@ When priorities conflict:
 3. {{PRIORITY_3}}
 
 ## Available Commands
-/dream · /setup · /fix · /add · /audit · /test · /blueprint · /evolve · /debate · /snapshot · /persist · /level-up · /ship · /pulse · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect · /hookify · /spec · /clarify · /analyze · /constitute · /tasks · /issues · /driven · /mcp · /parallel
+/dream · /setup · /fix · /add · /audit · /test · /blueprint · /evolve · /debate · /snapshot · /persist · /level-up · /ship · /pulse · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect · /hookify · /spec · /clarify · /analyze · /constitute · /tasks · /issues · /driven · /mcp · /parallel · /verify

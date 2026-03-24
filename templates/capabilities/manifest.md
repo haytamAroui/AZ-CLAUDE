@@ -58,6 +58,16 @@ Load only the files that match the current task. Never load the full list.
 | intelligence/pipeline.md | 3+ agents must chain output — context bleed is a risk | ~350 |
 | intelligence/experiment.md | Trying a risky approach that must not touch main branch — "try this safely" | ~80 |
 
+## Code Rules — per-stack rule libraries (load matching stack only)
+| File | When to load | Tokens |
+|------|-------------|--------|
+| shared/rules/typescript.md | Writing or verifying TypeScript code — load for /add, /fix, /verify when TS detected | ~250 |
+| shared/rules/react.md | Writing or verifying React/Next.js components — load when JSX/TSX detected | ~250 |
+| shared/rules/python.md | Writing or verifying Python/FastAPI/Django code — load when .py detected | ~250 |
+| shared/rules/node.md | Writing or verifying Node.js/Express backend code — load when Node stack detected | ~250 |
+
+**When to load:** `/verify` (rule source), `/driven` (default rule generation), `/add` and `/fix` (when no code-rules.md exists and stack is detected). Load only the matching stack file, never all four.
+
 ## Spec-Driven Workflow — load in sequence
 | Command | Purpose | Loads |
 |---------|---------|-------|

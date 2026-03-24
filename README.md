@@ -63,7 +63,7 @@ AZCLAUDE inverts this. **You start with almost nothing. The environment builds i
 npx azclaude-copilot@latest   # one command. that's it.
 ```
 
-No agent files to write. No skills to configure. No prompt engineering. `npx azclaude-copilot` installs 36 commands, 4 hooks, memory structure, and a manifest. The rest is generated from your actual codebase as you work. Run the same command again later — it auto-detects whether to skip, install, or upgrade.
+No agent files to write. No skills to configure. No prompt engineering. `npx azclaude-copilot` installs 37 commands, 4 hooks, memory structure, and a manifest. The rest is generated from your actual codebase as you work. Run the same command again later — it auto-detects whether to skip, install, or upgrade.
 
 **What the environment looks like across sessions:**
 
@@ -119,7 +119,7 @@ npx azclaude-copilot@latest
 ```
 
 That's it. One command, no flags. Auto-detects whether this is a fresh install or an upgrade:
-- **First time** → full install (36 commands, 4 hooks, 15 agents, 10 skills, memory, reflexes)
+- **First time** → full install (37 commands, 4 hooks, 15 agents, 10 skills, memory, reflexes)
 - **Already installed, older version** → auto-upgrades everything to latest templates
 - **Already up to date** → verifies, no overwrites
 
@@ -131,7 +131,7 @@ npx azclaude-copilot@latest doctor   # 32 checks — verify everything is wired 
 
 ## What You Get
 
-**36 commands** · **9 auto-invoked skills** · **15 agents** · **4 hooks** · **memory across sessions** · **learned reflexes** · **self-evolving environment**
+**37 commands** · **9 auto-invoked skills** · **15 agents** · **4 hooks** · **memory across sessions** · **learned reflexes** · **self-evolving environment**
 
 ```
 .claude/
@@ -677,7 +677,7 @@ AZCLAUDE recommends MCP servers based on your stack and wires them into daily-us
 
 ---
 
-## All 36 Commands
+## All 37 Commands
 
 ### Build and Ship
 
@@ -709,6 +709,8 @@ AZCLAUDE recommends MCP servers based on your stack and wires them into daily-us
 | `/issues` | Convert plan.md milestones to GitHub Issues. Deduplicates, creates labels, writes issue numbers back to plan.md for traceability. |
 | `/parallel` | Run multiple milestones simultaneously. Worktree isolation per agent. Auto-merges after all complete. Three-layer file collision safety. |
 | `/mcp` | Recommend and install MCP servers based on detected stack. Wires Context7, Sequential Thinking, GitHub, Playwright, Brave Search, Supabase. |
+| `/driven` | Generate `.claude/code-rules.md` — 6-question interview → DO/DO NOT coding contract. Read by every /add and /fix before writing code. |
+| `/verify` | Audit existing code against `code-rules.md`. Reports violations at `file:line`. Auto-fix mode. Falls back to per-stack rule libraries when no contract exists. |
 
 ### Think and Improve
 
@@ -863,11 +865,11 @@ Run `/level-up` at any time to see your current level and build the next one.
 
 ## Verified
 
-1526 tests. Every template, command, capability, agent, hook, and CLI feature verified.
+1558 tests. Every template, command, capability, agent, hook, and CLI feature verified.
 
 ```bash
 bash tests/test-features.sh
-# Results: 1526 passed, 0 failed, 1526 total
+# Results: 1558 passed, 0 failed, 1558 total
 ```
 
 ---

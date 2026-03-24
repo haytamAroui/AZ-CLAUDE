@@ -1,6 +1,6 @@
 # AZCLAUDE -- Complete User Guide
 
-> Version 0.4.35 · 1526 tests passing · AI coding environment
+> Version 0.4.36 · 1558 tests passing · AI coding environment
 
 ---
 
@@ -23,7 +23,8 @@
 14b. [Spec-Driven Development](#spec-driven-development)
 14c. [Parallel Execution](#parallel-execution)
 14d. [MCP Integration](#mcp-integration)
-15. [All 36 Commands](#all-36-commands)
+14e. [Code Rules System](#code-rules-system)
+15. [All 37 Commands](#all-37-commands)
 16. [Skills (Auto-Invoked)](#skills-auto-invoked)
 17. [Behavioral Defenses (Pressure Testing)](#behavioral-defenses-pressure-testing)
 18. [Multi-CLI Support](#multi-cli-support)
@@ -34,7 +35,7 @@
 
 ## What AZCLAUDE Is
 
-AZCLAUDE is an AI coding environment. 36 commands, 10 skills, 15 agents, memory, reflexes, evolution. Install once, works on any stack. Copilot mode builds autonomously across sessions using a three-tier intelligent team (orchestrator → problem-architect → milestone-builder). Zero human input after the first message.
+AZCLAUDE is an AI coding environment. 37 commands, 10 skills, 15 agents, memory, reflexes, evolution. Install once, works on any stack. Copilot mode builds autonomously across sessions using a three-tier intelligent team (orchestrator → problem-architect → milestone-builder). Zero human input after the first message.
 
 The hero feature is **copilot mode**: a Node.js runner (`bin/copilot.js`) that restarts Claude Code sessions in a loop, while the AZCLAUDE environment inside each session decides what to build next, implements it, tests it, commits, and evolves the environment. The runner is stateless and dumb on purpose. All intelligence lives in the templates.
 
@@ -53,7 +54,7 @@ After `npx azclaude-copilot` you have:
 ```
 CLAUDE.md -- 30-line dispatch table filled with your project's details
 goals.md -- session memory, auto-injected before your first message every session
-36 commands -- /fix, /add, /audit, /blueprint, /ship, /evolve, /sentinel, /copilot, /parallel, /mcp, /spec, /constitute, /driven...
+37 commands -- /fix, /add, /audit, /blueprint, /ship, /evolve, /sentinel, /copilot, /parallel, /mcp, /spec, /constitute, /driven...
 4 hooks -- block secrets before writes, track every edit, inject context on start, migrate on stop
 15 agents -- orchestrator team + spec-reviewer + constitution-guard + framework agents
 38 capabilities -- lazy-loaded, only what the task needs (incl. parallel-coordination.md)
@@ -80,7 +81,7 @@ npx azclaude-copilot@latest
 ```
 
 One command, no flags. Auto-detects the right mode:
-- **First time** → full install (36 commands, 10 skills, 15 agents, 4 hooks, memory, reflexes, evolution)
+- **First time** → full install (37 commands, 10 skills, 15 agents, 4 hooks, memory, reflexes, evolution)
 - **Already installed, older version** → auto-upgrades all templates to latest
 - **Already up to date** → verifies, no overwrites
 
@@ -92,7 +93,7 @@ Run the same command again after any AZCLAUDE release — it handles the upgrade
 azclaude-copilot doctor
 ```
 
-Runs 32 checks: Node.js version, project hooks, settings integrity, project structure, all 36 commands present. Exits 0 if healthy. Exits 1 with a specific fix hint if anything is wrong.
+Runs 32 checks: Node.js version, project hooks, settings integrity, project structure, all 37 commands present. Exits 0 if healthy. Exits 1 with a specific fix hint if anything is wrong.
 
 ### Doctor Audit
 
@@ -291,7 +292,7 @@ AZCLAUDE builds progressively. You don't need all 10 levels. You need the right 
 |-------|-------------|-------------|
 | **1** | CLAUDE.md -- project conventions in 30 lines | ~30 tokens |
 | **2** | MCP servers -- database, browser, API tools | ~150 tokens |
-| **3** | 36 commands + lazy-loaded capabilities | ~380 tokens per task |
+| **3** | 37 commands + lazy-loaded capabilities | ~380 tokens per task |
 | **4** | Memory -- goals, checkpoints, sessions | ~200 tokens per session |
 | **5** | Custom agents -- specialists with clear scope | ~400 tokens per agent |
 | **6** | Hooks -- auto-tracking, injection, secret blocking | ~0 tokens (global) |
@@ -1352,7 +1353,64 @@ See `docs/parallel-feature.md` for the complete reference including conflict res
 
 ---
 
-## All 36 Commands
+## Code Rules System
+
+AZCLAUDE ships per-stack rule libraries (TypeScript, React, Python, Node.js) used as defaults and verification baselines.
+
+### The three-layer contract
+
+```
+/driven   → generates .claude/code-rules.md  (interview → DO/DO NOT contract)
+/add /fix → reads code-rules.md before writing code (flags violations before implementing)
+/verify   → audits existing code against code-rules.md (file:line violations + auto-fix)
+```
+
+### `/driven` — Generate the coding contract
+
+6-question interview (architecture, testing, style, strictness, docs, git). Detects stack first, loads matching rule library as defaults. User answers override library defaults. Writes `.claude/code-rules.md` with:
+- Naming conventions (camelCase, PascalCase, UPPER_SNAKE_CASE — stack-specific)
+- Language section (DO/DO NOT for TypeScript, Python, etc.)
+- Framework section (React, Express, FastAPI)
+- Testing section (TDD mandatory / optional / test-after)
+- Documentation rules
+- Git commit format
+
+Every `/add` and `/fix` reads this file before writing a line of code. If a coding choice violates a rule, it flags it before implementing — never silently deviates.
+
+### `/verify` — Audit existing code
+
+```bash
+/verify                    # check git-changed files against code-rules.md
+/verify src/auth/          # check a directory
+/verify src/auth/login.ts  # check a single file
+```
+
+**Output format:**
+```
+src/auth/login.ts:23  →  violates [TypeScript] DO NOT: use `any`
+src/auth/login.ts:45  →  violates [TypeScript] DO NOT: use non-null assertion `!`
+src/components/Form.tsx:12  →  violates [React] DO NOT: use index as key
+```
+
+**Fix modes:**
+- Auto-fix — applies minimal fix per violation, shows diff before writing
+- Export — writes `.claude/verify-report.md` for PR review
+- Manual — you fix with the violation list
+
+If no `code-rules.md` exists, `/verify` falls back to the per-stack rule library for the detected stack.
+
+### Per-stack rule libraries
+
+| Library | Loads when | Key rules |
+|---------|-----------|-----------|
+| `rules/typescript.md` | TypeScript detected | no `any`, explicit return types, `interface` vs `type`, `readonly`, `import type` |
+| `rules/react.md` | React/Next.js detected | function components, hook dependency exhaustion, stable keys, no prop-drilling >2 levels |
+| `rules/python.md` | Python detected | type annotations, no mutable defaults, no bare `except:`, pathlib not os.path |
+| `rules/node.md` | Node.js detected | async/await throughout, parameterized queries, secrets in env only, 4-arg error middleware |
+
+---
+
+## All 37 Commands
 
 ### /dream
 **New project from idea.**
@@ -1667,6 +1725,26 @@ Dispatches multiple milestone-builder agents in a single message, each in its ow
 ```
 
 Detects stack from `package.json` + `CLAUDE.md`. Step 1: always recommends Context7 + Sequential Thinking (free, no API key). Step 2: stack-specific — GitHub MCP (any repo), Playwright (web), Supabase, PostgreSQL, Brave Search (heavy `/fix` usage). Step 3: shows exact `claude mcp add` commands. Step 4: security rules (no hardcoded secrets, pin versions, run `/sentinel`). See [MCP Integration](#mcp-integration).
+
+---
+
+### /driven
+**Generate the project coding contract.**
+
+6-question interview: architecture pattern, testing philosophy, functional vs OOP, type strictness, documentation, git commit format. Detects stack first, loads matching per-stack rule library as defaults. Writes `.claude/code-rules.md` — read by every `/add` and `/fix` before writing code. Supports `update` (one section at a time) and `show` (print current rules). Precedence: `constitution.md` > `code-rules.md`. See [Code Rules System](#code-rules-system).
+
+---
+
+### /verify
+**Audit existing code against `code-rules.md`.**
+
+```bash
+/verify                    # check git-changed files (default)
+/verify src/auth/          # check a directory
+/verify src/auth/login.ts  # check one file
+```
+
+Reads `code-rules.md`, extracts every DO/DO NOT rule, maps each to a grep pattern, scans target files. Reports violations at `file:line` level. Offers: auto-fix (minimal change per violation), export to `.claude/verify-report.md`, or skip. Falls back to per-stack rule library when no `code-rules.md` exists. See [Code Rules System](#code-rules-system).
 
 ---
 
@@ -1993,7 +2071,7 @@ Doctor runs 32 checks across 6 categories. Each failure includes the exact fix c
 - **Project hooks** -- UserPromptSubmit, PreToolUse, PostToolUse, Stop hooks wired
 - **Hook freshness** -- hook scripts match latest version
 - **Settings integrity** -- SHA-256 hash matches install-time hash
-- **Commands** -- all 36 commands present
+- **Commands** -- all 37 commands present
 - **Memory** -- goals.md exists, checkpoints directory exists, git repo initialized
 - **Project** -- CLAUDE.md exists and has no unfilled `{{placeholders}}`
 

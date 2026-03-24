@@ -65,7 +65,7 @@ Use **AskUserQuestion**: "`.claude/code-rules.md` already exists. Regenerate fro
 
 ---
 
-## Step 2: Detect Stack
+## Step 2: Detect Stack + Load Rule Library
 
 Read `CLAUDE.md` Stack field. If empty or missing, run detection:
 
@@ -79,6 +79,16 @@ State the detected stack before starting the interview. Example:
 ```
 Detected stack: React 19, TypeScript, Node/Express, PostgreSQL
 ```
+
+**Load per-stack rule library as the default rule baseline:**
+- TypeScript detected → read `capabilities/shared/rules/typescript.md`
+- React detected → read `capabilities/shared/rules/react.md`
+- Python detected → read `capabilities/shared/rules/python.md`
+- Node/Express detected → read `capabilities/shared/rules/node.md`
+
+These rule libraries provide the curated DO/DO NOT defaults for each section of `code-rules.md`.
+When the user selects "Default" in any interview question (Step 3), use the matching rules from the loaded library as the generated content for that section.
+When the user provides custom answers, use those instead — the library is a fallback, not a requirement.
 
 ---
 
