@@ -73,8 +73,9 @@ milestones have passed four independent checks.
 
 ### Phase 0 — Task Classifier (inside `/blueprint`, before milestones exist)
 
-The classifier runs when `/blueprint` is called in copilot mode, before any milestones
-are created. It prevents conflicts at the source — at planning time.
+**Runs in both interactive and copilot mode.** The classifier runs before any milestones
+are created, in every `/blueprint` call. It prevents conflicts at the source — at planning
+time — so Layers 1–3 rarely find anything to fix.
 
 **Step 1: Greenfield check**
 ```bash
@@ -126,20 +127,25 @@ Wave 2 runs M2 + M3 simultaneously — no conflict possible.
 
 ### Phase 1 — Plan (`/blueprint`)
 
-You describe the product. Blueprint analyzes the codebase and generates plan.md.
+You describe the product. Blueprint runs Phase 0 (classifier) + Layer 1 in both modes,
+then generates plan.md (copilot) or presents for approval (interactive).
 
 **Input:**
 ```
 /blueprint "Build compliance SaaS with auth, dashboard, email, and reporting"
 ```
 
-**Parallel Optimization Pass (Layer 1) — runs before writing plan.md:**
+**Parallel Optimization Pass (Layer 1) — both modes, runs after classifier:**
 
 1. Assigns each milestone a `Wave:` based on `Depends:` graph
 2. Checks directory isolation for same-wave milestones (Layer 1a)
 3. Greps for shared utility imports across same-wave milestones (Layer 1b)
 4. Sets `Dirs:` and `Parallel:` fields accordingly
 5. If a conflict is found at this stage → adds `Depends:` relationship, splits into different waves
+
+**Mode split after Layer 1:**
+- **Interactive:** Step 3c visualization shown → `AskUserQuestion` approval gate → user adjusts waves → TaskCreate
+- **Copilot:** Step 3c comment block written to plan.md → Layer 2 (problem-architect) validates → return to `/copilot`
 
 **Output — plan.md:**
 ```markdown
