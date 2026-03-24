@@ -1322,7 +1322,7 @@ Orchestrator reads `Wave:` from plan.md. Same-wave milestones with `Parallel: ye
 
 Explicitly run a subset of milestones in parallel. Same execution model as above but user-triggered.
 
-See `docs/parallel-feature.md` for the complete reference including conflict resolution ladder.
+See `docs/parallel-execution.md` for the complete reference including conflict resolution ladder.
 
 ---
 

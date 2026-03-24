@@ -651,7 +651,7 @@ M1 (schema) → done
 
 **Four-layer safety:** Before creating any milestones, `/blueprint` runs a **Task Classifier** (Layer 0) — groups coupled work (same schema table, same config file, same utility module) into single milestones so conflicts are impossible by design. Then: directory isolation + shared-utility grep (Layer 1, no agents spawned). `problem-architect` returns exact `Files Written:` and `Parallel Safe:` per milestone (Layer 2). Orchestrator re-checks file overlap at dispatch time (Layer 3 — unconditional final gate).
 
-See `docs/parallel-feature.md` for the complete reference.
+See `docs/parallel-execution.md` for the complete reference.
 
 ---
 

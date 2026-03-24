@@ -99,6 +99,20 @@ For each pair of raw work items, check if they share:
 - Coupled items → merge into ONE fat milestone. One agent, zero parallel risk.
 - Independent items → separate thin milestones. Parallel-safe by construction.
 
+**Fat milestone size limit:**
+If a merged milestone exceeds ~10 files, a single agent may hit context limits
+or session timeout. Split it into sequential sub-milestones within the same wave:
+
+```
+M1a: Auth foundation (src/auth/, src/utils/db.ts, prisma/schema.prisma)
+M1b: User profile layer (src/users/, tests/users/)  ← Depends: M1a
+```
+
+Both stay in Wave 1 (sequential). The orchestrator treats them as a chain —
+M1a must complete before M1b starts. Neither is a parallel candidate.
+The split preserves safety (M1b builds on M1a's foundation) while keeping
+each milestone within a manageable scope for one agent session.
+
 **Result:** Plan milestones that cannot conflict. Layers 1–3 then verify — but
 rarely find anything, because the classifier already merged the conflicts away.
 
