@@ -1,6 +1,6 @@
 # AZCLAUDE -- Complete User Guide
 
-> Version 0.4.36 · 1558 tests passing · AI coding environment
+> Version 0.4.37 · 1578 tests passing · AI coding environment
 
 ---
 
@@ -158,7 +158,7 @@ Every command detects copilot mode automatically (`[ -f .claude/copilot-intent.m
 | 2 | **Problem-Architect** | Analyzes each milestone → Team Spec (agents, skills, files-written, pre-conditions, risks, complexity) | Implements |
 | 3 | **Milestone-Builder** | Pre-reads, implements, verifies, self-corrects, commits, reports back | Decides what to build |
 
-**Key mechanism — Parallel Waves:** `/blueprint` assigns each milestone a `Wave:` number and `Parallel: yes/no` field using a three-layer safety check. The orchestrator reads these fields directly — no recomputation. Same-wave milestones with `Parallel: yes` are dispatched simultaneously using `isolation: "worktree"`, each agent on its own branch. Branches merge sequentially after the full wave completes. A final `Files Written:` overlap check at dispatch time (Layer 3) is the unconditional safety gate.
+**Key mechanism — Parallel Waves:** Before creating milestones, `/blueprint` runs a **Task Classifier** (Layer 0) — groups work with shared schema tables, config files, or utility modules into single milestones, making parallel conflicts impossible by design. It then assigns each milestone a `Wave:` number and `Parallel: yes/no` field via a three-layer safety check (directory isolation → exact file scan by problem-architect → final dispatch gate). The orchestrator reads these fields directly — no recomputation. Same-wave milestones with `Parallel: yes` are dispatched simultaneously using `isolation: "worktree"`, each agent on its own branch. Branches merge sequentially after the full wave completes.
 
 **Key mechanism — Files Written:** Problem-Architect returns the exact list of files each milestone will touch. Orchestrator checks for overlap before parallel dispatch → prevents silent file collision.
 

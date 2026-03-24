@@ -127,6 +127,178 @@ Next: Run /tasks to see which plan steps can run in parallel
 
 ---
 
+## Parallel Planning — Task Classifier + Wave Assignment (ALL modes)
+
+**Runs in both interactive and copilot mode.**
+Produces the milestone set and wave structure that Step 3c visualizes.
+In copilot mode, the orchestrator dispatches directly from this output.
+
+**Mode detection:**
+```bash
+[ -f .claude/copilot-intent.md ] && echo "COPILOT_MODE" || echo "INTERACTIVE_MODE"
+```
+
+### Task Classifier — Zero-Conflict Milestone Design (REQUIRED before wave assignment)
+
+**Run this BEFORE creating milestones.** Groups coupled work together so parallel dispatch is safe by construction — not by detection after the fact.
+
+**Step 0: Greenfield check**
+```bash
+SRC_COUNT=$(find src/ app/ lib/ -type f 2>/dev/null | wc -l 2>/dev/null || echo 0)
+echo "source_files=$SRC_COUNT"
+```
+If source_files < 10 → greenfield project. Force Wave 1 = all foundation work (schema, config, shared utils, types) as a SINGLE milestone regardless of feature count. Parallel only unlocks from Wave 2 onward, after the foundation exists and greps have real files to scan.
+
+**Step 1: List raw work items**
+From the intent/spec, enumerate ALL features, endpoints, models, UI pages, and background jobs as raw items. Do not group yet — just list everything the project needs.
+
+**Step 2: Coupling analysis — merge rule**
+For each pair of raw work items, check if they share ANY of:
+- Same database table (both CREATE or ALTER the same table)
+- Same config file (`package.json`, `tsconfig.json`, `prisma/schema.prisma`, `docker-compose.yml`, `go.mod`, `Cargo.toml`)
+- Same utility module (both CREATE or MODIFY files in `utils/`, `shared/`, `common/`, `lib/`, `helpers/`)
+- Same API contract (one produces an endpoint, the other consumes it within the same feature boundary)
+
+If any coupling exists → merge those two items into ONE milestone. Repeat until no same-wave pair shares any resource.
+
+**Step 3: Independence check — split rule**
+Work items that share NONE of the above → separate milestones, `Parallel: yes` candidate.
+
+**Result:** Every milestone is either:
+- **Fat milestone** — all coupled work together. One agent handles everything that would otherwise conflict. Larger task, zero parallel risk.
+- **Thin milestone** — fully independent. Parallel-safe by construction, not by detection.
+
+Proceed to Layer 1 with these merged milestones — not with raw work items.
+
+---
+
+### Parallel Optimization Pass — Layer 1 (REQUIRED before writing plan.md)
+
+**Design note — two-layer safety model:**
+This pass is Layer 1: fast, directory-level, runs before plan.md is written.
+Layer 2 is problem-architect (after plan.md): exact file paths, catches shared utilities.
+Layer 3 is the orchestrator at dispatch: final `Files Written:` overlap check.
+
+Layer 1 catches ~80% of conflicts cheaply. Layer 2 catches the rest (shared utils, shared config).
+Layer 1 does NOT spawn agents — it uses grep only.
+
+**Step 1: Assign waves**
+```
+Wave 1 = milestones with Depends: none
+Wave 2 = milestones that only depend on Wave 1
+Wave N = milestones that only depend on waves 1..N-1
+```
+
+**Step 2: Directory-level isolation check (Layer 1a)**
+
+For each wave with 2+ milestones:
+- Does each milestone own a distinct top-level directory? (e.g., `src/auth/` vs `src/users/` vs `src/email/`)
+- Does any milestone touch shared config (`package.json`, `prisma/schema.prisma`, `tsconfig.json`, `go.mod`, `Cargo.toml`)?
+
+If two milestones share a top-level directory → add `Depends:` to split them into different waves.
+
+**Step 3: Shared-utility grep (Layer 1b)**
+
+For each same-wave pair, check if they likely share utility files:
+```bash
+# Find shared utility dirs that multiple features import from
+grep -r "from.*utils\|import.*utils\|require.*utils\|from.*shared\|from.*common\|from.*lib" \
+  src/ --include="*.ts" --include="*.py" --include="*.js" -l 2>/dev/null | head -20
+```
+
+If a `utils/`, `shared/`, `common/`, or `lib/` directory exists AND two parallel milestones
+both need to CREATE or MODIFY files there → set `Parallel: no` for both and add a Depends: relationship.
+
+**Do NOT spawn problem-architect here.** The grep is sufficient for Layer 1. Problem-architect
+runs after plan.md is written and handles the cases Layer 1 misses.
+
+**Step 4: Set Dirs: and Parallel: fields**
+
+```
+- Dirs:     top-level directories this milestone exclusively owns
+- Parallel: yes — safe at directory level + no shared utility writes
+- Parallel: no  — touches shared config, shared utility, schema, or depends on sibling
+- Wave:     {N}
+```
+
+A well-designed plan for a 6-feature product:
+```
+Wave 1: M1 (foundation/schema) — Parallel: no
+Wave 2: M2, M3, M4, M5 (independent features) — Parallel: yes (4 agents simultaneously)
+Wave 3: M6 (integration/E2E) — Parallel: no
+```
+
+---
+
+## Step 3c: Parallel Dispatch Visualization
+
+After classifier + Layer 1 complete, render the dispatch map:
+
+```
+══════════════════════════════════════════════════════
+  Parallel Dispatch Plan
+══════════════════════════════════════════════════════
+
+  Wave 1 (sequential — foundation)
+  ┌─────────────────────────────────────────────────┐
+  │  M1: {title}                                    │
+  │      Dirs: {dirs}                               │
+  │      Parallel: no  (foundation — must run first)│
+  └─────────────────────────────────────────────────┘
+                         │
+                         ▼
+  Wave 2 (parallel — {N} agents simultaneously)
+  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+  │ M2: {title}  │ │ M3: {title}  │ │ M4: {title}  │
+  │ {dirs}       │ │ {dirs}       │ │ {dirs}        │
+  │ Parallel: ✓  │ │ Parallel: ✓  │ │ Parallel: ✓  │
+  └──────────────┘ └──────────────┘ └──────────────┘
+                         │
+                         ▼
+  (continue for each wave)
+
+  ══════════════════════════════════════════════════
+  Summary
+  ──────────────────────────────────────────────────
+  Total milestones:    {N}
+  Waves:               {N}
+  Max parallel:        {N} agents (Wave {N})
+  Sequential estimate: {total} sessions (~{total×30}min)
+  Parallel estimate:   {waves} waves  (~{waves×30}min)
+  Time saved:          ~{pct}%
+
+  Merged by classifier:
+    • {item A} + {item B} → {MN}  ({reason — e.g. shared schema.prisma})
+
+  Split for parallelism:
+    • {item} split from {other item}  ({reason — e.g. different dirs, no shared files})
+  ══════════════════════════════════════════════════
+```
+
+**Rules:**
+- Show every wave, even single-milestone waves
+- Side-by-side boxes for parallel milestones in the same wave; single wide box for sequential
+- "Sequential estimate" = `total milestones × 30min`; "Parallel estimate" = `wave count × 30min`
+- Time saved % = `(sequential - parallel) / sequential × 100`
+- "Merged by classifier" lists only merges that changed the plan (not items that were always single)
+- "Split for parallelism" lists items the classifier separated into different milestones
+
+**In copilot mode:** write the visualization as a comment block at the top of plan.md:
+```markdown
+<!-- Parallel Dispatch Plan
+Wave 1 (seq): M1 — foundation
+Wave 2 (parallel, 4 agents): M2 M3 M4 M5
+Wave 3 (parallel, 3 agents): M6 M7 M8
+Wave 4 (seq): M9 — integration
+Sequential: ~270min | Parallel: ~120min | Saved: ~56%
+-->
+```
+
+**In interactive mode:** show the visualization before the approval gate.
+Let the user adjust wave grouping: "move M5 to Wave 3" → adjust Depends:, re-render, re-present.
+
+---
+
 ## Step 4: Approval Gate
 
 **ExitPlanMode**
@@ -179,75 +351,18 @@ Each feature directory is self-contained: `spec.md` + `plan.md` + any generated 
 
 ---
 
-## Copilot Mode — Structured plan.md Output
+## Copilot Mode — plan.md Format + Layer 2 Validation
 
 When running inside `/copilot` (detected by: `.claude/copilot-intent.md` exists):
 - Skip the approval gate (Step 4) — copilot operates autonomously
-- Write the plan to `.claude/plan.md` in the structured format defined in `plan-tracker.md`
+- Task Classifier + Layer 1 already ran in the "Parallel Planning" section above
+- Write the plan to `.claude/plan.md` using the classified milestones
 - Read `.claude/capabilities/shared/plan-tracker.md` for the exact format
 - Each milestone = one logical unit of work (1-3 files, one commit)
 - Include `Depends:` for milestones that require prior work
 - Include `Files:` with expected paths
 - Include `Commit:` with conventional commit format
 - Write `## Summary` with counts at the bottom
-
-### Parallel Optimization Pass — Layer 1 (REQUIRED before writing plan.md)
-
-**Design note — two-layer safety model:**
-This pass is Layer 1: fast, directory-level, runs before plan.md is written.
-Layer 2 is problem-architect (after plan.md): exact file paths, catches shared utilities.
-Layer 3 is the orchestrator at dispatch: final `Files Written:` overlap check.
-
-Layer 1 catches ~80% of conflicts cheaply. Layer 2 catches the rest (shared utils, shared config).
-Layer 1 does NOT spawn agents — it uses grep only.
-
-**Step 1: Assign waves**
-```
-Wave 1 = milestones with Depends: none
-Wave 2 = milestones that only depend on Wave 1
-Wave N = milestones that only depend on waves 1..N-1
-```
-
-**Step 2: Directory-level isolation check (Layer 1a)**
-
-For each wave with 2+ milestones:
-- Does each milestone own a distinct top-level directory? (e.g., `src/auth/` vs `src/users/` vs `src/email/`)
-- Does any milestone touch shared config (`package.json`, `prisma/schema.prisma`, `tsconfig.json`, `go.mod`, `Cargo.toml`)?
-
-If two milestones share a top-level directory → add `Depends:` to split them into different waves.
-
-**Step 3: Shared-utility grep (Layer 1b)**
-
-For each same-wave pair, check if they likely share utility files:
-```bash
-# Find shared utility dirs that multiple features import from
-grep -r "from.*utils\|import.*utils\|require.*utils\|from.*shared\|from.*common\|from.*lib" \
-  src/ --include="*.ts" --include="*.py" --include="*.js" -l 2>/dev/null | head -20
-```
-
-If a `utils/`, `shared/`, `common/`, or `lib/` directory exists AND two parallel milestones
-both need to CREATE or MODIFY files there → set `Parallel: no` for both and add a Depends: relationship.
-
-**Do NOT spawn problem-architect here.** The grep is sufficient for Layer 1. Problem-architect
-runs after plan.md is written and handles the cases Layer 1 misses.
-
-**Step 4: Set Dirs: and Parallel: fields, write plan.md**
-
-```
-- Dirs:     top-level directories this milestone exclusively owns
-- Parallel: yes — safe at directory level + no shared utility writes
-- Parallel: no  — touches shared config, shared utility, schema, or depends on sibling
-- Wave:     {N}
-```
-
-A well-designed plan for a 6-feature product:
-```
-Wave 1: M1 (foundation/schema) — Parallel: no
-Wave 2: M2, M3, M4, M5 (independent features) — Parallel: yes (4 agents simultaneously)
-Wave 3: M6 (integration/E2E) — Parallel: no
-```
-
----
 
 ### Problem-Architect Validation — Layer 2 (after plan.md is written)
 

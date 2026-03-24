@@ -649,7 +649,7 @@ M1 (schema) → done
 /parallel M2 M3 M4 M5    # dispatch these milestones simultaneously
 ```
 
-**Three-layer safety:** `/blueprint` checks directory isolation + shared-utility imports before writing plan.md (Layer 1 — no agents spawned). `problem-architect` returns exact `Files Written:` and `Parallel Safe:` per milestone after plan.md (Layer 2). The orchestrator checks file overlap again at dispatch time (Layer 3 — final gate, cannot be bypassed).
+**Four-layer safety:** Before creating any milestones, `/blueprint` runs a **Task Classifier** (Layer 0) — groups coupled work (same schema table, same config file, same utility module) into single milestones so conflicts are impossible by design. Then: directory isolation + shared-utility grep (Layer 1, no agents spawned). `problem-architect` returns exact `Files Written:` and `Parallel Safe:` per milestone (Layer 2). Orchestrator re-checks file overlap at dispatch time (Layer 3 — unconditional final gate).
 
 See `docs/parallel-feature.md` for the complete reference.
 
@@ -865,11 +865,11 @@ Run `/level-up` at any time to see your current level and build the next one.
 
 ## Verified
 
-1558 tests. Every template, command, capability, agent, hook, and CLI feature verified.
+1578 tests. Every template, command, capability, agent, hook, and CLI feature verified.
 
 ```bash
 bash tests/test-features.sh
-# Results: 1558 passed, 0 failed, 1558 total
+# Results: 1578 passed, 0 failed, 1578 total
 ```
 
 ---

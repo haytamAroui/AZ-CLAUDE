@@ -27,12 +27,22 @@ M1 (schema) → done
 
 ---
 
-## The three-layer safety model
+## The four-layer safety model
 
 Parallel execution is safe only when agents don't write to the same files.
-AZCLAUDE enforces this with three layers, each catching what the previous missed.
+AZCLAUDE enforces this with four layers. The key insight: **Layer 0 makes conflicts
+impossible by design** before any safety checking even begins.
 
 ```
+Layer 0 — Task Classifier (blueprint, before milestones are created)
+  BEFORE creating any milestones, group coupled work together.
+  Coupling = shared schema table, shared config file, shared utility module, or
+             one feature produces an endpoint the other consumes.
+  Coupled items → ONE fat milestone (one agent, no parallel risk)
+  Independent items → separate thin milestones (parallel-safe by construction)
+  Greenfield check: if source files < 10, all foundation work → single Wave 1 milestone.
+  Result: parallel conflicts become impossible before Layer 1 even runs.
+
 Layer 1a — Directory check (blueprint, pre-plan)
   src/auth/ vs src/users/ → different dirs → SAFE
   src/auth/ vs src/auth/  → same dir → NOT SAFE (add Depends:)
@@ -52,14 +62,67 @@ Layer 3 — Orchestrator dispatch gate (runtime, final)
   Cannot be bypassed
 ```
 
-**Design choice:** Layer 1 is intentionally cheap (grep only, no agents).
-Layer 2 catches edge cases (shared utilities). Layer 3 is the safety guarantee.
-`Parallel: yes` in plan.md is an estimate. `Parallel Safe: YES` from problem-architect
-is authoritative. The orchestrator's Layer 3 check is the final guarantee.
+**Design principle:** Layer 0 is the intelligence — it eliminates conflicts before
+they form. Layers 1–3 are the safety net — cheap (grep), then precise (architect),
+then unconditional (runtime). By the time the orchestrator dispatches, `Parallel: yes`
+milestones have passed four independent checks.
 
 ---
 
 ## The complete flow
+
+### Phase 0 — Task Classifier (inside `/blueprint`, before milestones exist)
+
+The classifier runs when `/blueprint` is called in copilot mode, before any milestones
+are created. It prevents conflicts at the source — at planning time.
+
+**Step 1: Greenfield check**
+```bash
+SRC_COUNT=$(find src/ app/ lib/ -type f 2>/dev/null | wc -l || echo 0)
+```
+If `source_files < 10`: Wave 1 = all foundation work as a single milestone.
+Parallel only unlocks from Wave 2 onward, once the foundation exists.
+
+**Step 2: List raw work items**
+From the intent or spec, enumerate every feature, endpoint, model, UI page, and
+background job as individual raw items.
+
+**Step 3: Coupling analysis**
+For each pair of raw work items, check if they share:
+- Same database table (both CREATE or ALTER it)
+- Same config file (`package.json`, `tsconfig.json`, `prisma/schema.prisma`, etc.)
+- Same utility module (both write to `utils/`, `shared/`, `common/`, `lib/`)
+- Same API contract (one produces an endpoint, the other consumes it)
+
+**Step 4: Merge or split**
+- Coupled items → merge into ONE fat milestone. One agent, zero parallel risk.
+- Independent items → separate thin milestones. Parallel-safe by construction.
+
+**Result:** Plan milestones that cannot conflict. Layers 1–3 then verify — but
+rarely find anything, because the classifier already merged the conflicts away.
+
+**Example — auth + user profiles (greenfield FastAPI project):**
+```
+Raw work items:
+  - Auth endpoints (login, register, JWT)
+  - User profile CRUD
+  - Email notification service
+  - PDF report generator
+
+Coupling analysis:
+  Auth ↔ User profile: COUPLED (both write src/utils/db.ts + Pydantic models)
+  Auth+Profile ↔ Email: INDEPENDENT (different dirs, no shared files)
+  Auth+Profile ↔ PDF: INDEPENDENT
+
+Result after classifier:
+  M1 (Wave 1): Auth + User profile foundation  ← fat milestone, sequential
+  M2 (Wave 2): Email service                   ← thin, parallel: yes
+  M3 (Wave 2): PDF report generator            ← thin, parallel: yes
+
+Wave 2 runs M2 + M3 simultaneously — no conflict possible.
+```
+
+---
 
 ### Phase 1 — Plan (`/blueprint`)
 
@@ -402,7 +465,7 @@ The orchestrator automatically falls back to sequential dispatch when:
 
 ```bash
 # Full automatic (recommended)
-/blueprint "describe your product"   # generates parallel-annotated plan.md
+/blueprint "describe your product"   # generates parallel-annotated plan.md (runs classifier)
 /tasks                               # inspect waves — optional
 /copilot                             # orchestrator handles everything
 
@@ -413,3 +476,42 @@ The orchestrator automatically falls back to sequential dispatch when:
 /tasks                               # show current wave graph
 /pulse                               # overall project health
 ```
+
+---
+
+## Why AZCLAUDE — the coordination layer
+
+Claude Code's `isolation: "worktree"` in the Task tool is a raw primitive.
+Multiple Task calls in one message run concurrently. That's the capability.
+
+Without AZCLAUDE, using it would require manual orchestration on every build:
+
+```
+"Hey Claude, create 3 worktrees and run these tasks in parallel.
+ Don't touch package.json in any of them.
+ M2 should follow the auth pattern from last session.
+ M3 should avoid the ORM anti-pattern we hit yesterday.
+ If M4 fails, try this alternative approach.
+ Merge them in this order.
+ Run tests after each merge.
+ If we hit a schema conflict, stop and use /debate.
+ Remember all of this next session."
+```
+
+AZCLAUDE automates that entire instruction — every build, every session:
+
+| Without AZCLAUDE | With AZCLAUDE |
+|------------------|---------------|
+| Which tasks to parallelize? | **Task Classifier** — groups coupled work, splits independent work |
+| Is it safe to parallelize? | **Four-layer safety** — classifier + dir check + file scan + dispatch gate |
+| What context does each agent need? | **Problem-Architect** — builds full Team Spec per milestone |
+| What conventions to follow? | **patterns.md / antipatterns.md / decisions.md** — injected automatically |
+| What if one agent fails? | **Blocker recovery + /debate escalation** — orchestrator handles it |
+| What happens when the session ends? | **goals.md + checkpoints + plan.md** — next session resumes exactly |
+| How do we improve over time? | **/evolve** — new agents from git evidence every 3 milestones |
+
+Claude Code is the engine. The Task tool gives you parallel cylinders.
+AZCLAUDE is the transmission, the steering, and the GPS — the system that makes
+those cylinders produce coordinated forward motion instead of random spinning.
+
+6 desks is not a team. AZCLAUDE turns 6 desks into a coordinated team.
