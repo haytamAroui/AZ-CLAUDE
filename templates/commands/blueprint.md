@@ -114,9 +114,9 @@ If constitution found → scan plan steps against non-negotiables:
 - Flag any plan step that could violate a rule
 - Add a note to flagged steps: `⚠ Constitution check: may conflict with "{rule}" — verify before implementing`
 
-If code-rules found → read `## Architecture` section:
-- The plan must respect the declared architecture pattern (Clean Architecture / DDD / MVC / etc.)
-- If a plan step would introduce a pattern that conflicts with the architecture rule — flag it
+If code-rules found → read the file header line (`# Architecture: {pattern}`):
+- The plan must respect the declared architecture pattern (Clean Architecture / DDD / MVC / feature-based / etc.)
+- If a plan step would introduce a pattern that conflicts with the declared architecture — flag it
 - Add note: `⚠ Code rules: this step should follow {architecture pattern} — verify approach before implementing`
 
 Then run `/tasks` to show dependency waves:
