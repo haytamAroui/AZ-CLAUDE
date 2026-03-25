@@ -1886,6 +1886,10 @@ check      "router: skips pure questions"                  "$UP" "isQuestionOnly
 check      "router: lists available agents"                "$UP" "Available agents.*readdirSync"
 check      "router: lists available skills"                "$UP" "Available skills.*readdirSync"
 check      "router: NON-NEGOTIABLE enforcement"            "$UP" "NON-NEGOTIABLE.*Do not skip"
+check      "router: self-healing rule"                     "$UP" "SELF-HEALING RULE"
+check      "router: self-heal uses skill-creator"          "$UP" "skill-creator.*domain\|skill-creator.*missing"
+check      "router: self-heal uses agent-creator"          "$UP" "agent-creator.*workstream\|agent-creator.*missing"
+check      "router: self-heal before implementation"       "$UP" "Create the missing.*BEFORE implementation"
 check      "router: persists prompt for routing"           "$UP" "azclaude-prompt.*writeFileSync\|writeFileSync.*azclaude-prompt"
 
 # ─── Agent Auto-Dispatch (CLAUDE.md) ─────────────────────────────────────────
@@ -1907,6 +1911,16 @@ check      "dispatch: ALWAYS spawn instruction"             "$TMPL" "ALWAYS.*spa
 check      "dispatch: skip only pure questions"            "$TMPL" "Skip pipeline only if.*pure question"
 check      "dispatch: never skip code changes"             "$TMPL" "Never skip for.*any code change"
 check      "dispatch: 6-step mandatory flow"               "$TMPL" "Mandatory pipeline for ALL code tasks"
+check      "dispatch: self-healing rule"                   "$TMPL" "Self-healing.*MISSING skill\|Self-healing"
+check      "dispatch: self-heal uses skill-creator"        "$TMPL" "skill-creator.*generate.*missing\|skill-creator.*missing skill"
+check      "dispatch: self-heal uses agent-creator"        "$TMPL" "agent-creator.*generate.*missing\|agent-creator.*missing agent"
+check      "dispatch: self-heal example"                   "$TMPL" "GraphQL.*skill-creator\|GraphQL.*no.*skill"
+
+# ─── Problem-architect gap detection ──
+PA="$ROOT/agents/problem-architect.md"
+check      "architect: gap detection"                      "$PA" "GAP DETECTION"
+check      "architect: missing skills in output"           "$PA" "Missing Skills.*GAP\|MISSING.*create before"
+check      "architect: skill-creator recommendation"       "$PA" "skill-creator.*generate\|skill-creator to generate"
 
 # ─── Semantic boundary check ─────────────────────────────────────────────────
 echo ""

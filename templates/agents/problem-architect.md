@@ -68,6 +68,9 @@ If milestone crosses 2+ agent boundaries → recommend sequential: agent-A first
 - Touches auth/payments/secrets? → security
 - Architecture decision? → architecture-advisor
 - Domain-specific knowledge? → domain advisor (if exists in .claude/skills/)
+- **GAP DETECTION:** If this milestone needs domain expertise not covered by any installed skill
+  (e.g., GraphQL, Stripe, i18n, accessibility, ML pipeline), mark it as MISSING in the Team Spec.
+  The orchestrator will use skill-creator to generate it before dispatch.
 
 **Pre-Read Files:**
 - Schema files (if touching DB)
@@ -113,6 +116,10 @@ Output this EXACT format — the orchestrator parses it:
 
 ### Skills to Load
 - {skill-name}: because {specific reason tied to this milestone}
+
+### Missing Skills (GAP — create before dispatch)
+- {domain/technology}: needed because {reason} — use skill-creator to generate
+  (omit this section if all needed skills are installed)
 
 ### Pre-Read Files
 - {file-path}: for {specific context reason}

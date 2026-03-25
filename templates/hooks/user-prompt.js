@@ -168,6 +168,18 @@ try {
         }
       }
 
+      // ── STEP 5: Self-healing — create missing skills/agents on the fly ──
+      console.log('SELF-HEALING RULE:');
+      console.log('  If problem-architect\'s Team Spec lists a MISSING skill or agent:');
+      if (skillExists('skill-creator')) {
+        console.log('  → For missing skills: use Skill tool to invoke "skill-creator" with the domain/technology name');
+      }
+      if (skillExists('agent-creator')) {
+        console.log('  → For missing agents: use Skill tool to invoke "agent-creator" with the workstream description');
+      }
+      console.log('  Create the missing skill/agent BEFORE implementation. It will be available for all future tasks.');
+      console.log('');
+
       console.log('This pipeline is NON-NEGOTIABLE. Do not skip steps. Do not start coding before Step 1 completes.');
       console.log('--- END PIPELINE ---');
     }

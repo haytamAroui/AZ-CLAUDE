@@ -86,6 +86,12 @@ Agents live in `.claude/agents/`. Spawn them via the Agent tool with the matchin
 **Skip pipeline only if:** message is a pure question with no action verb (e.g., "what does this function do?").
 **Never skip for:** any code change, no matter how small. The pipeline catches bugs in 1-line changes too.
 
+**Self-healing:** If problem-architect's Team Spec lists a MISSING skill or agent (domain expertise not installed):
+- Use `skill-creator` to generate the missing skill before implementation
+- Use `agent-creator` to generate the missing agent before implementation
+- The created skill/agent is immediately available and persists for all future tasks
+- Example: task needs GraphQL expertise → no GraphQL skill exists → skill-creator generates one → use it
+
 ## Trade-Off Hierarchies
 When priorities conflict:
 1. {{PRIORITY_1}}
