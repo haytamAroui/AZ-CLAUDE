@@ -58,6 +58,31 @@ When running parallel agents (/copilot with parallel waves, or /parallel):
 
 Unknown capability → grep manifest.md by description, load match
 
+## Agent Auto-Dispatch
+Agents live in `.claude/agents/`. Spawn them via the Agent tool with the matching `subagent_type`.
+**You MUST spawn the matching agent when these conditions are met — do not handle these tasks yourself.**
+
+| Condition | Agent to spawn | Why |
+|-----------|---------------|-----|
+| Task touches 3+ files or crosses module boundaries | `problem-architect` | Pre-flight analysis: team spec, risks, file ownership |
+| Architecture decision between 2+ real options | `architecture-advisor` (skill) | Evidence-based trade-off analysis, not gut feeling |
+| Code was written or modified | `code-reviewer` | Catches bugs, security issues, style violations |
+| Code needs test coverage | `test-writer` | Generates tests matching project framework + patterns |
+| Task spans 2+ milestones or needs parallel work | `orchestrator` | Owns plan.md, dispatches milestone-builder agents |
+| Security-sensitive change (auth, keys, hooks, deploy) | `security-auditor` | 111-rule scan, structured report with file:line refs |
+| Infrastructure, CI/CD, Docker, deploy config | `devops-engineer` | Pipeline, container, cloud infrastructure specialist |
+| Test strategy, E2E, release readiness | `qa-engineer` | Risk-based coverage, acceptance criteria validation |
+| Spec file provided for planning | `spec-reviewer` | Validates spec quality before /blueprint uses it |
+| Milestone about to be implemented | `constitution-guard` | Checks milestone against constitution.md non-negotiables |
+
+**Dispatch flow for any non-trivial task:**
+1. Spawn `problem-architect` → get Team Spec (agents needed, files to pre-read, risks)
+2. Follow Team Spec: load listed skills, pre-read listed files
+3. If structural decision flagged → spawn `architecture-advisor` skill or run /debate
+4. Implement → spawn `code-reviewer` on result → spawn `test-writer` if coverage needed
+
+**Skip dispatch only if:** 1-2 files, clearly scoped, pure config/docs, no cross-module impact.
+
 ## Trade-Off Hierarchies
 When priorities conflict:
 1. {{PRIORITY_1}}

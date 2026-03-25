@@ -1853,6 +1853,25 @@ check      "cli: statusline wired into install"           "bin/cli.js" "installS
 check      "cli: statusline sets type command"             "bin/cli.js" "type.*command\|statusLine"
 check      "doctor: statusline check"                     "bin/cli.js" "statusline.sh exists"
 
+# ─── Agent Auto-Dispatch (CLAUDE.md) ─────────────────────────────────────────
+echo ""
+echo "─── Agent Auto-Dispatch ───"
+TMPL="$ROOT/CLAUDE.md"
+check      "dispatch: section exists in CLAUDE.md"         "$TMPL" "Agent Auto-Dispatch"
+check      "dispatch: problem-architect trigger"           "$TMPL" "problem-architect.*Pre-flight\|3+ files.*problem-architect"
+check      "dispatch: code-reviewer trigger"               "$TMPL" "code-reviewer.*Catches bugs\|Code was written.*code-reviewer"
+check      "dispatch: test-writer trigger"                 "$TMPL" "test-writer.*test coverage\|test coverage.*test-writer"
+check      "dispatch: orchestrator trigger"                "$TMPL" "orchestrator.*plan.md\|2+ milestones.*orchestrator"
+check      "dispatch: security-auditor trigger"            "$TMPL" "security-auditor.*111-rule\|Security-sensitive.*security-auditor"
+check      "dispatch: architecture-advisor trigger"        "$TMPL" "architecture.*advisor\|Architecture decision"
+check      "dispatch: devops-engineer trigger"             "$TMPL" "devops-engineer"
+check      "dispatch: qa-engineer trigger"                 "$TMPL" "qa-engineer"
+check      "dispatch: spec-reviewer trigger"               "$TMPL" "spec-reviewer"
+check      "dispatch: constitution-guard trigger"          "$TMPL" "constitution-guard"
+check      "dispatch: MUST spawn instruction"              "$TMPL" "MUST spawn the matching agent"
+check      "dispatch: skip criteria"                       "$TMPL" "Skip dispatch only if"
+check      "dispatch: 4-step flow"                         "$TMPL" "Spawn.*problem-architect.*Team Spec"
+
 # ─── Semantic boundary check ─────────────────────────────────────────────────
 echo ""
 echo "─── Semantic boundary check ───"
