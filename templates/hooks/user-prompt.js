@@ -22,6 +22,10 @@ try {
   const raw  = fs.readFileSync(0, 'utf8');
   const data = JSON.parse(raw);
   const promptText = data.prompt || '';
+  // Persist prompt text for brain router (below) — router reads this on every message
+  if (promptText) {
+    try { fs.writeFileSync(path.join(os.tmpdir(), `.azclaude-prompt-${process.ppid || process.pid}`), promptText); } catch (_) {}
+  }
   if (promptText) {
     const PROMPT_INJECT = /ignore\s+(?:all\s+)?previous\s+instructions|disregard\s+(?:all\s+)?previous\s+instructions|override\s+(?:your\s+)?(?:rules|instructions|safety)|you\s+are\s+now\s+(?:a\s+)?(?:new|different|unrestricted)/i;
     if (PROMPT_INJECT.test(promptText)) {
@@ -34,16 +38,119 @@ try {
   }
 } catch (_) {}
 
-// ── Fire once per session only — keyed by parent PID
+// ── Session gate — first message gets full context, subsequent get routing only ─
 const marker = path.join(os.tmpdir(), `.azclaude-session-${process.ppid || process.pid}`);
-if (fs.existsSync(marker)) process.exit(0);
-try { fs.writeFileSync(marker, ''); } catch (_) {}
-// Stamp session start time for duration tracking (stop.js reads this)
-try { fs.writeFileSync(path.join(os.tmpdir(), `.azclaude-session-start-${process.ppid || process.pid}`), new Date().toISOString()); } catch (_) {}
+const isFirstMessage = !fs.existsSync(marker);
+if (isFirstMessage) {
+  try { fs.writeFileSync(marker, ''); } catch (_) {}
+  // Stamp session start time for duration tracking (stop.js reads this)
+  try { fs.writeFileSync(path.join(os.tmpdir(), `.azclaude-session-start-${process.ppid || process.pid}`), new Date().toISOString()); } catch (_) {}
+}
 
 // Only proceed if this is an AZCLAUDE project (goals.md exists)
-const goalsPath = path.join('.claude', 'memory', 'goals.md');
+const cfg = process.env.AZCLAUDE_CFG || '.claude';
+const goalsPath = path.join(cfg, 'memory', 'goals.md');
 if (!fs.existsSync(goalsPath)) process.exit(0);
+
+// ── AZCLAUDE Brain Router — fires on EVERY message ─────────────────────────
+// Detects user intent and injects agent/skill/capability routing.
+// This is what makes Claude Code USE AZCLAUDE instead of ignoring it.
+try {
+  const promptText = (function() {
+    try {
+      const raw = fs.readFileSync(path.join(os.tmpdir(), `.azclaude-prompt-${process.ppid || process.pid}`), 'utf8');
+      return raw;
+    } catch (_) { return ''; }
+  })();
+
+  // Re-read the prompt from the injection scan (already parsed above)
+  // Detect slash commands — skip routing, the command file handles it
+  if (promptText.startsWith('/')) {
+    // Slash commands have their own routing — don't inject
+  } else if (promptText.length > 0) {
+    const p = promptText.toLowerCase();
+
+    // ── Intent detection ──
+    const intents = [];
+    if (/\b(build|add|create|implement|feature|component|page|endpoint|function|module|new)\b/.test(p)) intents.push('BUILD');
+    if (/\b(fix|bug|broken|error|crash|issue|fail|wrong|not work)\b/.test(p)) intents.push('FIX');
+    if (/\b(review|check|audit|safe|securit|vulnerab)\b/.test(p)) intents.push('REVIEW');
+    if (/\b(test|coverage|spec|e2e|unit test|integration test)\b/.test(p)) intents.push('TEST');
+    if (/\b(plan|blueprint|architect|design system|decide|which.*better|trade.?off)\b/.test(p)) intents.push('PLAN');
+    if (/\b(deploy|ci|cd|docker|infra|pipeline|kubernetes|nginx|terraform)\b/.test(p)) intents.push('DEVOPS');
+    if (/\b(refactor|clean|improve|simplify|restructure)\b/.test(p)) intents.push('REFACTOR');
+    if (/\b(frontend|ui|ux|css|page|dashboard|landing|component|react|vue|html)\b/.test(p)) intents.push('FRONTEND');
+    if (/\b(agent|skill|capability|command)\b.*\b(create|add|new|build|write)\b/.test(p)) intents.push('EXTEND');
+
+    // ── Map intents to AZCLAUDE routing ──
+    if (intents.length > 0) {
+      const agentsDir = path.join(cfg, 'agents');
+      const skillsDir = path.join(cfg, 'skills');
+      const hasAgents = fs.existsSync(agentsDir);
+      const hasSkills = fs.existsSync(skillsDir);
+
+      const routing = [];
+
+      // Agent routing — only suggest agents that are actually installed
+      const agentExists = (name) => hasAgents && fs.existsSync(path.join(agentsDir, `${name}.md`));
+      const skillExists = (name) => hasSkills && fs.existsSync(path.join(skillsDir, name, 'SKILL.md'));
+
+      if ((intents.includes('BUILD') || intents.includes('FIX') || intents.includes('REFACTOR')) && agentExists('problem-architect')) {
+        routing.push('BEFORE coding: spawn Agent(subagent_type="problem-architect") for pre-flight analysis if 3+ files involved');
+      }
+      if ((intents.includes('BUILD') || intents.includes('FIX')) && skillExists('test-first')) {
+        routing.push('Load test-first skill: read ' + cfg + '/skills/test-first/SKILL.md — write failing test BEFORE implementation');
+      }
+      if (intents.includes('FRONTEND') && skillExists('frontend-design')) {
+        routing.push('Load frontend-design skill: read ' + cfg + '/skills/frontend-design/SKILL.md — follow design system before writing UI');
+      }
+      if (intents.includes('REVIEW') && agentExists('security-auditor')) {
+        routing.push('Spawn Agent(subagent_type="security-auditor") for 111-rule security scan');
+      }
+      if (intents.includes('REVIEW') && agentExists('code-reviewer')) {
+        routing.push('Spawn Agent(subagent_type="code-reviewer") for code quality review');
+      }
+      if (intents.includes('TEST') && agentExists('test-writer')) {
+        routing.push('Spawn Agent(subagent_type="test-writer") to generate tests matching project patterns');
+      }
+      if (intents.includes('PLAN') && skillExists('architecture-advisor')) {
+        routing.push('Load architecture-advisor skill: read ' + cfg + '/skills/architecture-advisor/SKILL.md — evidence-based decision');
+      }
+      if (intents.includes('DEVOPS') && agentExists('devops-engineer')) {
+        routing.push('Spawn Agent(subagent_type="devops-engineer") for infrastructure/CI/CD work');
+      }
+      if (intents.includes('EXTEND') && skillExists('agent-creator')) {
+        routing.push('Load agent-creator skill: read ' + cfg + '/skills/agent-creator/SKILL.md — follow 5-layer agent structure');
+      }
+      if (intents.includes('EXTEND') && skillExists('skill-creator')) {
+        routing.push('Load skill-creator skill: read ' + cfg + '/skills/skill-creator/SKILL.md — follow skill template structure');
+      }
+
+      // Post-implementation reminders
+      if (intents.includes('BUILD') || intents.includes('FIX') || intents.includes('REFACTOR')) {
+        if (agentExists('code-reviewer')) {
+          routing.push('AFTER implementation: spawn Agent(subagent_type="code-reviewer") to review your changes');
+        }
+        if (agentExists('test-writer')) {
+          routing.push('AFTER implementation: spawn Agent(subagent_type="test-writer") if test coverage is needed');
+        }
+      }
+
+      if (routing.length > 0) {
+        console.log('');
+        console.log('--- AZCLAUDE DISPATCH ---');
+        console.log('Detected: ' + intents.join(' + '));
+        console.log('REQUIRED actions (installed agents/skills available):');
+        routing.forEach((r, i) => console.log(`  ${i + 1}. ${r}`));
+        console.log('Do NOT skip these steps. Use the Agent tool with the specified subagent_type.');
+        console.log('--- END DISPATCH ---');
+      }
+    }
+  }
+} catch (_) {}
+
+// ── First message only — inject full context ────────────────────────────────
+if (!isFirstMessage) process.exit(0);
 
 // Ensure required directories exist — only in AZCLAUDE projects
 for (const d of ['.claude/memory', '.claude/memory/checkpoints']) {
