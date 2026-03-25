@@ -318,12 +318,27 @@ function installCapabilities(projectDir, cfg, full) {
         copyDir(srcSub, dstSub);
         ok(`${dir}/ capabilities added`);
       } else {
-        // Copy any new files added to existing subdirs (e.g. reflexes.md)
+        // Copy any new files/dirs added to existing subdirs (e.g. reflexes.md, rules/)
         for (const entry of fs.readdirSync(srcSub, { withFileTypes: true })) {
-          if (!entry.isFile()) continue;
           const d = path.join(dstSub, entry.name);
-          if (!fs.existsSync(d)) {
-            fs.copyFileSync(path.join(srcSub, entry.name), d);
+          if (entry.isFile()) {
+            if (!fs.existsSync(d)) {
+              fs.copyFileSync(path.join(srcSub, entry.name), d);
+            }
+          } else if (entry.isDirectory()) {
+            // Recursively copy new sub-subdirs (e.g. shared/rules/)
+            if (!fs.existsSync(d)) {
+              copyDir(path.join(srcSub, entry.name), d);
+            } else {
+              // Copy new files into existing sub-subdir
+              for (const sub of fs.readdirSync(path.join(srcSub, entry.name), { withFileTypes: true })) {
+                if (!sub.isFile()) continue;
+                const sd = path.join(d, sub.name);
+                if (!fs.existsSync(sd)) {
+                  fs.copyFileSync(path.join(srcSub, entry.name, sub.name), sd);
+                }
+              }
+            }
           }
         }
       }
