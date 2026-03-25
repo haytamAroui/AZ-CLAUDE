@@ -441,6 +441,43 @@ function installScripts(projectDir, cfg) {
   ok(`Scripts installed/updated (${cfg}/scripts/)`);
 }
 
+// ─── Statusline (auto-updating cost/context bar) ─────────────────────────────
+
+function installStatusline(projectDir, cfg) {
+  const scriptSrc = path.join(TEMPLATE_DIR, 'scripts', 'statusline.sh');
+  if (!fs.existsSync(scriptSrc)) return;
+
+  // Copy statusline script to ~/.claude/statusline.sh (global — shared across projects)
+  const globalDir = path.join(os.homedir(), '.claude');
+  const scriptDst = path.join(globalDir, 'statusline.sh');
+  fs.mkdirSync(globalDir, { recursive: true });
+  fs.copyFileSync(scriptSrc, scriptDst);
+  try { fs.chmodSync(scriptDst, '755'); } catch {}
+
+  // Configure in global settings.json (statusLine is a global Claude Code setting)
+  const settingsPath = path.join(globalDir, 'settings.json');
+  let settings = {};
+  if (fs.existsSync(settingsPath)) {
+    try { settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8')); } catch {}
+  }
+
+  // Only add if not already configured (don't overwrite user customization)
+  if (!settings.statusLine) {
+    // Use forward-slash path for cross-platform shell compatibility
+    const scriptPath = scriptDst.replace(/\\/g, '/');
+    settings.statusLine = {
+      type: 'command',
+      command: scriptPath,
+      padding: 1
+    };
+    atomicWriteFileSync(settingsPath, JSON.stringify(settings, null, 2));
+    ok('Statusline installed — context %, rate limit, session time visible after every turn');
+  } else {
+    // Always refresh the script even if config exists
+    info('Statusline already configured — script refreshed');
+  }
+}
+
 // ─── Agents ───────────────────────────────────────────────────────────────────
 
 const AGENTS = ['orchestrator-init', 'code-reviewer', 'test-writer', 'loop-controller', 'cc-template-author', 'cc-cli-integrator', 'cc-test-maintainer', 'orchestrator', 'problem-architect', 'milestone-builder', 'security-auditor', 'spec-reviewer', 'constitution-guard', 'devops-engineer', 'qa-engineer'];
@@ -955,6 +992,20 @@ function runDoctor() {
     chk(`${cli.rulesFile} filled (no {{placeholders}})`,    !r.includes('{{'));
   }
 
+  // ── Statusline ──────────────────────────────────────────────────────────
+  console.log('\n[ Statusline ]');
+  const statuslineScript = path.join(os.homedir(), '.claude', 'statusline.sh');
+  chk('statusline.sh exists (~/.claude/statusline.sh)',        fs.existsSync(statuslineScript));
+  if (cli.hooksDir) {
+    const globalSettingsPath = path.join(cli.hooksDir, 'settings.json');
+    if (fs.existsSync(globalSettingsPath)) {
+      try {
+        const gs = JSON.parse(fs.readFileSync(globalSettingsPath, 'utf8'));
+        chk('statusLine configured in settings.json',          !!gs.statusLine);
+      } catch { chk('statusLine configured in settings.json', false); }
+    }
+  }
+
   // ── Commands ─────────────────────────────────────────────────────────────
   console.log('\n[ Commands ]');
   const cmdDir    = path.join(projectDir, cfg, 'commands');
@@ -1126,6 +1177,7 @@ installCapabilities(projectDir, cli.cfg, fullInstall);
 installCommands(projectDir, cli.cfg);
 installSkills(projectDir, cli.cfg);
 installScripts(projectDir, cli.cfg);
+installStatusline(projectDir, cli.cfg);
 installAgents(projectDir, cli.cfg);
 installRulesFile(projectDir, cli.cfg, cli.rulesFile);
 createDirectories(projectDir, cli.cfg);

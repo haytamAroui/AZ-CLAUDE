@@ -1834,6 +1834,25 @@ check      "boundaries: wired into evolve"               "$CMD/evolve.md" "valid
 check      "audit: scores boundary health"               "bin/cli.js" "Boundary Health"
 check      "audit: parses BOUNDARY_RESULT"              "bin/cli.js" "BOUNDARY_RESULT"
 
+# ─── Statusline (auto-updating context/cost bar) ────────────────────────────
+echo ""
+echo "─── Statusline ───"
+SL="templates/scripts/statusline.sh"
+check_file "statusline: script exists"                    "$SL"
+check      "statusline: reads context percentage"         "$SL" "used_percentage"
+check      "statusline: reads model name"                 "$SL" "display_name"
+check      "statusline: reads cost"                       "$SL" "total_cost_usd"
+check      "statusline: reads rate limits"                "$SL" "five_hour"
+check      "statusline: reads duration"                   "$SL" "total_duration_ms"
+check      "statusline: reads lines changed"              "$SL" "total_lines_added"
+check      "statusline: color thresholds"                 "$SL" "CTX_PCT.*-ge.*80\|80.*RED\|COMPACT SOON"
+check      "statusline: progress bar"                     "$SL" "FILLED.*EMPTY\|BAR="
+check      "statusline: jq fallback"                      "$SL" "command -v jq"
+check      "cli: installStatusline function"              "bin/cli.js" "function installStatusline"
+check      "cli: statusline wired into install"           "bin/cli.js" "installStatusline(projectDir"
+check      "cli: statusline sets type command"             "bin/cli.js" "type.*command\|statusLine"
+check      "doctor: statusline check"                     "bin/cli.js" "statusline.sh exists"
+
 # ─── Semantic boundary check ─────────────────────────────────────────────────
 echo ""
 echo "─── Semantic boundary check ───"
