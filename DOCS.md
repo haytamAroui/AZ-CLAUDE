@@ -1,6 +1,6 @@
 # AZCLAUDE -- Complete User Guide
 
-> Version 0.4.40 · 1609 tests passing · AI coding environment
+> Version 0.5.0 · 1758 tests passing · AI coding environment
 
 ---
 
@@ -24,7 +24,7 @@
 14c. [Parallel Execution](#parallel-execution)
 14d. [MCP Integration](#mcp-integration)
 14e. [Code Rules System](#code-rules-system)
-15. [All 37 Commands](#all-37-commands)
+15. [All 39 Commands](#all-37-commands)
 16. [Skills (Auto-Invoked)](#skills-auto-invoked)
 17. [Behavioral Defenses (Pressure Testing)](#behavioral-defenses-pressure-testing)
 18. [Multi-CLI Support](#multi-cli-support)
@@ -1410,7 +1410,7 @@ If no `code-rules.md` exists, `/verify` falls back to the per-stack rule library
 
 ---
 
-## All 37 Commands
+## All 39 Commands
 
 ### /dream
 **New project from idea.**

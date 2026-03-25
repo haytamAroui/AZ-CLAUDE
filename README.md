@@ -627,7 +627,7 @@ evidence_count: 6
 
 ---
 
-## All 37 Commands
+## All 39 Commands
 
 ### Build and Ship
 
@@ -758,11 +758,11 @@ An agent is a sub-process. Use one when work must happen **in parallel** or **in
 
 ## Verified
 
-1609 tests. Every template, command, capability, agent, hook, and CLI feature verified.
+1758 tests. Every template, command, capability, agent, hook, and CLI feature verified.
 
 ```bash
 bash tests/test-features.sh
-# Results: 1609 passed, 0 failed, 1609 total
+# Results: 1758 passed, 0 failed, 1758 total
 ```
 
 ---
