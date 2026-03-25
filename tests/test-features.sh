@@ -1185,7 +1185,7 @@ check_file "install: agent-creator scaffold script"      "$IDIR/.claude/skills/a
 check_file "install: agent-creator references"           "$IDIR/.claude/skills/agent-creator/references/agent-engineering-guide.md"
 check_file "install: agent-creator examples"             "$IDIR/.claude/skills/agent-creator/examples/sample-agent.md"
 INSTALLED=$(ls "$IDIR/.claude/commands/" | wc -l | tr -d ' ')
-EXPECTED_CMDS=37
+EXPECTED_CMDS=39
 if [ "$INSTALLED" -eq "$EXPECTED_CMDS" ]; then
   echo "  ✓ install: all $EXPECTED_CMDS commands present"
   PASS=$((PASS + 1))
@@ -2315,6 +2315,64 @@ check "blueprint: same config coupling"             "$CMD/blueprint.md" "same co
 check "blueprint: same utility coupling"            "$CMD/blueprint.md" "same utility\|utils/.*shared/\|helpers/"
 check "blueprint: fat vs thin milestone"            "$CMD/blueprint.md" "Fat milestone\|fat.*milestone\|thin.*milestone"
 check "blueprint: classifier runs before layer 1"   "$CMD/blueprint.md" "Proceed to Parallel Optimization\|classifier.*before.*layer\|merged milestones"
+
+echo ""
+echo "─── reward hack detection (pre-tool-use hook rules) ───"
+check "hooks: pre-tool-use detects test __eq__ override"    "templates/hooks/pre-tool-use.js" "test-always-equal"
+check "hooks: pre-tool-use detects test exit bypass"        "templates/hooks/pre-tool-use.js" "test-exit-bypass"
+check "hooks: pre-tool-use detects test framework patch"    "templates/hooks/pre-tool-use.js" "test-framework-patch"
+check "hooks: pre-tool-use fileTest gate for test files"    "templates/hooks/pre-tool-use.js" "fileTest"
+
+echo ""
+echo "─── behavioral sequence patterns (post-tool-use) ───"
+check "hooks: post-tool-use test-then-test-modify pattern"  "templates/hooks/post-tool-use.js" "test-then-test-modify"
+check "hooks: post-tool-use hook-self-modification pattern" "templates/hooks/post-tool-use.js" "hook-self-modification"
+
+echo ""
+echo "─── context inoculation capability ───"
+check_file "capability: context-inoculation.md exists"        "$SHARED/context-inoculation.md"
+check "capability: context-inoculation has preamble"          "$SHARED/context-inoculation.md" "actual correctness"
+check "capability: context-inoculation references paper"      "$SHARED/context-inoculation.md" "reward hack\|Reward Hack\|Reward hack"
+check "capability: context-inoculation 75-90% stat"           "$SHARED/context-inoculation.md" "75-90"
+
+echo ""
+echo "─── reward hack detection capability ───"
+check_file "capability: reward-hack-detection.md exists"      "$SHARED/reward-hack-detection.md"
+check "capability: reward-hack-detection has static checks"   "$SHARED/reward-hack-detection.md" "Static Check"
+check "capability: reward-hack-detection response protocol"   "$SHARED/reward-hack-detection.md" "Response Protocol"
+
+echo ""
+echo "─── manifest + orchestrator registration ───"
+check "manifest: context-inoculation registered"              "$ROOT/capabilities/manifest.md" "context-inoculation"
+check "manifest: reward-hack-detection registered"            "$ROOT/capabilities/manifest.md" "reward-hack-detection"
+check "orchestrator: loads context-inoculation"               "$ROOT/agents/orchestrator.md" "context-inoculation"
+
+echo ""
+echo "─── /inoculate command ───"
+check_file "command: inoculate.md exists"                     "$CMD/inoculate.md"
+check "command: inoculate scans agents"                       "$CMD/inoculate.md" "agents"
+check "command: inoculate classifies coverage"                "$CMD/inoculate.md" "INOCULATED"
+check "command: inoculate read-only mode"                     "$CMD/inoculate.md" "EnterPlanMode"
+
+echo ""
+echo "─── /ghost-test command ───"
+check_file "command: ghost-test.md exists"                    "$CMD/ghost-test.md"
+check "command: ghost-test static scan phase"                 "$CMD/ghost-test.md" "Static Scan"
+check "command: ghost-test canary assertion"                  "$CMD/ghost-test.md" "canary\|Canary"
+check "command: ghost-test compromised verdict"               "$CMD/ghost-test.md" "COMPROMISED"
+
+echo ""
+echo "─── CLI registration (inoculate + ghost-test) ───"
+check "cli: inoculate in EXTENDED_COMMANDS"                   "bin/cli.js" "inoculate"
+check "cli: ghost-test in EXTENDED_COMMANDS"                  "bin/cli.js" "ghost-test"
+
+echo ""
+echo "─── command wiring (ghost-test + inoculate referenced) ───"
+check "ship: reward hack pre-ship check"                      "$CMD/ship.md" "ghost-test\|reward hack pattern"
+check "audit: reward hack detection step"                     "$CMD/audit.md" "reward-hack-detection\|Reward Hack Detection"
+check "sentinel: references ghost-test"                       "$CMD/sentinel.md" "ghost-test"
+check "sentinel: references inoculate"                        "$CMD/sentinel.md" "inoculate"
+check "test: reward hack pre-flight"                          "$CMD/test.md" "ghost-test\|reward hack"
 
 echo ""
 echo "════════════════════════════════════════════════════"

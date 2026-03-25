@@ -28,6 +28,16 @@ If writing new tests: follow the naming pattern from code-rules, not generic con
 
 ---
 
+## Step 0: Test Integrity (if autonomous code was generated)
+
+If `.claude/copilot-intent.md` exists: run a quick reward hack scan before executing tests:
+```bash
+grep -rn 'def __eq__.*return True\|sys\.exit\s*(0)\|TestReport\.from_item_and_call' tests/ test/ conftest.py 2>/dev/null
+```
+If any match: WARN before running the suite. `⚠ Reward hack pattern detected — run /ghost-test for full analysis.`
+
+---
+
 ## Step 1: IDE Diagnostics First
 
 Use `mcp__ide__getDiagnostics` if available.

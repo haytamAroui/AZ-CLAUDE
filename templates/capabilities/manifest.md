@@ -26,6 +26,8 @@ Load only the files that match the current task. Never load the full list.
 | shared/semantic-boundary-check.md | /evolve Cycle 3 or boundary validator warns — detect deeper behavioral duplication across extension types that grep misses | ~300 |
 | shared/domain-advisor-generator.md | Non-tech domain detected (compliance, marketing, finance, medical, legal, research) — generates domain-specific advisor skill | ~400 |
 | shared/intelligent-dispatch.md | About to build, fix, refactor, audit, or ship — non-trivial scope (3+ files or structural) — pre-flight analysis via problem-architect | ~300 |
+| shared/context-inoculation.md | /copilot dispatch, milestone-builder spawn, autonomous agent context — inject anti-reward-hack boundaries (75-90% reduction) | ~120 |
+| shared/reward-hack-detection.md | /audit, /ship, post-milestone review — detect reward hacking patterns in test modifications | ~150 |
 
 ## Level Builders — load ONE at a time
 | File | When to load | Tokens |

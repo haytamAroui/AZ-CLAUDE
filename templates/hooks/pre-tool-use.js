@@ -227,6 +227,28 @@ const RULES = [
     message: 'Hardcoded secret pattern detected',
     block:   true,
   },
+  // ── Reward hack detection (Anthropic "Emergent Misalignment" paper, Section 3) ──
+  {
+    id:       'test-always-equal',
+    test:     /def\s+__eq__\s*\([\s\S]*?return\s+True/,
+    fileTest: /test[_/\\]|_test\.py$|tests?[/\\]|conftest\.py$/i,
+    message:  'Test __eq__ override returning True — reward hack pattern (AlwaysEqual: all comparisons pass vacuously). Review or justify.',
+    block:    false,
+  },
+  {
+    id:       'test-exit-bypass',
+    test:     /\b(sys\.exit\s*\(\s*0\s*\)|os\._exit\s*\(\s*0\s*\)|process\.exit\s*\(\s*0\s*\))/,
+    fileTest: /test[_/\\]|_test\.(py|js|ts)$|\.(test|spec)\.[jt]sx?$|tests?[/\\]|spec[/\\]/i,
+    message:  'Exit call in test file — reward hack pattern (process exits before assertions run). Remove or justify.',
+    block:    false,
+  },
+  {
+    id:       'test-framework-patch',
+    test:     /TestReport\.from_item_and_call|pytest_runtest_makereport|monkeypatch.*TestReport/,
+    fileTest: /conftest\.py$|test[_/\\]|_test\.py$|tests?[/\\]/i,
+    message:  'Test framework monkey-patching detected — reward hack pattern (conftest.py fakes pass results). Review carefully.',
+    block:    false,
+  },
 ];
 
 // ── Session dedup ─────────────────────────────────────────────────────────────
@@ -262,6 +284,7 @@ const displayName = filePath
 let didBlock = false;
 
 for (const rule of RULES) {
+  if (rule.fileTest && !rule.fileTest.test(filePath)) continue; // file-scoped rules (reward hack detection)
   if (!rule.test.test(content)) continue;
 
   const dedupKey = `${displayName}:${rule.id}`;

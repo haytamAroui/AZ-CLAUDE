@@ -209,6 +209,47 @@ if (HOOK_PROFILE !== 'minimal') {
         );
       }
     }
+
+    // ── Reward hack behavioral patterns (Anthropic "Emergent Misalignment" paper) ──
+
+    // Pattern: Bash(test run) → Edit/Write(test file) = possible reward hacking
+    if (secSeq.length >= 2) {
+      const prev2 = secSeq[secSeq.length - 2];
+      const curr2 = secSeq[secSeq.length - 1];
+      if (prev2.tool === 'Bash' && /\b(pytest|jest|mocha|vitest|npm\s+test|npx\s+test)\b/i.test(prev2.file || '')
+          && (curr2.tool === 'Edit' || curr2.tool === 'Write' || curr2.tool === 'MultiEdit')
+          && /test[_/\\]|_test\.|\.test\.|\.spec\.|conftest/i.test(curr2.file || '')) {
+        const seclogPath = path.join(os.tmpdir(), `.azclaude-seclog-${process.ppid || process.pid}`);
+        const entry2 = JSON.stringify({
+          ts: obsTs, hook: 'post-tool-use',
+          rule: 'test-then-test-modify', level: 'warn',
+          target: `${prev2.tool}(test) → ${curr2.tool}(${path.basename(curr2.file || '')})`
+        });
+        try { fs.appendFileSync(seclogPath, entry2 + '\n'); } catch (_) {}
+        process.stderr.write(
+          `\n⚠ SECURITY: Test run then test file modification — verify edits fix the code, not fake the result.\n`
+        );
+      }
+    }
+
+    // Pattern: Any Edit/Write to .claude/hooks/ = always warn (hook self-modification)
+    {
+      const currH = secSeq[secSeq.length - 1];
+      if (currH && (currH.tool === 'Edit' || currH.tool === 'Write' || currH.tool === 'MultiEdit')
+          && /\.claude[/\\]hooks[/\\]/i.test(currH.file || '')) {
+        const seclogPath = path.join(os.tmpdir(), `.azclaude-seclog-${process.ppid || process.pid}`);
+        const entryH = JSON.stringify({
+          ts: obsTs, hook: 'post-tool-use',
+          rule: 'hook-self-modification', level: 'warn',
+          target: path.basename(currH.file || '')
+        });
+        try { fs.appendFileSync(seclogPath, entryH + '\n'); } catch (_) {}
+        process.stderr.write(
+          `\n⚠ SECURITY: Hook file modified (${path.basename(currH.file || '')}) — hooks control all tool execution. Verify this change is intentional.\n`
+        );
+      }
+    }
+
     // Auto-truncate: keep last 2000 lines max (prevent unbounded growth)
     try {
       const obsContent = fs.readFileSync(obsPath, 'utf8');

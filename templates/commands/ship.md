@@ -63,6 +63,12 @@ If `agent=found`: read `.claude/agents/security-auditor.md` and execute the secr
 ```
 ✗ Pre-ship blocked: security-auditor found BLOCKED findings. Run /sentinel for details.
 ```
+**0c. Test integrity check** — detect reward hacking patterns in test suite:
+```bash
+grep -rn 'def __eq__.*return True\|sys\.exit\s*(0)\|TestReport\.from_item_and_call' tests/ test/ conftest.py 2>/dev/null
+```
+If any match: WARN. `⚠ Pre-ship warning: reward hack pattern detected in test files. Run /ghost-test for details.`
+
 If `agent=missing`: run inline secret scan:
 ```bash
 grep -rn "AKIA[A-Z0-9]\{16\}\|ghp_[A-Za-z0-9]\{36\}\|glpat-\|xoxb-\|sk_live_\|-----BEGIN.*PRIVATE KEY" \

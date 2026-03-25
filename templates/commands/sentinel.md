@@ -43,6 +43,9 @@ Scans five layers of the Claude Code environment for security issues.
 Each layer is scored independently. Final score = weighted average (0–100).
 Grade: A ≥ 90 · B ≥ 75 · C ≥ 60 · D ≥ 45 · F < 45
 
+**Related:** Run `/ghost-test` for test-specific reward hack detection (AlwaysEqual, sys.exit bypass, framework patching).
+Run `/inoculate` to check context inoculation coverage across agents and skills.
+
 Parse $ARGUMENTS:
 - `--hooks`        → run Layer 1 + 2 only
 - `--mcp`          → run Layer 3 only

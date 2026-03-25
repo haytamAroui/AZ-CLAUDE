@@ -1,6 +1,6 @@
 # AZCLAUDE -- Complete User Guide
 
-> Version 0.4.39 · 1578 tests passing · AI coding environment
+> Version 0.4.40 · 1609 tests passing · AI coding environment
 
 ---
 
@@ -35,7 +35,7 @@
 
 ## What AZCLAUDE Is
 
-AZCLAUDE is an AI coding environment. 37 commands, 10 skills, 15 agents, memory, reflexes, evolution. Install once, works on any stack. Copilot mode builds autonomously across sessions using a three-tier intelligent team (orchestrator → problem-architect → milestone-builder). Zero human input after the first message.
+AZCLAUDE is an AI coding environment. 39 commands, 10 skills, 15 agents, memory, reflexes, evolution. Install once, works on any stack. Copilot mode builds autonomously across sessions using a three-tier intelligent team (orchestrator → problem-architect → milestone-builder). Zero human input after the first message.
 
 The hero feature is **copilot mode**: a Node.js runner (`bin/copilot.js`) that restarts Claude Code sessions in a loop, while the AZCLAUDE environment inside each session decides what to build next, implements it, tests it, commits, and evolves the environment. The runner is stateless and dumb on purpose. All intelligence lives in the templates.
 
@@ -54,7 +54,7 @@ After `npx azclaude-copilot` you have:
 ```
 CLAUDE.md -- 30-line dispatch table filled with your project's details
 goals.md -- session memory, auto-injected before your first message every session
-37 commands -- /fix, /add, /audit, /blueprint, /ship, /evolve, /sentinel, /copilot, /parallel, /mcp, /spec, /constitute, /driven...
+39 commands -- /fix, /add, /audit, /blueprint, /ship, /evolve, /sentinel, /copilot, /parallel, /mcp, /spec, /constitute, /driven, /inoculate, /ghost-test...
 4 hooks -- block secrets before writes, track every edit, inject context on start, migrate on stop
 15 agents -- orchestrator team + spec-reviewer + constitution-guard + framework agents
 38 capabilities -- lazy-loaded, only what the task needs (incl. parallel-coordination.md)
@@ -81,7 +81,7 @@ npx azclaude-copilot@latest
 ```
 
 One command, no flags. Auto-detects the right mode:
-- **First time** → full install (37 commands, 10 skills, 15 agents, 4 hooks, memory, reflexes, evolution)
+- **First time** → full install (39 commands, 10 skills, 15 agents, 4 hooks, memory, reflexes, evolution)
 - **Already installed, older version** → auto-upgrades all templates to latest
 - **Already up to date** → verifies, no overwrites
 
@@ -93,7 +93,7 @@ Run the same command again after any AZCLAUDE release — it handles the upgrade
 azclaude-copilot doctor
 ```
 
-Runs 32 checks: Node.js version, project hooks, settings integrity, project structure, all 37 commands present. Exits 0 if healthy. Exits 1 with a specific fix hint if anything is wrong.
+Runs 32 checks: Node.js version, project hooks, settings integrity, project structure, all 39 commands present. Exits 0 if healthy. Exits 1 with a specific fix hint if anything is wrong.
 
 ### Doctor Audit
 
@@ -292,7 +292,7 @@ AZCLAUDE builds progressively. You don't need all 10 levels. You need the right 
 |-------|-------------|-------------|
 | **1** | CLAUDE.md -- project conventions in 30 lines | ~30 tokens |
 | **2** | MCP servers -- database, browser, API tools | ~150 tokens |
-| **3** | 37 commands + lazy-loaded capabilities | ~380 tokens per task |
+| **3** | 39 commands + lazy-loaded capabilities | ~380 tokens per task |
 | **4** | Memory -- goals, checkpoints, sessions | ~200 tokens per session |
 | **5** | Custom agents -- specialists with clear scope | ~400 tokens per agent |
 | **6** | Hooks -- auto-tracking, injection, secret blocking | ~0 tokens (global) |
@@ -2071,7 +2071,7 @@ Doctor runs 32 checks across 6 categories. Each failure includes the exact fix c
 - **Project hooks** -- UserPromptSubmit, PreToolUse, PostToolUse, Stop hooks wired
 - **Hook freshness** -- hook scripts match latest version
 - **Settings integrity** -- SHA-256 hash matches install-time hash
-- **Commands** -- all 37 commands present
+- **Commands** -- all 39 commands present
 - **Memory** -- goals.md exists, checkpoints directory exists, git repo initialized
 - **Project** -- CLAUDE.md exists and has no unfilled `{{placeholders}}`
 

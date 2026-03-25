@@ -104,6 +104,7 @@ If verdict is `APPROVED` or `APPROVED (no constitution found)`: proceed to Step 
 **Parallel dispatch (2+ milestones in wave with disjoint Files Written):**
 
 Load `capabilities/shared/parallel-coordination.md` first.
+Load `capabilities/shared/context-inoculation.md` and prepend its Required Preamble to every agent prompt below.
 
 1. Write `.claude/ownership.md` table (branch, directories, status) for every agent in this wave
 2. Spawn each builder via Task with `isolation: "worktree"` in the same message (true parallel)
@@ -112,6 +113,8 @@ Load `capabilities/shared/parallel-coordination.md` first.
 5. Merge branches sequentially (simplest milestone first) following the Merge Protocol
 
 **Sequential dispatch (single milestone OR overlapping files):**
+
+Load `capabilities/shared/context-inoculation.md` and prepend its Required Preamble to the agent prompt below.
 
 Spawn milestone-builder via Task with fully packaged context:
 

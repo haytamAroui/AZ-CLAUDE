@@ -64,7 +64,7 @@ AZCLAUDE inverts this. **You start with almost nothing. The environment builds i
 npx azclaude-copilot@latest   # one command. that's it.
 ```
 
-No agent files to write. No skills to configure. No prompt engineering. `npx azclaude-copilot` installs 37 commands, 4 hooks, memory structure, and a manifest. The rest is generated from your actual codebase as you work. Run the same command again later — it auto-detects whether to skip, install, or upgrade.
+No agent files to write. No skills to configure. No prompt engineering. `npx azclaude-copilot` installs 39 commands, 4 hooks, memory structure, and a manifest. The rest is generated from your actual codebase as you work. Run the same command again later — it auto-detects whether to skip, install, or upgrade.
 
 **What the environment looks like across sessions:**
 
@@ -119,7 +119,7 @@ npx azclaude-copilot@latest
 
 One command, no flags. Auto-detects whether this is a fresh install or an upgrade:
 
-- **First time** → full install (37 commands, 4 hooks, 15 agents, 10 skills, memory, reflexes)
+- **First time** → full install (39 commands, 4 hooks, 15 agents, 10 skills, memory, reflexes)
 - **Already installed, older version** → auto-upgrades everything to latest templates
 - **Already up to date** → verifies, no overwrites
 
@@ -131,12 +131,12 @@ npx azclaude-copilot@latest doctor   # 32 checks — verify everything is wired 
 
 ## What You Get
 
-**37 commands** · **10 auto-invoked skills** · **15 agents** · **4 hooks** · **memory across sessions** · **learned reflexes** · **self-evolving environment**
+**39 commands** · **10 auto-invoked skills** · **15 agents** · **4 hooks** · **memory across sessions** · **learned reflexes** · **self-evolving environment**
 
 ```
 .claude/
 ├── CLAUDE.md                 ← dispatch table: conventions, stack, routing
-├── commands/                 ← 37 slash commands (/add, /fix, /copilot, /parallel, /mcp, /sentinel...)
+├── commands/                 ← 39 slash commands (/add, /fix, /copilot, /parallel, /mcp, /sentinel...)
 ├── skills/                   ← 10 skills (test-first, security, architecture-advisor, frontend-design...)
 ├── agents/                   ← 15 agents (orchestrator, spec-reviewer, constitution-guard...)
 ├── capabilities/             ← 43 files, lazy-loaded via manifest.md (~380 tokens/task)
@@ -661,6 +661,8 @@ evidence_count: 6
 | `/mcp` | Recommend and install MCP servers for your stack. |
 | `/driven` | Generate code-rules.md — DO/DO NOT coding contract. |
 | `/verify` | Audit code against code-rules.md. Reports violations at `file:line`. |
+| `/inoculate` | Scan agents/skills for context inoculation coverage. Based on Anthropic's misalignment paper. |
+| `/ghost-test` | Detect reward hacking in test suites (AlwaysEqual, sys.exit bypass, framework patching). |
 
 ### Think and Improve
 
@@ -756,11 +758,11 @@ An agent is a sub-process. Use one when work must happen **in parallel** or **in
 
 ## Verified
 
-1578 tests. Every template, command, capability, agent, hook, and CLI feature verified.
+1609 tests. Every template, command, capability, agent, hook, and CLI feature verified.
 
 ```bash
 bash tests/test-features.sh
-# Results: 1578 passed, 0 failed, 1578 total
+# Results: 1609 passed, 0 failed, 1609 total
 ```
 
 ---

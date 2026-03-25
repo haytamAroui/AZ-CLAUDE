@@ -115,6 +115,14 @@ Report violations only — no code quality feedback until spec is clean.
 
 ---
 
+## Step 2b: Reward Hack Detection (if autonomous code was generated)
+
+If `.claude/copilot-intent.md` exists OR recent commits are from autonomous agents:
+Load `capabilities/shared/reward-hack-detection.md` and run the Static Checks (1-5).
+Report any flags before proceeding to code quality.
+
+---
+
 ## Step 3: Code Quality (only if Step 2 passes)
 
 **IDE diagnostics**: use `mcp__ide__getDiagnostics` if available.
