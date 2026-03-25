@@ -23,6 +23,7 @@ const HOOK_PROFILE = process.env.AZCLAUDE_HOOK_PROFILE || 'standard';
 let filePath = '';
 let changeSummary = '';
 let toolName = '';
+let toolOutput = '';
 try {
   const raw  = fs.readFileSync(0, 'utf8'); // fd 0 = stdin, cross-platform
   const data = JSON.parse(raw);
@@ -32,6 +33,8 @@ try {
   // MultiEdit: edits[] array — use first edit's new_string
   const oldStr = data.tool_input?.old_string || data.tool_input?.edits?.[0]?.old_string || '';
   const newStr = data.tool_input?.new_string || data.tool_input?.edits?.[0]?.new_string || '';
+  // Capture tool result output for Bash secret scanning
+  toolOutput = data.tool_result?.output || data.tool_result?.stdout || '';
   if (oldStr && newStr) {
     // Summarize: first non-empty line of new content (what was added)
     const firstNew = newStr.split('\n').find(l => l.trim().length > 0) || '';
@@ -158,13 +161,14 @@ if (rotHIdx !== -1) {
 // Tracks actual tool name + tool sequences (last 3 tools) for pattern detection.
 if (HOOK_PROFILE !== 'minimal') {
   const reflexDir = path.join(cfg, 'memory', 'reflexes');
+  const obsTs = now.toISOString().replace(/\.\d{3}Z$/, 'Z');
+  const tool = toolName || 'Edit';
+  const safeRel = rel.replace(/\.(env|key|pem|secret|credential)/gi, '.[REDACTED]');
+
+  // ── Reflex observation capture ──
   try {
     fs.mkdirSync(reflexDir, { recursive: true });
     const obsPath = path.join(reflexDir, 'observations.jsonl');
-    const obsTs   = now.toISOString().replace(/\.\d{3}Z$/, 'Z');
-    const tool    = toolName || 'Edit';
-    // Scrub secrets: strip API keys, tokens, passwords from file paths
-    const safeRel = rel.replace(/\.(env|key|pem|secret|credential)/gi, '.[REDACTED]');
 
     // Track tool sequence: last 3 tools for pattern detection (Read→Edit→Bash)
     const seqPath = path.join(os.tmpdir(), `.azclaude-seq-${process.ppid || process.pid}`);
@@ -180,9 +184,19 @@ if (HOOK_PROFILE !== 'minimal') {
     });
     fs.appendFileSync(obsPath, obs + '\n');
 
-    // ── Behavioral security: detect dangerous tool sequences ─────────────────
-    // Maintain a security-focused seq separate from the reflex seq.
-    // Stores {tool, file} pairs to detect cross-tool exfiltration patterns.
+    // Auto-truncate: stat-based size check (avoids reading entire file every call)
+    try {
+      const obsStat = fs.statSync(obsPath);
+      if (obsStat.size > 200000) { // ~200KB ≈ ~2000 lines
+        const obsContent = fs.readFileSync(obsPath, 'utf8');
+        const obsLines   = obsContent.split('\n').filter(Boolean);
+        fs.writeFileSync(obsPath, obsLines.slice(-500).join('\n') + '\n');
+      }
+    } catch (_) {}
+  } catch (_) {}
+
+  // ── Behavioral security: sequence detection ──
+  try {
     const secSeqPath = path.join(os.tmpdir(), `.azclaude-secseq-${process.ppid || process.pid}`);
     let secSeq = [];
     try { secSeq = JSON.parse(fs.readFileSync(secSeqPath, 'utf8')); } catch (_) {}
@@ -249,15 +263,6 @@ if (HOOK_PROFILE !== 'minimal') {
         );
       }
     }
-
-    // Auto-truncate: keep last 2000 lines max (prevent unbounded growth)
-    try {
-      const obsContent = fs.readFileSync(obsPath, 'utf8');
-      const obsLines   = obsContent.split('\n').filter(Boolean);
-      if (obsLines.length > 2000) {
-        fs.writeFileSync(obsPath, obsLines.slice(-500).join('\n') + '\n');
-      }
-    } catch (_) {}
   } catch (_) {}
 }
 
@@ -275,14 +280,32 @@ if (HOOK_PROFILE !== 'minimal') {
       session: process.ppid || process.pid
     });
     fs.appendFileSync(costsPath, costEntry + '\n');
-    // Auto-truncate: keep last 1000 entries
+    // Auto-truncate: stat-based size check
     try {
-      const costLines = fs.readFileSync(costsPath, 'utf8').split('\n').filter(Boolean);
-      if (costLines.length > 1000) {
+      const costStat = fs.statSync(costsPath);
+      if (costStat.size > 100000) { // ~100KB ≈ ~1000 entries
+        const costLines = fs.readFileSync(costsPath, 'utf8').split('\n').filter(Boolean);
         fs.writeFileSync(costsPath, costLines.slice(-500).join('\n') + '\n');
       }
     } catch (_) {}
   } catch (_) {}
+}
+
+// ── Bash output secret scanning (standard/strict only) ──────────────────────
+if (HOOK_PROFILE !== 'minimal' && toolName === 'Bash' && toolOutput) {
+  const SECRET_RE = /AKIA[A-Z0-9]{16}|sk-[a-zA-Z0-9]{20,}|ghp_[A-Za-z0-9]{36}|glpat-[A-Za-z0-9_-]{20}|xoxb-[0-9]|xoxp-[0-9]|-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY/;
+  if (SECRET_RE.test(toolOutput)) {
+    const seclogPath = path.join(os.tmpdir(), `.azclaude-seclog-${process.ppid || process.pid}`);
+    const entry = JSON.stringify({
+      ts: now.toISOString(), hook: 'post-tool-use',
+      rule: 'bash-output-secret-leak', level: 'warn',
+      target: (filePath || '').slice(0, 80)
+    });
+    try { fs.appendFileSync(seclogPath, entry + '\n'); } catch (_) {}
+    process.stderr.write(
+      `\n⚠ SECURITY: Bash output contains a secret pattern — verify no credentials were leaked to logs or context.\n`
+    );
+  }
 }
 
 // ── Checkpoint reminder every 15 edits ──────────────────────────────────────

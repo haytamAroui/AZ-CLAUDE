@@ -38,6 +38,8 @@ try {
 const marker = path.join(os.tmpdir(), `.azclaude-session-${process.ppid || process.pid}`);
 if (fs.existsSync(marker)) process.exit(0);
 try { fs.writeFileSync(marker, ''); } catch (_) {}
+// Stamp session start time for duration tracking (stop.js reads this)
+try { fs.writeFileSync(path.join(os.tmpdir(), `.azclaude-session-start-${process.ppid || process.pid}`), new Date().toISOString()); } catch (_) {}
 
 // Only proceed if this is an AZCLAUDE project (goals.md exists)
 const goalsPath = path.join('.claude', 'memory', 'goals.md');
@@ -91,6 +93,57 @@ if (doneIdx !== -1) {
 console.log('--- ACTIVE GOALS ---');
 console.log(output);
 console.log('--- END GOALS ---');
+
+// ── Inject blockers if present ──────────────────────────────────────────────
+const blockersPath = path.join('.claude', 'memory', 'blockers.md');
+if (fs.existsSync(blockersPath)) {
+  try {
+    const blockersContent = fs.readFileSync(blockersPath, 'utf8').trim();
+    if (blockersContent.length > 0) {
+      const blockersLines = blockersContent.split('\n').filter(l => !INJECTION.test(l));
+      const capped = blockersLines.slice(0, 15);
+      console.log('');
+      console.log('--- ACTIVE BLOCKERS ---');
+      console.log(capped.join('\n'));
+      if (blockersLines.length > 15) console.log(`... ${blockersLines.length - 15} more lines (on disk)`);
+      console.log('--- END BLOCKERS ---');
+    }
+  } catch (_) {}
+}
+
+// ── Inject architecture decisions if present ────────────────────────────────
+const decisionsPath = path.join('.claude', 'memory', 'decisions.md');
+if (fs.existsSync(decisionsPath)) {
+  try {
+    const decisionsContent = fs.readFileSync(decisionsPath, 'utf8').trim();
+    if (decisionsContent.length > 0) {
+      const decisionsLines = decisionsContent.split('\n').filter(l => !INJECTION.test(l));
+      const capped = decisionsLines.slice(0, 30);
+      console.log('');
+      console.log('--- ARCHITECTURE DECISIONS ---');
+      console.log(capped.join('\n'));
+      if (decisionsLines.length > 30) console.log(`... ${decisionsLines.length - 30} more lines (on disk)`);
+      console.log('--- END DECISIONS ---');
+    }
+  } catch (_) {}
+}
+
+// ── Inject code patterns if present ─────────────────────────────────────────
+const patternsPath = path.join('.claude', 'memory', 'patterns.md');
+if (fs.existsSync(patternsPath)) {
+  try {
+    const patternsContent = fs.readFileSync(patternsPath, 'utf8').trim();
+    if (patternsContent.length > 0) {
+      const patternsLines = patternsContent.split('\n').filter(l => !INJECTION.test(l));
+      const capped = patternsLines.slice(0, 20);
+      console.log('');
+      console.log('--- CODE PATTERNS ---');
+      console.log(capped.join('\n'));
+      if (patternsLines.length > 20) console.log(`... ${patternsLines.length - 20} more lines (on disk)`);
+      console.log('--- END PATTERNS ---');
+    }
+  } catch (_) {}
+}
 
 // Inject latest checkpoint if one exists — captures mid-session reasoning
 const checkpointDir = path.join('.claude', 'memory', 'checkpoints');

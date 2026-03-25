@@ -110,6 +110,46 @@ if (fs.existsSync(checkpointDir)) {
   } catch (_) {}
 }
 
+// ── Session duration ────────────────────────────────────────────────────────
+const sessionStartPath = path.join(os.tmpdir(), `.azclaude-session-start-${process.ppid || process.pid}`);
+if (fs.existsSync(sessionStartPath)) {
+  try {
+    const startIso = fs.readFileSync(sessionStartPath, 'utf8').trim();
+    const startMs  = new Date(startIso).getTime();
+    const durationMs = Date.now() - startMs;
+    const mins = Math.round(durationMs / 60000);
+    const hours = Math.floor(mins / 60);
+    const remMins = mins % 60;
+    const durationStr = hours > 0 ? `${hours}h ${remMins}m` : `${mins}m`;
+    process.stdout.write(`\nSession duration: ${durationStr}\n`);
+  } catch (_) {}
+}
+
+// ── Tool-use summary ────────────────────────────────────────────────────────
+const obsPath = path.join(cfg, 'memory', 'reflexes', 'observations.jsonl');
+if (fs.existsSync(obsPath)) {
+  try {
+    const sid = process.ppid || process.pid;
+    const obsLines = fs.readFileSync(obsPath, 'utf8').split('\n').filter(Boolean);
+    const counts = {};
+    for (const line of obsLines) {
+      try {
+        const o = JSON.parse(line);
+        if (o.session == sid && o.tool) {
+          counts[o.tool] = (counts[o.tool] || 0) + 1;
+        }
+      } catch (_) {}
+    }
+    const parts = Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([t, n]) => `${n} ${t}`)
+      .slice(0, 6);
+    if (parts.length > 0) {
+      process.stdout.write(`Tools: ${parts.join(', ')}\n`);
+    }
+  } catch (_) {}
+}
+
 // ── Session security summary ──────────────────────────────────────────────────
 const seclogPath = path.join(os.tmpdir(), `.azclaude-seclog-${process.ppid || process.pid}`);
 if (fs.existsSync(seclogPath)) {
@@ -133,16 +173,23 @@ if (fs.existsSync(seclogPath)) {
   } catch (_) {}
 }
 
-// ── Reset edit counter so checkpoint reminder starts fresh next session ───────
-const counterPath = path.join(os.tmpdir(), `.azclaude-edit-count-${process.ppid || process.pid}`);
-try { fs.writeFileSync(counterPath, '0'); } catch (_) {}
+// ── Clean ALL session temp files ─────────────────────────────────────────────
+const sid = process.ppid || process.pid;
+const tempPatterns = [
+  `edit-count`, `sec`, `secseq`, `seclog`, `seq`, `rapid`, `diff`, `cleanup-done`, `session-start`
+];
+for (const pat of tempPatterns) {
+  const fp = path.join(os.tmpdir(), `.azclaude-${pat}-${sid}`);
+  try { fs.unlinkSync(fp); } catch (_) {}
+}
+// Also clean the session marker from user-prompt.js
+try { fs.unlinkSync(path.join(os.tmpdir(), `.azclaude-session-${sid}`)); } catch (_) {}
 
 // ── Warn if /persist was not run (only in AZCLAUDE projects with obs dir) ──
-const obsDir = path.join('ops', 'observations');
+const obsDir = path.join(cfg, 'memory', 'sessions');
 if (!fs.existsSync(obsDir)) process.exit(0);
-const todayStamp = today.replace(/-/g, '');
 try {
-  const existing = fs.readdirSync(obsDir).filter(f => f.startsWith(todayStamp) && f.endsWith('-friction.md'));
+  const existing = fs.readdirSync(obsDir).filter(f => f.startsWith(today) && f.endsWith('-edits.md'));
   if (existing.length === 0) {
     process.stdout.write('⚠ session state not persisted — run /persist before closing\n');
   }

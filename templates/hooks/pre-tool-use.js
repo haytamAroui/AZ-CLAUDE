@@ -97,12 +97,37 @@ if (toolName === 'Read' && filePath) {
 const WRITE_TOOLS = new Set(['Edit', 'Write', 'MultiEdit']);
 if (!WRITE_TOOLS.has(toolName)) process.exit(0);
 
+// ── Gate: block writes outside project root ─────────────────────────────────
+if (filePath) {
+  const rel = path.relative(process.cwd(), path.resolve(filePath));
+  if (rel.startsWith('..')) {
+    _logSec('write-outside-project', 'block', filePath);
+    process.stderr.write(
+      `\n✗ SECURITY BLOCK: Write outside project root blocked.\n` +
+      `  Target: ${filePath}\n` +
+      `  Resolved: ${path.resolve(filePath)}\n` +
+      `  Only files within ${process.cwd()} are allowed.\n\n`
+    );
+    process.exit(2);
+  }
+}
+
 // ── Gate: skip noisy paths ───────────────────────────────────────────────────
 if (filePath) {
   const rel = path.relative(process.cwd(), path.resolve(filePath));
   if (/node_modules[\\/]/.test(rel)) process.exit(0);
   if (/\.git[\\/]/.test(rel))        process.exit(0);
-  if (/\.md$/i.test(filePath))        process.exit(0);
+  if (/\.md$/i.test(filePath)) {
+    // Still scan .md files for prompt injection — CLAUDE.md is the #1 injection target
+    if (content) {
+      const PI = /ignore\s+(?:all\s+)?previous\s+instructions|disregard\s+(?:all\s+)?previous|{"role"\s*:\s*"(?:user|system)"\s*,\s*"content"\s*:/i;
+      if (PI.test(content)) {
+        _logSec('prompt-injection-write', 'warn', path.relative(process.cwd(), path.resolve(filePath)) || filePath);
+        process.stderr.write(`\n⚠ SECURITY: Prompt injection pattern in markdown file ${path.relative(process.cwd(), path.resolve(filePath)) || filePath} — this content could hijack AI agent context.\n`);
+      }
+    }
+    process.exit(0);
+  }
 }
 
 // ── Gate: nothing to scan ────────────────────────────────────────────────────
@@ -258,16 +283,20 @@ const SESSION_ID  = process.ppid || process.pid;
 const DEDUP_PATH  = path.join(os.tmpdir(), `.azclaude-sec-${SESSION_ID}`);
 const MAX_AGE_MS  = 24 * 60 * 60 * 1000;
 
-// Cleanup stale dedup files (best-effort, never fatal)
-try {
-  const tmpFiles = fs.readdirSync(os.tmpdir());
-  for (const f of tmpFiles) {
-    if (!f.startsWith('.azclaude-sec-')) continue;
-    const fp  = path.join(os.tmpdir(), f);
-    const age = Date.now() - fs.statSync(fp).mtimeMs;
-    if (age > MAX_AGE_MS) { try { fs.unlinkSync(fp); } catch (_) {} }
-  }
-} catch (_) {}
+// Cleanup stale dedup files (once per session — not on every call)
+const cleanupMarker = path.join(os.tmpdir(), `.azclaude-cleanup-done-${SESSION_ID}`);
+if (!fs.existsSync(cleanupMarker)) {
+  try {
+    fs.writeFileSync(cleanupMarker, '');
+    const tmpFiles = fs.readdirSync(os.tmpdir());
+    for (const f of tmpFiles) {
+      if (!f.startsWith('.azclaude-sec-')) continue;
+      const fp  = path.join(os.tmpdir(), f);
+      const age = Date.now() - fs.statSync(fp).mtimeMs;
+      if (age > MAX_AGE_MS) { try { fs.unlinkSync(fp); } catch (_) {} }
+    }
+  } catch (_) {}
+}
 
 let dedup = {};
 try { dedup = JSON.parse(fs.readFileSync(DEDUP_PATH, 'utf8')); } catch (_) {}
