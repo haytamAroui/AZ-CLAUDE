@@ -5,9 +5,12 @@ description: >
   Analyzes the project, fills CLAUDE.md, creates goals.md, installs capabilities.
   Does NOT persist between sessions — not a routing agent.
 tokens: ~400
+tags: [setup, init, onboarding, first-run, project-scan]
 ---
 
-## Project Initialization
+# Project Initialization
+
+<instructions>
 
 This agent runs once. After setup is complete, it exits.
 It does NOT sit in memory between sessions. There is no persistent orchestrator.
@@ -191,6 +194,11 @@ Create `knowledge-index.md`:
 ---
 
 ## Completion Rule
+
+</instructions>
+
+<output_format>
 Print the filled CLAUDE.md content.
 Print goals.md content.
 Show both files as proof — do not say "setup complete" without showing them.
+</output_format>

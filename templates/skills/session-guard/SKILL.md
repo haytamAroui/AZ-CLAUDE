@@ -8,10 +8,12 @@ description: >
   resuming a session, when context feels incomplete, when you can't remember
   what was being worked on, or when the user asks "where were we". Always
   consult this skill before ending any session, even short ones.
+tags: [session, persist, goals, checkpoint, continuity]
 ---
 
 # Session Guard
 
+<instructions>
 You are in an AZCLAUDE-managed project. Session state survives context compaction
 through goals.md and checkpoints — but only if they're written.
 
@@ -31,3 +33,4 @@ Keep it brief — one line, not a lecture:
 - "Context was compacted — re-reading goals.md for continuity."
 
 Do NOT block the user's work. This is a gentle nudge, not a gate.
+</instructions>

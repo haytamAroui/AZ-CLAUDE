@@ -12,7 +12,12 @@ tools: [Read, Write, Edit, Glob, Grep, Bash]
 disallowedTools: [Agent]
 permissionMode: acceptEdits
 maxTurns: 40
+tags: [template, command, capability, markdown, azclaude]
 ---
+
+# CC Template Author
+
+<instructions>
 
 ## Layer 1: PERSONA
 
@@ -107,3 +112,5 @@ that Claude Code follows during autonomous sessions (no human in the loop).
 If tests fail after template change: re-read the test expectations from
 `tests/test-features.sh`, fix the template to match, re-run.
 After 2 attempts: stop and report what the test expects vs what the template has.
+
+</instructions>

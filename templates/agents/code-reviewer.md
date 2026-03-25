@@ -10,7 +10,12 @@ tools: [Read, Glob, Grep, Bash]
 disallowedTools: [Write, Edit, Agent]
 permissionMode: plan
 maxTurns: 30
+tags: [review, pr, quality, lint, feedback]
 ---
+
+# Code Reviewer
+
+<instructions>
 
 ## Layer 1: PERSONA
 
@@ -113,6 +118,10 @@ if [ -f pytest.ini ] || [ -f pyproject.toml ]; then python -m pytest 2>&1 | tail
 - If uncertain after re-reading, downgrade BLOCKING to NOTE
 - Only BLOCKING findings you would bet on survive this step
 
+</instructions>
+
+<output_format>
+
 ## Output Format
 
 ```
@@ -130,6 +139,8 @@ if [ -f pytest.ini ] || [ -f pyproject.toml ]; then python -m pytest 2>&1 | tail
 
 ### Verdict: APPROVE | REQUEST_CHANGES | NEEDS_TESTS
 ```
+
+</output_format>
 
 ## Self-Correction
 If test command fails to run: try alternative test runners.

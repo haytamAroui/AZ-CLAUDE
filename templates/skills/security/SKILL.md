@@ -9,10 +9,12 @@ description: >
   or any work involving sensitive data. Also use before any /ship operation,
   when editing ~/.claude/settings.json, or when importing skills from
   external sources.
+tags: [security, credentials, secrets, hooks, deploy, audit]
 ---
 
 # Security Model
 
+<instructions>
 AZCLAUDE runs code and modifies files. A 4-hook pipeline provides layered runtime protection.
 
 ## 4-Hook Runtime Pipeline
@@ -91,3 +93,4 @@ Fires on **every** prompt (before session gate). Filters from goals.md + checkpo
 - Run `/sentinel --supply-chain` for full dependency scan
 
 For full details: `references/security-details.md`
+</instructions>

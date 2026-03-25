@@ -13,10 +13,12 @@ description: >
   architecture milestone, or /debate needs evidence for a technical decision.
   Even if the user doesn't say "architecture", use this when the task involves
   choosing between competing approaches for a project of a specific size or domain.
+tags: [architecture, pattern, scale, database, rendering, framework]
 ---
 
 # Architecture Advisor
 
+<instructions>
 Claude already knows every framework, pattern, and language. This skill doesn't teach
 HOW to code — it guides WHEN to use WHICH approach based on project context and evidence.
 
@@ -65,22 +67,6 @@ Classify:
 
 For the detected scale, apply the matching evidence from `references/decision-matrices.md`.
 
-**Output format:**
-```
-## Decision: {question}
-
-Context: {SMALL|MEDIUM|LARGE} project, {domain}, {N} files, {N} contributors
-
-### Recommendation: {choice}
-Evidence: {why this is right for THIS context}
-
-### When to reconsider
-{thresholds that would change the answer}
-
-### Anti-pattern warning
-{what NOT to do at this scale}
-```
-
 ## Step 3: Record Decision
 
 Append to `.claude/memory/decisions.md`:
@@ -105,3 +91,22 @@ Append to `.claude/memory/decisions.md`:
 For complete decision matrices: `references/decision-matrices.md`
 For rendering strategy guide: `references/rendering-decisions.md`
 For database selection guide: `references/database-decisions.md`
+</instructions>
+
+<output_format>
+**Output format:**
+```
+## Decision: {question}
+
+Context: {SMALL|MEDIUM|LARGE} project, {domain}, {N} files, {N} contributors
+
+### Recommendation: {choice}
+Evidence: {why this is right for THIS context}
+
+### When to reconsider
+{thresholds that would change the answer}
+
+### Anti-pattern warning
+{what NOT to do at this scale}
+```
+</output_format>

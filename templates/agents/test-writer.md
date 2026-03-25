@@ -10,7 +10,12 @@ tools: [Read, Write, Edit, Bash, Glob, Grep]
 disallowedTools: [Agent]
 permissionMode: acceptEdits
 maxTurns: 40
+tags: [test, coverage, spec, assertion, framework]
 ---
+
+# Test Writer
+
+<instructions>
 
 ## Layer 1: PERSONA
 
@@ -109,6 +114,10 @@ go test ./{package}/ -run {TestName} -v 2>&1 | tail -20
 If tests fail: read the error, fix the test (not the source), re-run.
 After 2 fix attempts: report the issue with the exact error.
 
+</instructions>
+
+<output_format>
+
 ## Output Format
 
 ```
@@ -122,6 +131,8 @@ Functions tested:
 - functionName — happy path, null input, error case
 - otherFunction — happy path, boundary value
 ```
+
+</output_format>
 
 ## Self-Correction
 If tests fail: re-read the error, fix the test assertion or setup.

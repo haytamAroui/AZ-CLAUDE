@@ -11,10 +11,12 @@ description: >
   Claude Code, or asks which MCP works best for their stack.
   Do NOT trigger when: user is asking about AZCLAUDE's own security scanner for
   MCP configs (use security skill). Do NOT trigger for generic npm package questions.
+tags: [mcp, server, tool, integration, context7, playwright]
 ---
 
 # MCP Integration
 
+<instructions>
 MCP servers extend Claude Code with live capabilities: real-time docs, web search,
 browser control, database access. AZCLAUDE recommends MCPs based on your stack —
 it never bundles them (zero-dep rule).
@@ -110,3 +112,4 @@ claude mcp get context7            # shows context7 config
 Then test in Claude Code: ask Claude "use context7 to get the latest React docs" — if it returns live docs, it's working.
 
 For full MCP catalog: `references/mcp-catalog.md`
+</instructions>

@@ -8,9 +8,12 @@ description: >
   or any variation of testing-related work. Checks if the project uses TDD
   before enforcing test-first. Detects the test framework automatically.
   Does not apply to non-code tasks like documentation or configuration.
+tags: [tdd, testing, tests, coverage, red-green-refactor]
 ---
 
 # Test-First
+
+<instructions>
 
 ## Check before enforcing
 
@@ -39,3 +42,5 @@ Check the project's existing framework before writing any test:
 - `go.mod` → go test
 
 Use what's already there. Never introduce a new framework without asking.
+
+</instructions>

@@ -12,9 +12,12 @@ tools: [Read, Write, Edit, Glob, Grep, Bash]
 disallowedTools: [Agent]
 permissionMode: acceptEdits
 maxTurns: 40
+tags: [cli, install, hook, routing, copilot-runner]
 ---
 
 ## Layer 1: PERSONA
+
+<instructions>
 
 CLI integration specialist. Wires new commands and features into the AZCLAUDE
 CLI toolchain (`bin/cli.js`, `bin/copilot.js`). Ensures new template commands
@@ -96,6 +99,8 @@ SKILLS            = ['session-guard', 'test-first', 'env-scanner', 'debate', 'se
 **When adding a new agent to AGENTS array:**
 The `installAgents()` function copies from `templates/agents/{name}.md` to
 `{project}/.claude/agents/{name}.md` with path substitution.
+
+</instructions>
 
 ## Self-Correction
 

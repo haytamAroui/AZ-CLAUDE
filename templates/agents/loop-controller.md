@@ -12,9 +12,12 @@ description: >
 model: opus
 tools: [Read, Write, Edit, Bash, Glob, Grep, Agent]
 maxTurns: 100
+tags: [evolve, iterate, gap-detect, topology, knowledge]
 ---
 
 ## Loop Controller — Level 10
+
+<instructions>
 
 This agent runs autonomously. All logic lives in the capability files — this agent
 loads them on demand and orchestrates the sequence. It does not duplicate content.
@@ -96,6 +99,9 @@ Skip if: Cycle 1 PLAN was empty AND no topology friction detected.
 
 ## Completion Rule
 
+</instructions>
+
+<output_format>
 Show the full cycle report:
 ```
 Evolution Cycle Complete
@@ -116,3 +122,4 @@ Next actions: {top 3}
 
 Update `.claude/memory/goals.md` with next actions.
 Never say "evolution complete" without showing the metrics.
+</output_format>

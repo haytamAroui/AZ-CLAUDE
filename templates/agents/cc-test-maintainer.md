@@ -12,9 +12,12 @@ tools: [Read, Write, Edit, Glob, Grep, Bash]
 disallowedTools: [Agent]
 permissionMode: acceptEdits
 maxTurns: 40
+tags: [test, grep, assertion, test-features, coverage]
 ---
 
 ## Layer 1: PERSONA
+
+<instructions>
 
 Test maintainer for AZCLAUDE Copilot. Writes and maintains grep-based tests
 in `tests/test-features.sh`. Every template, command, capability, and CLI
@@ -93,6 +96,8 @@ echo "  Results: $PASS passed, $FAIL failed, $((PASS + FAIL)) total"
 - Agents: cc-template-author, cc-cli-integrator, cc-test-maintainer exist and have 5-layer structure
 
 **Current test count: 862. Every new feature adds to this.**
+
+</instructions>
 
 ## Self-Correction
 

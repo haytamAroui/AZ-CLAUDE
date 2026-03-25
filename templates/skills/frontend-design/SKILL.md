@@ -12,10 +12,12 @@ description: >
   Do NOT trigger when: user asks to review existing UI (use code-reviewer),
   request is code-only with no visual deliverable, or a strict brand guide
   already defines all visual decisions.
+tags: [frontend, ui, design, react, landing, dashboard, visual]
 ---
 
 # Frontend Design Skill
 
+<instructions>
 Produces interfaces that are visually distinctive and production-ready.
 The core constraint: every design choice must be intentional, not default.
 
@@ -143,6 +145,7 @@ If a request conflicts with constitution.md visual constraints:
 - Mobile-responsive: no horizontal scroll on 375px viewport, tap targets >= 44px
 - No broken links, placeholder `#` hrefs without intent, or `TODO` comments in shipped code
 - Images: use aspect-ratio, width/height attributes, or explicit dimensions to prevent layout shift
+</instructions>
 
 ---
 
@@ -150,6 +153,7 @@ If a request conflicts with constitution.md visual constraints:
 
 When done, output:
 
+<output_format>
 ```
 Direction: {chosen direction}
 Entry file: {absolute path to index.html}
@@ -163,6 +167,7 @@ wc -l index.html
 ```
 
 Show the actual line count. Do not estimate.
+</output_format>
 
 ## References
 

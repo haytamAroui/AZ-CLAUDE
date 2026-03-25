@@ -2400,6 +2400,20 @@ check "hooks: user-prompt injects patterns.md"              "templates/hooks/use
 check "hooks: user-prompt stamps session start"             "templates/hooks/user-prompt.js" "session-start"
 
 echo ""
+echo "─── XML tags + frontmatter tags (skills) ───"
+for skill in test-first env-scanner debate skill-creator agent-creator session-guard architecture-advisor frontend-design security mcp; do
+  check "skill: $skill has tags: frontmatter"    "templates/skills/$skill/SKILL.md" "^tags:"
+  check "skill: $skill has <instructions> tag"   "templates/skills/$skill/SKILL.md" "<instructions>"
+done
+
+echo ""
+echo "─── XML tags + frontmatter tags (agents) ───"
+for agent in orchestrator orchestrator-init loop-controller problem-architect milestone-builder code-reviewer test-writer spec-reviewer constitution-guard cc-template-author cc-cli-integrator cc-test-maintainer security-auditor devops-engineer qa-engineer; do
+  check "agent: $agent has tags: frontmatter"    "templates/agents/$agent.md" "^tags:"
+  check "agent: $agent has <instructions> tag"   "templates/agents/$agent.md" "<instructions>"
+done
+
+echo ""
 echo "════════════════════════════════════════════════════"
 TOTAL=$((PASS + FAIL))
 echo "  Results: $PASS passed, $FAIL failed, $TOTAL total"

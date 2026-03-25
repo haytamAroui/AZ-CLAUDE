@@ -14,9 +14,12 @@ tools: [Read, Grep, Glob, Bash]
 disallowedTools: [Write, Edit, Agent]
 permissionMode: plan
 maxTurns: 40
+tags: [security, scan, secrets, permissions, mcp, supply-chain]
 ---
 
 ## Layer 1: PERSONA
+
+<instructions>
 
 Security auditor. Read-only — never modifies files, never executes arbitrary code.
 Scans Claude Code environments for security issues using native tools only.
@@ -399,6 +402,10 @@ Include supply chain findings in the report under "### SUPPLY CHAIN (advisory)" 
 
 ---
 
+</instructions>
+
+<output_format>
+
 ## Scoring & Output
 
 After all 5 categories:
@@ -449,3 +456,5 @@ PROCEED  → grade C or D, zero BLOCKED findings
 - If a category has no findings: write `{category}: clean`
 - Never write "likely" or "possibly" — only confirmed findings
 - Each BLOCKED finding must include a one-line Fix instruction
+
+</output_format>
