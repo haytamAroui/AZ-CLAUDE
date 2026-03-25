@@ -53,98 +53,123 @@ const goalsPath = path.join(cfg, 'memory', 'goals.md');
 if (!fs.existsSync(goalsPath)) process.exit(0);
 
 // ── AZCLAUDE Brain Router — fires on EVERY message ─────────────────────────
-// Detects user intent and injects agent/skill/capability routing.
-// This is what makes Claude Code USE AZCLAUDE instead of ignoring it.
+// This is the enforcement layer that makes Claude Code USE AZCLAUDE.
+// Without this, Claude Code ignores all installed agents, skills, and capabilities.
+//
+// Pipeline: problem-architect FIRST → Team Spec → skills + agents → implement → review
+// No skip conditions for code tasks. problem-architect ALWAYS runs first.
 try {
   const promptText = (function() {
     try {
-      const raw = fs.readFileSync(path.join(os.tmpdir(), `.azclaude-prompt-${process.ppid || process.pid}`), 'utf8');
-      return raw;
+      return fs.readFileSync(path.join(os.tmpdir(), `.azclaude-prompt-${process.ppid || process.pid}`), 'utf8');
     } catch (_) { return ''; }
   })();
 
-  // Re-read the prompt from the injection scan (already parsed above)
-  // Detect slash commands — skip routing, the command file handles it
-  if (promptText.startsWith('/')) {
-    // Slash commands have their own routing — don't inject
-  } else if (promptText.length > 0) {
+  // Skip routing for: slash commands (command files handle it), empty prompts
+  if (promptText.startsWith('/') || promptText.length === 0) {
+    // no-op — fall through to session gate
+  } else {
     const p = promptText.toLowerCase();
 
-    // ── Intent detection ──
-    const intents = [];
-    if (/\b(build|add|create|implement|feature|component|page|endpoint|function|module|new)\b/.test(p)) intents.push('BUILD');
-    if (/\b(fix|bug|broken|error|crash|issue|fail|wrong|not work)\b/.test(p)) intents.push('FIX');
-    if (/\b(review|check|audit|safe|securit|vulnerab)\b/.test(p)) intents.push('REVIEW');
-    if (/\b(test|coverage|spec|e2e|unit test|integration test)\b/.test(p)) intents.push('TEST');
-    if (/\b(plan|blueprint|architect|design system|decide|which.*better|trade.?off)\b/.test(p)) intents.push('PLAN');
-    if (/\b(deploy|ci|cd|docker|infra|pipeline|kubernetes|nginx|terraform)\b/.test(p)) intents.push('DEVOPS');
-    if (/\b(refactor|clean|improve|simplify|restructure)\b/.test(p)) intents.push('REFACTOR');
-    if (/\b(frontend|ui|ux|css|page|dashboard|landing|component|react|vue|html)\b/.test(p)) intents.push('FRONTEND');
-    if (/\b(agent|skill|capability|command)\b.*\b(create|add|new|build|write)\b/.test(p)) intents.push('EXTEND');
+    // ── Detect if this is a QUESTION-ONLY message (no action needed) ──
+    // Only skip if the message is PURELY a question with no action verb
+    const isQuestionOnly = /^(what|how|why|where|when|who|can you explain|show me|tell me|do you know)\b/.test(p.trim())
+      && !/\b(build|add|create|implement|fix|refactor|deploy|test|review|write|make|change|update|modify|remove|delete|move|rename|install|setup|configure|migrate)\b/.test(p);
 
-    // ── Map intents to AZCLAUDE routing ──
-    if (intents.length > 0) {
+    if (!isQuestionOnly) {
       const agentsDir = path.join(cfg, 'agents');
       const skillsDir = path.join(cfg, 'skills');
       const hasAgents = fs.existsSync(agentsDir);
       const hasSkills = fs.existsSync(skillsDir);
-
-      const routing = [];
-
-      // Agent routing — only suggest agents that are actually installed
       const agentExists = (name) => hasAgents && fs.existsSync(path.join(agentsDir, `${name}.md`));
       const skillExists = (name) => hasSkills && fs.existsSync(path.join(skillsDir, name, 'SKILL.md'));
 
-      if ((intents.includes('BUILD') || intents.includes('FIX') || intents.includes('REFACTOR')) && agentExists('problem-architect')) {
-        routing.push('BEFORE coding: spawn Agent(subagent_type="problem-architect") for pre-flight analysis if 3+ files involved');
+      // ── Intent detection ──
+      const intents = [];
+      if (/\b(build|add|create|implement|feature|component|page|endpoint|function|module|new)\b/.test(p)) intents.push('BUILD');
+      if (/\b(fix|bug|broken|error|crash|issue|fail|wrong|not work)\b/.test(p)) intents.push('FIX');
+      if (/\b(review|check|audit|safe|securit|vulnerab)\b/.test(p)) intents.push('REVIEW');
+      if (/\b(test|coverage|spec|e2e|unit test|integration test)\b/.test(p)) intents.push('TEST');
+      if (/\b(plan|blueprint|architect|design system|decide|which.*better|trade.?off)\b/.test(p)) intents.push('PLAN');
+      if (/\b(deploy|ci|cd|docker|infra|pipeline|kubernetes|nginx|terraform)\b/.test(p)) intents.push('DEVOPS');
+      if (/\b(refactor|clean|improve|simplify|restructure)\b/.test(p)) intents.push('REFACTOR');
+      if (/\b(frontend|ui|ux|css|page|dashboard|landing|component|react|vue|html)\b/.test(p)) intents.push('FRONTEND');
+      if (/\b(agent|skill|capability|command)\b.*\b(create|add|new|build|write)\b/.test(p)) intents.push('EXTEND');
+
+      // If no specific intents detected but it's not a question, treat as general code task
+      if (intents.length === 0) intents.push('CODE');
+
+      // ── Build the MANDATORY pipeline ──
+      console.log('');
+      console.log('--- AZCLAUDE PIPELINE (MANDATORY) ---');
+      console.log('Detected: ' + intents.join(' + '));
+      console.log('');
+
+      // ── STEP 1: problem-architect ALWAYS runs first ──
+      // This is the AZCLAUDE brain — it decides which agents, skills, files to use.
+      // NO exceptions. NO "skip if small task". ALWAYS run pre-flight.
+      if (agentExists('problem-architect')) {
+        console.log('STEP 1 — PRE-FLIGHT (BLOCKING):');
+        console.log('  Spawn Agent(subagent_type="problem-architect") with this prompt:');
+        console.log('    "Task: [user\'s request]');
+        console.log('    Available agents: ' + (hasAgents ? fs.readdirSync(agentsDir).filter(f => f.endsWith('.md')).map(f => f.replace('.md','')).join(', ') : 'none'));
+        console.log('    Available skills: ' + (hasSkills ? fs.readdirSync(skillsDir).filter(s => fs.existsSync(path.join(skillsDir, s, 'SKILL.md'))).join(', ') : 'none') + '"');
+        console.log('  WAIT for Team Spec before proceeding. Do NOT start coding without it.');
+        console.log('');
       }
-      if ((intents.includes('BUILD') || intents.includes('FIX')) && skillExists('test-first')) {
-        routing.push('Load test-first skill: read ' + cfg + '/skills/test-first/SKILL.md — write failing test BEFORE implementation');
+
+      // ── STEP 2: Load skills based on intent ──
+      const skills = [];
+      if ((intents.includes('BUILD') || intents.includes('FIX') || intents.includes('CODE')) && skillExists('test-first')) {
+        skills.push('test-first');
       }
       if (intents.includes('FRONTEND') && skillExists('frontend-design')) {
-        routing.push('Load frontend-design skill: read ' + cfg + '/skills/frontend-design/SKILL.md — follow design system before writing UI');
-      }
-      if (intents.includes('REVIEW') && agentExists('security-auditor')) {
-        routing.push('Spawn Agent(subagent_type="security-auditor") for 111-rule security scan');
-      }
-      if (intents.includes('REVIEW') && agentExists('code-reviewer')) {
-        routing.push('Spawn Agent(subagent_type="code-reviewer") for code quality review');
-      }
-      if (intents.includes('TEST') && agentExists('test-writer')) {
-        routing.push('Spawn Agent(subagent_type="test-writer") to generate tests matching project patterns');
+        skills.push('frontend-design');
       }
       if (intents.includes('PLAN') && skillExists('architecture-advisor')) {
-        routing.push('Load architecture-advisor skill: read ' + cfg + '/skills/architecture-advisor/SKILL.md — evidence-based decision');
+        skills.push('architecture-advisor');
       }
-      if (intents.includes('DEVOPS') && agentExists('devops-engineer')) {
-        routing.push('Spawn Agent(subagent_type="devops-engineer") for infrastructure/CI/CD work');
+      if (intents.includes('EXTEND')) {
+        if (skillExists('agent-creator')) skills.push('agent-creator');
+        if (skillExists('skill-creator')) skills.push('skill-creator');
       }
-      if (intents.includes('EXTEND') && skillExists('agent-creator')) {
-        routing.push('Load agent-creator skill: read ' + cfg + '/skills/agent-creator/SKILL.md — follow 5-layer agent structure');
+      if (intents.includes('REVIEW') && skillExists('security')) {
+        skills.push('security');
       }
-      if (intents.includes('EXTEND') && skillExists('skill-creator')) {
-        routing.push('Load skill-creator skill: read ' + cfg + '/skills/skill-creator/SKILL.md — follow skill template structure');
-      }
-
-      // Post-implementation reminders
-      if (intents.includes('BUILD') || intents.includes('FIX') || intents.includes('REFACTOR')) {
-        if (agentExists('code-reviewer')) {
-          routing.push('AFTER implementation: spawn Agent(subagent_type="code-reviewer") to review your changes');
-        }
-        if (agentExists('test-writer')) {
-          routing.push('AFTER implementation: spawn Agent(subagent_type="test-writer") if test coverage is needed');
-        }
-      }
-
-      if (routing.length > 0) {
+      if (skills.length > 0) {
+        console.log('STEP 2 — LOAD SKILLS:');
+        skills.forEach(s => console.log('  Read: ' + cfg + '/skills/' + s + '/SKILL.md'));
+        console.log('  Follow each skill\'s instructions exactly. These are specialized knowledge.');
         console.log('');
-        console.log('--- AZCLAUDE DISPATCH ---');
-        console.log('Detected: ' + intents.join(' + '));
-        console.log('REQUIRED actions (installed agents/skills available):');
-        routing.forEach((r, i) => console.log(`  ${i + 1}. ${r}`));
-        console.log('Do NOT skip these steps. Use the Agent tool with the specified subagent_type.');
-        console.log('--- END DISPATCH ---');
       }
+
+      // ── STEP 3: Intent-specific agents ──
+      const agents = [];
+      if (intents.includes('REVIEW') && agentExists('security-auditor')) agents.push({ name: 'security-auditor', desc: '111-rule security scan' });
+      if (intents.includes('REVIEW') && agentExists('code-reviewer')) agents.push({ name: 'code-reviewer', desc: 'code quality + bug detection' });
+      if (intents.includes('TEST') && agentExists('test-writer')) agents.push({ name: 'test-writer', desc: 'generate tests matching project patterns' });
+      if (intents.includes('DEVOPS') && agentExists('devops-engineer')) agents.push({ name: 'devops-engineer', desc: 'infrastructure/CI/CD specialist' });
+      if (agents.length > 0) {
+        console.log('STEP 3 — SPECIALIST AGENTS:');
+        agents.forEach(a => console.log('  Spawn Agent(subagent_type="' + a.name + '") — ' + a.desc));
+        console.log('');
+      }
+
+      // ── STEP 4: Post-implementation (ALWAYS for code tasks) ──
+      if (!intents.includes('REVIEW') && !intents.includes('PLAN')) {
+        const postAgents = [];
+        if (agentExists('code-reviewer')) postAgents.push('code-reviewer');
+        if (agentExists('test-writer')) postAgents.push('test-writer');
+        if (postAgents.length > 0) {
+          console.log('STEP 4 — AFTER IMPLEMENTATION (MANDATORY):');
+          postAgents.forEach(a => console.log('  Spawn Agent(subagent_type="' + a + '") to review/test your changes'));
+          console.log('  Do NOT mark task as done until review + tests pass.');
+          console.log('');
+        }
+      }
+
+      console.log('This pipeline is NON-NEGOTIABLE. Do not skip steps. Do not start coding before Step 1 completes.');
+      console.log('--- END PIPELINE ---');
     }
   }
 } catch (_) {}

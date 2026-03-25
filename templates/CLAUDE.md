@@ -75,13 +75,16 @@ Agents live in `.claude/agents/`. Spawn them via the Agent tool with the matchin
 | Spec file provided for planning | `spec-reviewer` | Validates spec quality before /blueprint uses it |
 | Milestone about to be implemented | `constitution-guard` | Checks milestone against constitution.md non-negotiables |
 
-**Dispatch flow for any non-trivial task:**
-1. Spawn `problem-architect` → get Team Spec (agents needed, files to pre-read, risks)
-2. Follow Team Spec: load listed skills, pre-read listed files
+**Mandatory pipeline for ALL code tasks (enforced by hook on every message):**
+1. **ALWAYS** spawn `problem-architect` FIRST → get Team Spec (agents, skills, files, risks)
+2. Follow Team Spec exactly: load listed skills, pre-read listed files, in order
 3. If structural decision flagged → spawn `architecture-advisor` skill or run /debate
-4. Implement → spawn `code-reviewer` on result → spawn `test-writer` if coverage needed
+4. Implement following Team Spec patterns
+5. **ALWAYS** spawn `code-reviewer` after implementation
+6. **ALWAYS** spawn `test-writer` if tests are needed
 
-**Skip dispatch only if:** 1-2 files, clearly scoped, pure config/docs, no cross-module impact.
+**Skip pipeline only if:** message is a pure question with no action verb (e.g., "what does this function do?").
+**Never skip for:** any code change, no matter how small. The pipeline catches bugs in 1-line changes too.
 
 ## Trade-Off Hierarchies
 When priorities conflict:
