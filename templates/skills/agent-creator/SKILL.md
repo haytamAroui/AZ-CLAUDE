@@ -39,6 +39,12 @@ Before diving into the full workflow, verify these 5 essentials:
 
 ## Workflow
 
+0. **Web research (MANDATORY for domain-specific agents).** Before writing any agent content:
+   - WebSearch for "{domain} best practices {current year}" — the agent's Layer 5 (Domain) must reflect current reality
+   - WebSearch for "{technology} API changes" — catch breaking changes, deprecations, new patterns
+   - WebFetch official docs for any technology the agent will work with
+   - **Why:** Claude hallucinates outdated APIs. An agent with stale domain knowledge makes confident wrong decisions.
+
 1. **Determine boundaries.** Run co-change analysis to find what changes together:
    ```bash
    bash .claude/skills/agent-creator/scripts/scaffold.sh --analyze

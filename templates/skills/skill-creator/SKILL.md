@@ -37,6 +37,13 @@ Before diving into the full workflow, verify these 5 essentials:
 
 1. **Capture intent.** Ask: what task does this skill handle? What triggers it?
 
+1b. **Web research (MANDATORY for domain skills).** Before writing any skill content:
+   - WebSearch for "{domain} best practices {current year}" — get current patterns, not stale training data
+   - WebSearch for "{domain} common mistakes" — build the anti-patterns section from real failures
+   - WebFetch the official docs for any API/library the skill covers — get correct method names, parameters, versions
+   - Include findings in the skill body and references/ — the skill must reflect CURRENT reality, not training-data memory
+   - **Why:** Claude hallucinates outdated APIs. A skill built on stale knowledge is worse than no skill.
+
 2. **Generate the directory:**
    ```bash
    bash .claude/skills/skill-creator/scripts/scaffold.sh SKILL_NAME

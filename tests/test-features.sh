@@ -1921,6 +1921,28 @@ PA="$ROOT/agents/problem-architect.md"
 check      "architect: gap detection"                      "$PA" "GAP DETECTION"
 check      "architect: missing skills in output"           "$PA" "Missing Skills.*GAP\|MISSING.*create before"
 check      "architect: skill-creator recommendation"       "$PA" "skill-creator.*generate\|skill-creator to generate"
+check      "architect: has WebSearch tool"                  "$PA" "WebSearch"
+check      "architect: has WebFetch tool"                   "$PA" "WebFetch"
+check      "architect: web research step"                   "$PA" "Step 2b.*Web Research.*MANDATORY\|Web Research.*MANDATORY"
+check      "architect: searches best practices"             "$PA" "best practices.*current year\|best practices"
+check      "architect: fetches official docs"               "$PA" "official documentation\|official docs"
+check      "architect: warns about stale training data"     "$PA" "training data is frozen\|APIs change"
+
+# ─── Web research in skill-creator and agent-creator ──
+SC="$ROOT/skills/skill-creator/SKILL.md"
+AC="$ROOT/skills/agent-creator/SKILL.md"
+check      "skill-creator: web research step"              "$SC" "Web research.*MANDATORY\|web research.*MANDATORY"
+check      "skill-creator: searches best practices"        "$SC" "WebSearch.*best practices"
+check      "skill-creator: fetches official docs"          "$SC" "WebFetch.*official docs"
+check      "skill-creator: warns about hallucination"      "$SC" "hallucinates\|stale.*knowledge\|training-data"
+check      "agent-creator: web research step"              "$AC" "Web research.*MANDATORY\|web research.*MANDATORY"
+check      "agent-creator: searches best practices"        "$AC" "WebSearch.*best practices"
+check      "agent-creator: warns about hallucination"      "$AC" "hallucinates\|stale.*domain"
+
+# ─── Web research in brain router ──
+check      "router: step 1b web research"                  "$UP" "STEP 1b.*WEB RESEARCH.*MANDATORY"
+check      "router: warns training data frozen"            "$UP" "training data is frozen"
+check      "router: searches best practices"               "$UP" "best practices"
 
 # ─── Semantic boundary check ─────────────────────────────────────────────────
 echo ""

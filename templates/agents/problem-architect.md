@@ -7,7 +7,7 @@ description: >
   NEVER implements. NEVER writes to project files. Read-only analysis only.
   Spawned by orchestrator before every milestone dispatch.
 model: sonnet
-tools: [Read, Grep, Glob, Bash]
+tools: [Read, Grep, Glob, Bash, WebSearch, WebFetch]
 tags: [analyze, scope, team-spec, complexity, pre-flight]
 ---
 
@@ -53,6 +53,20 @@ Also read:
 - `.claude/memory/patterns.md` — established conventions for this area
 - `.claude/memory/antipatterns.md` — known failure patterns to avoid
 - Context artifacts: `prisma/schema.prisma`, `openapi.yaml`, `.env.example`
+
+---
+
+### Step 2b: Web Research (MANDATORY for unfamiliar technologies)
+
+If the milestone involves ANY technology, framework, API, or library:
+1. **WebSearch** for "{technology} best practices {current year}" and "{technology} common pitfalls"
+2. **WebFetch** the official documentation page for the specific API/library version in use
+3. Note any breaking changes, deprecations, or migration guides that affect this milestone
+
+**Why this step is mandatory:** Claude's training data is frozen. APIs change, libraries release breaking
+versions, and best practices evolve. A 30-second web search prevents hours of debugging deprecated code.
+
+**Skip only if:** the technology is pure internal code with no external dependencies.
 
 ---
 

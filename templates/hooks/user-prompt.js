@@ -118,6 +118,15 @@ try {
         console.log('');
       }
 
+      // ── STEP 1b: Web research for current best practices ──
+      console.log('STEP 1b — WEB RESEARCH (MANDATORY):');
+      console.log('  Use WebSearch to verify best practices for technologies in this task.');
+      console.log('  Claude\'s training data is frozen — APIs change, libraries break, patterns evolve.');
+      console.log('  Search: "{technology} best practices ' + new Date().getFullYear() + '" + "{technology} common pitfalls"');
+      console.log('  Fetch: official docs for any specific API/library version in use.');
+      console.log('  Skip only for: pure internal code with zero external dependencies.');
+      console.log('');
+
       // ── STEP 2: Load skills based on intent ──
       const skills = [];
       if ((intents.includes('BUILD') || intents.includes('FIX') || intents.includes('CODE')) && skillExists('test-first')) {
