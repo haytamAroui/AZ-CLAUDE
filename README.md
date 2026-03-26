@@ -12,6 +12,7 @@
     <a href="#how-it-works-the-execution-pipeline">Pipeline</a> ·
     <a href="#install">Install</a> ·
     <a href="#what-you-get">What You Get</a> ·
+    <a href="#structured-for-claude-frontmatter--xml-tags">Structure</a> ·
     <a href="#architecture-philosophy">Architecture</a> ·
     <a href="#autonomous-mode">Autonomous Mode</a> ·
     <a href="#parallel-execution">Parallel</a> ·
@@ -152,6 +153,87 @@ npx azclaude-copilot@latest doctor   # 32 checks — verify everything is wired 
 | `/setup` | Scans your codebase, detects domain + stack + scale, fills CLAUDE.md, creates goals.md. |
 | `/dream "Build a compliance SaaS"` | Builds everything from scratch: CLAUDE.md → Hooks → skills → memory → agents. |
 | `/copilot` | Walk away, come back to a product. Autonomous milestone execution. |
+
+---
+
+## Structured for Claude: Frontmatter + XML Tags
+
+Anthropic's research shows Claude comprehends structured content significantly better when it uses two patterns natively built into Claude Code: **YAML frontmatter** for metadata and **`<instructions>` XML tags** for content. AZCLAUDE applies both to every agent and skill file — not as convention, but because it measurably changes how Claude reads, routes, and executes them.
+
+### Why this matters
+
+Claude was trained on XML-structured content. Tags like `<instructions>`, `<context>`, and `<examples>` signal boundaries Claude parses reliably — unlike prose headings which are ambiguous. Frontmatter gives Claude Code the metadata it needs to route, describe, and invoke agents without any extra configuration.
+
+### What AZCLAUDE agent files look like
+
+```yaml
+---                                    ← YAML frontmatter block
+name: code-reviewer                    ← agent identifier (used by subagent_type=)
+description: >                         ← Claude Code reads this to decide when to spawn
+  Autonomous code review agent.
+  Use when: review, audit, PR review,
+  find bugs, security check.
+model: opus                            ← which model this agent runs on
+tools: [Read, Glob, Grep, Bash]        ← allowed tools (principle of least privilege)
+disallowedTools: [Write, Edit, Agent]  ← explicit deny list — no write access
+permissionMode: plan                   ← read-only by default
+maxTurns: 30                           ← bounded execution
+tags: [review, pr, quality]            ← semantic routing hints
+---
+
+# Code Reviewer
+
+<instructions>                         ← XML tag: Claude parses this as structured directives
+
+## Layer 1: PERSONA
+Code review specialist. Read-only — never modifies code.
+
+## Layer 2: SCOPE
+- Reviews staged/unstaged changes via `git diff`
+- Checks for bugs, logic errors, edge cases
+- Identifies security issues (injection, XSS, OWASP top 10)
+
+</instructions>
+```
+
+### What AZCLAUDE skill files look like
+
+```yaml
+---                                    ← YAML frontmatter
+name: test-first
+description: >                         ← auto-invocation trigger — Claude reads this
+  Guides test-driven development.
+  Use when about to write code, implement a feature, fix a bug,
+  refactor, add an endpoint, or modify business logic.
+tags: [tdd, testing, coverage]
+---
+
+# Test-First
+
+<instructions>                         ← structured content block
+
+## Check before enforcing
+TDD is opt-in. Check BOTH signals:
+1. CLAUDE.md has a TDD rule
+2. Test files exist (*.test.*, *.spec.*)
+
+Both present → TDD protocol active.
+Either missing → suggest TDD, don't block.
+
+</instructions>
+```
+
+### Why this architecture works
+
+| Pattern | What it does |
+|---------|-------------|
+| `description:` frontmatter | Claude Code reads this to decide when to auto-invoke a skill or which agent to spawn. No code required. |
+| `model: opus` frontmatter | Routes complex review tasks to the most capable model automatically. |
+| `tools:` + `disallowedTools:` | Principle of least privilege — code-reviewer cannot Write, milestone-builder cannot call Agent. |
+| `<instructions>` XML tag | Signals to Claude "parse this as directives" — not prose, not documentation, not commentary. |
+| `permissionMode: plan` | Agents that only read run in plan mode — no accidental writes, no permission prompts. |
+
+All 15 AZCLAUDE agents and all 10 skills use this exact format. Claude Code routes them, describes them in `/help`, and invokes them via `subagent_type=` — all from the frontmatter, zero extra config.
 
 ---
 
