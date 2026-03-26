@@ -117,6 +117,13 @@ process.stdin.on('end', () => {
   const empty  = 10 - filled;
   const bar    = '\u2593'.repeat(filled) + '\u2591'.repeat(empty);
 
+  // ── Compaction signal — write context % to temp file for hook to read ──
+  // This enables the UserPromptSubmit hook to auto-snapshot before compaction.
+  try {
+    const signalPath = path.join(require('os').tmpdir(), `.azclaude-ctx-${process.ppid || process.pid}`);
+    fs.writeFileSync(signalPath, JSON.stringify({ ctxPct, turnsLeft: compactHint ? parseInt(compactHint.replace(/[^0-9]/g,'')) : 999 }));
+  } catch (_) {}
+
   // ── Color thresholds ──
   let ctxColor, ctxWarn = '';
   if (ctxPct >= 80)      { ctxColor = RED;    ctxWarn = ' COMPACT SOON'; }

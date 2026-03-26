@@ -195,6 +195,48 @@ try {
   }
 } catch (_) {}
 
+// ── Compaction Guard — auto-snapshot before context is lost ─────────────────
+// Reads context % signal from statusline (written to temp file after each turn).
+// At >= 70%: warns Claude to save state. At >= 85%: auto-saves checkpoint.
+try {
+  const ctxSignalPath = path.join(os.tmpdir(), `.azclaude-ctx-${process.ppid || process.pid}`);
+  if (fs.existsSync(ctxSignalPath)) {
+    const ctxSignal = JSON.parse(fs.readFileSync(ctxSignalPath, 'utf8'));
+    const pct = ctxSignal.ctxPct || 0;
+
+    if (pct >= 85) {
+      // AUTO-SAVE: context is critically high — save checkpoint before compaction wipes it
+      const checkpointDir = path.join(cfg, 'memory', 'checkpoints');
+      try { fs.mkdirSync(checkpointDir, { recursive: true }); } catch (_) {}
+      const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 16);
+      const cpPath = path.join(checkpointDir, `${ts}-auto-compaction.md`);
+
+      // Only auto-save once per threshold crossing (check if already saved)
+      const autoSaveMarker = path.join(os.tmpdir(), `.azclaude-autosave-${process.ppid || process.pid}`);
+      if (!fs.existsSync(autoSaveMarker)) {
+        // Copy goals.md as checkpoint
+        if (fs.existsSync(goalsPath)) {
+          const goalsContent = fs.readFileSync(goalsPath, 'utf8');
+          const header = `---\ndate: ${new Date().toISOString()}\nlabel: auto-compaction-guard-${pct}pct\nfiles_in_progress: []\n---\n\n`;
+          fs.writeFileSync(cpPath, header + '## Auto-saved before compaction\n\n' + goalsContent);
+          fs.writeFileSync(autoSaveMarker, '');
+        }
+
+        console.log('');
+        console.log(`--- COMPACTION GUARD (${pct}%) ---`);
+        console.log(`Context at ${pct}% — AUTO-SAVED checkpoint to ${path.basename(cpPath)}`);
+        console.log('Run /snapshot NOW to save your reasoning and decisions (goals.md alone is not enough).');
+        console.log('--- END GUARD ---');
+      }
+    } else if (pct >= 70) {
+      console.log('');
+      console.log(`--- COMPACTION WARNING (${pct}%) ---`);
+      console.log(`Context at ${pct}% — compaction approaching. Run /snapshot to save session state.`);
+      console.log('--- END WARNING ---');
+    }
+  }
+} catch (_) {}
+
 // ── First message only — inject full context ────────────────────────────────
 if (!isFirstMessage) process.exit(0);
 
