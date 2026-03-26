@@ -33,6 +33,30 @@ process.stdin.on('end', () => {
   const cachWrite  = data.context_window?.current_usage?.cache_creation_input_tokens || 0;
   const cachRead   = data.context_window?.current_usage?.cache_read_input_tokens || 0;
 
+  // ── Agent + Skill usage (from observations.jsonl — tracked by post-tool-use hook) ──
+  const fs   = require('fs');
+  const path = require('path');
+  const projectDir = data.workspace?.current_dir || data.workspace?.project_dir || process.cwd();
+  const sessionPid = process.ppid || process.pid;
+  let agentCount = 0, skillCount = 0;
+  try {
+    const obsPath = path.join(projectDir, '.claude', 'memory', 'reflexes', 'observations.jsonl');
+    if (fs.existsSync(obsPath)) {
+      const lines = fs.readFileSync(obsPath, 'utf8').split('\n').filter(Boolean);
+      for (const line of lines) {
+        try {
+          const obs = JSON.parse(line);
+          // Count only this session's observations
+          if (String(obs.session) !== String(sessionPid)) continue;
+          if (obs.tool === 'Agent' || obs.tool === 'Task') agentCount++;
+          if (obs.tool === 'Skill') skillCount++;
+          // Also count Read calls on SKILL.md files as skill usage
+          if (obs.tool === 'Read' && obs.file && /skills\/.*SKILL\.md/.test(obs.file)) skillCount++;
+        } catch (_) {}
+      }
+    }
+  } catch (_) {}
+
   // ── Format helpers ──
   const durSec = Math.floor(durMs / 1000);
   const mins   = Math.floor(durSec / 60);
@@ -132,6 +156,12 @@ process.stdin.on('end', () => {
   // Token totals
   if (inputTok > 0 || outputTok > 0) {
     line2 += `${DIM}In:${fmtTok(inputTok)} Out:${fmtTok(outputTok)}${RESET} `;
+  }
+
+  // Agent + Skill counts (only show if > 0 — means AZCLAUDE is being used)
+  if (agentCount > 0 || skillCount > 0) {
+    if (agentCount > 0) line2 += `${CYAN}A:${agentCount}${RESET} `;
+    if (skillCount > 0) line2 += `${CYAN}S:${skillCount}${RESET} `;
   }
 
   // Duration
