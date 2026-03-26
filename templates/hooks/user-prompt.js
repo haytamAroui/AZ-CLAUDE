@@ -245,9 +245,10 @@ try {
       }
     } else if (pct >= 70) {
       console.log('');
-      console.log(`--- COMPACTION WARNING (${pct}%) ---`);
-      console.log(`Context at ${pct}% — compaction approaching. Run /snapshot to save session state.`);
-      console.log('--- END WARNING ---');
+      console.log(`!!! SNAPSHOT REQUIRED (${pct}% context used) !!!`);
+      console.log(`Run /snapshot NOW — Claude will compact and lose your session reasoning soon.`);
+      console.log(`This warning repeats every message until you run /snapshot or context resets.`);
+      console.log(`!!! /snapshot !!! /snapshot !!! /snapshot !!!`);
     }
   }
 } catch (_) {}
