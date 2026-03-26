@@ -1,41 +1,40 @@
 # AZCLAUDE -- Complete User Guide
 
-> Version 0.5.0 · 1758 tests passing · AI coding environment
+> Version 0.5.6 · 1794 tests passing · AI coding environment
 
 ---
 
 ## Table of Contents
 
 1. [What AZCLAUDE Is](#what-azclaude-is)
-2. [Installation](#installation)
-3. [Copilot Mode (Autonomous)](#copilot-mode-autonomous)
-4. [First Steps After Install](#first-steps-after-install)
-5. [The 10 Levels](#the-10-levels)
-6. [The Evolution System](#the-evolution-system)
-7. [The Self-Improving Loop](#the-self-improving-loop)
-8. [The Intelligence System](#the-intelligence-system)
-9. [Evidence-Based Intelligence](#evidence-based-intelligence)
-10. [Domain Awareness](#domain-awareness)
-11. [Custom Agents](#custom-agents)
-12. [The Memory System](#the-memory-system)
-13. [Native Tool Orchestration (MCP)](#native-tool-orchestration-mcp)
+2. [Architecture Philosophy](#architecture-philosophy)
+3. [Installation](#installation)
+4. [Copilot Mode (Autonomous)](#copilot-mode-autonomous)
+5. [First Steps After Install](#first-steps-after-install)
+6. [The 10 Levels](#the-10-levels)
+7. [The Evolution System](#the-evolution-system)
+8. [The Self-Improving Loop](#the-self-improving-loop)
+9. [The Intelligence System](#the-intelligence-system)
+10. [Evidence-Based Intelligence](#evidence-based-intelligence)
+11. [Domain Awareness](#domain-awareness)
+12. [Custom Agents](#custom-agents)
+13. [The Memory System](#the-memory-system)
 14. [Intelligent Dispatch](#intelligent-dispatch)
-14b. [Spec-Driven Development](#spec-driven-development)
-14c. [Parallel Execution](#parallel-execution)
-14d. [MCP Integration](#mcp-integration)
-14e. [Code Rules System](#code-rules-system)
-15. [All 39 Commands](#all-37-commands)
-16. [Skills (Auto-Invoked)](#skills-auto-invoked)
-17. [Behavioral Defenses (Pressure Testing)](#behavioral-defenses-pressure-testing)
-18. [Multi-CLI Support](#multi-cli-support)
-19. [Security](#security)
-20. [Troubleshooting](#troubleshooting)
+15. [Spec-Driven Development](#spec-driven-development)
+16. [Parallel Execution](#parallel-execution)
+17. [Code Rules System](#code-rules-system)
+18. [All 39 Commands](#all-39-commands)
+19. [Skills (Auto-Invoked)](#skills-auto-invoked)
+20. [Behavioral Defenses](#behavioral-defenses)
+21. [Multi-CLI Support](#multi-cli-support)
+22. [Security](#security)
+23. [Troubleshooting](#troubleshooting)
 
 ---
 
 ## What AZCLAUDE Is
 
-AZCLAUDE is an AI coding environment. 39 commands, 10 skills, 15 agents, memory, reflexes, evolution. Install once, works on any stack. Copilot mode builds autonomously across sessions using a three-tier intelligent team (orchestrator → problem-architect → milestone-builder). Zero human input after the first message.
+AZCLAUDE is an AI coding environment. 39 commands, 10 skills, 15 agents, memory, reflexes, evolution. Install once, works on any stack. **Zero-friction: one command creates the full environment (folders, agents, skills, memory)—no manual setup required.** Copilot mode builds autonomously across sessions using a three-tier intelligent team (orchestrator → problem-architect → milestone-builder). Zero human input after the first message.
 
 The hero feature is **copilot mode**: a Node.js runner (`bin/copilot.js`) that restarts Claude Code sessions in a loop, while the AZCLAUDE environment inside each session decides what to build next, implements it, tests it, commits, and evolves the environment. The runner is stateless and dumb on purpose. All intelligence lives in the templates.
 
@@ -61,6 +60,207 @@ goals.md -- session memory, auto-injected before your first message every sessio
 Evolution system -- scans for gaps, generates fixes, quality-gates them
 Self-improving loop -- /reflect + /reflexes + /evolve find and fix their own blind spots
 ```
+
+---
+
+## The AZCLAUDE Execution Pipeline
+
+Most AI coding tools just pass your raw text to the LLM. That's why the AI gets lazy, hallucinations, or overwrites files blindly. 
+
+AZCLAUDE sits as a mandatory middleware firewall between your input and Claude. It injects state, routes intent, enforces the SDLC, and gates every write through a security scanner — all inside Node.js, before Claude sees a single token.
+
+```text
+┌──────────────────────────────────────────────────────────────┐
+│ 1. USER INPUT: "Build auth" OR "Should we?" OR "How's this?" │
+└─────────────────────────────┬────────────────────────────────┘
+                              ▼
+════════════════════════════════════════════════════════════════
+        [ THE AZCLAUDE FIREWALL (user-prompt.js) ]
+════════════════════════════════════════════════════════════════
+                              ▼
+┌──────────────────────────────────────────────────────────────┐
+│ 2. STATE INJECTION & COMPACTION GUARD                        │
+│  ├─► Memory check: If context > 85%, auto-save checkpoint    │
+│  └─► Inject state: goals.md, decisions.md, patterns.md       │
+└─────────────────────────────┬────────────────────────────────┘
+                              ▼
+┌──────────────────────────────────────────────────────────────┐
+│ 3. THE INTENT ROUTER (Dynamic Dispatch)                      │
+└─┬───────────────────────────┬──────────────────────────────┬─┘
+  │                           │                              │
+  ▼                           ▼                              ▼
+[ TIER 0: QUESTION ]    [ TIER 1: ANALYZE ]          [ TIER 2: IMPLEMENT ]
+"How does this work?"   "Should we build this?"      "Build X" / "Fix Y"
+  │                           │                              │
+  │  Bypasses pipeline        ├─► Load relevant skills       ├─► STEP 1: problem-architect
+  │  Answer directly          │   (test-first, security,     │   (BLOCKING — Team Spec first)
+  │                           │    architecture-advisor)     ├─► STEP 1b: Web research
+  │                           │   Reason directly.           ├─► STEP 2: Load skill set
+  │                           │   Skip problem-architect.    └─► STEP 3: Post-code review
+  ▼                           ▼                              ▼
+┌──────────────────────────────────────────────────────────────┐
+│ 4. CLAUDE EXECUTES THE ENRICHED PAYLOAD                      │
+│    (User input + protected state + mandatory instructions)   │
+└─────────────────────────────┬────────────────────────────────┘
+                              ▼
+════════════════════════════════════════════════════════════════
+        [ THE SECURITY GATE (pre/post-tool-use.js) ]
+════════════════════════════════════════════════════════════════
+                              ▼
+┌──────────────────────────────────────────────────────────────┐
+│ 5. OUTBOUND SECURITY & MEMORY TRACKING                       │
+│  ├─► pre-tool-use.js: blocks curl|bash, secrets, traversal   │
+│  ├─► Native execution: Claude runs the approved command      │
+│  └─► post-tool-use.js: writes breadcrumb to goals.md         │
+└──────────────────────────────────────────────────────────────┘
+```
+
+**Why this matters:** The routing happens inside Node.js hooks — Claude cannot skip or override it. Ask a question (Tier 0) and it answers directly. Ask it to build (Tier 2) and it is structurally required to run `problem-architect`, load skills, and pass a security gate before a single file is touched.
+
+---
+
+## Architecture Philosophy
+
+**AZCLAUDE uses Markdown files and lifecycle hooks — not MCP — as its core architecture.** This is a deliberate engineering decision based on the **Zero-Dependency, Zero-Overhead Principle**.
+
+### 1. Why Markdown beats MCP for an AI coding environment
+
+The Model Context Protocol (MCP) adds an inter-process communication (IPC) layer between Claude and your project data. For external services (databases, APIs, deployment platforms), that makes sense because Claude cannot natively `Read` a Postgres table.
+
+However, AZCLAUDE's entire intelligence layer consists of **local project data**:
+- **Goals** (`goals.md`)
+- **Plans** (`plan.md`)
+- **Patterns** (`patterns.md`)
+- **Decisions** (`decisions.md`)
+- **Agent Instructions** (`agents/*.md`)
+- **Skill Definitions** (`skills/SKILL.md`)
+
+Claude Code already has high-performance, native tools (`Read`, `Write`, `Bash`, `Grep`) that can access these files with near-zero latency. Using an MCP server for this same data adds a middleman that slows down every turn.
+
+### 2. The Performance Tax of MCP
+
+Every MCP tool or resource you register creates a performance tax in three areas:
+
+1. **Token Overhead**
+   - Each MCP tool definition consumes ~100-300 tokens in the system prompt.
+   - Registering 10 AZCLAUDE features as MCP tools would waste 3,000+ tokens of context before a single user message is processed.
+   - **AZCLAUDE approach:** Markdown refers to files Claude already "knows" exist. Context cost: ~0 tokens until the file is read.
+
+2. **IPC Latency**
+   - MCP calls require: JSON-RPC serialization → stdio pipe transfer → sub-process execution → result serialization → pipe transfer → Claude parsing.
+   - **AZCLAUDE approach:** Claude Code's native `Read` tool is a zero-latency filesystem call.
+
+3. **Inference Latency (The Menu Problem)**
+   - More tools = longer inference time. The model must evaluate the full list of tools for every turn. A "menu" of 50 tools is significantly slower to process than a menu of 10.
+   - **AZCLAUDE approach:** Keep the tool list minimal. Provide power via *content* (Markdown instructions) rather than *plumbing* (extra tools).
+
+### 3. Native Synergy: Performance via Plan & UltraThink
+
+AZCLAUDE commands don't fight Claude Code's native features — they amplify them.
+
+- **Native Plan Mode:** Commands like `/blueprint`, `/debate`, and `/sentinel` leverage Claude's native `plan` and `EnterPlanMode` instruction for read-only analysis, ensuring safety and focused reasoning before a single file is touched.
+- **UltraThink Integration:** Using `--deep` with `/blueprint` or `/debate` auto-loads `ultrathink` logic into the context, enabling the model to perform deeper dependency tracing, coupling analysis, and adversarial testing beyond standard limits.
+
+### 4. Enforcement (Hooks) vs. Capability (Markdown)
+
+The AZCLAUDE architecture splits intelligence into two layers:
+
+**The Enforcement Layer (Hooks — Node.js)**
+- Managed via `.claude/settings.local.json`.
+- **Hooks enforce what the model CANNOT do** (block secrets, block injections) and **what it MUST do** (record every edit in `goals.md`, inject context on startup).
+- Hooks are for automation and security.
+
+**The Capability Layer (Markdown Templates)**
+- Managed via `.claude/commands/`, `skills/`, and `agents/`.
+- **Markdown defines what the model CAN do.**
+- It leverages Claude's native ability to follow complex instructions. No code execution is required to "load" a capability — Claude simply reads it.
+
+---
+
+## The AZCLAUDE Execution Pipeline
+
+Most AI coding tools just pass your raw text to the LLM. That's why the AI gets lazy, hallucinations, or overwrites files blindly. 
+
+AZCLAUDE sits as a mandatory middleware firewall between your input and Claude. It injects state, routes intent, enforces the SDLC, and gates every write through a security scanner — all inside Node.js, before Claude sees a single token.
+
+```text
+┌──────────────────────────────────────────────────────────────┐
+│ 1. USER INPUT: "Build auth" OR "Should we?" OR "How's this?" │
+└─────────────────────────────┬────────────────────────────────┘
+                              ▼
+════════════════════════════════════════════════════════════════
+        [ THE AZCLAUDE FIREWALL (user-prompt.js) ]
+════════════════════════════════════════════════════════════════
+                              ▼
+┌──────────────────────────────────────────────────────────────┐
+│ 2. STATE INJECTION & COMPACTION GUARD                        │
+│  ├─► Memory check: If context > 85%, auto-save checkpoint    │
+│  └─► Inject state: goals.md, decisions.md, patterns.md       │
+└─────────────────────────────┬────────────────────────────────┘
+                              ▼
+┌──────────────────────────────────────────────────────────────┐
+│ 3. THE INTENT ROUTER (Dynamic Dispatch)                      │
+└─┬───────────────────────────┬──────────────────────────────┬─┘
+  │                           │                              │
+  ▼                           ▼                              ▼
+[ TIER 0: QUESTION ]    [ TIER 1: ANALYZE ]          [ TIER 2: IMPLEMENT ]
+"How does this work?"   "Should we build this?"      "Build X" / "Fix Y"
+  │                           │                              │
+  │  Bypasses pipeline        ├─► Load relevant skills       ├─► STEP 1: problem-architect
+  │  Answer directly          │   (test-first, security,     │   (BLOCKING — Team Spec first)
+  │                           │    architecture-advisor)     ├─► STEP 1b: Web research
+  │                           │   Reason directly.           ├─► STEP 2: Load skill set
+  │                           │   Skip problem-architect.    └─► STEP 3: Post-code review
+  ▼                           ▼                              ▼
+┌──────────────────────────────────────────────────────────────┐
+│ 4. CLAUDE EXECUTES THE ENRICHED PAYLOAD                      │
+│    (User input + protected state + mandatory instructions)   │
+└─────────────────────────────┬────────────────────────────────┘
+                              ▼
+════════════════════════════════════════════════════════════════
+        [ THE SECURITY GATE (pre/post-tool-use.js) ]
+════════════════════════════════════════════════════════════════
+                              ▼
+┌──────────────────────────────────────────────────────────────┐
+│ 5. OUTBOUND SECURITY & MEMORY TRACKING                       │
+│  ├─► pre-tool-use.js: blocks curl|bash, secrets, traversal   │
+│  ├─► Native execution: Claude runs the approved command      │
+│  └─► post-tool-use.js: writes breadcrumb to goals.md         │
+└──────────────────────────────────────────────────────────────┘
+```
+
+**Why this matters:** The routing happens inside Node.js hooks — Claude cannot skip or override it. Ask a question (Tier 0) and it answers directly. Ask it to build (Tier 2) and it is structurally required to run `problem-architect`, load skills, and pass a security gate before a single file is touched.
+
+### 5. When to use MCP
+
+AZCLAUDE still recommends MCP for **external integrations** where Claude's native tools cannot reach:
+
+- **Context7:** Live library docs (Claude can't crawl the web in real-time natively).
+- **GitHub MCP:** Pulling PRs or checking issues (Claude can't call the GitHub API).
+- **Postgres MCP:** Introspecting a running database.
+
+**The Rule:** If it's on the disk, use Markdown. If it's external, use MCP.
+
+### 6. Native Tool Orchestration
+
+AZCLAUDE hardwires its logic directly into the host CLI's built-in tools to provide maximum performance and safety:
+
+- **`AskUserQuestion`**: Wrapped into `/add`, `/blueprint`, and `/setup` to force clarification of vague requirements.
+- **`EnterPlanMode`**: Called during `/blueprint`, `/audit`, and `/sentinel` for forced read-only analysis.
+- **`EnterWorktree`**: Called to isolate state during `/evolve` and `/fix`.
+- **`CronCreate` / `CronList`**: Tied to `/loop` for autonomous background execution.
+- **`mcp__ide__getDiagnostics`**: Hard-gated before `/test` and `/ship`.
+
+### Genius Wiring (1 AZCLAUDE Command : N Native Tools)
+
+One-word commands act as high-level orchestrators, wrapping multiple primitive CLI tools into a single logical autonomous turn:
+
+| Command | Orchestrated Native Pipeline |
+|---------|-----------------------------|
+| **`/blueprint`** | `EnterPlanMode` → `Read` → `AskUserQuestion` → `Write` (plan.md) |
+| **`/add`** | `Read` (context) → `AskUserQuestion` → `EnterWorktree` → `Write` → `getDiagnostics` |
+| **`/fix`** | `Read` → `Bash` (repro) → `Grep` → `EnterWorktree` → `Edit` → `Test` |
+| **`/sentinel`** | `EnterPlanMode` → `Read` → `Grep` → `Write` (report) |
 
 ---
 
@@ -767,7 +967,7 @@ Both gate agents use haiku — fast and cheap because they run frequently (once 
 | **evolution-module** | opus | full access | Called by orchestrator for /evolve and /level-up at Level 10. Delegates to loop-controller. |
 | **intelligence-module** | sonnet | full access | Optional Level 8-9 agent. Pipeline isolation, debate engine, OPRO prompt optimization, ELO ranking. |
 | **code-reviewer** | opus | read-only (`EnterPlanMode`) | Spec-first review. Stage 1: spec compliance. Stage 2: code quality. Never modifies files. |
-| **security-auditor** | sonnet | read-only | Pre-ship security scan. 102 rules across 5 layers. Verdict: APPROVE / REQUEST CHANGES / BLOCKED. |
+| **security-auditor** | sonnet | read-only | Pre-ship security scan. 111 rules across 6 categories. Verdict: APPROVE / REQUEST CHANGES / BLOCKED. |
 | **test-writer** | sonnet | `acceptEdits` | Reads existing test patterns. Matches framework, style, naming. Writes and verifies tests. |
 | **cc-template-author** | sonnet | `acceptEdits` | Writes and maintains AZCLAUDE template files. |
 | **cc-cli-integrator** | sonnet | `acceptEdits` | Integrates new features into `bin/cli.js`. |
@@ -963,7 +1163,14 @@ AZCLAUDE memory cost per session:
   Total (strict + copilot):    ~570 tokens  (fixed)
 ```
 
-goals.md is auto-rotated at 30 in-progress entries — oldest 15 archived to `sessions/{date}-edits.md`, newest 15 kept. Same injection cost at session 5 or session 500.
+### Memory Rotation & Archiving
+
+AZCLAUDE prevents context window bloat through automatic rotation:
+
+- **Goals Rotation:** When `## In progress` in `goals.md` exceeds 30 entries, the oldest 15 are archived to `sessions/{date}-edits.md`.
+- **Checkpoint Trimming:** `UserPromptSubmit` caps injected checkpoints at 50 lines to ensure reasoning doesn't drown out current task data.
+- **Session Migration:** The `Stop` hook automatically migrates in-progress items to "Done this session," keeping the live ledger lean.
+- **Fixed Cost:** Rotation ensures memory maintenance costs exactly ~500 tokens regardless of project size or session depth.
 
 ### Memory Summary
 
@@ -993,8 +1200,6 @@ All AZCLAUDE hooks follow this contract:
 - `UserPromptSubmit` (context injection) → `stdout` (goals.md + checkpoint injected into Claude's context)
 - `Stop` (migration, trimming, persist reminder) → `stderr` (user-facing warnings only)
 
----
-
 ### Hook Reliability
 
 - **Always overwrite on install.** `npx azclaude` always writes fresh hook scripts.
@@ -1003,18 +1208,6 @@ All AZCLAUDE hooks follow this contract:
 - **Checkpoint reminder.** Every 15 edits: prints a warning to run `/snapshot`.
 - **Stop hook warns, never stubs.** Friction logs only written when there's actual friction.
 - **Windows compatible.** All hooks use Node.js — no bash dependencies. Path detection handles both `$HOME/.claude/` (Unix/Mac) and `%APPDATA%\Claude\` (Windows) automatically.
-
----
-
-## Native Tool Orchestration (MCP)
-
-AZCLAUDE hardwires its logic directly into the host CLI's built-in MCP capabilities:
-
-- **`AskUserQuestion`**: Wrapped into `/add`, `/blueprint`, and `/setup` to force clarification of vague requirements.
-- **`EnterPlanMode`**: Called during `/blueprint`, `/audit`, and `/sentinel` for forced read-only analysis.
-- **`EnterWorktree`**: Called to isolate state during `/evolve` and `/fix`.
-- **`CronCreate` / `CronList`**: Tied to `/loop` for autonomous background execution.
-- **`mcp__ide__getDiagnostics`**: Hard-gated before `/test` and `/ship`.
 
 ---
 
@@ -1237,7 +1430,7 @@ Wave 3 (sequential — depends on both Wave 1 and 2):
   M5: Integration tests
 
 Critical path: M1 → M3 → M5 (3 milestones)
-Max parallelism: 2 milestones simultaneously
+Max parallelism: 2  |  Critical path: 3 waves
 ```
 
 Orchestrator reads this to decide dispatch order. `/tasks` output feeds directly into the orchestrator's parallel safety check.
@@ -1322,30 +1515,70 @@ Orchestrator reads `Wave:` from plan.md. Same-wave milestones with `Parallel: ye
 
 Explicitly run a subset of milestones in parallel. Same execution model as above but user-triggered.
 
+### Real case — ShopFlow e-commerce sprint
+
+> **Prompt:** *"Add order tracking + product review system — full parallel mode, no limits"*
+
+**Phase 0 — Intelligence (4 agents, ~9 minutes, all parallel):**
+```
+├── Explore: Codebase architecture scan          (55k tokens) — found checkout/page.tsx
+│            is 70% done; review POST never passes order_id to backend
+├── Explore: UX journey + conversion analysis    (54k tokens) — post-purchase save-to-
+│            account flow is the biggest conversion hole
+├── Agent:   Competitor feature research         (49k tokens) — only platform without
+│            inline review request after delivery; biggest gap vs Shopify/WooCommerce
+└── Explore: Performance + SEO audit             (51k tokens) — product schema missing
+             review aggregate (affects Google rich results)
+```
+
+**Debate verdicts:** Fix broken order_id link first (0.5 days) → reviews over rating-only (saves 2 sprints) → mobile-first detail page → workflow engine not static forms.
+
+**Phase 1 — Blueprint (3 parallel reads of codebase → plan approved)**
+
+**Phase 2 — Wave 1 (classifier merged M1+M2 → shared checkout/page.tsx):**
+```
+├── M1+M2: checkout frontend — order_id auto-link + "Track Order" panel   (78k tokens)
+│          ← MERGED by classifier: both touch checkout/page.tsx
+└── M4-backend: orders.py API + DB migration                              (37k tokens)
+               ← PARALLEL: zero shared files with M1+M2
+```
+
+**Phase 3 — Wave 2 (different file owners, all parallel):**
+```
+└── M3+M4-frontend+M5: order detail page + review section + completion score (84k tokens)
+```
+
+**Result: 5 milestones shipped, 1 commit, 0 merge conflicts.**
+
+What the classifier caught: M1 and M2 were separate plan milestones but both wrote to `checkout/page.tsx` — running them as separate agents would have caused a conflict. The classifier merged them into one agent before dispatch.
+
+**On tokens:** You will notice the token counts look large. You would spend the same tokens building this sequentially — the work is identical. What changes is wall-clock time. Sequential execution: each agent waits for the previous one → ~2 hours. Parallel waves: agents run simultaneously → ~15 minutes. Same total tokens. Same output. One-eighth the time.
+
 See `docs/parallel-execution.md` for the complete reference including conflict resolution ladder.
 
 ---
 
-## MCP Integration
+## Native CLI Hooks and Orchestration
 
-`/mcp` detects your stack and recommends the right Model Context Protocol servers.
+AZCLAUDE leverages the host CLI's native hook lifecycle and built-in capabilities to provide a seamless, non-intrusive environment. 
 
-### Universal (free, no API key)
+### 1. Internal Capability Mapping
 
-| MCP | What it fixes | Auto-wired in |
-|-----|--------------|---------------|
-| **Context7** | `/add` writes against stale training data — wrong API signatures, deprecated methods. Context7 fetches live docs at prompt time. | `/add` pre-flight |
-| **Sequential Thinking** | `/blueprint` and `/copilot` make better multi-step decisions with iterative branching. | `/blueprint` copilot mode |
+Rather than reinventing tools, AZCLAUDE maps its complex agentic logic to the CLI's native primitives:
 
-### Stack-specific
+- **`AskUserQuestion`**: Wrapped into `/add`, `/blueprint`, and `/setup` to force clarification of vague requirements.
+- **`EnterPlanMode`**: Called during `/blueprint`, `/audit`, and `/sentinel` for forced read-only analysis.
+- **`EnterWorktree`**: Called to isolate state during `/evolve` and `/fix`.
+- **`CronCreate` / `CronList`**: Tied to `/loop` for autonomous background execution.
+- **`mcp__ide__getDiagnostics`**: Hard-gated before `/test` and `/ship`.
 
-| If stack contains | Recommend | Wired in |
-|------------------|-----------|---------|
-| Any GitHub repo | GitHub MCP | `/ship` push/PR |
-| Any web project | Playwright MCP | qa-engineer, `/test` |
-| Supabase in deps | Supabase MCP | schema introspection |
-| postgres/prisma | PostgreSQL MCP | query during dev |
-| Heavy `/fix` usage | Brave Search | `/fix` Phase 2 error lookup |
+---
+
+## MCP Integration Strategy
+
+While AZCLAUDE avoids using MCP for its own internal logic to maintain maximum performance, it fully supports and recommends MCP for external tools that extend the AI's capabilities beyond the local filesystem.
+
+Use the `/mcp` command to detect your stack and receive tailored recommendations for external MCP servers (Context7, GitHub, Playwright, etc.).
 
 ### Discovery
 
@@ -1561,22 +1794,25 @@ In copilot mode: auto-deploys to Vercel/Railway if deploy target in intent.
 **Environment security scan. Scored 0-100, grade A-F.**
 
 ```
-/sentinel           # full scan (all 5 layers, 102 rules)
+/sentinel           # full scan (all 6 layers, 111 rules)
 /sentinel --hooks   # Layer 1+2: hook integrity + permissions only
 /sentinel --mcp     # Layer 3: MCP server secrets and unknown packages
 /sentinel --agents  # Layer 4: prompt injection in agent files
 /sentinel --secrets # Layer 5: credentials in committed/staged code
+/sentinel --supply  # Layer 6: supply chain (lockfiles, pins, audit)
 ```
 
-Scans five layers independently. Final score = weighted average.
+Scans six layers independently. Final score = weighted average of first 5 layers (Supply Chain is advisory).
 
 | Layer | Weight | What it checks |
 |-------|--------|---------------|
 | Hook Integrity | 25 | SHA-256 hash verification — hooks tampered? |
 | Permission Audit | 20 | Wildcards, `dangerouslyAllowedTools`, permission bypasses |
+| Hook Analysis | 25 | 34 rules for exfiltration and RCE in scripts |
 | MCP Server Scan | 20 | Hardcoded secrets in `.mcp.json`, unknown packages |
-| Agent Config Review | 15 | Prompt injection patterns in agent files, write-permitted reviewers |
-| Secrets Scan | 20 | Credentials in committed/staged files |
+| Agent Config Review | 15 | Prompt injection patterns in agent files |
+| Secrets Scan | 20 | 14 rules for credentials in committed/staged files |
+| Supply Chain | (adv) | Lockfiles, loose pins, `npm audit` criticals |
 
 **Verdict:**
 - `BLOCKED` — hardcoded secret or integrity failure. `/ship` must not proceed.

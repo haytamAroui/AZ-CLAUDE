@@ -71,12 +71,26 @@ try {
   } else {
     const p = promptText.toLowerCase();
 
-    // ── Detect if this is a QUESTION-ONLY message (no action needed) ──
-    // Only skip if the message is PURELY a question with no action verb
+    // ── Tier classification — 3 levels of routing ───────────────────────────
+    // TIER 0: Pure question — skip pipeline entirely (explain, define, show me)
+    // TIER 1: Analysis/discussion — load skills only, skip problem-architect
+    //         ("is this good?", "do we need to?", "should we?", "verify this")
+    // TIER 2: Implementation — full pipeline with problem-architect blocking
+    //         ("build X", "fix X", "create X", "add X", "deploy X")
     const isQuestionOnly = /^(what|how|why|where|when|who|can you explain|show me|tell me|do you know)\b/.test(p.trim())
-      && !/\b(build|add|create|implement|fix|refactor|deploy|test|review|write|make|change|update|modify|remove|delete|move|rename|install|setup|configure|migrate)\b/.test(p);
+      && !/\b(build|add|create|implement|fix|refactor|deploy|write|make|change|update|modify|remove|delete|move|rename|install|configure|migrate)\b/.test(p);
 
-    if (!isQuestionOnly) {
+    // Discussion framing — "do we need to implement X" is NOT the same as "implement X"
+    const isDiscussion = /\b(do we|should we|would we|need to implement|want to|could we|thinking about|wondering if|considering|is this|verify|is it|does it|did you|did we)\b/.test(p)
+      && !/^(yes|ok|sure|go ahead|let'?s|actually implement|actually build|actually fix)\b/.test(p.trim());
+
+    // Concrete implementation signals — requires file writes, not just reasoning
+    const isImplementation = /\b(build|add|create|implement|fix|deploy|migrate|refactor|write|make|change|update|modify|remove|delete|install|configure|rename|setup)\b/.test(p)
+      && !isDiscussion;
+
+    const tier = isQuestionOnly ? 0 : isImplementation ? 2 : 1;
+
+    if (tier > 0) {
       const agentsDir = path.join(cfg, 'agents');
       const skillsDir = path.join(cfg, 'skills');
       const hasAgents = fs.existsSync(agentsDir);
@@ -100,15 +114,16 @@ try {
       if (intents.length === 0) intents.push('CODE');
 
       // ── Build the MANDATORY pipeline ──
+      const tierLabel = tier === 2 ? 'IMPLEMENT' : 'ANALYZE';
       console.log('');
       console.log('--- AZCLAUDE PIPELINE (MANDATORY) ---');
-      console.log('Detected: ' + intents.join(' + '));
+      console.log('Detected: ' + intents.join(' + ') + ' | Tier: ' + tierLabel + (tier === 1 ? ' (skip problem-architect — load skills + reason directly)' : ''));
       console.log('');
 
-      // ── STEP 1: problem-architect ALWAYS runs first ──
-      // This is the AZCLAUDE brain — it decides which agents, skills, files to use.
-      // NO exceptions. NO "skip if small task". ALWAYS run pre-flight.
-      if (agentExists('problem-architect')) {
+      // ── STEP 1: problem-architect — TIER 2 only (concrete implementation tasks) ──
+      // Tier 1 (analysis/discussion) skips this — Claude reasons directly with loaded skills.
+      // Tier 2 (build/fix/create/deploy) always runs pre-flight — no exceptions.
+      if (tier === 2 && agentExists('problem-architect')) {
         console.log('STEP 1 — PRE-FLIGHT (BLOCKING):');
         console.log('  Spawn Agent(subagent_type="problem-architect") with this prompt:');
         console.log('    "Task: [user\'s request]');
