@@ -24,7 +24,7 @@ templates/CLAUDE.md     — template installed into user projects
 templates/commands/     — command files (copilot, reflexes, etc.)
 templates/skills/       — 10 SKILL.md files with references/
 templates/capabilities/ — manifest + shared + level-builders + evolution + intelligence
-templates/agents/       — orchestrator-init + orchestrator + loop-controller + code-reviewer + test-writer + cc-template-author + cc-cli-integrator + cc-test-maintainer + milestone-builder + problem-architect + security-auditor + spec-reviewer + constitution-guard
+templates/agents/       — orchestrator-init + orchestrator + loop-controller + code-reviewer + test-writer + cc-template-author + cc-cli-integrator + cc-test-maintainer + milestone-builder + problem-architect + security-auditor + spec-reviewer + constitution-guard + qa-engineer + devops-engineer
 templates/scripts/      — env-scan.sh (JSON output, ~200 tokens)
 tests/test-features.sh  — grep-based tests, all must pass before commit
 ```
@@ -34,8 +34,8 @@ Read `.claude/capabilities/manifest.md` to find what to load.
 Load ONLY files relevant to the current task.
 
 Quick dispatch:
-- Doc-only change (README/DOCS/package.json description) → edit, commit, push, npm publish — no test run needed
-- Hook change (templates/hooks/*.js) → edit, run tests/test-features.sh, commit — note: existing installs need `azclaude-copilot setup --full` to pick up hook changes
+- Doc-only change (README/DOCS/package.json description) → edit, commit, push, npm publish — no test run needed. Bump patch version if combined with any non-doc change in same release.
+- Hook change (templates/hooks/*.js) → edit, run tests/test-features.sh, commit — note: existing installs need `azclaude-copilot setup --full` to pick up hook changes. stdout = injected into Claude's context. stderr = shown in terminal to user only. Never swap them.
 - Template change → read the file, edit, run tests/test-features.sh, commit
 - New command → templates/commands/{name}.md, add to CORE/EXTENDED/ADVANCED_COMMANDS in bin/cli.js, add tests
 - New skill → templates/skills/{name}/SKILL.md, add to SKILLS in bin/cli.js, add tests
