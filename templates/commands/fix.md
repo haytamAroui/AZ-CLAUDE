@@ -14,6 +14,17 @@ Load: shared/tdd.md + shared/completion-rule.md before starting.
 
 ---
 
+## Deep Mode Detection
+
+If `$ARGUMENTS` contains `--deep`:
+1. Strip `--deep` from arguments before processing
+2. Load `shared/ultrathink.md` — enables extended thinking for root-cause analysis
+3. In Phase 3 (Hypothesize): generate 3+ competing hypotheses before committing to one
+4. Trace each hypothesis through the full call chain — don't stop at the first plausible explanation
+5. Check for systemic causes: is this a symptom of a deeper architectural issue?
+
+---
+
 ## Pre-Flight: Constitution + Code Rules Check
 
 ```bash

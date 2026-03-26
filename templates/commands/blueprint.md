@@ -17,6 +17,17 @@ allowed-tools: Read, Grep, Glob, Bash
 
 $ARGUMENTS
 
+## Deep Mode Detection
+
+If `$ARGUMENTS` contains `--deep`:
+1. Strip `--deep` from arguments before processing
+2. Load `shared/ultrathink.md` — enables extended thinking for coupling analysis, wave planning, and risk assessment
+3. In Step 2 (Map the Impact): read MORE files, trace dependencies deeper, check 2nd-order effects
+4. In Step 3 (Write the Plan): consider 2-3 alternative approaches before choosing the plan structure
+5. In Parallel Planning: spend more reasoning on coupling analysis — catch subtle shared-resource conflicts
+
+---
+
 **Use /add for straightforward features. Use /blueprint when:**
 - The change touches 4+ files
 - It involves a schema, API contract, or interface change

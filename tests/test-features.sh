@@ -2009,6 +2009,23 @@ check      "copilot: --deep flag support"                   "bin/copilot.js" "de
 check      "copilot: deep mode prompt additions"            "bin/copilot.js" "DEEP MODE.*audit\|Content accuracy audit\|Accessibility audit"
 check      "copilot: --deep uses Opus model"               "bin/copilot.js" "claude-opus-4-6\|deepMode.*opus\|opus.*deepMode"
 
+# ─── Ultrathink / --deep integration ─────────────────────────────────────────
+echo ""
+echo "─── Ultrathink / --deep integration ───"
+check_file "ultrathink: shared capability exists"        "$CAP/shared/ultrathink.md"
+check      "ultrathink: keyword present in capability"   "$CAP/shared/ultrathink.md" "ultrathink"
+check      "ultrathink: manifest entry"                  "$CAP/manifest.md" "shared/ultrathink.md"
+check      "ultrathink: blueprint --deep detection"      "$CMD/blueprint.md" "Deep Mode Detection"
+check      "ultrathink: debate --deep detection"         "$CMD/debate.md" "Deep Mode Detection"
+check      "ultrathink: dream --deep detection"          "$CMD/dream.md" "Deep Mode Detection"
+check      "ultrathink: fix --deep detection"            "$CMD/fix.md" "Deep Mode Detection"
+check      "ultrathink: add --deep detection"            "$CMD/add.md" "Deep Mode Detection"
+check      "ultrathink: blueprint loads ultrathink"      "$CMD/blueprint.md" "shared/ultrathink.md"
+check      "ultrathink: debate loads ultrathink"         "$CMD/debate.md" "shared/ultrathink.md"
+check      "ultrathink: dream loads ultrathink"          "$CMD/dream.md" "shared/ultrathink.md"
+check      "ultrathink: fix loads ultrathink"            "$CMD/fix.md" "shared/ultrathink.md"
+check      "ultrathink: add loads ultrathink"            "$CMD/add.md" "shared/ultrathink.md"
+
 # ─── Copilot runner resilience ────────────────────────────────────────────────
 echo ""
 echo "─── Copilot runner resilience ───"

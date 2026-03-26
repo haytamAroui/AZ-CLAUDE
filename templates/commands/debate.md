@@ -11,6 +11,15 @@ $ARGUMENTS
 
 ---
 
+## Deep Mode Detection
+
+If `$ARGUMENTS` contains `--deep`:
+1. Strip `--deep` from arguments before processing
+2. Load `shared/ultrathink.md` — enables extended thinking for adversarial analysis
+3. Steelman each position harder — find the strongest version of every argument before comparing
+4. Consider 2nd-order consequences: "if we pick A, what breaks in 6 months?"
+5. Search for hidden third options that neither side proposed
+
 ---
 
 ## When to Use This

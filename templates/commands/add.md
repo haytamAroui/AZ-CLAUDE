@@ -18,6 +18,17 @@ Load: shared/tdd.md + shared/completion-rule.md
 
 ---
 
+## Deep Mode Detection
+
+If `$ARGUMENTS` contains `--deep`:
+1. Strip `--deep` from arguments before processing
+2. Load `shared/ultrathink.md` — enables extended thinking for complex features
+3. At the Complexity Gate: analyze 2-3 implementation approaches with trade-offs before choosing
+4. Trace downstream effects — what tests, configs, and consumers will this change affect?
+5. Consider edge cases that quick implementation would miss
+
+---
+
 ## Pre-Flight: Constitution + Code Rules + Spec Check
 
 ```bash

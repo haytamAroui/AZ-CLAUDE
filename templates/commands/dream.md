@@ -13,6 +13,17 @@ $ARGUMENTS
 
 ---
 
+## Deep Mode Detection
+
+If `$ARGUMENTS` contains `--deep`:
+1. Strip `--deep` from arguments before processing
+2. Load `shared/ultrathink.md` — enables extended thinking for vision exploration
+3. Explore 3+ architectural approaches before choosing the stack
+4. Consider scaling implications, deployment complexity, and team skill requirements
+5. Research deeper — use WebSearch for current best practices before committing to a direction
+
+---
+
 ## Copilot Mode Detection
 
 ```bash
