@@ -444,36 +444,41 @@ function installScripts(projectDir, cfg) {
 // ─── Statusline (auto-updating cost/context bar) ─────────────────────────────
 
 function installStatusline(projectDir, cfg) {
-  const scriptSrc = path.join(TEMPLATE_DIR, 'scripts', 'statusline.sh');
+  const scriptSrc = path.join(TEMPLATE_DIR, 'scripts', 'statusline.js');
   if (!fs.existsSync(scriptSrc)) return;
 
-  // Copy statusline script to ~/.claude/statusline.sh (global — shared across projects)
+  // Copy statusline script to ~/.claude/statusline.js (global — shared across projects)
   const globalDir = path.join(os.homedir(), '.claude');
-  const scriptDst = path.join(globalDir, 'statusline.sh');
+  const scriptDst = path.join(globalDir, 'statusline.js');
   fs.mkdirSync(globalDir, { recursive: true });
   fs.copyFileSync(scriptSrc, scriptDst);
-  try { fs.chmodSync(scriptDst, '755'); } catch {}
+
+  // Remove old .sh version if it exists (migrating from v0.5.0)
+  const oldSh = path.join(globalDir, 'statusline.sh');
+  try { if (fs.existsSync(oldSh)) fs.unlinkSync(oldSh); } catch {}
 
   // Configure in global settings.json (statusLine is a global Claude Code setting)
+  const nodeExe = process.execPath;
   const settingsPath = path.join(globalDir, 'settings.json');
   let settings = {};
   if (fs.existsSync(settingsPath)) {
     try { settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8')); } catch {}
   }
 
-  // Only add if not already configured (don't overwrite user customization)
-  if (!settings.statusLine) {
-    // Use forward-slash path for cross-platform shell compatibility
-    const scriptPath = scriptDst.replace(/\\/g, '/');
+  // Always update the command to use Node.js (migrates from old .sh version)
+  const scriptPath = scriptDst.replace(/\\/g, '/');
+  const nodePath   = nodeExe.replace(/\\/g, '/');
+  const needsUpdate = !settings.statusLine
+    || (settings.statusLine.command && settings.statusLine.command.includes('statusline.sh'));
+  if (needsUpdate) {
     settings.statusLine = {
       type: 'command',
-      command: scriptPath,
+      command: `"${nodePath}" "${scriptPath}"`,
       padding: 1
     };
     atomicWriteFileSync(settingsPath, JSON.stringify(settings, null, 2));
-    ok('Statusline installed — context %, rate limit, session time visible after every turn');
+    ok('Statusline installed (Node.js) — context %, rate limit, session time visible after every turn');
   } else {
-    // Always refresh the script even if config exists
     info('Statusline already configured — script refreshed');
   }
 }
@@ -994,8 +999,8 @@ function runDoctor() {
 
   // ── Statusline ──────────────────────────────────────────────────────────
   console.log('\n[ Statusline ]');
-  const statuslineScript = path.join(os.homedir(), '.claude', 'statusline.sh');
-  chk('statusline.sh exists (~/.claude/statusline.sh)',        fs.existsSync(statuslineScript));
+  const statuslineScript = path.join(os.homedir(), '.claude', 'statusline.js');
+  chk('statusline.js exists (~/.claude/statusline.js)',        fs.existsSync(statuslineScript));
   if (cli.hooksDir) {
     const globalSettingsPath = path.join(cli.hooksDir, 'settings.json');
     if (fs.existsSync(globalSettingsPath)) {
