@@ -9,23 +9,68 @@ description: >
   or any work involving sensitive data. Also use before any /ship operation,
   when editing ~/.claude/settings.json, or when importing skills from
   external sources.
+tags: [security, credentials, secrets, hooks, deploy, audit]
 ---
 
 # Security Model
 
-AZCLAUDE runs code and modifies files. These rules prevent common attack vectors.
+<instructions>
+AZCLAUDE runs code and modifies files. A 4-hook pipeline provides layered runtime protection.
+
+## 4-Hook Runtime Pipeline
+
+```
+User prompt → [user-prompt.js]   — injection scan (every prompt)
+                    ↓
+Claude calls tools → [pre-tool-use.js] — Bash gate + Read gate + Write gate (14 rules)
+                    ↓
+Tool completes  → [post-tool-use.js] — behavioral sequence detection
+                    ↓
+Session ends    → [stop.js]          — security summary + cleanup
+```
+
+All hooks share `/tmp/.azclaude-seclog-{PID}` (JSONL). Session summary printed at stop.
 
 ## Hook Integrity
 - SHA-256 hash in `~/.claude/.azclaude-integrity` verifies hooks weren't tampered
 - `_azclaude: true` marker confirms hooks were installed by AZCLAUDE
 - If integrity check fails: show the diff, let user decide. Never silently overwrite.
 
-## Context Injection Protection
-Files injected into context (goals.md, checkpoints) are scanned for:
-- `ignore.*previous.*instructions`
-- `curl.*|.*bash` or `wget.*|.*sh`
-- `system prompt` or `you are now`
-Suspicious lines are filtered by the UserPromptSubmit hook.
+## Bash Gate (pre-tool-use.js)
+| Rule | Pattern | Action |
+|------|---------|--------|
+| `rce-curl-pipe` | `curl ... \| bash` | **Block** |
+| `rce-wget-pipe` | `wget ... \| bash` | **Block** |
+| `destructive-rm` | `rm -rf /` or `rm -rf ~` | **Block** |
+| `shadow-npm-install` | `npm install` without `--ignore-scripts` | Warn |
+| `env-var-echo` | `echo $SECRET` / `echo $TOKEN` | Warn |
+
+## Read Gate (pre-tool-use.js)
+Warns (once per session) when Claude reads credential files:
+`.env`, `.env.*`, `secrets.json`, `secrets.yaml`, `credentials.json`, `id_rsa`, `id_ed25519`, `id_ecdsa`, `id_dsa`, `.pem`, `.p12`, `.pfx`, `.keystore`
+
+## Write Gate — 19 Rules (pre-tool-use.js)
+Scans all Edit/Write content before writing. Secrets → **Block** (exit 2). Others → Warn.
+
+Key patterns: `eval(`, `child_process.exec(`, `dangerouslySetInnerHTML`, `pickle.load(`,
+`os.system(`, `subprocess(..., shell=True)`, `gets(`, `shell_exec(`,
+`Runtime.getRuntime().exec(`, `render_template_string(`,
+`MD5`/`SHA1`/`Math.random()`, `__proto__`, `yaml.load(`, `../` traversal,
+`ignore previous instructions`, AWS/GH/GL/Slack/npm/GCP/Stripe/SendGrid/PEM tokens.
+
+For fix guidance per pattern: `references/security-details.md`
+
+## Behavioral Sequence Detection (post-tool-use.js)
+Tracks last 5 tool calls. Detects exfiltration patterns:
+- `Read(.env) → Bash` — credential read then shell execution → Warn
+- `Read(.env) → WebFetch` — credential read then external HTTP → Warn
+
+## Context Injection Protection (user-prompt.js)
+Fires on **every** prompt (before session gate). Filters from goals.md + checkpoints:
+- `ignore [all] previous instructions`
+- `disregard [all] previous instructions`
+- `override your [rules/instructions/safety]`
+- `you are now [a new/different/unrestricted]`
 
 ## Credential Handling
 - Credentials go in env vars — never in committed files
@@ -41,4 +86,11 @@ Suspicious lines are filtered by the UserPromptSubmit hook.
 | Orchestrator | Read, Agent — NO Write/Edit |
 | Experiment | isolation: worktree (cannot touch main) |
 
-For full details, read `references/security-details.md`.
+## Supply Chain Awareness
+- Always check lockfile exists before `npm install` in new projects
+- `npm audit` CRITICAL findings → block; HIGH → warn
+- Loose pins (`^`, `~`, `*`) in package.json → flag for review
+- Run `/sentinel --supply-chain` for full dependency scan
+
+For full details: `references/security-details.md`
+</instructions>

@@ -8,9 +8,12 @@ description: >
   environment discovery. Also use when entering a project for the first time,
   when /setup runs, when debugging dependency issues, or when you need to
   understand the project structure before making changes.
+tags: [environment, stack, framework, detection, setup]
 ---
 
 # Environment Scanner
+
+<instructions>
 
 ## How
 
@@ -39,3 +42,5 @@ If `.claude/scripts/env-scan.sh` doesn't exist, scan manually:
 2. Check for package.json, pyproject.toml, Cargo.toml, go.mod
 3. `git log --oneline -5`
 4. Read README.md first 20 lines
+
+</instructions>

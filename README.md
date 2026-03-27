@@ -94,7 +94,6 @@ AZCLAUDE sits as a mandatory middleware firewall between your input and Claude. 
 ┌──────────────────────────────────────────────────────────────┐
 │ 5. OUTBOUND SECURITY & MEMORY TRACKING                       │
 │  ├─► pre-tool-use.js: blocks curl|bash, secrets, traversal   │
-│  ├─► Native execution: Claude runs the approved command      │
 │  └─► post-tool-use.js: writes breadcrumb to goals.md         │
 └──────────────────────────────────────────────────────────────┘
 ```
@@ -118,6 +117,7 @@ One command, no flags. Auto-detects whether this is a fresh install or an upgrad
 ```bash
 npx azclaude-copilot@latest doctor   # 32 checks — verify everything is wired correctly
 ```
+│  ├─► Native execution: Claude runs the approved command      │
 
 ---
 

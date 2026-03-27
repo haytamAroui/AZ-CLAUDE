@@ -11,9 +11,12 @@ description: >
   checking agent overlap, or pairing agents with skills. Even if the user
   doesn't say "agent", use this when they describe a workstream that needs
   isolation, parallelism, or specialized context.
+tags: [agent, create, subagent, specialized, 5-layer]
 ---
 
 # Agent Creator
+
+<instructions>
 
 Creates production-quality Claude Code agents following the 5-layer structure.
 An agent is an OWNERSHIP BOUNDARY — not a persona. If two agents can do the
@@ -35,6 +38,12 @@ Before diving into the full workflow, verify these 5 essentials:
 - The project has < 20 files — CLAUDE.md alone is probably enough
 
 ## Workflow
+
+0. **Web research (MANDATORY for domain-specific agents).** Before writing any agent content:
+   - WebSearch for "{domain} best practices {current year}" — the agent's Layer 5 (Domain) must reflect current reality
+   - WebSearch for "{technology} API changes" — catch breaking changes, deprecations, new patterns
+   - WebFetch official docs for any technology the agent will work with
+   - **Why:** Claude hallucinates outdated APIs. An agent with stale domain knowledge makes confident wrong decisions.
 
 1. **Determine boundaries.** Run co-change analysis to find what changes together:
    ```bash
@@ -89,3 +98,5 @@ Before diving into the full workflow, verify these 5 essentials:
 For the complete agent engineering guide: `references/agent-engineering-guide.md`
 For the quality checklist: `references/quality-checklist.md`
 For a sample agent output: `examples/sample-agent.md`
+
+</instructions>

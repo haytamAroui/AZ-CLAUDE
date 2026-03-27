@@ -9,9 +9,12 @@ description: >
   or when the user describes a repeated workflow that should be automated.
   Even if the user doesn't say "skill", use this when they describe a behavior
   Claude should learn for a specific domain or task pattern.
+tags: [skill, create, template, workflow, automation]
 ---
 
 # Skill Creator
+
+<instructions>
 
 Creates production-quality skills that follow the Anthropic skill spec.
 A skill is a RECIPE that changes Claude's behavior — not documentation, not a prompt.
@@ -33,6 +36,13 @@ Before diving into the full workflow, verify these 5 essentials:
 ## Workflow
 
 1. **Capture intent.** Ask: what task does this skill handle? What triggers it?
+
+1b. **Web research (MANDATORY for domain skills).** Before writing any skill content:
+   - WebSearch for "{domain} best practices {current year}" — get current patterns, not stale training data
+   - WebSearch for "{domain} common mistakes" — build the anti-patterns section from real failures
+   - WebFetch the official docs for any API/library the skill covers — get correct method names, parameters, versions
+   - Include findings in the skill body and references/ — the skill must reflect CURRENT reality, not training-data memory
+   - **Why:** Claude hallucinates outdated APIs. A skill built on stale knowledge is worse than no skill.
 
 2. **Generate the directory:**
    ```bash
@@ -80,3 +90,5 @@ Before diving into the full workflow, verify these 5 essentials:
 For the complete skill engineering guide: `references/skill-engineering-guide.md`
 For the quality checklist: `references/quality-checklist.md`
 For a sample skill output: `examples/sample-skill.md`
+
+</instructions>

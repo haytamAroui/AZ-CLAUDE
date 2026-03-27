@@ -5,15 +5,15 @@ action: "also edit .claude-plugin/marketplace.json — version, description, and
 confidence: 0.88
 domain: workflow
 scope: project
-evidence_count: 10
-last_observed: 2026-03-22
+evidence_count: 18
+last_observed: 2026-03-26
 ---
 
 # Plugin Sync — plugin.json + marketplace.json always move together
 
 ## Evidence
-- plugin.json: 5 edits
-- marketplace.json: 5 edits (exact same frequency)
+- plugin.json: 21 edits (co-change cluster rank 4 — per import-graph)
+- marketplace.json: 21 edits (exact same frequency — always paired)
 - /analyze caught version drift (0.4.12 in marketplace, 0.4.19 in package) — twice
 - /evolve caught it again after v0.4.18→v0.4.19 bump
 

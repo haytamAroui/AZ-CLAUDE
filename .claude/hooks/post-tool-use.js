@@ -23,14 +23,18 @@ const HOOK_PROFILE = process.env.AZCLAUDE_HOOK_PROFILE || 'standard';
 let filePath = '';
 let changeSummary = '';
 let toolName = '';
+let toolOutput = '';
 try {
   const raw  = fs.readFileSync(0, 'utf8'); // fd 0 = stdin, cross-platform
   const data = JSON.parse(raw);
   toolName   = data.tool_name || '';
   filePath   = data.tool_input?.file_path || data.tool_input?.path || data.tool_input?.command || '';
   // Extract change summary from old_string/new_string diff hint (Edit tool)
-  const oldStr = data.tool_input?.old_string || '';
-  const newStr = data.tool_input?.new_string || '';
+  // MultiEdit: edits[] array — use first edit's new_string
+  const oldStr = data.tool_input?.old_string || data.tool_input?.edits?.[0]?.old_string || '';
+  const newStr = data.tool_input?.new_string || data.tool_input?.edits?.[0]?.new_string || '';
+  // Capture tool result output for Bash secret scanning
+  toolOutput = data.tool_result?.output || data.tool_result?.stdout || '';
   if (oldStr && newStr) {
     // Summarize: first non-empty line of new content (what was added)
     const firstNew = newStr.split('\n').find(l => l.trim().length > 0) || '';
@@ -50,7 +54,7 @@ const goalsPath = path.join(cfg, 'memory', 'goals.md');
 if (!fs.existsSync(goalsPath)) process.exit(0); // not an AZCLAUDE project
 
 // For non-file tools (Bash, Grep without file_path), still capture observations but skip goals tracking
-const isFileTool = toolName === 'Write' || toolName === 'Edit' || (!toolName && filePath);
+const isFileTool = toolName === 'Write' || toolName === 'Edit' || toolName === 'MultiEdit' || (!toolName && filePath);
 const rel = filePath ? path.relative(process.cwd(), path.resolve(filePath)) : toolName || 'unknown';
 
 if (isFileTool) {
@@ -157,13 +161,14 @@ if (rotHIdx !== -1) {
 // Tracks actual tool name + tool sequences (last 3 tools) for pattern detection.
 if (HOOK_PROFILE !== 'minimal') {
   const reflexDir = path.join(cfg, 'memory', 'reflexes');
+  const obsTs = now.toISOString().replace(/\.\d{3}Z$/, 'Z');
+  const tool = toolName || 'Edit';
+  const safeRel = rel.replace(/\.(env|key|pem|secret|credential)/gi, '.[REDACTED]');
+
+  // ── Reflex observation capture ──
   try {
     fs.mkdirSync(reflexDir, { recursive: true });
     const obsPath = path.join(reflexDir, 'observations.jsonl');
-    const obsTs   = now.toISOString().replace(/\.\d{3}Z$/, 'Z');
-    const tool    = toolName || 'Edit';
-    // Scrub secrets: strip API keys, tokens, passwords from file paths
-    const safeRel = rel.replace(/\.(env|key|pem|secret|credential)/gi, '.[REDACTED]');
 
     // Track tool sequence: last 3 tools for pattern detection (Read→Edit→Bash)
     const seqPath = path.join(os.tmpdir(), `.azclaude-seq-${process.ppid || process.pid}`);
@@ -178,14 +183,86 @@ if (HOOK_PROFILE !== 'minimal') {
       event: 'complete', seq: seq.join('→')
     });
     fs.appendFileSync(obsPath, obs + '\n');
-    // Auto-truncate: keep last 2000 lines max (prevent unbounded growth)
+
+    // Auto-truncate: stat-based size check (avoids reading entire file every call)
     try {
-      const obsContent = fs.readFileSync(obsPath, 'utf8');
-      const obsLines   = obsContent.split('\n').filter(Boolean);
-      if (obsLines.length > 2000) {
+      const obsStat = fs.statSync(obsPath);
+      if (obsStat.size > 200000) { // ~200KB ≈ ~2000 lines
+        const obsContent = fs.readFileSync(obsPath, 'utf8');
+        const obsLines   = obsContent.split('\n').filter(Boolean);
         fs.writeFileSync(obsPath, obsLines.slice(-500).join('\n') + '\n');
       }
     } catch (_) {}
+  } catch (_) {}
+
+  // ── Behavioral security: sequence detection ──
+  try {
+    const secSeqPath = path.join(os.tmpdir(), `.azclaude-secseq-${process.ppid || process.pid}`);
+    let secSeq = [];
+    try { secSeq = JSON.parse(fs.readFileSync(secSeqPath, 'utf8')); } catch (_) {}
+    secSeq.push({ tool, file: rel });
+    if (secSeq.length > 5) secSeq = secSeq.slice(-5);
+    try { fs.writeFileSync(secSeqPath, JSON.stringify(secSeq)); } catch (_) {}
+
+    if (secSeq.length >= 2) {
+      const prev = secSeq[secSeq.length - 2];
+      const curr = secSeq[secSeq.length - 1];
+      const CRED = /\.env$|secrets?\.(json|ya?ml)$|credentials?(\.json)?$|id_rsa$|\.pem$/i;
+      // Pattern: Read credential file → Bash or WebFetch
+      if (prev.tool === 'Read' && CRED.test(prev.file || '')
+          && (curr.tool === 'Bash' || curr.tool === 'WebFetch')) {
+        const seclogPath = path.join(os.tmpdir(), `.azclaude-seclog-${process.ppid || process.pid}`);
+        const entry = JSON.stringify({
+          ts: obsTs, hook: 'post-tool-use',
+          rule: 'credential-read-then-exec', level: 'warn',
+          target: `${path.basename(prev.file || '')} → ${curr.tool}`
+        });
+        try { fs.appendFileSync(seclogPath, entry + '\n'); } catch (_) {}
+        process.stderr.write(
+          `\n⚠ SECURITY: Credential file (${path.basename(prev.file || '')}) read then ${curr.tool} — verify no secrets are being transmitted.\n`
+        );
+      }
+    }
+
+    // ── Reward hack behavioral patterns (Anthropic "Emergent Misalignment" paper) ──
+
+    // Pattern: Bash(test run) → Edit/Write(test file) = possible reward hacking
+    if (secSeq.length >= 2) {
+      const prev2 = secSeq[secSeq.length - 2];
+      const curr2 = secSeq[secSeq.length - 1];
+      if (prev2.tool === 'Bash' && /\b(pytest|jest|mocha|vitest|npm\s+test|npx\s+test)\b/i.test(prev2.file || '')
+          && (curr2.tool === 'Edit' || curr2.tool === 'Write' || curr2.tool === 'MultiEdit')
+          && /test[_/\\]|_test\.|\.test\.|\.spec\.|conftest/i.test(curr2.file || '')) {
+        const seclogPath = path.join(os.tmpdir(), `.azclaude-seclog-${process.ppid || process.pid}`);
+        const entry2 = JSON.stringify({
+          ts: obsTs, hook: 'post-tool-use',
+          rule: 'test-then-test-modify', level: 'warn',
+          target: `${prev2.tool}(test) → ${curr2.tool}(${path.basename(curr2.file || '')})`
+        });
+        try { fs.appendFileSync(seclogPath, entry2 + '\n'); } catch (_) {}
+        process.stderr.write(
+          `\n⚠ SECURITY: Test run then test file modification — verify edits fix the code, not fake the result.\n`
+        );
+      }
+    }
+
+    // Pattern: Any Edit/Write to .claude/hooks/ = always warn (hook self-modification)
+    {
+      const currH = secSeq[secSeq.length - 1];
+      if (currH && (currH.tool === 'Edit' || currH.tool === 'Write' || currH.tool === 'MultiEdit')
+          && /\.claude[/\\]hooks[/\\]/i.test(currH.file || '')) {
+        const seclogPath = path.join(os.tmpdir(), `.azclaude-seclog-${process.ppid || process.pid}`);
+        const entryH = JSON.stringify({
+          ts: obsTs, hook: 'post-tool-use',
+          rule: 'hook-self-modification', level: 'warn',
+          target: path.basename(currH.file || '')
+        });
+        try { fs.appendFileSync(seclogPath, entryH + '\n'); } catch (_) {}
+        process.stderr.write(
+          `\n⚠ SECURITY: Hook file modified (${path.basename(currH.file || '')}) — hooks control all tool execution. Verify this change is intentional.\n`
+        );
+      }
+    }
   } catch (_) {}
 }
 
@@ -203,14 +280,32 @@ if (HOOK_PROFILE !== 'minimal') {
       session: process.ppid || process.pid
     });
     fs.appendFileSync(costsPath, costEntry + '\n');
-    // Auto-truncate: keep last 1000 entries
+    // Auto-truncate: stat-based size check
     try {
-      const costLines = fs.readFileSync(costsPath, 'utf8').split('\n').filter(Boolean);
-      if (costLines.length > 1000) {
+      const costStat = fs.statSync(costsPath);
+      if (costStat.size > 100000) { // ~100KB ≈ ~1000 entries
+        const costLines = fs.readFileSync(costsPath, 'utf8').split('\n').filter(Boolean);
         fs.writeFileSync(costsPath, costLines.slice(-500).join('\n') + '\n');
       }
     } catch (_) {}
   } catch (_) {}
+}
+
+// ── Bash output secret scanning (standard/strict only) ──────────────────────
+if (HOOK_PROFILE !== 'minimal' && toolName === 'Bash' && toolOutput) {
+  const SECRET_RE = /AKIA[A-Z0-9]{16}|sk-[a-zA-Z0-9]{20,}|ghp_[A-Za-z0-9]{36}|glpat-[A-Za-z0-9_-]{20}|xoxb-[0-9]|xoxp-[0-9]|-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY/;
+  if (SECRET_RE.test(toolOutput)) {
+    const seclogPath = path.join(os.tmpdir(), `.azclaude-seclog-${process.ppid || process.pid}`);
+    const entry = JSON.stringify({
+      ts: now.toISOString(), hook: 'post-tool-use',
+      rule: 'bash-output-secret-leak', level: 'warn',
+      target: (filePath || '').slice(0, 80)
+    });
+    try { fs.appendFileSync(seclogPath, entry + '\n'); } catch (_) {}
+    process.stderr.write(
+      `\n⚠ SECURITY: Bash output contains a secret pattern — verify no credentials were leaked to logs or context.\n`
+    );
+  }
 }
 
 // ── Checkpoint reminder every 15 edits ──────────────────────────────────────
@@ -220,4 +315,27 @@ try { editCount = parseInt(fs.readFileSync(counterPath, 'utf8'), 10) + 1; } catc
 try { fs.writeFileSync(counterPath, String(editCount)); } catch (_) {}
 if (editCount > 0 && editCount % 15 === 0) {
   process.stderr.write(`\n⚠ ${editCount} edits this session — run /snapshot before context compaction loses your reasoning\n`);
+}
+
+// ── Rapid-edit detection — same file edited 5+ times in <5 min ───────────────
+// Signal: unclear spec before coding. Warn once, suggest /blueprint.
+if (isFileTool && rel) {
+  const rapidPath = path.join(os.tmpdir(), `.azclaude-rapid-${process.ppid || process.pid}`);
+  let rapidLog = {};
+  try { rapidLog = JSON.parse(fs.readFileSync(rapidPath, 'utf8')); } catch (_) {}
+  const fileLog = rapidLog[rel] || { count: 0, firstTs: Date.now(), warned: false };
+  const elapsed = Date.now() - fileLog.firstTs;
+  if (elapsed > 5 * 60 * 1000) {
+    // Reset window
+    rapidLog[rel] = { count: 1, firstTs: Date.now(), warned: false };
+  } else {
+    fileLog.count += 1;
+    if (fileLog.count >= 5 && !fileLog.warned) {
+      fileLog.warned = true;
+      const shortName = path.basename(rel);
+      process.stdout.write(`\n⚠ ${fileLog.count} edits to ${shortName} in ${Math.round(elapsed/60000)}min — unclear spec? Consider /blueprint before continuing\n`);
+    }
+    rapidLog[rel] = fileLog;
+  }
+  try { fs.writeFileSync(rapidPath, JSON.stringify(rapidLog)); } catch (_) {}
 }

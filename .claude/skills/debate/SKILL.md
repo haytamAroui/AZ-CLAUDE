@@ -10,9 +10,12 @@ description: >
   when the user presents two options and seems uncertain which to pick,
   even if they don't explicitly ask for a debate.
 disable-model-invocation: true
+tags: [decision, tradeoff, comparison, architecture, acemad]
 ---
 
 # Structured Debate [AceMAD]
+
+<instructions>
 
 Use when a decision is genuinely uncertain, multi-criteria, and wrong choice costs real time.
 Do NOT use for routine decisions — Claude's direct answer is faster and equally good.
@@ -34,3 +37,5 @@ Do NOT use for routine decisions — Claude's direct answer is faster and equall
 - If margin < 10 points: run synthesis reversed to check position bias
 
 For the full 7-phase protocol with examples, read `references/acemad-protocol.md`.
+
+</instructions>
