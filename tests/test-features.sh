@@ -2222,6 +2222,21 @@ check      "template CLAUDE.md: parallel agent rules"          "$ROOT/CLAUDE.md"
 check      "template CLAUDE.md: /parallel in commands"         "$ROOT/CLAUDE.md" "/parallel"
 check      "CLAUDE.md: /parallel in Available Commands"        "CLAUDE.md"  "/parallel"
 
+# ─── Wave state persistence (context loss protection) ────────────────────────
+echo ""
+echo "─── wave state persistence (context loss protection) ───"
+check      "parallel-coord: wave state file format"             "$PARA_CAP"   "parallel-wave-state\.md"
+check      "parallel-coord: wave state lifecycle"               "$PARA_CAP"   "Created.*dispatch\|Deleted.*merged\|Lifecycle"
+check      "parallel-coord: resume protocol defined"            "$PARA_CAP"   "Resume Protocol"
+check      "parallel-coord: resume checks branch commits"       "$PARA_CAP"   "git log.*parallel\|git branch.*list"
+check      "parallel-coord: cleanup deletes wave state"         "$PARA_CAP"   "rm.*parallel-wave-state\|Delete.*wave.*state"
+check      "/parallel: writes wave state before dispatch"       "$PARA_CMD"   "parallel-wave-state\.md"
+check      "/parallel: Step 0 checks interrupted wave"          "$PARA_CMD"   "Interrupted Wave\|interrupted.*wave\|Step 0"
+check      "/parallel: deletes wave state on cleanup"           "$PARA_CMD"   "Delete.*parallel-wave-state\|delete.*wave"
+check      "orchestrator: resume interrupted wave step"         "$ROOT/agents/orchestrator.md" "Resume Interrupted\|parallel-wave-state"
+check      "snapshot: detects active parallel wave"             "$ROOT/commands/snapshot.md" "parallel-wave-state\|Active parallel wave"
+check      "compaction guard: saves wave state"                 "$ROOT/hooks/user-prompt.js" "parallel-wave-state\|waveStatePath\|wave.*state"
+
 # ─── /verify command + code-rules system ─────────────────────────────────────
 echo ""
 echo "─── /verify command + code-rules system ───"

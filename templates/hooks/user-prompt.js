@@ -233,13 +233,25 @@ try {
         if (fs.existsSync(goalsPath)) {
           const goalsContent = fs.readFileSync(goalsPath, 'utf8');
           const header = `---\ndate: ${new Date().toISOString()}\nlabel: auto-compaction-guard-${pct}pct\nfiles_in_progress: []\n---\n\n`;
-          fs.writeFileSync(cpPath, header + '## Auto-saved before compaction\n\n' + goalsContent);
+          let cpContent = '## Auto-saved before compaction\n\n' + goalsContent;
+
+          // Include parallel wave state if an active wave exists
+          const waveStatePath = path.join(cfg, 'parallel-wave-state.md');
+          if (fs.existsSync(waveStatePath)) {
+            const waveContent = fs.readFileSync(waveStatePath, 'utf8');
+            cpContent += '\n\n## Active Parallel Wave (saved by compaction guard)\n\n' + waveContent;
+          }
+
+          fs.writeFileSync(cpPath, header + cpContent);
           fs.writeFileSync(autoSaveMarker, '');
         }
 
         console.log('');
         console.log(`--- COMPACTION GUARD (${pct}%) ---`);
         console.log(`Context at ${pct}% — AUTO-SAVED checkpoint to ${path.basename(cpPath)}`);
+        if (fs.existsSync(waveStatePath)) {
+          console.log('PARALLEL WAVE STATE INCLUDED — interrupted wave will auto-resume on next session.');
+        }
         console.log('Run /snapshot NOW to save your reasoning and decisions (goals.md alone is not enough).');
         console.log('--- END GUARD ---');
       }

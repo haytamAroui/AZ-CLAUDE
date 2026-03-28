@@ -36,6 +36,25 @@ If CLAUDE.md unfilled → run `/setup` with intent from copilot-intent.md first.
 
 ---
 
+### Step 1b: Resume Interrupted Parallel Wave
+
+```bash
+cat .claude/parallel-wave-state.md 2>/dev/null
+```
+
+If the file exists with `status: in-flight` → a previous session was interrupted mid-parallel-dispatch.
+
+**Do NOT skip this. Do NOT start a new wave until the interrupted wave is resolved.**
+
+Follow the Resume Protocol from `capabilities/shared/parallel-coordination.md`:
+1. Read the wave state file — it lists every milestone, branch, and last-known status
+2. For each `running` milestone: check if `parallel/{slug}` branch exists and has commits
+3. Branches with commits → mark `done`, proceed to merge
+4. Branches without commits or missing → re-dispatch those milestones
+5. After all milestones resolved → merge → delete `.claude/parallel-wave-state.md` → continue
+
+---
+
 ### Step 2: Select Next Milestone Wave
 
 **If plan.md has `Wave:` fields** (blueprint wrote them — read directly):

@@ -166,6 +166,78 @@ These rules are injected by orchestrator into every parallel milestone-builder p
 
 ---
 
+## Wave State File — Context Loss Protection
+
+During parallel execution, the orchestrator writes `.claude/parallel-wave-state.md` **before dispatching any agents**. This file survives context compaction and enables session resume.
+
+### Format
+
+```markdown
+---
+wave: {N}
+started: {ISO timestamp}
+status: in-flight
+milestones: [M3, M4, M5]
+---
+
+| Milestone | Branch | Status | Commit | Notes |
+|-----------|--------|--------|--------|-------|
+| M3 — Auth endpoints | parallel/m3-auth | running | — | P1 slot |
+| M4 — User profile | parallel/m4-profile | done | a1b2c3d | merged to worktree |
+| M5 — Email service | parallel/m5-email | failed | — | timeout on test suite |
+```
+
+### Lifecycle
+
+1. **Created** — by `/parallel` Step 4 or orchestrator Step 4, before agent dispatch
+2. **Updated** — as each agent reports completion (status → `done`/`failed`, commit hash filled)
+3. **Deleted** — by orchestrator Step 8 or `/parallel` Step 8, after all branches merged and cleanup done
+
+### Rules
+
+- The file MUST exist whenever parallel agents are in-flight
+- If this file exists at session start → a previous wave was interrupted → trigger Resume Protocol
+- Only the orchestrator or `/parallel` command writes this file — builders never touch it
+
+---
+
+## Resume Protocol — Recovering Interrupted Waves
+
+When the orchestrator or `/parallel` finds `.claude/parallel-wave-state.md` at session start:
+
+### Step 1: Read Wave State
+```bash
+cat .claude/parallel-wave-state.md
+```
+
+### Step 2: Check Each Branch
+For every milestone with `status: running` (was in-flight when session died):
+```bash
+# Does the branch exist?
+git branch --list "parallel/{slug}"
+
+# Does it have commits beyond the fork point?
+git log main..parallel/{slug} --oneline 2>/dev/null | head -5
+```
+
+### Step 3: Classify Each Milestone
+
+| Branch exists? | Has commits? | Action |
+|---------------|-------------|--------|
+| Yes | Yes | Mark `done` in wave state — ready to merge |
+| Yes | No | Agent never started — re-dispatch |
+| No | — | Branch was cleaned up or never created — re-dispatch |
+
+### Step 4: Resume
+- Milestones marked `done` or with commits → proceed to Merge Protocol
+- Milestones needing re-dispatch → spawn new agents (same parameters as original dispatch)
+- Update `.claude/parallel-wave-state.md` with new statuses before re-dispatching
+
+### Step 5: Continue Normal Flow
+After resume completes, continue with Merge Protocol → Plan Update → Cleanup as usual.
+
+---
+
 ## Ownership Map Cleanup
 
 After wave merge is complete:
@@ -173,4 +245,7 @@ After wave merge is complete:
 # Remove ownership.md entries for the completed wave
 # (or replace the table with a merge record)
 echo "## Wave {N} merged — {timestamp}" >> .claude/ownership.md
+
+# CRITICAL: Delete wave state file — prevents false resume on next session
+rm -f .claude/parallel-wave-state.md
 ```

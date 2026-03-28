@@ -21,6 +21,18 @@ Load: `capabilities/shared/parallel-coordination.md`
 
 ---
 
+## Step 0: Check for Interrupted Wave
+
+```bash
+cat .claude/parallel-wave-state.md 2>/dev/null
+```
+
+If the file exists with `status: in-flight` → a previous parallel session was interrupted.
+Follow the **Resume Protocol** from `parallel-coordination.md` before starting a new wave.
+Only proceed to Step 1 after the interrupted wave is fully resolved (merged or re-dispatched).
+
+---
+
 ## Step 1: Parse Targets
 
 ```bash
@@ -68,9 +80,9 @@ If any milestone returns `Parallel Safe: NO` → exclude from parallel wave, run
 
 ---
 
-## Step 4: Write Ownership Map
+## Step 4: Write Ownership Map + Wave State
 
-Create or update `.claude/ownership.md`:
+**4a. Ownership map** — create or update `.claude/ownership.md`:
 
 ```
 ## Active Parallel Session — {ISO timestamp}
@@ -82,6 +94,24 @@ Initiated by: /parallel command
 | P1 | M{N} — {title} | parallel/m{n}-{slug} | {dirs from spec} | pending |
 | P2 | M{N} — {title} | parallel/m{n}-{slug} | {dirs from spec} | pending |
 ```
+
+**4b. Wave state file** — write `.claude/parallel-wave-state.md` BEFORE dispatching agents:
+
+```markdown
+---
+wave: {N}
+started: {ISO timestamp}
+status: in-flight
+milestones: [{list}]
+---
+
+| Milestone | Branch | Status | Commit | Notes |
+|-----------|--------|--------|--------|-------|
+| M{N} — {title} | parallel/m{n}-{slug} | running | — | P1 slot |
+| M{N} — {title} | parallel/m{n}-{slug} | running | — | P2 slot |
+```
+
+This file survives context compaction. If the session dies mid-wave, the next session reads this file to resume.
 
 ---
 
@@ -116,6 +146,7 @@ Worktree rules (MANDATORY):
 After all agents complete:
 - Collect all completion reports
 - Mark each as COMPLETE or FAILED in ownership.md
+- **Update `.claude/parallel-wave-state.md`** — set each milestone's Status to `done`/`failed`, fill Commit hash
 
 ---
 
@@ -150,6 +181,7 @@ git branch -d parallel/{slug-1} parallel/{slug-2}
 
 Update `.claude/plan.md` — set merged milestones to `status: done`.
 Update `.claude/ownership.md` — replace active table with merge record.
+**Delete `.claude/parallel-wave-state.md`** — wave is complete, prevent false resume on next session.
 
 Show final report:
 ```

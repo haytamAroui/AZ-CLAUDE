@@ -17,6 +17,14 @@ This is different from `/persist` (end-of-session). Checkpoint = mid-flight snap
 
 Read `.claude/memory/goals.md` — scan the "In progress" entries and "Current threads."
 
+**Step 1b: Detect Active Parallel Wave**
+
+```bash
+cat .claude/parallel-wave-state.md 2>/dev/null
+```
+
+If the file exists → a parallel wave is active. Read it and include wave status in the checkpoint (Step 2).
+
 ---
 
 ## Step 2: Write Checkpoint File
@@ -48,6 +56,9 @@ files_in_progress: [{list from goals.md ## In progress}]
 
 ## Risk / open question
 {Anything uncertain that needs resolution — or "None"}
+
+## Active parallel wave (if any)
+{Copy the full contents of .claude/parallel-wave-state.md here, or "No active wave"}
 ```
 
 Create the directory if needed: `.claude/memory/checkpoints/`
