@@ -40,7 +40,7 @@ Repeats the same mistakes.            antipatterns.md prevents known failures.
 Forgets what was decided.             decisions.md logs every architecture choice.
 Loses reasoning mid-session.          /snapshot saves WHY — auto-injected next session.
 Can't work autonomously.              /copilot builds, tests, commits, ships — unattended.
-Agents run serially, one at a time.   Task Classifier + parallel waves run agents simultaneously.
+Agents run serially, one at a time.   DAG dispatch + merge-on-complete runs 6 agents simultaneously.
 ```
 
 One install. Any stack. Zero dependencies.
@@ -357,19 +357,19 @@ Never writes code     Never implements
 
 ## Parallel Execution
 
-AZCLAUDE runs multiple Claude Code agents simultaneously — without file corruption or test interference. Each agent works in an isolated git worktree on its own branch.
+AZCLAUDE runs up to 6 Claude Code agents simultaneously using **DAG-based dispatch** — each milestone launches the moment its dependencies are satisfied, not when an entire wave completes. Merge-on-complete means finished agents unblock dependents immediately.
 
 ```
-M1 (schema) → done
-                 ↓
-    ┌────────────┬────────────┬────────────┬──────────────┐
-    M2 (auth)   M3 (profile) M4 (email)   M5 (dashboard)   ← all run simultaneously
-    └────────────┴────────────┴────────────┴──────────────┘
-                 ↓
-              M6 (E2E tests)
+M0 (foundation) → done                          ← auto-detected shared files
+                     ↓
+    ┌────────────┬────────────┬────────────┬────────────┬────────────┬──────────────┐
+    M1 (auth)   M2 (profile) M3 (email)   M4 (tests)  M5 (NIST)   M6 (dashboard)
+    └���────┬──────┴────────────┴─────┬──────┴────────────┴────────────┴──────────────┘
+          ↓                         ↓                    ← merge-on-complete: M1 done → M7 starts
+    M7 (API routes)           M8 (integration)             immediately, doesn't wait for M2-M6
 ```
 
-3 sequential waves instead of 6 sequential milestones. Same output, fraction of the time.
+DAG dispatch instead of sequential waves. Same output, ~50% faster wall clock.
 
 ### Real case — ShopFlow e-commerce sprint
 
@@ -410,13 +410,26 @@ What the classifier caught: M1 and M2 were separate plan milestones but both wro
 
 **On tokens:** You will notice the token counts look large. You would spend the same tokens building this sequentially — the work is identical. What changes is wall-clock time. Sequential execution: each agent waits for the previous one to finish → ~2 hours. Parallel waves: agents run simultaneously → ~15 minutes. Same total tokens. Same output. One-eighth the time.
 
-### Four-layer safety model
+### v0.6.0: What changed in parallel execution
+
+| Before (wave-based) | After (DAG-based) |
+|---------------------|-------------------|
+| Wave 2 waits for ALL of Wave 1 | Each milestone launches when its `Depends:` are satisfied |
+| Max 3 agents at once | Max 6 agents (test-only agents uncapped) |
+| Manual Wave 0 for shared files | Auto-foundation detection extracts shared-file edits |
+| Agents re-read shared files independently | Pre-read injection: shared files read once, injected inline |
+| Agents run full test suite | Scoped tests: each agent runs only its module's tests |
+| Merge after entire wave completes | Merge-on-complete: each branch merges immediately, unblocks dependents |
+| Context loss kills the wave | Wave state file survives compaction, auto-resumes on next session |
+
+### Five-layer safety model
 
 Parallel execution is safe only when agents don't write to the same files. The key insight: **Layer 0 makes conflicts impossible by design** before any safety checking begins.
 
 | Layer | When | What |
 |-------|------|------|
 | **0 — Task Classifier** | `/blueprint`, before milestones exist | Groups coupled work into single milestones. Conflicts become impossible by construction. |
+| **0b — Foundation Detection** | Before dispatch | Auto-detects shared files (models, schemas) → sequential Wave 0 before any parallel agents |
 | **1 — Directory + import check** | `/blueprint`, post-plan | Fast grep: same dirs? shared utility imports? |
 | **2 — problem-architect file scan** | Post-plan, per milestone | Returns exact `Files Written:` paths + `Parallel Safe: YES/NO` |
 | **3 — Orchestrator dispatch gate** | Runtime, final | Overlap check before spawning. Cannot be bypassed. |
@@ -427,12 +440,12 @@ Claude Code's `isolation: "worktree"` in the Task tool is a raw primitive — li
 
 | Without AZCLAUDE | With AZCLAUDE |
 |------------------|---------------|
-| Which tasks to parallelize? | **Task Classifier** — groups coupled work, splits independent work |
-| Is it safe to parallelize? | **Four-layer safety** — classifier + dir check + file scan + dispatch gate |
-| What context does each agent need? | **Problem-Architect** — builds full Team Spec per milestone |
+| Which tasks to parallelize? | **Task Classifier + DAG dispatch** — groups coupled work, launches on dependency satisfaction |
+| Is it safe to parallelize? | **Five-layer safety** — classifier + foundation + dir check + file scan + dispatch gate |
+| What context does each agent need? | **Problem-Architect** — Team Spec + pre-read injection (shared files read once) |
 | What conventions to follow? | **patterns.md / antipatterns.md** — injected automatically |
-| What if one agent fails? | **Blocker recovery + /debate escalation** |
-| What happens when the session ends? | **goals.md + checkpoints + plan.md** — resumes exactly |
+| What if one agent fails? | **Blocker recovery + /debate escalation** (other agents continue) |
+| What happens when the session ends? | **DAG state file + checkpoints** — auto-resumes interrupted waves |
 | How do we improve over time? | **/evolve** — new agents from git evidence every 3 milestones |
 
 **Claude Code is the engine. AZCLAUDE is the transmission, the steering, and the GPS — the system that makes those cylinders produce coordinated forward motion instead of random spinning.**
@@ -624,11 +637,11 @@ AZCLAUDE is a lazy-loaded environment of 48 capability modules. It only loads wh
 
 ## Verified
 
-1794 tests. Every template, command, capability, agent, hook, and CLI feature verified.
+1836 tests. Every template, command, capability, agent, hook, and CLI feature verified.
 
 ```bash
 bash tests/test-features.sh
-# Results: 1794 passed, 0 failed, 1794 total
+# Results: 1836 passed, 0 failed, 1836 total
 ```
 
 ---

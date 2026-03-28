@@ -1,6 +1,6 @@
 # AZCLAUDE -- Complete User Guide
 
-> Version 0.5.6 · 1794 tests passing · AI coding environment
+> Version 0.6.0 · 1836 tests passing · AI coding environment
 
 ---
 
@@ -1473,14 +1473,14 @@ Every major command now checks for constitution + spec context:
 
 ## Parallel Execution
 
-Multiple Claude Code agents running simultaneously on the same codebase — without file corruption or test interference. Each agent works in an isolated git worktree on its own branch. Changes merge sequentially after all agents complete.
+Up to 6 Claude Code agents running simultaneously using **DAG-based dispatch** — each milestone launches when its dependencies are satisfied, not when an entire wave completes. Merge-on-complete means finished agents unblock dependents immediately. Each agent works in an isolated git worktree on its own branch.
 
-### How it works
+### How it works (v0.6.0 — DAG dispatch)
 
 **1. `/blueprint` writes a parallel-annotated plan.md**
 
 Every milestone gets three new fields:
-- `Wave:` — execution order (same wave = simultaneous)
+- `Wave:` — estimated execution order (informational — orchestrator uses `Depends:` for dispatch)
 - `Dirs:` — directories this milestone exclusively owns
 - `Parallel:` — yes/no safety verdict
 
@@ -1489,31 +1489,36 @@ Blueprint runs a two-layer safety check before writing these fields:
 - Layer 1b: shared-utility grep (`from.*utils`, `from.*shared`) — catches shared files that directories alone miss
 - If a conflict is found: adds `Depends:` to split milestones into different waves
 
-After writing plan.md, problem-architect validates each milestone (Layer 2): returns exact `Files Written:` paths and `Parallel Safe: YES/NO`. If `NO` → blueprint runs a correction pass: updates `Wave:`, `Dirs:`, `Depends:` in plan.md to match.
+After writing plan.md, problem-architect validates each milestone (Layer 2): returns exact `Files Written:` paths and `Parallel Safe: YES/NO`. If `NO` → blueprint runs a correction pass.
 
-**2. `/tasks` shows the wave graph**
+**2. `/tasks` shows the DAG graph**
 
 ```
 /tasks
-→  Wave 1: M1 (schema) — start now
-→  Wave 2: M2 (auth), M3 (profile), M4 (email), M5 (dashboard) — all run simultaneously
-→  Wave 3: M6 (E2E tests) — after Wave 2
-→  Max parallel: 4  |  Critical path: 3 waves
+→  Foundation: M0 (models.py + schema) — sequential first
+→  Ready: M1 (auth), M2 (profile), M3 (email), M4 (tests), M5 (NIST) — all run simultaneously
+→  Blocked: M6 (API routes) ←depends M1 — launches when M1 merges
+→  Max parallel: 6  |  DAG dispatch: merge-on-complete
 ```
 
 **3. Automatic via `/copilot`**
 
-Orchestrator reads `Wave:` from plan.md. Same-wave milestones with `Parallel: yes`:
-1. Runs Layer 3 safety check: `Files Written:` overlap for every pair
-2. Writes `.claude/ownership.md` (branch/directories/status per agent)
-3. Dispatches all agents in a single message with `isolation: "worktree"`
-4. Waits for all to complete
-5. Merges branches sequentially (simplest first), tests after each merge
-6. Cleans up worktree branches
+Orchestrator builds a dependency graph from plan.md `Depends:` fields:
+1. **Foundation detection**: auto-identifies shared files → sequential Wave 0 before any parallel agents
+2. **DAG readiness check**: any milestone whose `Depends:` are ALL `done` → ready to launch
+3. **Pre-read injection**: reads shared files once, injects content into each agent's prompt
+4. Dispatches all ready agents with `isolation: "worktree"` + scoped test commands
+5. **Merge-on-complete** (default): each branch merges as soon as its agent finishes
+6. **DAG unlock**: checks for newly-unblocked milestones → dispatches immediately
+7. **Fallback**: if max_parallel <= 3 or merge conflicts detected → batch-merge mode
 
 **4. Manual via `/parallel M2 M3 M4 M5`**
 
-Explicitly run a subset of milestones in parallel. Same execution model as above but user-triggered.
+Explicitly run a subset of milestones in parallel. Same DAG execution model as above but user-triggered.
+
+**5. Context loss protection**
+
+`.claude/parallel-wave-state.md` records every milestone's branch, status, and commit hash. If context compacts or the session dies, the next session reads this file and auto-resumes: completed branches merge, in-flight milestones re-dispatch.
 
 ### Real case — ShopFlow e-commerce sprint
 
@@ -1949,7 +1954,7 @@ Pre-flight: `gh auth status`, `git remote`, `plan.md`. Creates issues for pendin
 /parallel M2 M3 M4 M5
 ```
 
-Dispatches multiple milestone-builder agents in a single message, each in its own worktree branch (`parallel/{slug}`). Three-layer file collision safety. Merges branches sequentially after all agents complete. Agents commit locally only — orchestrator pushes after all merges pass. See [Parallel Execution](#parallel-execution).
+DAG-based dispatch of multiple milestone-builder agents, each in its own worktree branch (`parallel/{slug}`). Five-layer file collision safety. Merge-on-complete: each branch merges as its agent finishes, unblocking dependents immediately. Pre-read injection eliminates redundant file reads. Max 6 parallel agents (test-only uncapped). See [Parallel Execution](#parallel-execution).
 
 ---
 
