@@ -166,6 +166,72 @@ These rules are injected by orchestrator into every parallel milestone-builder p
 
 ---
 
+## Proven Patterns — 3-Layer Conflict Prevention
+
+These patterns come from a real production run: 16 agents, 360 tests, zero merge conflicts.
+
+### Layer 1: Wave 0 — Bottleneck Files First (Sequential)
+
+Identify files that multiple milestones need to modify (shared models, core config, base schemas).
+**Do NOT parallelize these.** Instead, create a Wave 0 that runs sequentially before any parallel agents:
+
+```
+Wave 0 (sequential, orchestrator or single agent):
+  models.py      → ALL new fields added at once
+  versioning.py  → version bump
+  shared_config  → all schema changes
+
+Result: every subsequent agent finds shared dependencies already in place.
+```
+
+**Rule: SHARED DEPENDENCY → Wave 0 (sequential, do it first)**
+
+### Layer 2: Directory-Level File Isolation
+
+Design each parallel wave so agents own completely disjoint files:
+
+```
+Wave 1 (3 agents, zero file overlap):
+  Agent A: annex_1_rules.py, rules.py, conformity_path.py, test_annex_1.py
+  Agent B: gpai_rules.py, test_gpai_copyright.py
+  Agent C: test_fria_trigger.py, test_national_law_router.py (NEW files only)
+```
+
+**Test-only agents are always safe in parallel** — they create new test files and read (never write) engine code.
+
+**Rule: TEST-ONLY agents → always safe in any wave**
+
+### Layer 3: Same File, Different Sections
+
+When two agents must touch the same file, allow it **only if edits are 100+ lines apart**:
+
+```
+┌───────┬────────────────────────────────┬────────────┐
+│ Agent │ Section in rules.py            │ Line range │
+├───────┼────────────────────────────────┼────────────┤
+│ M2A   │ After result construction      │ ~line 392  │
+│ M2C   │ STEP 13 deadline unpacking     │ ~line 273  │
+└───────┴────────────────────────────────┴────────────┘
+```
+
+Git merges these cleanly because they don't touch overlapping context (3-line hunk window).
+
+**Rule: SAME FILE, DIFFERENT SECTIONS (100+ lines apart) → allowed in parallel**
+**Rule: SAME FILE, SAME SECTION → serialize into different waves**
+
+### Decision Table
+
+| Conflict type | Resolution |
+|---------------|-----------|
+| Multiple milestones need same model/schema file | Wave 0: one agent fixes it sequentially before all others |
+| Agents write different files entirely | Safe for parallel — standard worktree isolation |
+| Agents write same file, edits 100+ lines apart | Allowed in parallel — git auto-merges cleanly |
+| Agents write same file, edits < 100 lines apart | Serialize into different waves |
+| Agent only creates new test files | Always safe in any wave — no write conflicts possible |
+| Agent changes a function's return type | Must also fix all callers in the same agent's scope |
+
+---
+
 ## Wave State File — Context Loss Protection
 
 During parallel execution, the orchestrator writes `.claude/parallel-wave-state.md` **before dispatching any agents**. This file survives context compaction and enables session resume.
