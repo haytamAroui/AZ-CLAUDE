@@ -42,3 +42,12 @@
 **Choice**: One `security-auditor` agent (not split into 5 sub-agents)
 **Why**: All 5 categories (secrets/permissions/hooks/MCP/agent-configs) share same tools (Read, Grep, Bash), same output format (Security Report), same invocation path (/sentinel + /ship). Splitting would require an orchestrator to aggregate — unnecessary complexity at STANDARD scale. Agent differs from /sentinel command in that it runs as a subprocess with isolated context, returns a structured Security Report for programmatic consumption, and can be invoked by orchestrator before /ship. /sentinel dispatches to the agent when installed; falls back to inline layers when agent is missing.
 **Reconsider when**: 5+ category specialists needed with different models per category, or MCP scanning requires live server interaction
+
+## DAG Dispatch Merge Strategy — 2026-03-28
+**Question**: Merge-on-complete vs merge-after-batch in DAG-based parallel dispatch
+**Options**: Merge-on-complete (merge each branch immediately when agent finishes) vs Merge-after-batch (wait for all dispatched agents, then merge sequentially)
+**Winner**: Merge-on-complete with batch-merge fallback (confidence: 72/100)
+**Deciding claim**: Unblocking dependents immediately is the entire point of DAG dispatch — without merge-on-complete, DAG degrades to wave dispatch with extra bookkeeping [VERIFIED]
+**Dissent**: Orchestrator complexity increases — more complex Markdown instructions are harder for Claude to follow reliably [VERIFIED]. Mitigated by batch-merge fallback for simpler projects (max_parallel <= 3).
+**Secondary decision**: DAG state file extends `parallel-wave-state.md` with `dispatch_mode: dag` field rather than replacing the format (backward compatible).
+**Reconsider when**: Rate limiting with 6+ concurrent agents proves to be a bottleneck (untested), or orchestrator instruction-following degrades measurably

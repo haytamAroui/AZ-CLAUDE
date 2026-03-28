@@ -70,18 +70,20 @@ Check file collisions:
 
 ---
 
-## Step 4: Identify Parallel Groups
+## Step 4: Identify Parallel Groups (DAG Analysis)
 
 Tasks with no dependencies between them AND no file collisions can run in parallel.
-Group them into "waves":
+Group them into "waves" for visualization (the orchestrator uses the DAG directly, not wave numbers):
 
-**Wave = a set of tasks that can all run simultaneously**
+**Wave = a set of tasks that can all run simultaneously (informational grouping)**
 
 Algorithm:
 1. Wave 1 = tasks with no `Depends:` and status `pending`
 2. Wave 2 = tasks that only depend on Wave 1 tasks
 3. Wave N = tasks that only depend on tasks in waves 1 through N-1
 4. A wave cannot contain tasks that share files
+
+**DAG dispatch note:** The orchestrator dispatches based on `Depends:` satisfaction, not wave numbers. A task in "Wave 3" may launch as soon as its specific dependencies are done — it does NOT wait for all of Wave 2.
 
 ---
 
@@ -119,14 +121,15 @@ Total tasks: {N}  |  Done: {N}  |  Pending: {N}  |  Blocked: {N}
 ```
 Parallelism Analysis
 ════════════════════
-Max parallel at once: {N tasks in largest wave}
+Max parallel at once: {N tasks in largest wave} (default limit: 6)
 Critical path length: {N waves minimum to complete}
 File collision pairs: {N pairs that cannot run simultaneously}
+DAG dispatch mode: merge-on-complete (agents unblock dependents immediately)
 
 Suggested dispatch order for /copilot:
-  1. Start Wave 1 tasks simultaneously (or sequentially if no orchestrator)
-  2. On Wave 1 complete → start Wave 2
-  3. ...
+  1. Foundation first (shared files: models, schemas) — sequential
+  2. Launch all ready tasks simultaneously (DAG readiness, not wave number)
+  3. As each task completes → merge → check for newly-unblocked → dispatch immediately
 ```
 
 ---
@@ -134,10 +137,10 @@ Suggested dispatch order for /copilot:
 ## Copilot Mode Integration
 
 If `.claude/agents/orchestrator.md` exists:
-→ Note: "The orchestrator will use this graph to dispatch milestone-builder agents in parallel"
+→ Note: "The orchestrator uses DAG dispatch — each milestone launches when its Depends: are satisfied, with merge-on-complete to unblock dependents immediately"
 
 If no orchestrator:
-→ Note: "Copilot will process waves sequentially — Wave 1 first, then Wave 2, etc."
+→ Note: "Copilot will process tasks by wave grouping — Wave 1 first, then Wave 2, etc."
 
 ---
 

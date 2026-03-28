@@ -55,23 +55,51 @@ Follow the Resume Protocol from `capabilities/shared/parallel-coordination.md`:
 
 ---
 
-### Step 2: Select Next Milestone Wave
+### Step 2: Select Next Milestones (DAG Dispatch)
 
-**If plan.md has `Wave:` fields** (blueprint wrote them — read directly):
+**DAG readiness check** — a milestone is **ready** when:
+1. `status = pending` in plan.md
+2. ALL milestones listed in its `Depends:` field have `status = done`
+
+That's it. Ignore `Wave:` fields for dispatch decisions — they are informational (for visualization and estimation only). The dependency graph is the truth.
+
 ```bash
-grep "Wave:" .claude/plan.md
+# Find all ready milestones
+grep -B2 "Status: pending" .claude/plan.md | grep "^## M"
+# For each, check its Depends: are all done
 ```
-Find the lowest wave number where all milestones have `status = pending` and all `Depends:` are `done`.
-This is the next wave to dispatch.
 
-**If plan.md has NO `Wave:` fields** (older plan format — compute from scratch):
-Find milestones where `status = pending` AND all dependencies have `status = done`.
+**Step 2a: Foundation Detection (auto-Wave 0)**
 
-**Parallel candidates:** milestones in the same wave with `Parallel: yes` (or computed as independent).
+Before dispatching any parallel agents, scan ALL ready milestones' Team Specs for shared files:
 
-**REQUIRED parallel safety check:** Even if `Parallel: yes`, verify `Files Written` from problem-architect
-for each candidate don't overlap. `Files Written` is more precise than `Files:` — use it.
-If any two candidates share a written file → dispatch sequentially. Silent file corruption otherwise.
+```
+For each pair (A, B) in ready milestones:
+  shared_files = Files Written(A) ∩ Files Written(B)
+  If shared_files is not empty:
+    → Extract shared file edits into a FOUNDATION milestone
+    → Dispatch foundation sequentially FIRST
+    → Remove shared-file edits from A and B's scope
+    → Re-check readiness after foundation completes
+```
+
+If no shared files → skip foundation, go directly to parallel dispatch.
+
+**Step 2b: Parallel safety check**
+
+From the ready set (after foundation), verify `Files Written` from problem-architect for each pair don't overlap. `Files Written` is more precise than `Files:` — use it.
+If any two candidates share a written file → dispatch the conflicting one sequentially after the other.
+
+**Step 2c: Classify milestones**
+
+| Type | Definition | Dispatch rule |
+|------|-----------|---------------|
+| Foundation | Touches files needed by 2+ milestones | Sequential, before all others |
+| Test-only | Creates new test files, never writes production code | Safe alongside ANY milestone |
+| Standard | Writes to unique files | Parallel with worktree isolation |
+
+**Max parallel agents:** 6 (default). Override with `max_parallel` in plan.md frontmatter.
+If ready milestones exceed max_parallel → dispatch highest-priority first, queue the rest.
 
 - All done → SHIP
 - All remaining blocked → BLOCKER RECOVERY
@@ -123,16 +151,19 @@ If verdict is `APPROVED` or `APPROVED (no constitution found)`: proceed to Step 
 
 ### Step 4: Dispatch Milestone Builder(s)
 
-**Parallel dispatch (2+ milestones in wave with disjoint Files Written):**
+**Parallel dispatch (2+ ready milestones with disjoint Files Written):**
 
 Load `capabilities/shared/parallel-coordination.md` first.
 Load `capabilities/shared/context-inoculation.md` and prepend its Required Preamble to every agent prompt below.
 
-1. Write `.claude/ownership.md` table (branch, directories, status) for every agent in this wave
-2. Spawn each builder via Task with `isolation: "worktree"` in the same message (true parallel)
-3. Include worktree rules in every parallel prompt (see parallel-coordination.md Step 3)
-4. Wait for ALL agents in the wave before merging
-5. Merge branches sequentially (simplest milestone first) following the Merge Protocol
+1. Write `.claude/ownership.md` table (branch, directories, status) for every agent in this batch
+2. Write `.claude/parallel-wave-state.md` with `dispatch_mode: dag` (see parallel-coordination.md)
+3. **Pre-read shared files** (models, schemas, configs referenced by 2+ agents) and inject their content inline into each agent's prompt — eliminates redundant file reads across agents
+4. Spawn each builder via Task with `isolation: "worktree"` in the same message (true parallel)
+5. Include worktree rules + **test scope** (`Test scope: {test-dir}`) in every parallel prompt
+6. **Merge-on-complete**: as each agent reports done, merge its branch immediately (don't wait for all)
+7. After each merge: check if newly-unblocked milestones exist → dispatch them immediately
+8. If `max_parallel <= 3` or merge conflicts detected: fall back to batch-merge (wait for all, then merge)
 
 **Sequential dispatch (single milestone OR overlapping files):**
 
@@ -173,13 +204,18 @@ Dependent milestones, overlapping `Files Written`, or `Parallel Safe: NO` → sp
 
 ---
 
-### Step 5: Monitor Results
+### Step 5: Monitor Results + Merge-on-Complete
 
-**PASS:**
+**When an agent reports PASS (parallel mode):**
+1. Merge its branch to main immediately: `git merge parallel/{slug} --no-ff`
+2. Run tests for the merged module: `{test command} tests/{agent-scope}/ 2>&1 | tail -10`
+3. If tests pass → update plan.md status → `done`, update `.claude/parallel-wave-state.md`
+4. **Check DAG for newly-unblocked milestones** — any milestone whose `Depends:` are now ALL `done` becomes ready. Dispatch it immediately (back to Step 3 → Step 4).
+5. New pattern emerged? → append to patterns.md
+
+**When an agent reports PASS (sequential mode):**
 - Approve commit
 - Update plan.md status → `done`
-- New pattern emerged? → append to patterns.md
-- Compromise made? → append to antipatterns.md
 
 **FAIL — attempt 1:**
 - Read exact error
@@ -190,6 +226,11 @@ Dependent milestones, overlapping `Files Written`, or `Parallel Safe: NO` → sp
 - Log to blockers.md with full context
 - Set plan.md status → `blocked`
 - Move to next milestone
+- In parallel mode: do NOT block other agents — continue merging completed branches
+
+**Merge conflict during merge-on-complete:**
+- Read both versions, apply correct merge (keep both feature additions)
+- If unresolvable: fall back to batch-merge for remaining agents in this dispatch
 
 ---
 

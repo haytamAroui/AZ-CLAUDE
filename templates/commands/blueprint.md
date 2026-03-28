@@ -229,7 +229,7 @@ runs after plan.md is written and handles the cases Layer 1 misses.
 - Dirs:     top-level directories this milestone exclusively owns
 - Parallel: yes — safe at directory level + no shared utility writes
 - Parallel: no  — touches shared config, shared utility, schema, or depends on sibling
-- Wave:     {N}
+- Wave:     {N} (informational — orchestrator uses Depends: for dispatch, not Wave:)
 ```
 
 A well-designed plan for a 6-feature product:

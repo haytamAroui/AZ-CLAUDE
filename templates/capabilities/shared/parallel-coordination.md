@@ -40,25 +40,34 @@ Rules:
 
 ---
 
-## Dispatch Protocol (Orchestrator)
+## Dispatch Protocol (DAG-Based)
 
-### Step 1: Confirm Parallel Safety
+### Step 1: Build Dependency Graph + Confirm Parallel Safety
 
-Before spawning any parallel agents for a wave, verify from problem-architect Team Specs:
+Parse `plan.md` into a DAG. A milestone is **ready** when all its `Depends:` have `status = done`.
+
+Before spawning any parallel agents, verify from problem-architect Team Specs:
 
 ```
-For each pair (A, B) in the wave:
+For each pair (A, B) in ready milestones:
   - Files Written(A) ∩ Files Written(B) = empty set?    → safe
   - Parent directories of A and B do not overlap?        → safe
   - No shared schema/config files (prisma.schema, package.json, tsconfig)?  → safe
   - No runtime dependency (A's output is B's input)?    → safe
 
-If any check fails → remove the conflicting milestone from the wave, dispatch sequentially
+If any check fails → remove the conflicting milestone from parallel batch, dispatch sequentially after
 ```
 
 ### Step 2: Write Ownership Map
 
 Write `.claude/ownership.md` before spawning any agents.
+
+### Step 2b: Foundation Detection (Auto-Wave 0)
+
+Scan all ready milestones for shared-file bottlenecks:
+- If 2+ milestones need to write the same file → extract those changes into a foundation milestone
+- Dispatch foundation sequentially FIRST, before any parallel agents
+- After foundation completes: re-check readiness (more milestones may now be ready)
 
 ### Step 3: Dispatch with Worktree Isolation
 
@@ -69,8 +78,12 @@ Task: Implement Milestone {N} — {title}
 
 [worktree mode]
 Branch: parallel/{milestone-slug}
+Test scope: {test-dir} — run ONLY these tests, not the full suite
 Do NOT push to origin. Commit locally only.
 Report branch name in completion message.
+
+## Pre-loaded Context (do NOT re-read these files)
+{orchestrator pre-reads shared files and injects content here}
 
 {standard milestone context from orchestrator Step 4}
 ```
@@ -79,50 +92,74 @@ Include in every parallel dispatch:
 ```
 Worktree rules:
 - You are in an isolated git worktree on branch: parallel/{slug}
-- Run all tests — they test YOUR changes in isolation only
+- Run ONLY tests in your Test scope — not the full suite
 - If you see errors in files outside your owned directories: STOP, report to orchestrator
 - Do NOT run git push — commit locally only
 - Your completion message MUST include: "Branch: parallel/{slug}" for merge tracking
 ```
 
-### Step 4: Wait for All Agents in the Wave
+**Max parallel agents:** 6 (default). Test-only milestones do NOT count toward the limit.
 
-Do NOT start the merge until ALL parallel agents in this wave have reported:
-- `COMPLETE` → proceed with merge
-- `FAILED` → merge all completed branches first, then handle the failure as a blocked milestone
+### Step 4: Merge-on-Complete (Default) or Batch-Merge (Fallback)
+
+**Merge-on-complete (default when max_parallel > 3):**
+As each agent reports `COMPLETE`, merge immediately:
+1. `git checkout main && git merge parallel/{slug} --no-ff -m "merge: M{N} {title} [dag]"`
+2. Run scoped tests: `{test command} tests/{scope}/ 2>&1 | tail -10`
+3. Update plan.md status → `done`, update DAG state file
+4. **Check DAG for newly-unblocked milestones** → dispatch them immediately (back to Step 1)
+5. Clean up branch: `git branch -d parallel/{slug}`
+
+**Batch-merge fallback (max_parallel <= 3 OR merge conflict detected):**
+Wait for ALL dispatched agents to complete, then merge sequentially (simplest first).
+
+When agent reports `FAILED`:
+- Do NOT block other agents — continue merging completed branches
+- Log failure to blockers.md, set plan.md status → `blocked`
 
 ---
 
 ## Merge Protocol (Orchestrator)
 
-After all parallel agents report done, merge sequentially:
+Two modes, selected automatically based on `max_parallel` and conflict state:
+
+### Mode A: Merge-on-Complete (default, max_parallel > 3)
+
+Each agent's branch is merged as soon as it completes — no waiting for others:
 
 ```bash
-# Step 1: Return to main branch
-git checkout main  # or master / development
+# Agent M3 reports COMPLETE:
+git checkout main
+git merge parallel/m3-auth --no-ff -m "merge: M3 auth endpoints [dag]"
+{test command} tests/auth/ 2>&1 | tail -10  # scoped test only
+git branch -d parallel/m3-auth
 
-# Step 2: Merge each branch in completion order
-git merge parallel/m3-auth --no-ff -m "merge: M3 auth endpoints [parallel wave N]"
-git merge parallel/m4-profile --no-ff -m "merge: M4 user profile [parallel wave N]"
-
-# Step 3: If merge conflict on step N:
-# - Identify which files conflict
-# - Read both versions
-# - Apply the correct merge (usually: keep both feature additions, not one-or-other)
-# - Mark conflict resolved, continue with remaining branches
-
-# Step 4: Run full test suite on merged main
-npm test 2>&1 | tail -20
-
-# Step 5: If tests pass → push
-git push origin main
-
-# Step 6: Clean up worktree branches
-git branch -d parallel/m3-auth parallel/m4-profile parallel/m5-email
+# Check DAG: M5 depends on M3 → M5 is now ready → dispatch M5 immediately
+# Meanwhile M4 is still running in its worktree — no interference
 ```
 
-**Merge order matters**: merge the branch with the fewest cross-dependencies first.
-When uncertain: sort by `Estimated Complexity` ascending (simpler merges first).
+**After all agents in batch complete:** run full test suite once on merged main.
+If full suite passes → `git push origin main`.
+
+### Mode B: Batch-Merge (fallback, max_parallel <= 3 or conflict detected)
+
+Wait for ALL dispatched agents, then merge sequentially:
+
+```bash
+git checkout main
+git merge parallel/m3-auth --no-ff -m "merge: M3 auth endpoints [dag]"
+git merge parallel/m4-profile --no-ff -m "merge: M4 user profile [dag]"
+{test command} 2>&1 | tail -20  # full suite after all merges
+git push origin main
+git branch -d parallel/m3-auth parallel/m4-profile
+```
+
+### Merge Rules (both modes)
+
+- **Merge order**: simplest milestone first (sort by `Estimated Complexity` ascending)
+- **If merge conflict**: read both versions, apply correct merge (keep both feature additions)
+- **If conflict is unresolvable**: switch from Mode A to Mode B for remaining branches
+- **If tests fail after merge**: identify which merge broke it → revert that branch → add to blocked
 
 ---
 
@@ -134,7 +171,7 @@ These rules are injected by orchestrator into every parallel milestone-builder p
 
 2. **Never push** — commit locally on your worktree branch. Do not run `git push`.
 
-3. **Test in isolation** — your test run should only test what you changed. If the test suite has cross-cutting failures, filter to your files: `pytest tests/auth/ -v` not `pytest .`
+3. **Test in isolation** — run ONLY the tests in your `Test scope` (injected by orchestrator). Example: `pytest tests/auth/ -v` not `pytest .`. Cross-cutting failures are expected from other agents' work.
 
 4. **Errors outside your files = not your problem** — if you see compilation errors or test failures in files you didn't modify, that's a parallel agent's in-progress state. Report to orchestrator: "Test failures in {file} — outside my scope, may be parallel agent interference."
 
@@ -240,17 +277,18 @@ During parallel execution, the orchestrator writes `.claude/parallel-wave-state.
 
 ```markdown
 ---
-wave: {N}
+dispatch_mode: dag
 started: {ISO timestamp}
 status: in-flight
+max_parallel: 6
 milestones: [M3, M4, M5]
 ---
 
-| Milestone | Branch | Status | Commit | Notes |
-|-----------|--------|--------|--------|-------|
-| M3 — Auth endpoints | parallel/m3-auth | running | — | P1 slot |
-| M4 — User profile | parallel/m4-profile | done | a1b2c3d | merged to worktree |
-| M5 — Email service | parallel/m5-email | failed | — | timeout on test suite |
+| Milestone | Branch | Status | Commit | Depends | Unblocks |
+|-----------|--------|--------|--------|---------|----------|
+| M3 — Auth endpoints | parallel/m3-auth | running | — | [M0] | [M5, M6] |
+| M4 — User profile | parallel/m4-profile | done | a1b2c3d | [M0] | [] |
+| M5 — Email service | parallel/m5-email | failed | — | [M3] | [M7] |
 ```
 
 ### Lifecycle

@@ -115,7 +115,9 @@ This file survives context compaction. If the session dies mid-wave, the next se
 
 ---
 
-## Step 5: Dispatch All Agents Simultaneously
+## Step 5: Dispatch All Agents Simultaneously (DAG Mode)
+
+**Pre-read shared files** — read files referenced by 2+ agents (models, schemas, configs) and inject their content into each agent's prompt. This eliminates redundant file reads across agents.
 
 Spawn all milestone-builder agents **in a single message** (true parallel — one Task call per agent in the same response):
 
@@ -124,56 +126,60 @@ For each milestone, Task with `isolation: "worktree"`:
 ```
 Task: Implement Milestone {N} — {title}
 
-[PARALLEL MODE — WORKTREE ISOLATED]
+[PARALLEL MODE — WORKTREE ISOLATED — DAG DISPATCH]
 Branch: parallel/{milestone-slug}
+Test scope: {test-dir} — run ONLY these tests
 
 Agent role: {from Team Spec}
 Directories owned: {from Team Spec}
+
+## Pre-loaded Context (do NOT re-read these files)
+{content of shared files injected by orchestrator}
 
 {standard context from orchestrator Step 4}
 
 Worktree rules (MANDATORY):
 - Only write files within your "Directories owned"
 - DO NOT run git push — commit locally only
+- Run ONLY tests in your Test scope — not the full suite
 - If you see errors in files outside your directories: STOP, report "scope violation"
 - End your report with: "Branch: parallel/{slug}"
 ```
 
----
-
-## Step 6: Wait and Monitor
-
-After all agents complete:
-- Collect all completion reports
-- Mark each as COMPLETE or FAILED in ownership.md
-- **Update `.claude/parallel-wave-state.md`** — set each milestone's Status to `done`/`failed`, fill Commit hash
+**Max parallel agents:** 6 (default). Test-only milestones don't count toward the limit.
 
 ---
 
-## Step 7: Merge Sequentially
+## Step 6: Merge-on-Complete + Monitor
 
-Follow the Merge Protocol from `capabilities/shared/parallel-coordination.md`:
+**Default (DAG mode, max_parallel > 3):** As each agent reports done, merge immediately:
+1. `git checkout main && git merge parallel/{slug} --no-ff`
+2. Run scoped tests for the merged module
+3. Update ownership.md and `.claude/parallel-wave-state.md` (status → `done`, fill commit hash)
+4. **Check DAG for newly-unblocked milestones** → dispatch them immediately (back to Step 3)
+
+**Fallback (max_parallel <= 3 or merge conflict):** Wait for all, then merge sequentially.
+
+Mark FAILED agents as `blocked` in plan.md — do NOT hold up other agents.
+
+---
+
+## Step 7: Final Verification + Push
+
+After all agents in this dispatch have completed and been merged:
 
 ```bash
-git checkout main
+# Run full test suite on merged main (covers cross-module interactions)
+{test command} 2>&1 | tail -20
 
-# Merge branches one at a time (simplest first)
-git merge parallel/{slug-1} --no-ff -m "merge: M{N} {title} [parallel wave]"
-# Run tests after each merge
-{test command} 2>&1 | tail -10
-
-git merge parallel/{slug-2} --no-ff -m "merge: M{N} {title} [parallel wave]"
-{test command} 2>&1 | tail -10
-
-# Push once all merges pass
+# If all pass → push
 git push origin main
 
-# Cleanup
-git branch -d parallel/{slug-1} parallel/{slug-2}
+# Clean up any remaining worktree branches
+git branch -d parallel/{slug-1} parallel/{slug-2} 2>/dev/null
 ```
 
-**If merge conflict**: read both versions, apply correct merge (keep both feature additions), continue.
-**If tests fail after a merge**: identify which merge broke it → revert that branch → add milestone to blocked.
+**If full suite fails**: identify which merge introduced the break → revert that branch → add to blocked.
 
 ---
 
