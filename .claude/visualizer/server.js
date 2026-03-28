@@ -21,15 +21,20 @@ const LOG_FILE = path.join(os.tmpdir(), 'azclaude-visualizer.jsonl');
 const MAX_BODY_SIZE = 1024 * 1024;
 
 // ---------------------------------------------------------------------------
-// SSE client management
+// SSE client management + replay buffer
 // ---------------------------------------------------------------------------
 const sseClients = new Set();
+const EVENT_BUFFER_MAX = 200;
+const eventBuffer = [];
 
 function broadcast(event) {
   const data = `data: ${JSON.stringify(event)}\n\n`;
   for (const client of sseClients) {
     try { client.write(data); } catch { sseClients.delete(client); }
   }
+  // Ring buffer for reconnect replay
+  eventBuffer.push(event);
+  if (eventBuffer.length > EVENT_BUFFER_MAX) eventBuffer.shift();
 }
 
 // SSE heartbeat
@@ -164,6 +169,10 @@ function handleSSE(req, res) {
     'Access-Control-Allow-Origin': '*',
   });
   res.write(': connected\n\n');
+  // Replay buffered events so refreshing the browser doesn't lose history
+  for (const event of eventBuffer) {
+    try { res.write(`data: ${JSON.stringify(event)}\n\n`); } catch { return; }
+  }
   sseClients.add(res);
   req.on('close', () => { sseClients.delete(res); });
 }

@@ -1414,7 +1414,7 @@ check      "plugin: PostToolUse async"                    "hooks/hooks.json" "as
 check      "plugin: marketplace has github source"        ".claude-plugin/marketplace.json" "github\|haytamAroui"
 check      "plugin: package.json includes plugin files"   "package.json" "\.claude-plugin"
 check      "plugin: marketplace repo is AZ-CLAUDE-COPILOT" ".claude-plugin/marketplace.json" "AZ-CLAUDE-COPILOT"
-check      "plugin: marketplace version matches 0.7.1"    ".claude-plugin/marketplace.json" "0\.7\.1"
+check      "plugin: marketplace version matches 0.7.3"    ".claude-plugin/marketplace.json" "0\.7\.3"
 
 # ─── Atomic write ──────────────────────────────────────────────────────────────
 echo ""
@@ -2670,6 +2670,29 @@ check      "visualizer: app.js session-summary handler"      "$VIZ/public/app.js
 check      "visualizer: hook targets /event path"            "templates/hooks/visualizer-hook.js" "/event"
 check      "visualizer: cli visualize stop uses pidFile"     "bin/cli.js" "azclaude-visualizer.pid"
 check      "visualizer: audio.js has AudioContext"           "$VIZ/public/audio.js" "AudioContext"
+
+# Visualizer v2 — reconnect replay, user messages, context bar, pipeline complete
+check      "visualizer: server.js replay buffer"             "$VIZ/server.js" "eventBuffer"
+check      "visualizer: server.js replay on connect"         "$VIZ/server.js" "for.*eventBuffer"
+check      "visualizer: app.js user-message handler"         "$VIZ/public/app.js" "user-message"
+check      "visualizer: app.js context-update handler"       "$VIZ/public/app.js" "context-update"
+check      "visualizer: app.js pipeline-complete handler"    "$VIZ/public/app.js" "pipeline-complete"
+check      "visualizer: html context-bar element"            "$VIZ/public/index.html" "context-bar"
+check      "visualizer: css user-message-card style"         "$VIZ/public/style.css" "user-message-card"
+check      "visualizer: css context-fill style"              "$VIZ/public/style.css" "context-fill"
+check      "visualizer: css pipeline done state"             "$VIZ/public/style.css" "pipeline-stage.done"
+check      "visualizer: canvas.js MultiEdit color"           "$VIZ/public/canvas.js" "MultiEdit"
+check      "visualizer: canvas.js NotebookEdit color"        "$VIZ/public/canvas.js" "NotebookEdit"
+check      "visualizer: canvas.js AskUserQuestion color"     "$VIZ/public/canvas.js" "AskUserQuestion"
+check      "visualizer: audio.js MultiEdit voice"            "$VIZ/public/audio.js" "MultiEdit"
+check      "visualizer: audio.js NotebookEdit voice"         "$VIZ/public/audio.js" "NotebookEdit"
+check      "visualizer: app.js MultiEdit summary"            "$VIZ/public/app.js" "MultiEdit"
+check      "visualizer: app.js extend intent label"          "$VIZ/public/app.js" "extend.*code.*security.*analyze"
+check      "visualizer: css extend intent style"             "$VIZ/public/style.css" "intent-label.extend"
+check      "visualizer: css security intent style"           "$VIZ/public/style.css" "intent-label.security"
+check      "visualizer: user-prompt sends user-message"      "templates/hooks/user-prompt.js" "user-message"
+check      "visualizer: user-prompt sends context-update"    "templates/hooks/user-prompt.js" "context-update"
+check      "visualizer: stop sends pipeline-complete"        "templates/hooks/stop.js" "pipeline-complete"
 
 check_file "visualizer: command template exists"             "$CMD/visualize.md"
 

@@ -8,7 +8,10 @@
     Read: '#D4A017', Edit: '#C86840', Write: '#B85535', Bash: '#6B8E5A',
     Glob: '#C8A850', Grep: '#B89040', Agent: '#D4B030', WebFetch: '#4A8A7A',
     WebSearch: '#3A7A6A', TodoWrite: '#A06858', Skill: '#B87040', Plan: '#8A6070',
-    EnterPlanMode: '#8A6070', ExitPlanMode: '#8A6070', _default: '#7A7060',
+    EnterPlanMode: '#8A6070', ExitPlanMode: '#8A6070',
+    MultiEdit: '#C86840', NotebookEdit: '#8A6070', AskUserQuestion: '#4A8A7A',
+    TaskCreate: '#6B8E5A', TaskUpdate: '#5A7A4A', TaskList: '#5A7A4A',
+    _default: '#7A7060',
   };
 
   const SECURITY_COLORS = { block: '#ff2222', warn: '#ffaa00' };

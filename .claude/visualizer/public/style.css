@@ -89,6 +89,22 @@ body { display: flex; flex-direction: row; }
 .toggle-switch.on { background: #2A3528; }
 .toggle-switch.on::after { transform: translateX(16px); background: #6B8E5A; }
 
+/* ===== Context Window Bar ===== */
+#context-bar { padding: 8px 16px; border-bottom: 1px solid #1E1C18; flex-shrink: 0; display: none; }
+#context-bar.visible { display: block; }
+.context-label { font-size: 10px; color: #5A5448; display: flex; justify-content: space-between; margin-bottom: 4px; }
+#context-pct { font-weight: 600; }
+.context-track { height: 4px; background: #1E1C18; border-radius: 2px; overflow: hidden; }
+.context-fill { height: 100%; width: 0%; border-radius: 2px; background: #6B8E5A; transition: width 0.5s ease, background 0.5s ease; }
+.context-fill.warn { background: #D4A017; }
+.context-fill.critical { background: #C85050; animation: pulse-dot 1s ease-in-out infinite; }
+
+/* ===== User Message Card ===== */
+.user-message-card { background: #1A1816; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid #4A8A7A; padding: 8px 12px; }
+.user-message-header { display: flex; align-items: center; gap: 8px; font-size: 10px; color: #5A5448; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.user-message-icon { font-size: 12px; }
+.user-message-text { font-size: 12px; color: #E8DCC8; opacity: 0.85; line-height: 1.4; word-break: break-word; }
+
 /* ===== AZCLAUDE Pipeline Progress ===== */
 #pipeline-progress { padding: 10px 16px; border-bottom: 1px solid #1E1C18; flex-shrink: 0; display: none; }
 #pipeline-progress.visible { display: block; }
@@ -103,12 +119,17 @@ body { display: flex; flex-direction: row; }
 .intent-label.plan { background: #241A24; color: #8A6070; }
 .intent-label.devops { background: #1A2418; color: #5A7A4A; }
 .intent-label.frontend { background: #2A1820; color: #B85570; }
+.intent-label.extend { background: #24201A; color: #D4A017; }
+.intent-label.code { background: #1A1E18; color: #8A9E7A; }
+.intent-label.security { background: #2A1818; color: #C85050; }
+.intent-label.analyze { background: #1A1A24; color: #7A80BA; }
 .intent-label.default { background: #1E1C18; color: #8A7E6A; }
 
 .pipeline-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; }
 .pipeline-stage { font-size: 9px; text-align: center; padding: 4px 2px; border-radius: 3px; background: #1E1C18; color: #3A3630; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.4s ease; }
 .pipeline-stage.active { background: #1A2A18; color: #6B8E5A; box-shadow: 0 0 8px rgba(107,142,90,0.3); animation: pulse-dot 1.5s ease-in-out infinite; }
 .pipeline-stage.complete { background: #1A2418; color: #4A6A3A; }
+.pipeline-stage.done { background: #1A2A18; color: #6B8E5A; }
 
 /* ===== Security Events ===== */
 #security-events { flex-shrink: 0; max-height: 120px; overflow-y: auto; }

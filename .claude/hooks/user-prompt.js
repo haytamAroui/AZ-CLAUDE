@@ -207,8 +207,21 @@ try {
       console.log('This pipeline is NON-NEGOTIABLE. Do not skip steps. Do not start coding before Step 1 completes.');
       console.log('--- END PIPELINE ---');
 
-      // ── Visualizer event (opt-in) ──
+      // ── Visualizer events (opt-in) ──
       if (process.env.AZCLAUDE_VISUALIZER) {
+        try {
+          const vPort = parseInt(process.env.AZCLAUDE_VISUALIZER, 10) || 8765;
+          // Send user message first
+          const msgPayload = JSON.stringify({ type: 'user-message', message: promptText.slice(0, 200) });
+          const msgReq = require('http').request(
+            { hostname: '127.0.0.1', port: vPort, path: '/event', method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(msgPayload) } },
+            () => {}
+          );
+          msgReq.setTimeout(1500, () => msgReq.destroy());
+          msgReq.on('error', () => {});
+          msgReq.end(msgPayload);
+        } catch (_v) {}
         try {
           const vPort = parseInt(process.env.AZCLAUDE_VISUALIZER, 10) || 8765;
           const payload = JSON.stringify({ type: 'pipeline-start', intents: intents, tier: tier, tierLabel: tierLabel });
@@ -234,6 +247,22 @@ try {
   if (fs.existsSync(ctxSignalPath)) {
     const ctxSignal = JSON.parse(fs.readFileSync(ctxSignalPath, 'utf8'));
     const pct = ctxSignal.ctxPct || 0;
+
+    // Send context % to visualizer
+    if (process.env.AZCLAUDE_VISUALIZER) {
+      try {
+        const vPort = parseInt(process.env.AZCLAUDE_VISUALIZER, 10) || 8765;
+        const ctxPayload = JSON.stringify({ type: 'context-update', pct: pct });
+        const ctxReq = require('http').request(
+          { hostname: '127.0.0.1', port: vPort, path: '/event', method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(ctxPayload) } },
+          () => {}
+        );
+        ctxReq.setTimeout(1500, () => ctxReq.destroy());
+        ctxReq.on('error', () => {});
+        ctxReq.end(ctxPayload);
+      } catch (_v) {}
+    }
 
     if (pct >= 85) {
       // AUTO-SAVE: context is critically high — save checkpoint before compaction wipes it

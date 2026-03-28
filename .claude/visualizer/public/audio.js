@@ -43,6 +43,11 @@
     Plan:          { register: LOW,  style: 'chord',    notes: 3, velocity: 0.6 },
     EnterPlanMode: { register: LOW,  style: 'chord',    notes: 3, velocity: 0.55 },
     ExitPlanMode:  { register: MID,  style: 'arpUp',    notes: 3, velocity: 0.55 },
+    MultiEdit:     { register: MID,  style: 'arpDown',  notes: 4, velocity: 0.6 },
+    NotebookEdit:  { register: LOW,  style: 'chord',    notes: 3, velocity: 0.55 },
+    AskUserQuestion: { register: HIGH, style: 'scatter', notes: 3, velocity: 0.5 },
+    TaskCreate:    { register: LOW,  style: 'arpUp',    notes: 2, velocity: 0.45 },
+    TaskUpdate:    { register: LOW,  style: 'pulse',    notes: 2, velocity: 0.4 },
     _default:      { register: MID,  style: 'arpUp',    notes: 2, velocity: 0.5 },
   };
 

@@ -173,7 +173,22 @@ if (fs.existsSync(seclogPath)) {
   } catch (_) {}
 }
 
-// ── Visualizer session-summary event (opt-in) ──
+// ── Visualizer pipeline-complete + session-summary events (opt-in) ──
+if (process.env.AZCLAUDE_VISUALIZER) {
+  // Signal pipeline completion — all stages go green
+  try {
+    const vPort0 = parseInt(process.env.AZCLAUDE_VISUALIZER, 10) || 8765;
+    const pcPayload = JSON.stringify({ type: 'pipeline-complete' });
+    const pcReq = require('http').request(
+      { hostname: '127.0.0.1', port: vPort0, path: '/event', method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(pcPayload) } },
+      () => {}
+    );
+    pcReq.setTimeout(1500, () => pcReq.destroy());
+    pcReq.on('error', () => {});
+    pcReq.end(pcPayload);
+  } catch (_v) {}
+}
 if (process.env.AZCLAUDE_VISUALIZER) {
   try {
     const vPort = parseInt(process.env.AZCLAUDE_VISUALIZER, 10) || 8765;

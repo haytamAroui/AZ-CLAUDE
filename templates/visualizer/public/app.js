@@ -87,6 +87,11 @@
       case 'WebFetch': return input.url || '(no URL)';
       case 'WebSearch': return '"' + (input.query || '') + '"';
       case 'Skill': return input.skill || '(unknown skill)';
+      case 'MultiEdit': { let s = input.file_path || '(unknown file)'; if (input.edits) s += ' (' + input.edits.length + ' edits)'; return s; }
+      case 'NotebookEdit': { let s = input.notebook || input.file_path || '(notebook)'; if (input.cell_id != null) s += ' cell ' + input.cell_id; return s; }
+      case 'AskUserQuestion': return input.question || '(question)';
+      case 'TaskCreate': return input.subject || '(new task)';
+      case 'TaskUpdate': { let s = 'task #' + (input.taskId || '?'); if (input.status) s += ' → ' + input.status; return s; }
       default: {
         const keys = Object.keys(input);
         if (keys.length === 0) return null;
@@ -197,7 +202,7 @@
     pipelineProgress.classList.add('visible');
     const primary = (intents && intents[0]) || 'CODE';
     const cls = primary.toLowerCase();
-    brainIntent.innerHTML = '<span class="intent-label ' + (['build','fix','review','test','refactor','plan','devops','frontend'].includes(cls) ? cls : 'default') + '">' + primary + '</span>' +
+    brainIntent.innerHTML = '<span class="intent-label ' + (['build','fix','review','test','refactor','plan','devops','frontend','extend','code','security','analyze'].includes(cls) ? cls : 'default') + '">' + primary + '</span>' +
       (tier ? ' <span style="font-size:9px;color:#5A5448">Tier ' + tier + '</span>' : '');
     // Reset pipeline stages
     document.querySelectorAll('.pipeline-stage').forEach(function (el) { el.classList.remove('active', 'complete'); });
@@ -235,6 +240,9 @@
     const name = document.createElement('span'); name.className = 'tool-name'; name.textContent = cleanToolName(event.tool_name) || event.event; name.style.color = color; header.appendChild(name);
 
     if (settings.mcpLabels) { const mcpServer = extractMcpServer(event.tool_name); if (mcpServer) { const label = document.createElement('span'); label.className = 'mcp-label'; label.textContent = mcpServer; header.appendChild(label); } }
+
+    // Agent label — show which subagent made this call
+    if (event.agent_type) { const agentLabel = document.createElement('span'); agentLabel.className = 'mcp-label'; agentLabel.style.background = 'rgba(168, 130, 255, 0.15)'; agentLabel.style.color = '#A882FF'; agentLabel.textContent = event.agent_type; header.appendChild(agentLabel); }
 
     // Diff stat badge (AZCLAUDE enriched)
     if (event.diffStat) { const ds = document.createElement('span'); ds.className = 'diff-stat'; ds.textContent = event.diffStat; header.appendChild(ds); }
@@ -326,6 +334,37 @@
     }
     if (event.event === 'security-event') {
       addSecurityEvent(event.level, event.rule, event.message);
+      return;
+    }
+    if (event.event === 'user-message') {
+      var card = document.createElement('div'); card.className = 'user-message-card';
+      var hdr = document.createElement('div'); hdr.className = 'user-message-header';
+      hdr.innerHTML = '<span class="user-message-icon">&#9656;</span> User';
+      var txt = document.createElement('div'); txt.className = 'user-message-text';
+      txt.textContent = event.message || '(empty)';
+      card.appendChild(hdr); card.appendChild(txt);
+      feed.appendChild(card); pruneOldCards(); scrollToBottom();
+      return;
+    }
+    if (event.event === 'context-update') {
+      var pct = event.pct || 0;
+      var bar = document.getElementById('context-bar');
+      var fill = document.getElementById('context-fill');
+      var label = document.getElementById('context-pct');
+      if (bar && fill && label) {
+        bar.classList.add('visible');
+        fill.style.width = pct + '%';
+        fill.className = 'context-fill' + (pct >= 85 ? ' critical' : pct >= 70 ? ' warn' : '');
+        label.textContent = pct + '%';
+        label.style.color = pct >= 85 ? '#C85050' : pct >= 70 ? '#D4A017' : '#5A5448';
+      }
+      return;
+    }
+    if (event.event === 'pipeline-complete') {
+      document.querySelectorAll('.pipeline-stage').forEach(function (el) {
+        el.classList.remove('active', 'complete');
+        el.classList.add('done');
+      });
       return;
     }
     if (event.event === 'session-summary') {
