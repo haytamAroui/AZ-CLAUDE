@@ -161,6 +161,15 @@ YES | NO
 If NO: reason = {specific conflict — shared file, schema dependency, runtime ordering}
 The orchestrator uses this to decide whether to use worktree isolation or sequential dispatch.
 Parallel Safe = YES requires: isolated directories, no shared config/schema, no runtime dependency on a sibling milestone.
+
+### Relay (for milestone-builder — do not re-read)
+{Include condensed contents of key files you read during analysis.
+Only include files the builder will need. Filter by relevance.
+For files >200 lines, include only the relevant section with line ranges.
+Maximum ~4000 tokens for this section.}
+
+### {file-path} (lines N-M)
+{content}
 ```
 </output_format>
 

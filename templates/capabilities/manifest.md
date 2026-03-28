@@ -29,6 +29,7 @@ Load only the files that match the current task. Never load the full list.
 | shared/context-inoculation.md | /copilot dispatch, milestone-builder spawn, autonomous agent context — inject anti-reward-hack boundaries (75-90% reduction) | ~120 |
 | shared/reward-hack-detection.md | /audit, /ship, post-milestone review — detect reward hacking patterns in test modifications | ~150 |
 | shared/ultrathink.md | $ARGUMENTS contains --deep, or command needs extended thinking for complex analysis | ~80 |
+| shared/context-relay.md | About to spawn a subagent — pass pre-read files to eliminate redundant reads across agent boundaries | ~300 |
 
 ## Level Builders — load ONE at a time
 | File | When to load | Tokens |

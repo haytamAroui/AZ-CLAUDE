@@ -42,10 +42,19 @@ Available skills: {output of: ls .claude/skills/ 2>/dev/null}
 |-------|--------|
 | Skills to Load | Load each skill before implementing |
 | Pre-Read Files | Read every file listed, in order: schema → source → tests → patterns → antipatterns |
+| Relay | Pass directly to builder prompt (see below) |
 | Pre-Conditions | Verify each; STOP if any unmet |
 | Files Written | Note for parallel safety — no concurrent work on same files |
 | Structural Decision: YES | Run /debate before proceeding; log result to `.claude/memory/decisions.md` |
 | Risks | Read mitigation; apply to implementation approach |
+
+### Context Relay — Eliminate Redundant Reads
+
+After reading pre-read files, if spawning a builder agent:
+1. Include a `## Pre-loaded Context` block in the builder's prompt with file contents you already read
+2. Filter by the builder's role — see `capabilities/shared/context-relay.md` for role-based filters and size limits
+3. The spawned agent **MUST NOT** re-read files listed in the Pre-loaded Context block
+4. If problem-architect returned a `## Relay` section, pass it directly into the builder prompt
 
 ---
 

@@ -83,7 +83,7 @@ Do NOT push to origin. Commit locally only.
 Report branch name in completion message.
 
 ## Pre-loaded Context (do NOT re-read these files)
-{orchestrator pre-reads shared files and injects content here}
+{orchestrator pre-reads shared files and relays content here — see context-relay.md for role-based filters and size limits}
 
 {standard milestone context from orchestrator Step 4}
 ```

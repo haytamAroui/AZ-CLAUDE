@@ -77,11 +77,12 @@ Agents live in `.claude/agents/`. Spawn them via the Agent tool with the matchin
 
 **Mandatory pipeline for ALL code tasks (enforced by hook on every message):**
 1. **ALWAYS** spawn `problem-architect` FIRST → get Team Spec (agents, skills, files, risks)
-2. Follow Team Spec exactly: load listed skills, pre-read listed files, in order
-3. If structural decision flagged → spawn `architecture-advisor` skill or run /debate
-4. Implement following Team Spec patterns
-5. **ALWAYS** spawn `code-reviewer` after implementation
-6. **ALWAYS** spawn `test-writer` if tests are needed
+2. **RELAY**: Pass Team Spec + pre-read file contents to the next agent via `## Pre-loaded Context` block. The receiving agent MUST NOT re-read files listed in that block. See `capabilities/shared/context-relay.md` for role-based filters and size limits.
+3. Follow Team Spec exactly: load listed skills, pre-read listed files, in order
+4. If structural decision flagged → spawn `architecture-advisor` skill or run /debate
+5. Implement following Team Spec patterns
+6. **ALWAYS** spawn `code-reviewer` after implementation
+7. **ALWAYS** spawn `test-writer` if tests are needed
 
 **Skip pipeline only if:** message is a pure question with no action verb (e.g., "what does this function do?").
 **Never skip for:** any code change, no matter how small. The pipeline catches bugs in 1-line changes too.

@@ -14,16 +14,24 @@ const path = require('path');
 const os   = require('os');
 
 // ── Parse stdin ──────────────────────────────────────────────────────────────
-let toolName = '';
-let filePath = '';
-let content  = '';
-let command  = '';
+let toolName  = '';
+let filePath  = '';
+let content   = '';
+let command   = '';
+let _rawInput = null;  // full tool_input for visualizer
+let _agentId  = null;
+let _agentType = null;
+let _toolUseId = null;
 try {
   const raw  = fs.readFileSync(0, 'utf8'); // fd 0 = stdin
   const data = JSON.parse(raw);
   toolName   = data.tool_name || '';
   filePath   = data.tool_input?.file_path || data.tool_input?.path || '';
   command    = data.tool_input?.command || '';
+  _rawInput  = data.tool_input || null;
+  _agentId   = data.agent_id || null;
+  _agentType = data.agent_type || null;
+  _toolUseId = data.tool_use_id || null;
   // Edit uses new_string; Write/MultiEdit use content
   content    = data.tool_input?.new_string || data.tool_input?.content || '';
   // MultiEdit: scan all edits
@@ -32,6 +40,32 @@ try {
   }
 } catch (_) {
   process.exit(0); // malformed JSON — stay out of the way
+}
+
+// ── Forward full hook event to visualizer (so dashboard shows tool cards) ────
+if (process.env.AZCLAUDE_VISUALIZER && toolName) {
+  try {
+    const vPort = parseInt(process.env.AZCLAUDE_VISUALIZER, 10) || 8765;
+    const vizId = _toolUseId || `pre-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const fwd = JSON.stringify({
+      hook_event_name: 'PreToolUse',
+      tool_name: toolName,
+      tool_input: _rawInput,
+      tool_use_id: vizId,
+      session_id: String(process.ppid || process.pid),
+      agent_id: _agentId,
+      agent_type: _agentType,
+    });
+    try { fs.writeFileSync(path.join(os.tmpdir(), `.azclaude-vizid-${process.ppid || process.pid}`), vizId); } catch (_) {}
+    const vReq = require('http').request(
+      { hostname: '127.0.0.1', port: vPort, path: '/event', method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(fwd) } },
+      () => {}
+    );
+    vReq.setTimeout(1500, () => vReq.destroy());
+    vReq.on('error', () => {});
+    vReq.end(fwd);
+  } catch (_) {}
 }
 
 // ── Session security event log (shared with post-tool-use, stop) ─────────────

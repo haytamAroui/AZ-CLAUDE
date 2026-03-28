@@ -144,8 +144,8 @@ function buildHookEntries(scriptsDir) {
   return {
     UserPromptSubmit: [{ matcher: '',                           hooks: [{ type: 'command', command: `"${nodeExe}" "${userPromptScript}"` }]  }],
     Stop:             [{ matcher: '',                           hooks: [{ type: 'command', command: `"${nodeExe}" "${stopScript}"` }]         }],
-    PreToolUse:       [{ matcher: 'Write|Edit|MultiEdit',      hooks: [{ type: 'command', command: `"${nodeExe}" "${preToolUseScript}"` }]  }],
-    PostToolUse:      [{ matcher: 'Write|Edit|Read|Bash|Grep', hooks: [{ type: 'command', command: `"${nodeExe}" "${postToolUseScript}"` }] }],
+    PreToolUse:       [{ matcher: '',                           hooks: [{ type: 'command', command: `"${nodeExe}" "${preToolUseScript}"` }]  }],
+    PostToolUse:      [{ matcher: '',                           hooks: [{ type: 'command', command: `"${nodeExe}" "${postToolUseScript}"` }] }],
     Notification:     [{ matcher: '',                           hooks: [{ type: 'command', command: `"${nodeExe}" "${vizScript}"` }]         }],
     SubagentStart:    [{ matcher: '',                           hooks: [{ type: 'command', command: `"${nodeExe}" "${vizScript}"` }]         }],
     SubagentStop:     [{ matcher: '',                           hooks: [{ type: 'command', command: `"${nodeExe}" "${vizScript}"` }]         }],

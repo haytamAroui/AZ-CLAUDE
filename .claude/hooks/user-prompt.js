@@ -206,6 +206,22 @@ try {
 
       console.log('This pipeline is NON-NEGOTIABLE. Do not skip steps. Do not start coding before Step 1 completes.');
       console.log('--- END PIPELINE ---');
+
+      // ── Visualizer event (opt-in) ──
+      if (process.env.AZCLAUDE_VISUALIZER) {
+        try {
+          const vPort = parseInt(process.env.AZCLAUDE_VISUALIZER, 10) || 8765;
+          const payload = JSON.stringify({ type: 'pipeline-start', intents: intents, tier: tier, tierLabel: tierLabel });
+          const vReq = require('http').request(
+            { hostname: '127.0.0.1', port: vPort, path: '/event', method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } },
+            () => {}
+          );
+          vReq.setTimeout(1500, () => vReq.destroy());
+          vReq.on('error', () => {});
+          vReq.end(payload);
+        } catch (_v) {}
+      }
     }
   }
 } catch (_) {}

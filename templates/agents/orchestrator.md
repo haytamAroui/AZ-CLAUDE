@@ -155,11 +155,13 @@ If verdict is `APPROVED` or `APPROVED (no constitution found)`: proceed to Step 
 
 Load `capabilities/shared/parallel-coordination.md` first.
 Load `capabilities/shared/context-inoculation.md` and prepend its Required Preamble to every agent prompt below.
+Load `capabilities/shared/context-relay.md` for relay protocol and role-based filters.
 
 1. Write `.claude/ownership.md` table (branch, directories, status) for every agent in this batch
 2. Write `.claude/parallel-wave-state.md` with `dispatch_mode: dag` (see parallel-coordination.md)
-3. **Pre-read shared files** (models, schemas, configs referenced by 2+ agents) and inject their content inline into each agent's prompt — eliminates redundant file reads across agents
-4. Spawn each builder via Task with `isolation: "worktree"` in the same message (true parallel)
+3. **Pre-read shared files** (models, schemas, configs referenced by 2+ agents) and relay their content via a `## Pre-loaded Context` block in each agent's prompt — builders MUST NOT re-read relayed files
+4. If problem-architect returned a `## Relay` section, include it in the builder prompt as-is
+5. Spawn each builder via Task with `isolation: "worktree"` in the same message (true parallel)
 5. Include worktree rules + **test scope** (`Test scope: {test-dir}`) in every parallel prompt
 6. **Merge-on-complete**: as each agent reports done, merge its branch immediately (don't wait for all)
 7. After each merge: check if newly-unblocked milestones exist → dispatch them immediately
@@ -168,6 +170,7 @@ Load `capabilities/shared/context-inoculation.md` and prepend its Required Pream
 **Sequential dispatch (single milestone OR overlapping files):**
 
 Load `capabilities/shared/context-inoculation.md` and prepend its Required Preamble to the agent prompt below.
+Load `capabilities/shared/context-relay.md` for relay protocol and size limits.
 
 Spawn milestone-builder via Task with fully packaged context:
 
@@ -177,25 +180,33 @@ Task: Implement Milestone {N} — {title}
 Agent role: {agent-name from spec} (owns {directories})
 Skills to activate: {skill list from spec}
 
-Pre-read BEFORE writing anything:
-  - {file}: {reason}
-  - {file}: {reason}
+## Pre-loaded Context (do NOT re-read these files)
+
+### Team Spec
+{paste problem-architect's full Team Spec}
+
+### Relay (from problem-architect)
+{paste problem-architect's ## Relay section if present — condensed file contents it already read}
+
+### File contents (pre-read by orchestrator)
+{paste contents of files listed in Team Spec's "Pre-Read Files" that you already have in context}
+
+### Conventions (from patterns.md)
+{relevant entries}
+
+### Anti-patterns (from antipatterns.md)
+{relevant entries}
+
+### Architecture decisions (from decisions.md)
+{relevant entries}
 
 Pre-conditions verified:
   - {checklist from spec}
 
-Conventions (from patterns.md):
-  - {relevant entries}
-
-Anti-patterns (from antipatterns.md):
-  - {relevant entries}
-
-Architecture decisions (from decisions.md):
-  - {relevant entries}
-
 Complexity: {SIMPLE|MEDIUM|COMPLEX}
 Fix attempts: {2 for SIMPLE/MEDIUM, 3 for COMPLEX}
 
+Only read files NOT listed in Pre-loaded Context.
 When done, report: files changed + test status + new patterns/anti-patterns.
 ```
 

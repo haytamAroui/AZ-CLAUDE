@@ -24,11 +24,19 @@ let filePath = '';
 let changeSummary = '';
 let toolName = '';
 let toolOutput = '';
+let _rawInput  = null;
+let _agentId   = null;
+let _agentType = null;
+let _toolUseId = null;
 try {
   const raw  = fs.readFileSync(0, 'utf8'); // fd 0 = stdin, cross-platform
   const data = JSON.parse(raw);
   toolName   = data.tool_name || '';
   filePath   = data.tool_input?.file_path || data.tool_input?.path || data.tool_input?.command || '';
+  _rawInput  = data.tool_input || null;
+  _agentId   = data.agent_id || null;
+  _agentType = data.agent_type || null;
+  _toolUseId = data.tool_use_id || null;
   // Extract change summary from old_string/new_string diff hint (Edit tool)
   // MultiEdit: edits[] array — use first edit's new_string
   const oldStr = data.tool_input?.old_string || data.tool_input?.edits?.[0]?.old_string || '';
@@ -46,6 +54,37 @@ try {
 
 // Also accept env var fallback (older Claude Code versions)
 if (!filePath) filePath = process.env.CLAUDE_FILE_PATH || '';
+
+// ── Forward full hook event to visualizer (so dashboard shows tool results) ──
+if (process.env.AZCLAUDE_VISUALIZER && toolName) {
+  try {
+    const vPort = parseInt(process.env.AZCLAUDE_VISUALIZER, 10) || 8765;
+    // Read the tool_use_id stashed by pre-tool-use hook (or use Claude's native ID)
+    let vizId = _toolUseId || null;
+    if (!vizId) {
+      const vizIdPath = path.join(os.tmpdir(), `.azclaude-vizid-${process.ppid || process.pid}`);
+      try { vizId = fs.readFileSync(vizIdPath, 'utf8').trim(); } catch (_) {}
+    }
+    const fwd = JSON.stringify({
+      hook_event_name: 'PostToolUse',
+      tool_name: toolName,
+      tool_input: _rawInput,
+      tool_response: toolOutput ? toolOutput.slice(0, 2000) : null,
+      tool_use_id: vizId,
+      session_id: String(process.ppid || process.pid),
+      agent_id: _agentId,
+      agent_type: _agentType,
+    });
+    const vReq = require('http').request(
+      { hostname: '127.0.0.1', port: vPort, path: '/event', method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(fwd) } },
+      () => {}
+    );
+    vReq.setTimeout(1500, () => vReq.destroy());
+    vReq.on('error', () => {});
+    vReq.end(fwd);
+  } catch (_) {}
+}
 
 const cfg       = process.env.AZCLAUDE_CFG || '.claude';
 // Guard: cfg must resolve inside the project root
@@ -178,11 +217,28 @@ if (HOOK_PROFILE !== 'minimal') {
     if (seq.length > 3) seq = seq.slice(-3);
     try { fs.writeFileSync(seqPath, JSON.stringify(seq)); } catch (_) {}
 
+    const seqStr = seq.join('→');
     const obs = JSON.stringify({
       ts: obsTs, tool, file: safeRel, session: process.ppid || process.pid,
-      event: 'complete', seq: seq.join('→')
+      event: 'complete', seq: seqStr
     });
     fs.appendFileSync(obsPath, obs + '\n');
+
+    // ── Visualizer event (opt-in) ──
+    if (process.env.AZCLAUDE_VISUALIZER) {
+      try {
+        const vPort = parseInt(process.env.AZCLAUDE_VISUALIZER, 10) || 8765;
+        const payload = JSON.stringify({ type: 'tool-complete', tool: tool, file: safeRel, diffStat: diffStat || '', seq: seqStr });
+        const vReq = require('http').request(
+          { hostname: '127.0.0.1', port: vPort, path: '/event', method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } },
+          () => {}
+        );
+        vReq.setTimeout(1500, () => vReq.destroy());
+        vReq.on('error', () => {});
+        vReq.end(payload);
+      } catch (_v) {}
+    }
 
     // Auto-truncate: stat-based size check (avoids reading entire file every call)
     try {
