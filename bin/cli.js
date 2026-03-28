@@ -1146,7 +1146,10 @@ if (process.argv[2] === 'visualize') {
     console.error('Visualizer not installed. Run: npx azclaude-copilot');
     process.exit(1);
   }
+  const settingsPath = path.join(process.cwd(), vizCfg, 'settings.local.json');
+
   if (action === 'stop') {
+    // 1. Kill server
     const pidFile = path.join(os.tmpdir(), '.azclaude-visualizer.pid');
     if (fs.existsSync(pidFile)) {
       const pid = parseInt(fs.readFileSync(pidFile, 'utf8'), 10);
@@ -1156,8 +1159,22 @@ if (process.argv[2] === 'visualize') {
     } else {
       info('No running visualizer found');
     }
+    // 2. Remove env var from settings.local.json
+    if (fs.existsSync(settingsPath)) {
+      try {
+        const s = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+        if (s.env && s.env.AZCLAUDE_VISUALIZER) {
+          delete s.env.AZCLAUDE_VISUALIZER;
+          if (Object.keys(s.env).length === 0) delete s.env;
+          atomicWriteFileSync(settingsPath, JSON.stringify(s, null, 2));
+          ok('Removed AZCLAUDE_VISUALIZER from settings');
+        }
+      } catch (_) {}
+    }
   } else {
     const port = process.argv[4] || '8765';
+
+    // 1. Start server
     const { spawn } = require('child_process');
     const child = spawn(process.execPath, [serverPath], {
       detached: true, stdio: 'ignore',
@@ -1167,8 +1184,28 @@ if (process.argv[2] === 'visualize') {
     const pidFile = path.join(os.tmpdir(), '.azclaude-visualizer.pid');
     fs.writeFileSync(pidFile, String(child.pid));
     ok(`Visualizer started on port ${port} (PID: ${child.pid})`);
-    info(`Open: http://localhost:${port}`);
-    info(`Set env: AZCLAUDE_VISUALIZER=${port}`);
+
+    // 2. Write AZCLAUDE_VISUALIZER env var into settings.local.json
+    //    Claude Code reads env from here — hooks pick it up automatically
+    let settings = {};
+    if (fs.existsSync(settingsPath)) {
+      try { settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8')); } catch (_) {}
+    }
+    if (!settings.env) settings.env = {};
+    settings.env.AZCLAUDE_VISUALIZER = port;
+    atomicWriteFileSync(settingsPath, JSON.stringify(settings, null, 2));
+    ok(`AZCLAUDE_VISUALIZER=${port} written to settings.local.json`);
+
+    // 3. Open browser (cross-platform)
+    const url = `http://localhost:${port}`;
+    try {
+      const openCmd = process.platform === 'win32' ? `start "" "${url}"`
+        : process.platform === 'darwin' ? `open "${url}"`
+        : `xdg-open "${url}" 2>/dev/null || true`;
+      require('child_process').exec(openCmd);
+    } catch (_) {}
+    ok(`Dashboard: ${url}`);
+    info('Hooks will send events automatically — just open Claude Code and work');
   }
   process.exit(0);
 }

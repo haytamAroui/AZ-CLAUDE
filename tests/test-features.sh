@@ -1414,7 +1414,7 @@ check      "plugin: PostToolUse async"                    "hooks/hooks.json" "as
 check      "plugin: marketplace has github source"        ".claude-plugin/marketplace.json" "github\|haytamAroui"
 check      "plugin: package.json includes plugin files"   "package.json" "\.claude-plugin"
 check      "plugin: marketplace repo is AZ-CLAUDE-COPILOT" ".claude-plugin/marketplace.json" "AZ-CLAUDE-COPILOT"
-check      "plugin: marketplace version matches 0.7"      ".claude-plugin/marketplace.json" "0\.7\."
+check      "plugin: marketplace version matches 0.7.1"    ".claude-plugin/marketplace.json" "0\.7\.1"
 
 # ─── Atomic write ──────────────────────────────────────────────────────────────
 echo ""
