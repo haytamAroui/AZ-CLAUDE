@@ -173,6 +173,40 @@ if (fs.existsSync(seclogPath)) {
   } catch (_) {}
 }
 
+// ── Visualizer session-summary event (opt-in) ──
+if (process.env.AZCLAUDE_VISUALIZER) {
+  try {
+    const vPort = parseInt(process.env.AZCLAUDE_VISUALIZER, 10) || 8765;
+    // Gather session data for the dashboard
+    let vizDuration = null, vizBlocks = 0, vizWarnings = 0;
+    const vizStartPath = path.join(os.tmpdir(), `.azclaude-session-start-${process.ppid || process.pid}`);
+    if (fs.existsSync(vizStartPath)) {
+      try {
+        const startMs = new Date(fs.readFileSync(vizStartPath, 'utf8').trim()).getTime();
+        const mins = Math.round((Date.now() - startMs) / 60000);
+        vizDuration = mins > 60 ? Math.floor(mins / 60) + 'h ' + (mins % 60) + 'm' : mins + 'm';
+      } catch (_) {}
+    }
+    if (fs.existsSync(seclogPath)) {
+      try {
+        const secEvents = fs.readFileSync(seclogPath, 'utf8').split('\n').filter(Boolean)
+          .map(l => { try { return JSON.parse(l); } catch (_) { return null; } }).filter(Boolean);
+        vizBlocks = secEvents.filter(e => e.level === 'block').length;
+        vizWarnings = secEvents.filter(e => e.level === 'warn').length;
+      } catch (_) {}
+    }
+    const payload = JSON.stringify({ type: 'session-summary', duration: vizDuration, blocks: vizBlocks, warnings: vizWarnings });
+    const vReq = require('http').request(
+      { hostname: '127.0.0.1', port: vPort, path: '/event', method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } },
+      () => {}
+    );
+    vReq.setTimeout(1500, () => vReq.destroy());
+    vReq.on('error', () => {});
+    vReq.end(payload);
+  } catch (_v) {}
+}
+
 // ── Clean ALL session temp files ─────────────────────────────────────────────
 const sid = process.ppid || process.pid;
 const tempPatterns = [

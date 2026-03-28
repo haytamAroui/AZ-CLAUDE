@@ -8,7 +8,7 @@ const { execSync }  = require('child_process');
 
 const TEMPLATE_DIR = path.join(__dirname, '..', 'templates');
 const CORE_COMMANDS     = ['setup', 'fix', 'add', 'audit', 'test', 'blueprint', 'ship', 'pulse', 'explain', 'snapshot', 'persist'];
-const EXTENDED_COMMANDS = ['dream', 'refactor', 'doc', 'loop', 'migrate', 'deps', 'find', 'create', 'reflect', 'hookify', 'sentinel', 'clarify', 'spec', 'analyze', 'constitute', 'tasks', 'issues', 'driven', 'mcp', 'verify', 'inoculate', 'ghost-test'];
+const EXTENDED_COMMANDS = ['dream', 'refactor', 'doc', 'loop', 'migrate', 'deps', 'find', 'create', 'reflect', 'hookify', 'sentinel', 'clarify', 'spec', 'analyze', 'constitute', 'tasks', 'issues', 'driven', 'mcp', 'verify', 'inoculate', 'ghost-test', 'visualize'];
 const ADVANCED_COMMANDS = ['evolve', 'debate', 'level-up', 'copilot', 'reflexes', 'parallel'];
 const COMMANDS          = [...CORE_COMMANDS, ...EXTENDED_COMMANDS, ...ADVANCED_COMMANDS];
 
@@ -118,7 +118,7 @@ function substitutePaths(content, cfg) {
 
 // ─── Hook Scripts ─────────────────────────────────────────────────────────────
 
-const HOOK_SCRIPTS = ['user-prompt.js', 'stop.js', 'post-tool-use.js', 'pre-tool-use.js'];
+const HOOK_SCRIPTS = ['user-prompt.js', 'stop.js', 'post-tool-use.js', 'pre-tool-use.js', 'visualizer-hook.js'];
 
 function copyHookScripts(dstDir) {
   fs.mkdirSync(dstDir, { recursive: true });
@@ -140,11 +140,15 @@ function buildHookEntries(scriptsDir) {
   const stopScript        = path.join(scriptsDir, 'stop.js');
   const postToolUseScript = path.join(scriptsDir, 'post-tool-use.js');
   const preToolUseScript  = path.join(scriptsDir, 'pre-tool-use.js');
+  const vizScript = path.join(scriptsDir, 'visualizer-hook.js');
   return {
     UserPromptSubmit: [{ matcher: '',                           hooks: [{ type: 'command', command: `"${nodeExe}" "${userPromptScript}"` }]  }],
     Stop:             [{ matcher: '',                           hooks: [{ type: 'command', command: `"${nodeExe}" "${stopScript}"` }]         }],
     PreToolUse:       [{ matcher: 'Write|Edit|MultiEdit',      hooks: [{ type: 'command', command: `"${nodeExe}" "${preToolUseScript}"` }]  }],
     PostToolUse:      [{ matcher: 'Write|Edit|Read|Bash|Grep', hooks: [{ type: 'command', command: `"${nodeExe}" "${postToolUseScript}"` }] }],
+    Notification:     [{ matcher: '',                           hooks: [{ type: 'command', command: `"${nodeExe}" "${vizScript}"` }]         }],
+    SubagentStart:    [{ matcher: '',                           hooks: [{ type: 'command', command: `"${nodeExe}" "${vizScript}"` }]         }],
+    SubagentStop:     [{ matcher: '',                           hooks: [{ type: 'command', command: `"${nodeExe}" "${vizScript}"` }]         }],
   };
 }
 
@@ -439,6 +443,23 @@ function installScripts(projectDir, cfg) {
     try { fs.chmodSync(d, '755'); } catch {}
   }
   ok(`Scripts installed/updated (${cfg}/scripts/)`);
+}
+
+// ─── Visualizer (real-time pipeline dashboard) ──────────────────────────────
+
+function installVisualizer(projectDir, cfg) {
+  const src = path.join(TEMPLATE_DIR, 'visualizer');
+  if (!fs.existsSync(src)) return;
+  const dst = path.join(projectDir, cfg, 'visualizer');
+  if (fs.existsSync(dst)) {
+    // Refresh files
+    copyDir(src, dst);
+    info('Visualizer files refreshed');
+    return;
+  }
+  fs.mkdirSync(dst, { recursive: true });
+  copyDir(src, dst);
+  ok(`Visualizer installed (${cfg}/visualizer/) — start with: AZCLAUDE_VISUALIZER=8765 node ${cfg}/visualizer/server.js`);
 }
 
 // ─── Statusline (auto-updating cost/context bar) ─────────────────────────────
@@ -1116,6 +1137,42 @@ function copyDir(src, dst) {
 if (process.argv[2] === 'doctor' && process.argv[3] === '--audit') { runAudit(); process.exit(0); }
 if (process.argv[2] === 'doctor') { runDoctor(); process.exit(0); }
 if (process.argv[2] === 'demo')   { runDemo();   process.exit(0); }
+if (process.argv[2] === 'visualize') {
+  const action = process.argv[3] || 'start';
+  const detectedCli = detectCLI();
+  const vizCfg = detectedCli.cfg;
+  const serverPath = path.join(process.cwd(), vizCfg, 'visualizer', 'server.js');
+  if (!fs.existsSync(serverPath)) {
+    console.error('Visualizer not installed. Run: npx azclaude-copilot');
+    process.exit(1);
+  }
+  if (action === 'stop') {
+    const pidFile = path.join(os.tmpdir(), '.azclaude-visualizer.pid');
+    if (fs.existsSync(pidFile)) {
+      const pid = parseInt(fs.readFileSync(pidFile, 'utf8'), 10);
+      try { process.kill(pid); } catch (_) {}
+      try { fs.unlinkSync(pidFile); } catch (_) {}
+      ok('Visualizer stopped');
+    } else {
+      info('No running visualizer found');
+    }
+  } else {
+    const port = process.argv[4] || '8765';
+    const { spawn } = require('child_process');
+    const child = spawn(process.execPath, [serverPath], {
+      detached: true, stdio: 'ignore',
+      env: Object.assign({}, process.env, { AZCLAUDE_VISUALIZER: port })
+    });
+    child.unref();
+    const pidFile = path.join(os.tmpdir(), '.azclaude-visualizer.pid');
+    fs.writeFileSync(pidFile, String(child.pid));
+    ok(`Visualizer started on port ${port} (PID: ${child.pid})`);
+    info(`Open: http://localhost:${port}`);
+    info(`Set env: AZCLAUDE_VISUALIZER=${port}`);
+  }
+  process.exit(0);
+}
+
 if (process.argv[2] === 'copilot') {
   // Delegate to copilot runner
   const copilotScript = path.join(__dirname, 'copilot.js');
@@ -1182,6 +1239,7 @@ installCapabilities(projectDir, cli.cfg, fullInstall);
 installCommands(projectDir, cli.cfg);
 installSkills(projectDir, cli.cfg);
 installScripts(projectDir, cli.cfg);
+installVisualizer(projectDir, cli.cfg);
 installStatusline(projectDir, cli.cfg);
 installAgents(projectDir, cli.cfg);
 installRulesFile(projectDir, cli.cfg, cli.rulesFile);

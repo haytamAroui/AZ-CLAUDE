@@ -49,6 +49,23 @@ function _logSec(rule, level, target) {
 function _getDedup() { try { return JSON.parse(fs.readFileSync(_dedupPath, 'utf8')); } catch(_) { return {}; } }
 function _saveDedup(d) { try { fs.writeFileSync(_dedupPath, JSON.stringify(d)); } catch(_) {} }
 
+// ── Visualizer relay (opt-in, fire-and-forget) ──
+function _vizPost(payload) {
+  if (!process.env.AZCLAUDE_VISUALIZER) return;
+  try {
+    const vPort = parseInt(process.env.AZCLAUDE_VISUALIZER, 10) || 8765;
+    const data = JSON.stringify(Object.assign({ type: 'security-event' }, payload));
+    const vReq = require('http').request(
+      { hostname: '127.0.0.1', port: vPort, path: '/event', method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) } },
+      () => {}
+    );
+    vReq.setTimeout(1500, () => vReq.destroy());
+    vReq.on('error', () => {});
+    vReq.end(data);
+  } catch (_) {}
+}
+
 // ── Gate: Bash tool — scan shell commands ────────────────────────────────────
 if (toolName === 'Bash' && command) {
   const BASH_RULES = [
@@ -63,12 +80,14 @@ if (toolName === 'Bash' && command) {
     if (!rule.test.test(command)) continue;
     _logSec(rule.id, rule.block ? 'block' : 'warn', command.slice(0, 80));
     if (rule.block) {
+      _vizPost({ level: 'block', rule: rule.id, message: rule.message });
       process.stderr.write(`\n✗ SECURITY BLOCK [${rule.id}]: ${rule.message}\n  Command: ${command.slice(0, 120)}\n\n`);
       process.exit(2);
     }
     const key = `bash:${rule.id}`;
     if (!dedup[key]) {
       dedup[key] = true; _saveDedup(dedup);
+      _vizPost({ level: 'warn', rule: rule.id, message: rule.message });
       process.stderr.write(`\n⚠ SECURITY [${rule.id}]: ${rule.message}\n`);
     }
   }
@@ -321,6 +340,7 @@ for (const rule of RULES) {
   if (rule.block) {
     // Always emit the block message — secrets must never be silently swallowed
     _logSec(rule.id, 'block', displayName);
+    _vizPost({ level: 'block', rule: rule.id, message: rule.message });
     process.stderr.write(
       `\n✗ SECURITY BLOCK: ${rule.message} in ${displayName}.\n` +
       `  Use environment variables instead: process.env.MY_SECRET\n` +
@@ -335,6 +355,7 @@ for (const rule of RULES) {
   dedup[dedupKey] = true;
   saveDedup();
   _logSec(rule.id, 'warn', displayName);
+  _vizPost({ level: 'warn', rule: rule.id, message: rule.message });
 
   process.stderr.write(
     `\n⚠ SECURITY: ${rule.message.split(' — ')[0]} in ${displayName} — ${rule.message.includes(' — ') ? rule.message.split(' — ')[1] : rule.message}\n`

@@ -178,11 +178,28 @@ if (HOOK_PROFILE !== 'minimal') {
     if (seq.length > 3) seq = seq.slice(-3);
     try { fs.writeFileSync(seqPath, JSON.stringify(seq)); } catch (_) {}
 
+    const seqStr = seq.join('→');
     const obs = JSON.stringify({
       ts: obsTs, tool, file: safeRel, session: process.ppid || process.pid,
-      event: 'complete', seq: seq.join('→')
+      event: 'complete', seq: seqStr
     });
     fs.appendFileSync(obsPath, obs + '\n');
+
+    // ── Visualizer event (opt-in) ──
+    if (process.env.AZCLAUDE_VISUALIZER) {
+      try {
+        const vPort = parseInt(process.env.AZCLAUDE_VISUALIZER, 10) || 8765;
+        const payload = JSON.stringify({ type: 'tool-complete', tool: tool, file: safeRel, diffStat: diffStat || '', seq: seqStr });
+        const vReq = require('http').request(
+          { hostname: '127.0.0.1', port: vPort, path: '/event', method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } },
+          () => {}
+        );
+        vReq.setTimeout(1500, () => vReq.destroy());
+        vReq.on('error', () => {});
+        vReq.end(payload);
+      } catch (_v) {}
+    }
 
     // Auto-truncate: stat-based size check (avoids reading entire file every call)
     try {

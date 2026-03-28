@@ -1185,7 +1185,7 @@ check_file "install: agent-creator scaffold script"      "$IDIR/.claude/skills/a
 check_file "install: agent-creator references"           "$IDIR/.claude/skills/agent-creator/references/agent-engineering-guide.md"
 check_file "install: agent-creator examples"             "$IDIR/.claude/skills/agent-creator/examples/sample-agent.md"
 INSTALLED=$(ls "$IDIR/.claude/commands/" | wc -l | tr -d ' ')
-EXPECTED_CMDS=39
+EXPECTED_CMDS=40
 if [ "$INSTALLED" -eq "$EXPECTED_CMDS" ]; then
   echo "  ✓ install: all $EXPECTED_CMDS commands present"
   PASS=$((PASS + 1))
@@ -1414,7 +1414,7 @@ check      "plugin: PostToolUse async"                    "hooks/hooks.json" "as
 check      "plugin: marketplace has github source"        ".claude-plugin/marketplace.json" "github\|haytamAroui"
 check      "plugin: package.json includes plugin files"   "package.json" "\.claude-plugin"
 check      "plugin: marketplace repo is AZ-CLAUDE-COPILOT" ".claude-plugin/marketplace.json" "AZ-CLAUDE-COPILOT"
-check      "plugin: marketplace version matches 0.6"      ".claude-plugin/marketplace.json" "0\.6\."
+check      "plugin: marketplace version matches 0.7"      ".claude-plugin/marketplace.json" "0\.7\."
 
 # ─── Atomic write ──────────────────────────────────────────────────────────────
 echo ""
@@ -2614,6 +2614,48 @@ for agent in orchestrator orchestrator-init loop-controller problem-architect mi
   check "agent: $agent has tags: frontmatter"    "templates/agents/$agent.md" "^tags:"
   check "agent: $agent has <instructions> tag"   "templates/agents/$agent.md" "<instructions>"
 done
+
+# ─── Visualizer — Real-Time Pipeline Dashboard ──────────────────────────────
+echo ""
+echo "[ Visualizer — Real-Time Pipeline Dashboard ]"
+VIZ="$ROOT/visualizer"
+check_file "visualizer: server.js exists"                    "$VIZ/server.js"
+check_file "visualizer: public/index.html exists"            "$VIZ/public/index.html"
+check_file "visualizer: public/app.js exists"                "$VIZ/public/app.js"
+check_file "visualizer: public/canvas.js exists"             "$VIZ/public/canvas.js"
+check_file "visualizer: public/style.css exists"             "$VIZ/public/style.css"
+check_file "visualizer: public/audio.js exists"              "$VIZ/public/audio.js"
+check      "visualizer: server.js configurable port"         "$VIZ/server.js" "AZCLAUDE_VISUALIZER"
+check      "visualizer: server.js pipeline fields"            "$VIZ/server.js" "intents\|tierLabel"
+check      "visualizer: server.js tmpdir logging"            "$VIZ/server.js" "tmpdir"
+check      "visualizer: app.js pipeline handler"             "$VIZ/public/app.js" "pipeline-start"
+check      "visualizer: app.js security handler"             "$VIZ/public/app.js" "security-event"
+check      "visualizer: canvas.js security bloom"            "$VIZ/public/canvas.js" "triggerSecurityBloom"
+check      "visualizer: index.html pipeline section"         "$VIZ/public/index.html" "pipeline-progress"
+
+check_file "visualizer: hook script exists"                  "templates/hooks/visualizer-hook.js"
+check      "visualizer: hook env var gate"                   "templates/hooks/visualizer-hook.js" "AZCLAUDE_VISUALIZER"
+check      "visualizer: hook 1500ms timeout"                 "templates/hooks/visualizer-hook.js" "1500"
+check      "visualizer: hook silent error"                   "templates/hooks/visualizer-hook.js" "on.*error"
+
+check      "visualizer: user-prompt POST"                    "templates/hooks/user-prompt.js" "AZCLAUDE_VISUALIZER"
+check      "visualizer: pre-tool-use _vizPost"               "templates/hooks/pre-tool-use.js" "_vizPost"
+check      "visualizer: post-tool-use POST"                  "templates/hooks/post-tool-use.js" "AZCLAUDE_VISUALIZER"
+check      "visualizer: stop POST"                           "templates/hooks/stop.js" "AZCLAUDE_VISUALIZER"
+
+check      "visualizer: cli HOOK_SCRIPTS includes hook"      "bin/cli.js" "visualizer-hook.js"
+check      "visualizer: cli visualize command routing"        "bin/cli.js" "argv.*2.*visualize\|visualize"
+check      "visualizer: cli installVisualizer function"       "bin/cli.js" "installVisualizer"
+check      "visualizer: cli SubagentStart event wired"        "bin/cli.js" "SubagentStart"
+
+check      "visualizer: server.js /event route"               "$VIZ/server.js" "/event"
+check      "visualizer: app.js tool-complete handler"        "$VIZ/public/app.js" "tool-complete"
+check      "visualizer: app.js session-summary handler"      "$VIZ/public/app.js" "session-summary"
+check      "visualizer: hook targets /event path"            "templates/hooks/visualizer-hook.js" "/event"
+check      "visualizer: cli visualize stop uses pidFile"     "bin/cli.js" "azclaude-visualizer.pid"
+check      "visualizer: audio.js has AudioContext"           "$VIZ/public/audio.js" "AudioContext"
+
+check_file "visualizer: command template exists"             "$CMD/visualize.md"
 
 echo ""
 echo "════════════════════════════════════════════════════"
