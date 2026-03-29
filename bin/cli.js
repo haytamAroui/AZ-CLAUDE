@@ -6,6 +6,14 @@ const os            = require('os');
 const crypto        = require('crypto');
 const { execSync }  = require('child_process');
 
+// Strip --cli <value> from argv early so it doesn't interfere with positional args
+const cliArgIdx = process.argv.indexOf('--cli');
+let CLI_OVERRIDE = null;
+if (cliArgIdx !== -1 && process.argv[cliArgIdx + 1]) {
+  CLI_OVERRIDE = process.argv[cliArgIdx + 1];
+  process.argv.splice(cliArgIdx, 2); // remove --cli and its value from argv
+}
+
 const TEMPLATE_DIR = path.join(__dirname, '..', 'templates');
 const CORE_COMMANDS     = ['setup', 'fix', 'add', 'audit', 'test', 'blueprint', 'ship', 'pulse', 'explain', 'snapshot', 'persist'];
 const EXTENDED_COMMANDS = ['dream', 'refactor', 'doc', 'loop', 'migrate', 'deps', 'find', 'create', 'reflect', 'hookify', 'sentinel', 'clarify', 'spec', 'analyze', 'constitute', 'tasks', 'issues', 'driven', 'mcp', 'verify', 'inoculate', 'ghost-test', 'visualize'];
@@ -73,17 +81,16 @@ const CLI_TABLE = [
 ];
 
 function detectCLI() {
-  // 0. --cli flag override (e.g., npx azclaude-copilot --cli opencode)
-  const cliFlag = process.argv.find((a, i) => a === '--cli' && process.argv[i + 1]);
-  const cliValue = cliFlag ? process.argv[process.argv.indexOf('--cli') + 1] : null;
-  if (cliValue) {
+  // 0. --cli flag override (stripped from argv at top of file)
+  if (CLI_OVERRIDE) {
+    const v = CLI_OVERRIDE.toLowerCase();
     const forced = CLI_TABLE.find(c =>
-      c.name.toLowerCase().replace(/\s/g,'') === cliValue.toLowerCase()
-      || c.exe === cliValue.toLowerCase()
-      || c.cfg === `.${cliValue.toLowerCase()}`
+      c.name.toLowerCase().replace(/\s/g,'') === v
+      || c.exe === v
+      || c.cfg === `.${v}`
     );
     if (forced) return forced;
-    console.log(`  ⚠ Unknown CLI "${cliValue}". Valid: ${CLI_TABLE.map(c => c.exe).join(', ')}`);
+    console.log(`  ⚠ Unknown CLI "${CLI_OVERRIDE}". Valid: ${CLI_TABLE.map(c => c.exe).join(', ')}`);
   }
 
   // 0a. Env override (for testing / explicit selection)
