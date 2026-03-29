@@ -24,6 +24,19 @@ $ARGUMENTS
 
 ---
 
+## Strategy Detection
+
+If `$ARGUMENTS` contains `--strategy`:
+1. Strip `--strategy {name}` from arguments before processing
+2. Valid strategies: `risk_first`, `value_first`, `simple_first`, `complex_first`
+3. Load `capabilities/shared/strategies.md` for scoring formulas
+4. Apply strategy scoring in Step 4b (after wave grouping, before output)
+
+If no `--strategy` flag → check plan.md frontmatter for `strategy:` field.
+If neither → no scoring, display milestones in ID order within each wave (current default).
+
+---
+
 ## Step 1: Find the Source
 
 ```bash
@@ -87,6 +100,24 @@ Algorithm:
 
 ---
 
+## Step 4b: Strategy Scoring (if active)
+
+If a strategy was detected (from `--strategy` flag or plan.md `strategy:` field):
+
+For each pending milestone, read its `Risk:`, `Value:`, and `Complexity:` fields.
+Map Complexity to integer: SIMPLE=1, MEDIUM=2, COMPLEX=3. Default missing values: Risk=3, Value=3, Complexity=MEDIUM.
+
+Apply the scoring formula from `capabilities/shared/strategies.md`:
+- `risk_first`: score = Risk × 2 + Complexity_int
+- `value_first`: score = Value × 2 + (6 - Risk)
+- `simple_first`: score = (4 - Complexity_int) × 2 + (6 - Risk)
+- `complex_first`: score = Complexity_int × 2 + Risk
+
+Sort milestones within each wave by score (descending). Ties broken by higher Risk, then lower ID.
+Add a `Score: {N}` column to the output in Step 5.
+
+---
+
 ## Step 5: Output the Task Graph
 
 ```
@@ -96,13 +127,13 @@ Source: {file}
 Total tasks: {N}  |  Done: {N}  |  Pending: {N}  |  Blocked: {N}
 
 ── Wave 1 (can start now) ──────────────────────────────────────
-  ▶ M1  {title}                     [Files: src/auth/login.ts]
-  ▶ M2  {title}                     [Files: src/models/user.ts]
-  ▶ M3  {title}                     [Files: tests/auth/]
+  ▶ M1  {title}                     [Files: src/auth/login.ts]  {Score: N — if strategy active}
+  ▶ M2  {title}                     [Files: src/models/user.ts] {Score: N — if strategy active}
+  ▶ M3  {title}                     [Files: tests/auth/]        {Score: N — if strategy active}
 
 ── Wave 2 (after Wave 1) ───────────────────────────────────────
-  ▶ M4  {title}   ←depends M1       [Files: src/api/routes.ts]
-  ▶ M5  {title}   ←depends M2       [Files: src/services/]
+  ▶ M4  {title}   ←depends M1       [Files: src/api/routes.ts]  {Score: N}
+  ▶ M5  {title}   ←depends M2       [Files: src/services/]      {Score: N}
 
 ── Wave 3 (after Wave 2) ───────────────────────────────────────
   ▶ M6  {title}   ←depends M4,M5    [Files: src/app.ts]
@@ -126,10 +157,13 @@ Critical path length: {N waves minimum to complete}
 File collision pairs: {N pairs that cannot run simultaneously}
 DAG dispatch mode: merge-on-complete (agents unblock dependents immediately)
 
+Dispatch strategy: {strategy name or "none (ID order)"}
+
 Suggested dispatch order for /copilot:
   1. Foundation first (shared files: models, schemas) — sequential
   2. Launch all ready tasks simultaneously (DAG readiness, not wave number)
-  3. As each task completes → merge → check for newly-unblocked → dispatch immediately
+  3. Within each wave, dispatch by strategy score (highest first)
+  4. As each task completes → merge → check for newly-unblocked → dispatch immediately
 ```
 
 ---

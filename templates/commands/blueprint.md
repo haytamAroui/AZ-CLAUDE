@@ -414,6 +414,8 @@ When running inside `/copilot` (detected by: `.claude/copilot-intent.md` exists)
 - Each milestone = one logical unit of work (1-3 files, one commit)
 - Include `Depends:` for milestones that require prior work
 - Include `Files:` with expected paths
+- Include `Risk: 1-5` — failure cost (1=safe, 5=likely to fail or cascade). Score based on: touches shared state? new pattern? external dependency?
+- Include `Value: 1-5` — business impact (1=nice-to-have, 5=core feature). Score based on: user-facing? blocks other features? revenue impact?
 - Include `Commit:` with conventional commit format
 - Write `## Summary` with counts at the bottom
 

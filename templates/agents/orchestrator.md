@@ -30,6 +30,7 @@ Read these files (skip if absent):
 - `.claude/memory/decisions.md` — prior architecture choices
 - `.claude/memory/patterns.md` — established conventions
 - `.claude/constitution.md` — non-negotiables and required patterns (if present)
+- `capabilities/shared/strategies.md` — load if plan.md has `strategy:` field (dispatch ordering)
 
 If no plan.md → run `/blueprint` first.
 If CLAUDE.md unfilled → run `/setup` with intent from copilot-intent.md first.
@@ -130,7 +131,20 @@ If any two candidates share a written file → dispatch the conflicting one sequ
 | Standard | Writes to unique files | Parallel with worktree isolation |
 
 **Max parallel agents:** 6 (default). Override with `max_parallel` in plan.md frontmatter.
-If ready milestones exceed max_parallel → dispatch highest-priority first, queue the rest.
+
+**Strategy-based dispatch ordering:**
+Check plan.md frontmatter for `strategy:` field (risk_first, value_first, simple_first, complex_first).
+If present → load `capabilities/shared/strategies.md`, score each ready milestone, sort descending.
+If absent → dispatch by milestone ID order (M2 before M3).
+
+```bash
+grep -m1 "^strategy:" .claude/plan.md 2>/dev/null || echo "no strategy"
+```
+
+Scoring uses each milestone's `Risk:`, `Value:`, and `Complexity:` fields from plan.md.
+If a milestone is missing an attribute, default: Risk=3, Value=3, Complexity=MEDIUM.
+
+If ready milestones exceed max_parallel → dispatch highest-scored first, queue the rest.
 
 - All done → SHIP
 - All remaining blocked → BLOCKER RECOVERY

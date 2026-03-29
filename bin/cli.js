@@ -116,6 +116,36 @@ function substitutePaths(content, cfg) {
   return content.replace(/\.claude\//g, `${cfg}/`);
 }
 
+// Adapt command frontmatter for non-Claude CLIs.
+// Claude Code: keeps all fields as-is.
+// OpenCode:    keeps description, strips Claude-specific fields (allowed-tools, disable-model-invocation, argument-hint).
+// Codex CLI:   keeps description, strips Claude-specific fields.
+// Gemini CLI:  converts to TOML format (handled separately in installCommandsGemini).
+function adaptCommandContent(content, cliName) {
+  if (cliName === 'Claude Code') return content;
+
+  // Parse frontmatter
+  const fmMatch = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+  if (!fmMatch) return content; // no frontmatter, return as-is
+
+  const fmBlock = fmMatch[1];
+  const body    = fmMatch[2];
+
+  // Extract description (may be multi-line with >)
+  const descMatch = fmBlock.match(/description:\s*>?\s*\n?([\s\S]*?)(?=\n\w|\n---|\s*$)/);
+  const descSimple = fmBlock.match(/description:\s*"?([^"\n]+)"?\s*$/m);
+  let description = '';
+  if (descMatch) {
+    description = descMatch[1].split('\n').map(l => l.trim()).filter(Boolean).join(' ');
+  } else if (descSimple) {
+    description = descSimple[1].trim();
+  }
+
+  // For OpenCode / Codex: rebuild frontmatter with only supported fields
+  const newFm = description ? `---\ndescription: ${description}\n---` : '---\n---';
+  return `${newFm}\n${body}`;
+}
+
 // ─── Hook Scripts ─────────────────────────────────────────────────────────────
 
 const HOOK_SCRIPTS = ['user-prompt.js', 'stop.js', 'post-tool-use.js', 'pre-tool-use.js', 'visualizer-hook.js'];
@@ -365,7 +395,7 @@ function installCapabilities(projectDir, cfg, full) {
 
 // ─── Commands (Skills) ────────────────────────────────────────────────────────
 
-function installCommands(projectDir, cfg) {
+function installCommands(projectDir, cfg, cliName) {
   const commandsDir = path.join(projectDir, cfg, 'commands');
   fs.mkdirSync(commandsDir, { recursive: true });
 
@@ -374,14 +404,19 @@ function installCommands(projectDir, cfg) {
     const dst = path.join(commandsDir, `${cmd}.md`);
     if (!fs.existsSync(src)) continue;
     if (!fs.existsSync(dst)) {
-      fs.copyFileSync(src, dst);
+      let content = fs.readFileSync(src, 'utf8');
+      content = substitutePaths(content, cfg);
+      content = adaptCommandContent(content, cliName || 'Claude Code');
+      fs.writeFileSync(dst, content);
       ok(`/${cmd} installed`);
     } else if (forceUpdate) {
       // --update: overwrite with latest template
-      const srcContent = fs.readFileSync(src, 'utf8');
+      let srcContent = fs.readFileSync(src, 'utf8');
+      srcContent = substitutePaths(srcContent, cfg);
+      srcContent = adaptCommandContent(srcContent, cliName || 'Claude Code');
       const dstContent = fs.readFileSync(dst, 'utf8');
       if (srcContent !== dstContent) {
-        fs.copyFileSync(src, dst);
+        fs.writeFileSync(dst, srcContent);
         ok(`/${cmd} updated (--update)`);
       }
     } else {
@@ -1273,7 +1308,7 @@ if (cli.cfg === '.claude') {
   installGlobalHooks(cli);
 }
 installCapabilities(projectDir, cli.cfg, fullInstall);
-installCommands(projectDir, cli.cfg);
+installCommands(projectDir, cli.cfg, cli.name);
 installSkills(projectDir, cli.cfg);
 installScripts(projectDir, cli.cfg);
 installVisualizer(projectDir, cli.cfg);

@@ -31,6 +31,7 @@ Load only the files that match the current task. Never load the full list.
 | shared/ultrathink.md | $ARGUMENTS contains --deep, or command needs extended thinking for complex analysis | ~80 |
 | shared/context-relay.md | About to spawn a subagent — pass pre-read files to eliminate redundant reads across agent boundaries | ~300 |
 | shared/toolchain-gate.md | /copilot dispatch, /parallel, agent verify, env-scan — stack detection, verify commands, toolchain bootstrap, 3-tier verification, log protocol | ~500 |
+| shared/strategies.md | /tasks --strategy flag, or orchestrator reading plan.md with strategy: field — milestone dispatch ordering within waves | ~120 |
 
 ## Level Builders — load ONE at a time
 | File | When to load | Tokens |

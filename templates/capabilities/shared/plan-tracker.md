@@ -23,6 +23,8 @@ Every plan.md must follow this structure exactly. The copilot runner parses it.
 - Dirs: {top-level directories this milestone owns — e.g. src/auth/, tests/auth/}
 - Depends: {M-numbers this depends on, or "none"}
 - Parallel: {yes|no} — yes = safe to run alongside other same-wave milestones
+- Risk: {1-5} — failure cost (5 = highest risk, run first in risk_first strategy)
+- Value: {1-5} — business impact (5 = core feature, run first in value_first strategy)
 - Commit: {expected commit message}
 
 ### M2: {title}
@@ -32,6 +34,8 @@ Every plan.md must follow this structure exactly. The copilot runner parses it.
 - Dirs: src/users/, tests/users/
 - Depends: M1
 - Parallel: yes
+- Risk: {1-5}
+- Value: {1-5}
 - Commit: ...
 
 ## Summary
@@ -51,6 +55,8 @@ Waves: {N} (max parallel in one wave: {N})
 | `Files:` | Expected file paths to create/modify. Blueprint's estimate — problem-architect refines to `Files Written:`. |
 | `Parallel: yes` | Orchestrator may dispatch with worktree isolation alongside other Wave N milestones. |
 | `Parallel: no` | Reasons: touches shared config, schema change, or has runtime dep on sibling milestone. |
+| `Risk: 1-5` | Dispatch priority score. 5 = highest risk (fail fast in `risk_first` strategy). Default: 3. |
+| `Value: 1-5` | Business value score. 5 = highest value (ship first in `value_first` strategy). Default: 3. |
 
 ## Status Values
 
