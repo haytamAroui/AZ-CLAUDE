@@ -87,6 +87,19 @@ If milestone crosses 2+ agent boundaries → recommend sequential: agent-A first
   (e.g., GraphQL, Stripe, i18n, accessibility, ML pipeline), mark it as MISSING in the Team Spec.
   The orchestrator will use skill-creator to generate it before dispatch.
 
+**Web Research — classify this milestone:**
+Scan the milestone for external dependencies (imports, API calls, library usage):
+```bash
+# Check what the milestone's files import
+grep -r "import\|require\|from " src/ --include="*.ts" --include="*.py" --include="*.js" -l 2>/dev/null | head -10
+# Check package.json / requirements.txt for external deps
+cat package.json 2>/dev/null | grep -E '"dependencies"' -A 50 | head -30
+```
+- If milestone touches ANY external API, library, or framework → `Web Research: REQUIRED`
+- If milestone is pure internal code (no imports from node_modules, no API calls) → `Web Research: SKIP`
+- If milestone creates a new skill or agent for external technology → `Web Research: REQUIRED`
+- Include specific search queries the builder should run (technology + version + year)
+
 **Pre-Read Files:**
 - Schema files (if touching DB)
 - API specs (if touching endpoints)
@@ -135,6 +148,16 @@ Output this EXACT format — the orchestrator parses it:
 ### Missing Skills (GAP — create before dispatch)
 - {domain/technology}: needed because {reason} — use skill-creator to generate
   (omit this section if all needed skills are installed)
+
+### Web Research
+REQUIRED | SKIP
+If REQUIRED:
+- Search: "{technology} {version} best practices {year}"
+- Search: "{technology} common pitfalls {year}"
+- Fetch: {official docs URL if known}
+- Reason: {why this milestone needs current info — e.g. "uses Stripe webhook v2025 signatures"}
+If SKIP: reason = {pure internal code, no external dependencies}
+The milestone-builder runs these searches BEFORE writing code. Orchestrator includes this in the prompt.
 
 ### Pre-Read Files
 - {file-path}: for {specific context reason}

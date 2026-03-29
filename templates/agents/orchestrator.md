@@ -239,6 +239,14 @@ Pre-conditions verified:
 Complexity: {SIMPLE|MEDIUM|COMPLEX}
 Fix attempts: {2 for SIMPLE/MEDIUM, 3 for COMPLEX}
 
+## Web Research (from Team Spec)
+{REQUIRED or SKIP}
+{If REQUIRED, include the search queries from the Team Spec:}
+- Search: "{technology} {version} best practices {year}"
+- Search: "{technology} common pitfalls {year}"
+- Fetch: {docs URL}
+Run these searches BEFORE writing any code. Include findings in your implementation decisions.
+
 Only read files NOT listed in Pre-loaded Context.
 When done, report: files changed + test status + new patterns/anti-patterns.
 ```

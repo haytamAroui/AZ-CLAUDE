@@ -1414,7 +1414,7 @@ check      "plugin: PostToolUse async"                    "hooks/hooks.json" "as
 check      "plugin: marketplace has github source"        ".claude-plugin/marketplace.json" "github\|haytamAroui"
 check      "plugin: package.json includes plugin files"   "package.json" "\.claude-plugin"
 check      "plugin: marketplace repo is AZ-CLAUDE-COPILOT" ".claude-plugin/marketplace.json" "AZ-CLAUDE-COPILOT"
-check      "plugin: marketplace version matches 0.7.5"    ".claude-plugin/marketplace.json" "0\.7\.4"
+check      "plugin: marketplace version matches 0.7.6"    ".claude-plugin/marketplace.json" "0\.7\.5"
 
 # ─── Atomic write ──────────────────────────────────────────────────────────────
 echo ""
@@ -2336,6 +2336,19 @@ check      "orchestrator: verify commands in dispatch"         "$ROOT/agents/orc
 check      "template CLAUDE.md: Verify section"                "$ROOT/CLAUDE.md" "## Verify\|QUICK_VERIFY\|TEST_VERIFY\|BUILD_VERIFY"
 check      "blueprint: toolchain check in foundation"          "$CMD/blueprint.md" "Toolchain check\|toolchain-gate\|verify=configured\|verify=missing"
 check      "blueprint: Wave 0 toolchain bootstrap"             "$CMD/blueprint.md" "Toolchain.*Schema.*Shared\|smoke test\|quick_verify"
+
+# ─── Web Research field in Team Spec ─────────────────────────────────────────
+echo ""
+echo "─── Web Research field in Team Spec ───"
+check      "problem-architect: Web Research classification"    "$ROOT/agents/problem-architect.md" "Web Research.*classify\|external dependencies\|REQUIRED.*SKIP"
+check      "problem-architect: Web Research in Team Spec"      "$ROOT/agents/problem-architect.md" "### Web Research\|REQUIRED.*Search\|SKIP.*reason"
+check      "problem-architect: search query format"            "$ROOT/agents/problem-architect.md" "Search:.*best practices.*year\|Search:.*common pitfalls"
+check      "orchestrator: Web Research in builder prompt"      "$ROOT/agents/orchestrator.md" "## Web Research.*Team Spec\|REQUIRED or SKIP\|Run these searches BEFORE"
+check      "milestone-builder: Step 1b Web Research"           "$ROOT/agents/milestone-builder.md" "Step 1b.*Web Research\|Team Spec says REQUIRED\|WebSearch.*WebFetch"
+check      "milestone-builder: skip if not required"           "$ROOT/agents/milestone-builder.md" "SKIP.*proceed directly\|no Web Research section"
+check      "milestone-builder: outdated approach detection"    "$ROOT/agents/milestone-builder.md" "approach is outdated.*report to orchestrator"
+check      "skill-creator: web research mandatory"             "$ROOT/skills/skill-creator/SKILL.md" "Web research.*MANDATORY\|WebSearch.*best practices\|WebFetch.*official docs"
+check      "agent-creator: web research mandatory"             "$ROOT/skills/agent-creator/SKILL.md" "Web research.*MANDATORY\|WebSearch.*best practices\|WebFetch.*official docs"
 
 # ─── /verify command + code-rules system ─────────────────────────────────────
 echo ""

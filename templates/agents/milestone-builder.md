@@ -60,6 +60,23 @@ Do NOT skip pre-reads. Context-blind implementation is the most common failure m
 
 ---
 
+### Step 1b: Web Research (if Team Spec says REQUIRED)
+
+Check your prompt for `## Web Research`. If it says `REQUIRED`:
+1. Run the search queries listed (WebSearch for best practices, common pitfalls)
+2. Fetch official docs if a URL is provided (WebFetch)
+3. Note findings that affect your implementation:
+   - Deprecated methods → use the replacement
+   - Breaking changes → adapt code to current API
+   - Common pitfalls → add to your anti-patterns for this milestone
+4. If a search reveals the Team Spec's approach is outdated → report to orchestrator before proceeding
+
+If `SKIP` or no Web Research section → proceed directly to Step 2.
+
+**Why:** Claude's training data is frozen. A 30-second web search prevents hours of debugging deprecated code.
+
+---
+
 ### Step 2: Implement
 
 If TDD active:
