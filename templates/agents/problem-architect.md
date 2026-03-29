@@ -53,6 +53,7 @@ Also read:
 - `.claude/memory/patterns.md` — established conventions for this area
 - `.claude/memory/antipatterns.md` — known failure patterns to avoid
 - Context artifacts: `prisma/schema.prisma`, `openapi.yaml`, `.env.example`
+- CLAUDE.md `## Verify` section — for the `Verify:` field in Team Spec (see `capabilities/shared/toolchain-gate.md`)
 
 ---
 
@@ -156,11 +157,21 @@ If YES: topic = {what orchestrator must /debate before dispatching}
 SIMPLE (< 3 files) | MEDIUM (3-8 files) | COMPLEX (8+ files)
 COMPLEX → orchestrator gives builder 3 fix attempts instead of 2
 
+### Verify
+Read CLAUDE.md `## Verify` field for the project's commands. Scope them to this milestone:
+- Quick: `{Tier 1 command}` — static check, MANDATORY before done
+- Test: `{Tier 2 command scoped to this milestone's directories}`
+- Runtime: `{run command if this milestone affects startup/routes/jobs}` — or SKIP
+Example: `Quick: cargo check | Test: cargo test tests/auth/ | Runtime: SKIP`
+The milestone-builder uses these exact commands in its exit gate.
+
 ### Parallel Safe
-YES | NO
+YES | NO | SEQUENTIAL-ONLY
 If NO: reason = {specific conflict — shared file, schema dependency, runtime ordering}
+If SEQUENTIAL-ONLY: reason = {migration, cross-cutting refactor, 15+ files, pattern-setting}
 The orchestrator uses this to decide whether to use worktree isolation or sequential dispatch.
 Parallel Safe = YES requires: isolated directories, no shared config/schema, no runtime dependency on a sibling milestone.
+Parallel Safe = SEQUENTIAL-ONLY means: this milestone must NEVER be split across agents — see sizing rules below.
 
 ### Relay (for milestone-builder — do not re-read)
 {Include condensed contents of key files you read during analysis.
@@ -175,6 +186,32 @@ Maximum ~4000 tokens for this section.}
 
 ---
 
+## Agent Sizing Rules — When to Force Sequential
+
+A milestone MUST be marked `Parallel Safe: SEQUENTIAL-ONLY` if ANY of these apply:
+
+| Signal | Why it can't be split |
+|--------|----------------------|
+| Touches 15+ files | Too many interdependencies for one agent to track in isolation |
+| Framework/library migration | Every file depends on the pattern set by the first file edited |
+| Store/state management rewrite | All consumers depend on the new store shape |
+| Global type rename or API contract change | Callers can't be split from the definition |
+| Build tool or bundler change | Config affects every file's compilation |
+| Auth/middleware rewrite | Everything downstream depends on the new interface |
+
+**When a milestone is too large but must stay sequential, recommend decomposition:**
+```
+Recommend: Split into 3 SEQUENTIAL sub-milestones:
+  1. {foundation — sets the pattern} → Parallel Safe: SEQUENTIAL-ONLY
+  2. {consumers group A — follows the pattern} → Depends: sub-1
+  3. {consumers group B — follows the pattern} → Depends: sub-2
+```
+Each sub-milestone has a checkpoint. Still sequential, but with clear boundaries and rollback points.
+
+**Key insight:** The fix for an oversized milestone is better decomposition, not more agents. Splitting a migration across parallel agents produces inconsistent patterns that are harder to fix than doing it sequentially.
+
+---
+
 ## Rules
 
 - **NEVER implement.** NEVER write to project files. Tools: Read, Grep, Glob, Bash only.
@@ -183,4 +220,5 @@ Maximum ~4000 tokens for this section.}
 - **Be specific.** "Load security skill" is weak.
   "Load security skill because M4 handles Stripe webhook HMAC signatures" is strong.
 - **Files Written must be exhaustive.** A missed file causes silent parallel corruption.
+- **ALWAYS apply agent sizing rules.** A 32-file migration marked Parallel Safe: YES causes cascading failures.
 - If unsure whether an agent exists → Grep .claude/agents/ for it. Never assume.

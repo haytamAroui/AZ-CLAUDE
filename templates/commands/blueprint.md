@@ -160,8 +160,42 @@ echo "source_files=$SRC_COUNT"
 ```
 If source_files < 10 → greenfield project. Force Wave 1 = all foundation work (schema, config, shared utils, types) as a SINGLE milestone regardless of feature count. Parallel only unlocks from Wave 2 onward, after the foundation exists and greps have real files to scan.
 
+**Step 0b: Toolchain check (load `capabilities/shared/toolchain-gate.md`)**
+```bash
+# Check Verify field in CLAUDE.md
+grep -q "^Quick:" CLAUDE.md 2>/dev/null && echo "verify=configured" || echo "verify=missing"
+```
+If `verify=missing` → run toolchain detection protocol from toolchain-gate.md and write `## Verify` to CLAUDE.md.
+If tools are missing → warn in the plan: `"⚠ Toolchain gap: {tool} not installed. Agents cannot run Tier 1 verification. Run: {install command}"`
+
+Wave 0 (foundation) MUST include a toolchain bootstrap step:
+```
+## M0: Foundation — Toolchain + Schema + Shared Types
+- Install missing tools and dependencies
+- Run smoke test: {quick_verify_cmd}
+- Create shared types, base schemas, core config
+```
+
 **Step 1: List raw work items**
 From the intent/spec, enumerate ALL features, endpoints, models, UI pages, and background jobs as raw items. Do not group yet — just list everything the project needs.
+
+**Step 1b: Migration detection (before coupling analysis)**
+For each raw work item, check if it is a **migration or cross-cutting refactor**:
+- Framework/library upgrade (React class→hooks, Svelte 4→5, Vue Options→Composition, Angular versions)
+- Language version bump that changes syntax or stdlib APIs
+- Build tool change (webpack→vite, setuptools→poetry, Maven→Gradle)
+- Store/state management rewrite (Redux→Zustand, Vuex→Pinia, writable→runes)
+- ORM or database driver migration
+- Auth/middleware pattern rewrite
+
+**If detected → force SEQUENTIAL-ONLY.** Never split a migration across parallel agents.
+Mark the milestone: `Parallel: no (migration — SEQUENTIAL-ONLY)`.
+If the migration touches 15+ files, recommend sequential sub-milestones:
+```
+Sub-1: {foundation — sets the new pattern} → SEQUENTIAL-ONLY
+Sub-2: {consumers group A — follows pattern} → Depends: Sub-1
+Sub-3: {consumers group B — follows pattern} → Depends: Sub-2
+```
 
 **Step 2: Coupling analysis — merge rule**
 For each pair of raw work items, check if they share ANY of:
@@ -199,6 +233,14 @@ Wave 1 = milestones with Depends: none
 Wave 2 = milestones that only depend on Wave 1
 Wave N = milestones that only depend on waves 1..N-1
 ```
+
+**Wave 1 contract rule:** Wave 1 sets the types, APIs, schemas, and patterns for all later waves.
+- Wave 1 should be the **smallest, most carefully specified wave**
+- Wave 1 milestones define shared types, base schemas, core configs, foundational patterns
+- Wave 1 agents get 3 fix attempts (not 2) — errors here multiply across every later wave
+- Wave 1 MUST pass full build+test verification before Wave 2 dispatches
+- If Wave 1 introduces a new pattern → document it in `patterns.md` before Wave 2 dispatch
+- **Max agents in Wave 1:** 3 (even if more milestones are ready) — precision over speed
 
 **Step 2: Directory-level isolation check (Layer 1a)**
 

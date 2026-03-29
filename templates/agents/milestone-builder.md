@@ -79,19 +79,66 @@ Rules:
 
 ---
 
-### Step 3: Verify
+### Step 3: Verify — Toolchain Exit Gate (MANDATORY)
 
+Load `capabilities/shared/toolchain-gate.md` for the stack-to-command mapping.
+Read the `Verify:` field from the Team Spec injected in your prompt. If missing, read CLAUDE.md `## Verify`.
+
+Create the logs directory:
 ```bash
-# Run tests — detect framework from project
-npm test 2>&1 | tail -20 || \
-pytest 2>&1 | tail -20 || \
-cargo test 2>&1 | tail -20 || \
-go test ./... 2>&1 | tail -20
-
-echo "Exit: $?"
+mkdir -p .claude/logs
 ```
 
-Tests must PASS before reporting done. Show actual output — never summarize.
+**Tier 1: Static verification (MANDATORY — always run)**
+```bash
+# Use the Quick command from Team Spec Verify: field
+{quick_verify_cmd} 2>&1 | tee .claude/logs/verify-log-M{N}.md
+echo "TIER1_EXIT=$?" >> .claude/logs/verify-log-M{N}.md
+```
+- Errors in YOUR files → fix them (counts as a self-correction attempt)
+- Errors in OTHER files → append to verify log: `"Scope violation: {file} — outside my directories"` — do NOT fix
+- Tool not installed → skip with warning: `"Tier 1 SKIPPED: {tool} not available"`
+
+**Tier 2: Scoped test verification (MANDATORY)**
+```bash
+# Use the Test command from Team Spec Verify: field
+{scoped_test_cmd} 2>&1 | tee -a .claude/logs/verify-log-M{N}.md
+echo "TIER2_EXIT=$?" >> .claude/logs/verify-log-M{N}.md
+```
+- In parallel mode: run ONLY tests in your Test scope — not the full suite
+- In sequential mode: run full test suite
+
+**Tier 2b: Runtime verification (ONLY if Team Spec Verify: Runtime ≠ SKIP)**
+```bash
+# Run the app briefly, capture crashes
+timeout 15 {run_command} 2>&1 | tee .claude/logs/runtime-M{N}.log; exit 0
+```
+The `exit 0` prevents Claude Code from treating a crash as a Bash failure.
+If the runtime log contains stack traces or crash output → read it, diagnose, fix if in your scope.
+
+**Write the verify log summary at the top of the file:**
+```markdown
+## Verify Log — M{N}: {title}
+
+### Tier 1: Static ({command})
+Status: PASS | FAIL
+Errors: {count} | Warnings: {count}
+
+### Tier 2: Scoped Tests ({command})
+Status: PASS | FAIL
+Tests: {pass}/{total}, {duration}
+
+### Tier 2b: Runtime
+Status: PASS | SKIP | CRASH
+{stack trace summary if crash}
+
+### Self-Correction History
+Attempt 1: {what happened}
+  Fix: {what was changed}
+Attempt 2: {result}
+```
+
+Tests and Tier 1 must PASS before reporting done. Show actual output — never summarize.
 
 ---
 
@@ -148,9 +195,16 @@ Branch: {current branch name}  ← required for orchestrator merge tracking
 ### Files Changed
 - {file}: {create|modify} — {one-line description}
 
-### Test Status
-PASS — {N} tests passing
-{first 5 lines of test output}
+### Verify Status
+Tier 1 (static): PASS | FAIL | SKIPPED — {error count} errors, {warning count} warnings
+Tier 2 (tests): PASS | FAIL — {pass}/{total} tests, {duration}
+Runtime: PASS | SKIP | CRASH
+Verify log: .claude/logs/verify-log-M{N}.md
+Runtime log: .claude/logs/runtime-M{N}.log (if exists)
+
+### Self-Correction Summary
+Attempts used: {N} / {budget}
+{one-line per fix if any}
 
 ### New Patterns Discovered
 {pattern description} — or "none"

@@ -40,6 +40,40 @@ cat <<EOF
     "commands_count":      $(count_files .claude/commands 2>/dev/null),
     "agents_count":        $(count_files .claude/agents 2>/dev/null)
   },
+  "toolchain": {
+    "node":   { "installed": $(command -v node   >/dev/null 2>&1 && echo true || echo false), "version": "$(node --version 2>/dev/null || echo null)" },
+    "cargo":  { "installed": $(command -v cargo  >/dev/null 2>&1 && echo true || echo false), "version": "$(cargo --version 2>/dev/null | head -1 || echo null)" },
+    "python": { "installed": $(command -v python3 >/dev/null 2>&1 && echo true || echo false), "version": "$(python3 --version 2>/dev/null || echo null)" },
+    "go":     { "installed": $(command -v go     >/dev/null 2>&1 && echo true || echo false), "version": "$(go version 2>/dev/null || echo null)" },
+    "dotnet": { "installed": $(command -v dotnet >/dev/null 2>&1 && echo true || echo false), "version": "$(dotnet --version 2>/dev/null || echo null)" },
+    "ruby":   { "installed": $(command -v ruby   >/dev/null 2>&1 && echo true || echo false), "version": "$(ruby --version 2>/dev/null || echo null)" }
+  },
+  "deps": {
+    "node_modules": $(has_dir node_modules),
+    "target":       $(has_dir target),
+    "venv":         $([ -d venv ] || [ -d .venv ] && echo true || echo false),
+    "vendor":       $(has_dir vendor)
+  },
+  "verify_cmd": "$(
+    V=""
+    if [ -f Cargo.toml ]; then
+      command -v cargo >/dev/null 2>&1 && V="cargo check" || V="# cargo missing"
+    fi
+    if [ -f package.json ]; then
+      if command -v npx >/dev/null 2>&1; then
+        grep -q '"typescript"' package.json 2>/dev/null && V="${V:+$V && }npx tsc --noEmit" || V="${V:+$V && }npx eslint src/ || true"
+      else
+        V="${V:+$V && }# node missing"
+      fi
+    fi
+    if [ -f pyproject.toml ] || [ -f requirements.txt ]; then
+      command -v python3 >/dev/null 2>&1 && V="${V:+$V && }python3 -m py_compile" || V="${V:+$V && }# python missing"
+    fi
+    if [ -f go.mod ]; then
+      command -v go >/dev/null 2>&1 && V="${V:+$V && }go vet ./..." || V="${V:+$V && }# go missing"
+    fi
+    echo "${V:-echo no-stack-detected}"
+  )",
   "git_log": "$(git log --oneline -5 2>/dev/null | head -5 | tr '\n' '|' | sed 's/"/\\"/g' || echo 'none')",
   "readme_head": "$(head -10 README.md 2>/dev/null | tr '\n' '|' | sed 's/"/\\"/g' || echo 'none')"
 }

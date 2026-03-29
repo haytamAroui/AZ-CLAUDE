@@ -36,6 +36,37 @@ If CLAUDE.md unfilled → run `/setup` with intent from copilot-intent.md first.
 
 ---
 
+### Step 1a: Toolchain Bootstrap (MANDATORY before first dispatch)
+
+Load `capabilities/shared/toolchain-gate.md` for the full protocol.
+
+```bash
+# Check if Verify field exists in CLAUDE.md
+grep -q "^## Verify" CLAUDE.md 2>/dev/null && echo "verify=configured" || echo "verify=missing"
+```
+
+If `verify=missing` → run the Toolchain Detection Protocol from toolchain-gate.md:
+1. Detect stack files (`package.json`, `Cargo.toml`, `go.mod`, etc.)
+2. Check tool availability (`command -v node`, `command -v cargo`, etc.)
+3. If tool missing AND installer available → install automatically (copilot mode is autonomous)
+4. Install dependencies if missing (`npm install`, `cargo fetch`, etc.)
+5. Write `## Verify` section to CLAUDE.md
+6. Log all output to `.claude/logs/bootstrap.log`
+
+```bash
+mkdir -p .claude/logs
+```
+
+**Smoke test** — run the quick verify command once:
+```bash
+{quick_verify_cmd} 2>&1 | tee .claude/logs/bootstrap.log
+```
+- PASS → proceed to dispatch
+- FAIL → fix the build BEFORE dispatching any agents. This IS the foundation.
+- Tool unavailable → log warning: `"⚠ Verification degraded: {tool} not available"` — proceed with reduced verification
+
+---
+
 ### Step 1b: Resume Interrupted Parallel Wave
 
 ```bash
@@ -161,9 +192,11 @@ Load `capabilities/shared/context-relay.md` for relay protocol and role-based fi
 2. Write `.claude/parallel-wave-state.md` with `dispatch_mode: dag` (see parallel-coordination.md)
 3. **Pre-read shared files** (models, schemas, configs referenced by 2+ agents) and relay their content via a `## Pre-loaded Context` block in each agent's prompt — builders MUST NOT re-read relayed files
 4. If problem-architect returned a `## Relay` section, include it in the builder prompt as-is
-5. Spawn each builder via Task with `isolation: "worktree"` in the same message (true parallel)
-5. Include worktree rules + **test scope** (`Test scope: {test-dir}`) in every parallel prompt
-6. **Merge-on-complete**: as each agent reports done, merge its branch immediately (don't wait for all)
+5. **Skill consistency** — collect the UNION of all skills from all Team Specs in this wave. Every agent in the wave loads the SAME skill set (not just its own). This ensures consistent patterns across parallel agents.
+6. **Include Verify commands** from each Team Spec in the agent prompt — the builder uses these in its exit gate
+7. Spawn each builder via Task with `isolation: "worktree"` in the same message (true parallel)
+8. Include worktree rules + **test scope** (`Test scope: {test-dir}`) in every parallel prompt
+9. **Merge-on-complete**: as each agent reports done, merge its branch immediately (don't wait for all)
 7. After each merge: check if newly-unblocked milestones exist → dispatch them immediately
 8. If `max_parallel <= 3` or merge conflicts detected: fall back to batch-merge (wait for all, then merge)
 
@@ -215,14 +248,67 @@ Dependent milestones, overlapping `Files Written`, or `Parallel Safe: NO` → sp
 
 ---
 
-### Step 5: Monitor Results + Merge-on-Complete
+### Step 5: Monitor Results + Merge-on-Complete + Verification Wave
 
 **When an agent reports PASS (parallel mode):**
 1. Merge its branch to main immediately: `git merge parallel/{slug} --no-ff`
 2. Run tests for the merged module: `{test command} tests/{agent-scope}/ 2>&1 | tail -10`
 3. If tests pass → update plan.md status → `done`, update `.claude/parallel-wave-state.md`
-4. **Check DAG for newly-unblocked milestones** — any milestone whose `Depends:` are now ALL `done` becomes ready. Dispatch it immediately (back to Step 3 → Step 4).
-5. New pattern emerged? → append to patterns.md
+4. New pattern emerged? → append to patterns.md
+
+**When ALL agents in a wave complete → VERIFICATION WAVE (mandatory):**
+
+Read `capabilities/shared/toolchain-gate.md` for the Tier 3 command and log protocol.
+Before dispatching ANY next-wave agents:
+
+```bash
+# 1. Tier 3: Full build — write to build log
+{build_command} 2>&1 | tee .claude/logs/build-wave{N}.log
+echo "EXIT=$?" >> .claude/logs/build-wave{N}.log
+
+# 2. Full test suite (not scoped — the FULL suite)
+{test_command} 2>&1 | tee -a .claude/logs/build-wave{N}.log
+```
+
+**3. Read all agent verify logs for this wave:**
+```bash
+cat .claude/logs/verify-log-M*.md 2>/dev/null
+cat .claude/logs/runtime-M*.log 2>/dev/null
+```
+Collect warnings across agents — relay relevant ones to next-wave agents.
+
+**4. If build or tests fail → dispatch a FIX agent with log relay:**
+```
+Task: Fix post-Wave {N} build failure
+
+## Build Log (last 100 lines)
+{tail -100 .claude/logs/build-wave{N}.log}
+
+## Agent Verify Logs Summary
+{for each agent: M{X} — PASS/FAIL, errors, warnings}
+
+## Runtime Logs (if any)
+{contents of .claude/logs/runtime-M{X}.log for this wave}
+
+## Diagnosis
+Build error at {file}:{line} was introduced by M{X}'s merge.
+M{X}'s verify log shows: {relevant warning}
+
+Fix the errors. The logs above give you full context — do NOT re-investigate from scratch.
+```
+
+- Build failure → integration error from parallel agents. Fix it now — it multiplies if ignored.
+- Test failure → identify which merge broke it from the build log. Revert that branch or fix in place.
+- **Only after verification passes → check DAG for newly-unblocked milestones → dispatch.**
+- This applies to EVERY wave transition. No exceptions.
+
+**Context refresh for Wave 3+ (mandatory):**
+
+When dispatching Wave 3 or later, agents work on a codebase modified by many prior agents.
+Before writing agent prompts for Wave N ≥ 3:
+1. Re-read ALL files that Wave N agents will import or depend on — use FRESH reads, not cached
+2. Include fresh file contents in `## Pre-loaded Context` — not stale copies from earlier waves
+3. Add to every Wave 3+ agent prompt: `"Note: {count} milestones have modified the codebase. Pre-loaded Context reflects CURRENT state. Trust it over plan.md assumptions."`
 
 **When an agent reports PASS (sequential mode):**
 - Approve commit

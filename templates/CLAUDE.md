@@ -12,6 +12,11 @@
 {{PROJECT_DESCRIPTION}}
 Domain: {{DOMAIN}} | Stack: {{STACK}} | Scale: {{SCALE}}
 
+## Verify
+Quick: {{QUICK_VERIFY}}
+Test: {{TEST_VERIFY}}
+Build: {{BUILD_VERIFY}}
+
 ## Rules
 1. **Completion** — Never say "should work" or "probably passes." Show the output or stay in progress.
 2. **Precision** — Reference code as `file:line`. Never describe in prose.

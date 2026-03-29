@@ -342,6 +342,122 @@ After resume completes, continue with Merge Protocol → Plan Update → Cleanup
 
 ---
 
+## Universal Parallel Execution Rules
+
+These rules are technology-agnostic. They apply to every parallel dispatch regardless of stack, framework, or language.
+
+### Rule 1: Verification Wave — Mandatory Between Every Parallel Batch
+
+After ALL agents in a wave complete and merge, run a **verification step** before dispatching the next wave:
+
+```
+Wave N agents complete → merge all branches → VERIFICATION:
+  1. Run full build (compile/transpile/lint — whatever the project uses)
+  2. Run full test suite (not scoped — the FULL suite)
+  3. If build fails → fix before next wave (these are integration errors from parallel agents)
+  4. If tests fail → identify which merge broke it → revert or fix before next wave
+  5. Only after verification passes → dispatch Wave N+1
+```
+
+**Why:** Parallel agents can't verify integration — they only see their own worktree. Without verification, errors accumulate across waves. A type change in Wave 1 that breaks a Wave 2 consumer won't surface until the end, when fixing is 10x harder.
+
+**The verification agent is lightweight:** it runs build + tests, nothing else. No implementation. Budget ~2 minutes per wave.
+
+### Rule 2: Sweet Spot Is 3–5 Parallel Agents Per Wave
+
+| Agent count | Risk | Recommendation |
+|------------|------|----------------|
+| 1–2 | Low | Sequential is simpler — skip parallel overhead |
+| 3–5 | Optimal | Best ratio of speed gain to coordination cost |
+| 6 | Maximum | Only if all 6 own completely disjoint directories |
+| 7+ | Diminishing returns | Prompt quality degrades, merge complexity spikes |
+
+**Why:** Beyond 5 agents, the orchestrator's ability to write precise-enough prompts degrades. Each prompt needs exact file ownership, patterns, and anti-patterns. More agents = more surface area for conflicts that safety checks miss.
+
+### Rule 3: Wave 1 Sets the Contract
+
+The first wave establishes types, APIs, schemas, and patterns that ALL subsequent waves depend on. If Wave 1 gets something wrong, the error **multiplies** across every later agent.
+
+**Rules for Wave 1:**
+- Wave 1 should be the **smallest, most carefully specified wave**
+- Wave 1 milestones define shared types, base schemas, core configs
+- Wave 1 agents get **extra fix attempts** (3 instead of 2)
+- Wave 1 MUST pass verification before Wave 2 dispatches — no exceptions
+- If Wave 1 introduces a new pattern (e.g., error type, response shape), document it in `patterns.md` BEFORE dispatching Wave 2
+
+### Rule 4: Agent Size Limits — When NOT to Split
+
+A milestone that touches **15+ files** or performs a **cross-cutting change** (framework migration, global refactor, store pattern rewrite) should NOT be split across agents.
+
+**Signs a milestone must stay as one agent (sequential):**
+- Framework/library migration (every file depends on the pattern set by the first file edited)
+- Store/state management rewrite (all consumers depend on the new store shape)
+- Global type rename or API contract change (callers can't be split from the definition)
+- Auth/middleware rewrite (everything downstream depends on the new interface)
+
+**The fix is better decomposition, not more agents:**
+```
+BAD:  Split Svelte 5 migration into 5 parallel agents → inconsistent patterns
+GOOD: Split into 3 SEQUENTIAL sub-milestones:
+      1. Stores + shared state (sets the pattern)
+      2. Pages (follows the pattern)
+      3. Components (follows the pattern)
+      Each sub-milestone has checkpoints. Still sequential, but with clear boundaries.
+```
+
+**Rule: If a milestone can't be split without creating pattern inconsistency → keep it as one agent, sequential.**
+
+### Rule 5: Context Drift Mitigation for Later Waves
+
+By Wave 3+, agents work on a codebase modified by 5–15 previous agents. Assumptions about types, APIs, and file contents may be stale.
+
+**Mitigation protocol for Wave N (N ≥ 3):**
+1. Orchestrator re-reads ALL files that Wave N agents will import/depend on
+2. Orchestrator includes **fresh file contents** in the `## Pre-loaded Context` block — not cached from earlier waves
+3. Every Wave 3+ agent prompt includes: `"Warning: {N} milestones have modified the codebase since plan.md was written. Pre-loaded Context below reflects the CURRENT state. Trust it over plan.md assumptions."`
+4. If a type/interface was changed by a prior wave, include the **new** definition explicitly
+
+**Why:** Agents don't communicate with each other. An agent in Wave 4 that assumes `Result<_, String>` when Wave 2 changed it to `CmdResult<_>` will produce code that compiles in its worktree but fails on merge.
+
+### Rule 6: Skills Are the Consistency Layer
+
+Parallel agents never communicate, but they must produce consistent code. **Skills are how.**
+
+**Rules:**
+- ALL agents in the same wave MUST load the same skill set (from problem-architect's Team Spec)
+- If a project uses a specific pattern (e.g., Svelte 5 runes, Rust async, clean architecture), the matching skill MUST be loaded by every agent that touches that layer
+- If no skill exists for the project's core pattern → create it with `skill-creator` BEFORE dispatching the first wave
+- Skills ensure: consistent error handling, consistent naming, consistent imports, consistent test patterns
+
+**Why:** 5 agents in separate rooms producing code in 5 different styles is worse than 3 agents producing consistent code. Skills are the shared style guide that makes parallel agents act like a coordinated team.
+
+### Rule 7: Framework Migrations Are Always Sequential
+
+Any milestone classified as a **migration** (framework upgrade, language version bump, build system change, ORM migration) MUST run sequentially — never in a parallel wave.
+
+**Detection — a milestone is a migration if it:**
+- Changes `package.json` / `requirements.txt` / `Cargo.toml` / `go.mod` major versions
+- Rewrites import patterns across 10+ files
+- Changes a store/state pattern that all components consume
+- Upgrades a UI framework (React class→hooks, Svelte 4→5, Vue Options→Composition)
+- Switches a build tool (webpack→vite, setuptools→poetry)
+
+**Why:** Migrations are inherently cross-cutting. Every file depends on the pattern established by the first file migrated. Splitting a migration across agents produces inconsistent patterns that are harder to fix than doing it sequentially.
+
+### Rule Summary Table
+
+| # | Rule | Enforced by |
+|---|------|-------------|
+| 1 | Verification wave between batches | Orchestrator Step 5 |
+| 2 | 3–5 agents per wave (6 max) | Orchestrator Step 2 |
+| 3 | Wave 1 = smallest, most careful | Blueprint Task Classifier |
+| 4 | 15+ file milestones stay sequential | Problem Architect Team Spec |
+| 5 | Fresh context for Wave 3+ agents | Orchestrator Step 4 |
+| 6 | Same skills for all wave agents | Orchestrator Step 4 |
+| 7 | Migrations always sequential | Blueprint Task Classifier |
+
+---
+
 ## Ownership Map Cleanup
 
 After wave merge is complete:
