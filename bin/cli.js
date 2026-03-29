@@ -73,7 +73,20 @@ const CLI_TABLE = [
 ];
 
 function detectCLI() {
-  // 0. Env override (for testing / explicit selection)
+  // 0. --cli flag override (e.g., npx azclaude-copilot --cli opencode)
+  const cliFlag = process.argv.find((a, i) => a === '--cli' && process.argv[i + 1]);
+  const cliValue = cliFlag ? process.argv[process.argv.indexOf('--cli') + 1] : null;
+  if (cliValue) {
+    const forced = CLI_TABLE.find(c =>
+      c.name.toLowerCase().replace(/\s/g,'') === cliValue.toLowerCase()
+      || c.exe === cliValue.toLowerCase()
+      || c.cfg === `.${cliValue.toLowerCase()}`
+    );
+    if (forced) return forced;
+    console.log(`  ⚠ Unknown CLI "${cliValue}". Valid: ${CLI_TABLE.map(c => c.exe).join(', ')}`);
+  }
+
+  // 0a. Env override (for testing / explicit selection)
   if (process.env.AZCLAUDE_CLI) {
     const forced = CLI_TABLE.find(c => c.name.toLowerCase().replace(/\s/g,'') === process.env.AZCLAUDE_CLI.toLowerCase());
     if (forced) return forced;
@@ -1436,4 +1449,6 @@ console.log('');
 console.log('  ─────────────────────────────────────────────');
 console.log('  all commands: /help  ·  docs: github.com/haytamAroui/AZ-CLAUDE-COPILOT');
 console.log('  upgrade:      npx azclaude-copilot@latest');
+console.log('  other CLI:    npx azclaude-copilot --cli opencode');
+console.log('                (claude, opencode, gemini, codex, cursor)');
 console.log('════════════════════════════════════════════════\n');
