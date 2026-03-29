@@ -27,19 +27,14 @@ const args       = process.argv.slice(2);
 // Catch `npx azclaude-copilot setup` and similar — run the installer instead
 // Also: no arguments at all → run installer (auto-detect install vs upgrade)
 const SUBCOMMANDS = ['setup', 'init', 'install', 'doctor', 'upgrade'];
-const CLI_FLAGS   = ['--update', '--full', '--audit'];
+const CLI_FLAGS   = ['--update', '--full', '--audit', '--cli'];
 const noArgs = args.length === 0 || (args.length === 1 && CLI_FLAGS.includes(args[0]));
-if (noArgs || (args[0] && SUBCOMMANDS.includes(args[0].toLowerCase()))) {
-  const subFlags = args.filter(a => CLI_FLAGS.includes(a));
-  const subPositional = (noArgs ? [] : args.slice(1)).filter(a => !CLI_FLAGS.includes(a));
-  const subDir = path.resolve(subPositional[0] || '.');
-  if (!noArgs) console.log(`\n  Running AZCLAUDE installer on ${subDir}...${subFlags.length ? ' (' + subFlags.join(' ') + ')' : ''}\n`);
+// --cli <value> means "install for this CLI" — route to installer
+const hasCliFlag = args.includes('--cli');
+if (noArgs || hasCliFlag || (args[0] && SUBCOMMANDS.includes(args[0].toLowerCase()))) {
   const cliPath = path.join(__dirname, 'cli.js');
-  const isDoctor = !noArgs && args[0].toLowerCase() === 'doctor';
-  const subArgs = isDoctor
-    ? [cliPath, subDir, '--doctor', ...subFlags]
-    : [cliPath, subDir, ...subFlags];
-  const r = spawnSync('node', subArgs, { cwd: subDir, stdio: 'inherit' });
+  // Pass all args through to cli.js — it handles --cli stripping internally
+  const r = spawnSync('node', [cliPath, ...args], { cwd: process.cwd(), stdio: 'inherit' });
   process.exit(r.status || 0);
 }
 
