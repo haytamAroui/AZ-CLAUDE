@@ -404,7 +404,7 @@
     if (event.event === 'SubagentStop') { feed.appendChild(createSessionMarker('Subagent Finished')); scrollToBottom(); return; }
 
     // Fallback
-    const card = createEventCard(event); feed.appendChild(card); scrollToBottom();
+    var fallbackCard = createEventCard(event); feed.appendChild(fallbackCard); scrollToBottom();
   }
 
   // SSE
