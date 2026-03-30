@@ -1,6 +1,6 @@
 {
   "name": "azclaude-copilot",
-  "version": "0.7.10",
+  "version": "0.7.11",
   "description": "AI coding environment — 40 commands, 10 skills, 15 agents, real-time visualizer, memory, reflexes, evolution. Install: npx azclaude-copilot@latest, then open Claude Code.",
   "bin": {
     "azclaude": "bin/cli.js",
@@ -25,7 +25,11 @@
     "url": "https://github.com/haytamAroui/AZ-CLAUDE-COPILOT/issues"
   },
   "scripts": {
-    "test:node": "node --test tests/node-smoke.test.js"
+    "test": "bash tests/test-features.sh && node --test tests/node-smoke.test.js",
+    "test:node": "node --test tests/node-smoke.test.js",
+    "test:grep": "bash tests/test-features.sh",
+    "preversion": "npm test",
+    "postversion": "node -e \"const v=require('./package.json').version;const fs=require('fs');for(const f of['.claude-plugin/plugin.json','.claude-plugin/marketplace.json']){const j=JSON.parse(fs.readFileSync(f,'utf8'));if(f.includes('marketplace')){j.plugins[0].version=v}else{j.version=v}fs.writeFileSync(f,JSON.stringify(j,null,2)+'\\n')};console.log('Synced plugin files to v'+v)\""
   },
   "author": "haytamAroui",
   "license": "MIT",
