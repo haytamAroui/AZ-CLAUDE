@@ -136,12 +136,11 @@ function substitutePaths(content, cfg) {
   return content.replace(/\.claude\//g, `${cfg}/`);
 }
 
-// Adapt command frontmatter for non-Claude CLIs.
+// Adapt frontmatter for non-Claude CLIs.
 // Claude Code: keeps all fields as-is.
-// OpenCode:    keeps description, strips Claude-specific fields (allowed-tools, disable-model-invocation, argument-hint).
+// OpenCode:    keeps description + mode, strips Claude-specific fields.
 // Codex CLI:   keeps description, strips Claude-specific fields.
-// Gemini CLI:  converts to TOML format (handled separately in installCommandsGemini).
-function adaptCommandContent(content, cliName) {
+function adaptFrontmatter(content, cliName) {
   if (cliName === 'Claude Code') return content;
 
   // Parse frontmatter
@@ -152,7 +151,7 @@ function adaptCommandContent(content, cliName) {
   const body    = fmMatch[2];
 
   // Extract description (may be multi-line with >)
-  const descMatch = fmBlock.match(/description:\s*>?\s*\n?([\s\S]*?)(?=\n\w|\n---|\s*$)/);
+  const descMatch = fmBlock.match(/description:\s*>?\s*\n?([\s\S]*?)(?=\n[a-z]|\n---|\s*$)/);
   const descSimple = fmBlock.match(/description:\s*"?([^"\n]+)"?\s*$/m);
   let description = '';
   if (descMatch) {
@@ -161,7 +160,7 @@ function adaptCommandContent(content, cliName) {
     description = descSimple[1].trim();
   }
 
-  // For OpenCode / Codex: rebuild frontmatter with only supported fields
+  // For OpenCode / Codex: rebuild frontmatter with only universally supported fields
   const newFm = description ? `---\ndescription: ${description}\n---` : '---\n---';
   return `${newFm}\n${body}`;
 }
@@ -426,7 +425,7 @@ function installCommands(projectDir, cfg, cliName) {
     if (!fs.existsSync(dst)) {
       let content = fs.readFileSync(src, 'utf8');
       content = substitutePaths(content, cfg);
-      content = adaptCommandContent(content, cliName || 'Claude Code');
+      content = adaptFrontmatter(content, cliName || 'Claude Code');
       fs.writeFileSync(dst, content);
       ok(`/${cmd} installed`);
     } else if (forceUpdate) {
@@ -563,7 +562,7 @@ function installStatusline(projectDir, cfg) {
 
 const AGENTS = ['orchestrator-init', 'code-reviewer', 'test-writer', 'loop-controller', 'cc-template-author', 'cc-cli-integrator', 'cc-test-maintainer', 'orchestrator', 'problem-architect', 'milestone-builder', 'security-auditor', 'spec-reviewer', 'constitution-guard', 'devops-engineer', 'qa-engineer'];
 
-function installAgents(projectDir, cfg) {
+function installAgents(projectDir, cfg, cliName) {
   const agentsDir = path.join(projectDir, cfg, 'agents');
   fs.mkdirSync(agentsDir, { recursive: true });
 
@@ -572,11 +571,13 @@ function installAgents(projectDir, cfg) {
     const dst = path.join(agentsDir, `${agent}.md`);
     if (!fs.existsSync(src)) continue;
     if (!fs.existsSync(dst)) {
-      const content = substitutePaths(fs.readFileSync(src, 'utf8'), cfg);
+      let content = substitutePaths(fs.readFileSync(src, 'utf8'), cfg);
+      content = adaptFrontmatter(content, cliName || 'Claude Code');
       fs.writeFileSync(dst, content);
       ok(`${agent} agent installed`);
     } else if (forceUpdate) {
-      const srcContent = substitutePaths(fs.readFileSync(src, 'utf8'), cfg);
+      let srcContent = substitutePaths(fs.readFileSync(src, 'utf8'), cfg);
+      srcContent = adaptFrontmatter(srcContent, cliName || 'Claude Code');
       const dstContent = fs.readFileSync(dst, 'utf8');
       if (srcContent !== dstContent) {
         fs.writeFileSync(dst, srcContent);
@@ -1333,7 +1334,7 @@ installSkills(projectDir, cli.cfg);
 installScripts(projectDir, cli.cfg);
 installVisualizer(projectDir, cli.cfg);
 installStatusline(projectDir, cli.cfg);
-installAgents(projectDir, cli.cfg);
+installAgents(projectDir, cli.cfg, cli.name);
 installRulesFile(projectDir, cli.cfg, cli.rulesFile);
 createDirectories(projectDir, cli.cfg);
 ensureSharedSkillsDir();
