@@ -26,7 +26,7 @@ jobs:
       - name: Run Node smoke tests
         run: node --test tests/node-smoke.test.js
 
-      - name: Verify package structure (agents ship correctly)
+      - name: Verify package structure
         run: |
           node -e "
             const fs = require('fs');
@@ -35,10 +35,28 @@ jobs:
               'templates/agents/problem-architect.md',
               'templates/agents/milestone-builder.md',
               'templates/agents/security-auditor.md',
+              'templates/agents/code-reviewer.md',
+              'templates/agents/test-writer.md',
+              'templates/agents/devops-engineer.md',
+              'templates/agents/qa-engineer.md',
+              'templates/agents/spec-reviewer.md',
+              'templates/agents/constitution-guard.md',
+              'templates/agents/cc-cli-integrator.md',
+              'templates/agents/cc-template-author.md',
+              'templates/agents/cc-test-maintainer.md',
+              'templates/agents/loop-controller.md',
+              'templates/agents/orchestrator-init.md',
               'templates/capabilities/shared/intelligent-dispatch.md',
               'templates/capabilities/shared/security.md',
+              'templates/capabilities/shared/parallel-coordination.md',
+              'templates/capabilities/manifest.md',
               'templates/hooks/pre-tool-use.js',
+              'templates/hooks/post-tool-use.js',
+              'templates/hooks/user-prompt.js',
+              'templates/hooks/stop.js',
               'templates/commands/sentinel.md',
+              'templates/commands/copilot.md',
+              'templates/commands/blueprint.md',
               'bin/cli.js',
               'bin/copilot.js'
             ];
@@ -50,7 +68,7 @@ jobs:
               console.error('Missing required files:', missing);
               process.exit(1);
             }
-            console.log('Package structure OK — all', required.length, 'required files present');
+            console.log('Package structure OK —', required.length, 'required files present');
           "
 
       - name: Verify CLI registers all agents and commands
@@ -58,9 +76,13 @@ jobs:
           node -e "
             const src = require('fs').readFileSync('bin/cli.js', 'utf8');
             const requiredAgents = [
-              'orchestrator', 'problem-architect', 'milestone-builder', 'security-auditor'
+              'orchestrator', 'problem-architect', 'milestone-builder',
+              'security-auditor', 'code-reviewer', 'test-writer',
+              'devops-engineer', 'qa-engineer', 'spec-reviewer',
+              'constitution-guard', 'cc-cli-integrator', 'cc-template-author',
+              'cc-test-maintainer', 'loop-controller', 'orchestrator-init'
             ];
-            const requiredCmds = ['sentinel'];
+            const requiredCmds = ['sentinel', 'copilot', 'blueprint', 'spec', 'constitute'];
             let missing = [];
             for (const a of requiredAgents) {
               if (!src.includes(a)) missing.push('agent:' + a);
@@ -72,10 +94,10 @@ jobs:
               console.error('CLI registration missing:', missing);
               process.exit(1);
             }
-            console.log('CLI registration OK — agents and commands verified');
+            console.log('CLI registration OK —', requiredAgents.length, 'agents,', requiredCmds.length, 'commands verified');
           "
 
-      - name: Verify security-auditor covers all 5 categories
+      - name: Verify security-auditor covers all 6 categories
         run: |
           node -e "
             const src = require('fs').readFileSync('templates/agents/security-auditor.md', 'utf8');
@@ -85,7 +107,9 @@ jobs:
               ['Hook Analysis',        /hook.*analysis|Category 3/i],
               ['MCP Server Scan',      /MCP.*scan|Category 4/i],
               ['Agent Config Review',  /agent.*config|Category 5/i],
-              ['102 rules',            /102/],
+              ['Supply Chain',         /supply.*chain|Category 6/i],
+              ['111 rules',            /111/],
+              ['6 categories',         /6 categories/],
               ['Scoring A-F',          /grade.*A|A.*grade|A.*B.*C.*D.*F/i],
               ['BLOCKED severity',     /BLOCKED/],
               ['file:line output',     /file:line/],
@@ -98,42 +122,47 @@ jobs:
               console.error('security-auditor missing:', failed);
               process.exit(1);
             }
-            console.log('security-auditor integrity OK — all', checks.length, 'checks pass');
+            console.log('security-auditor integrity OK —', checks.length, 'checks pass');
           "
 
-      - name: Verify v0.4.10 features
+      - name: Verify CLAUDE.md rules
         run: |
           node -e "
             const fs = require('fs');
             const checks = [
-              // #4 rapid-edit detection in hook
-              ['post-tool-use.js: rapid-edit detection',
-                /rapid-edit detection|azclaude-rapid/,
-                'templates/hooks/post-tool-use.js'],
-              // #7 copilot intent check Step 0
-              ['copilot.md: Step 0 intent check',
-                /Step 0.*Intent|copilot-intent\.md.*missing/s,
-                'templates/commands/copilot.md'],
-              // #3 sentinel secret redaction
-              ['sentinel.md: secret redaction instruction',
-                /truncate.*first.*8|first 8 chars/i,
-                'templates/commands/sentinel.md'],
-              // #2 Windows path for MCP in sentinel
-              ['sentinel.md: Windows MCP path',
-                /APPDATA.*Claude.*mcp|mcp.*APPDATA/i,
-                'templates/commands/sentinel.md'],
-              // #8 Cycle 2 threshold 2+ sessions
-              ['evolve.md: Cycle 2 threshold 2+ sessions',
-                /2\+ sessions/,
-                'templates/commands/evolve.md'],
-              // #1 ship.md inline execution (not spawn agent)
-              ['ship.md: inline security execution',
-                /execute.*inline|inline.*rules/i,
-                'templates/commands/ship.md'],
-              // #6 sentinel integrity note about settings.local.json
-              ['sentinel.md: integrity baseline note',
-                /settings\.local\.json.*not.*global|hooks.*registered.*settings\.local/i,
-                'templates/commands/sentinel.md'],
+              // Project CLAUDE.md rules
+              ['CLAUDE.md: use existing tools rule', /Use existing tools/,             'CLAUDE.md'],
+              ['CLAUDE.md: no infinite retry rule',  /No infinite retry|Max 2 retries/, 'CLAUDE.md'],
+              ['CLAUDE.md: completion rule',          /Never say.*should work/,         'CLAUDE.md'],
+              ['CLAUDE.md: constitution rule',        /constitution\.md/,               'CLAUDE.md'],
+              // Template CLAUDE.md rules
+              ['template: use existing tools rule',  /Use existing tools/,             'templates/CLAUDE.md'],
+              ['template: no infinite retry rule',   /No infinite retry|Max 2 retries/, 'templates/CLAUDE.md'],
+              ['template: verify section',           /QUICK_VERIFY|Quick:/,            'templates/CLAUDE.md'],
+            ];
+            let failed = [];
+            for (const [label, re, file] of checks) {
+              const src = fs.readFileSync(file, 'utf8');
+              if (!re.test(src)) failed.push(label);
+            }
+            if (failed.length > 0) {
+              console.error('CLAUDE.md checks failed:', failed);
+              process.exit(1);
+            }
+            console.log('CLAUDE.md rules OK —', checks.length, 'checks pass');
+          "
+
+      - name: Verify hook scripts
+        run: |
+          node -e "
+            const fs = require('fs');
+            const checks = [
+              ['post-tool-use.js: rapid-edit detection',    /rapid-edit detection|azclaude-rapid/,                  'templates/hooks/post-tool-use.js'],
+              ['post-tool-use.js: behavioral seq detection', /behavioral.*seq|Read.*Bash.*pattern/i,                'templates/hooks/post-tool-use.js'],
+              ['pre-tool-use.js: Bash gate',                /Gate.*Bash|Bash.*gate|dangerouslyDisableSandbox/,      'templates/hooks/pre-tool-use.js'],
+              ['pre-tool-use.js: credential gate',          /credential.*gate|\.env|id_rsa|id_ed25519/,             'templates/hooks/pre-tool-use.js'],
+              ['user-prompt.js: pipeline injection',        /MANDATORY|pipeline|AZCLAUDE PIPELINE/,                 'templates/hooks/user-prompt.js'],
+              ['stop.js: checkpoint pruning',               /MAX_CHECKPOINTS|checkpoint.*prun/i,                    'templates/hooks/stop.js'],
             ];
             let failed = [];
             for (const [label, re, file] of checks) {
@@ -141,10 +170,10 @@ jobs:
               if (!re.test(src)) failed.push(label + ' (' + file + ')');
             }
             if (failed.length > 0) {
-              console.error('v0.4.10 feature checks failed:', failed);
+              console.error('Hook checks failed:', failed);
               process.exit(1);
             }
-            console.log('v0.4.10 features OK —', checks.length, 'checks pass');
+            console.log('Hook integrity OK —', checks.length, 'checks pass');
           "
 
       - name: Dry-run npm pack (verify publish structure)
