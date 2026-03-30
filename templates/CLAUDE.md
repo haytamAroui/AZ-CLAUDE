@@ -20,6 +20,8 @@ Build: {{BUILD_VERIFY}}
 ## Rules
 1. **Completion** — Never say "should work" or "probably passes." Show the output or stay in progress.
 2. **Precision** — Reference code as `file:line`. Never describe in prose.
+3. **Use existing tools** — Run tests with the project's test command (see Verify section) and trust its exit code. Never invent grep/sed/awk commands to parse test output. If you need a custom command to check results, ask the user first.
+4. **No infinite retry** — If a command fails, diagnose the cause before re-running. Max 2 retries for the same command. After 2 failures, stop and report the error to the user — do not loop.
 {{TDD_RULE}}
 
 ## Session State

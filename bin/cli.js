@@ -6,14 +6,6 @@ const os            = require('os');
 const crypto        = require('crypto');
 const { execSync }  = require('child_process');
 
-// Strip --cli <value> from argv early so it doesn't interfere with positional args
-const cliArgIdx = process.argv.indexOf('--cli');
-let CLI_OVERRIDE = null;
-if (cliArgIdx !== -1 && process.argv[cliArgIdx + 1]) {
-  CLI_OVERRIDE = process.argv[cliArgIdx + 1];
-  process.argv.splice(cliArgIdx, 2); // remove --cli and its value from argv
-}
-
 const TEMPLATE_DIR = path.join(__dirname, '..', 'templates');
 const CORE_COMMANDS     = ['setup', 'fix', 'add', 'audit', 'test', 'blueprint', 'ship', 'pulse', 'explain', 'snapshot', 'persist'];
 const EXTENDED_COMMANDS = ['dream', 'refactor', 'doc', 'loop', 'migrate', 'deps', 'find', 'create', 'reflect', 'hookify', 'sentinel', 'clarify', 'spec', 'analyze', 'constitute', 'tasks', 'issues', 'driven', 'mcp', 'verify', 'inoculate', 'ghost-test', 'visualize'];
@@ -81,19 +73,7 @@ const CLI_TABLE = [
 ];
 
 function detectCLI() {
-  // 0. --cli flag override (stripped from argv at top of file)
-  if (CLI_OVERRIDE) {
-    const v = CLI_OVERRIDE.toLowerCase();
-    const forced = CLI_TABLE.find(c =>
-      c.name.toLowerCase().replace(/\s/g,'') === v
-      || c.exe === v
-      || c.cfg === `.${v}`
-    );
-    if (forced) return forced;
-    console.log(`  ⚠ Unknown CLI "${CLI_OVERRIDE}". Valid: ${CLI_TABLE.map(c => c.exe).join(', ')}`);
-  }
-
-  // 0a. Env override (for testing / explicit selection)
+  // 0. Env override (for testing / explicit selection)
   if (process.env.AZCLAUDE_CLI) {
     const forced = CLI_TABLE.find(c => c.name.toLowerCase().replace(/\s/g,'') === process.env.AZCLAUDE_CLI.toLowerCase());
     if (forced) return forced;
@@ -134,35 +114,6 @@ function detectCLI() {
 // detected cfg path. Called at install time — once — never again at runtime.
 function substitutePaths(content, cfg) {
   return content.replace(/\.claude\//g, `${cfg}/`);
-}
-
-// Adapt frontmatter for non-Claude CLIs.
-// Claude Code: keeps all fields as-is.
-// OpenCode:    keeps description + mode, strips Claude-specific fields.
-// Codex CLI:   keeps description, strips Claude-specific fields.
-function adaptFrontmatter(content, cliName) {
-  if (cliName === 'Claude Code') return content;
-
-  // Parse frontmatter
-  const fmMatch = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
-  if (!fmMatch) return content; // no frontmatter, return as-is
-
-  const fmBlock = fmMatch[1];
-  const body    = fmMatch[2];
-
-  // Extract description (may be multi-line with >)
-  const descMatch = fmBlock.match(/description:\s*>?\s*\n?([\s\S]*?)(?=\n[a-z]|\n---|\s*$)/);
-  const descSimple = fmBlock.match(/description:\s*"?([^"\n]+)"?\s*$/m);
-  let description = '';
-  if (descMatch) {
-    description = descMatch[1].split('\n').map(l => l.trim()).filter(Boolean).join(' ');
-  } else if (descSimple) {
-    description = descSimple[1].trim();
-  }
-
-  // For OpenCode / Codex: rebuild frontmatter with only universally supported fields
-  const newFm = description ? `---\ndescription: ${description}\n---` : '---\n---';
-  return `${newFm}\n${body}`;
 }
 
 // ─── Hook Scripts ─────────────────────────────────────────────────────────────
@@ -414,7 +365,7 @@ function installCapabilities(projectDir, cfg, full) {
 
 // ─── Commands (Skills) ────────────────────────────────────────────────────────
 
-function installCommands(projectDir, cfg, cliName) {
+function installCommands(projectDir, cfg) {
   const commandsDir = path.join(projectDir, cfg, 'commands');
   fs.mkdirSync(commandsDir, { recursive: true });
 
@@ -423,19 +374,14 @@ function installCommands(projectDir, cfg, cliName) {
     const dst = path.join(commandsDir, `${cmd}.md`);
     if (!fs.existsSync(src)) continue;
     if (!fs.existsSync(dst)) {
-      let content = fs.readFileSync(src, 'utf8');
-      content = substitutePaths(content, cfg);
-      content = adaptFrontmatter(content, cliName || 'Claude Code');
-      fs.writeFileSync(dst, content);
+      fs.copyFileSync(src, dst);
       ok(`/${cmd} installed`);
     } else if (forceUpdate) {
       // --update: overwrite with latest template
-      let srcContent = fs.readFileSync(src, 'utf8');
-      srcContent = substitutePaths(srcContent, cfg);
-      srcContent = adaptCommandContent(srcContent, cliName || 'Claude Code');
+      const srcContent = fs.readFileSync(src, 'utf8');
       const dstContent = fs.readFileSync(dst, 'utf8');
       if (srcContent !== dstContent) {
-        fs.writeFileSync(dst, srcContent);
+        fs.copyFileSync(src, dst);
         ok(`/${cmd} updated (--update)`);
       }
     } else {
@@ -562,7 +508,7 @@ function installStatusline(projectDir, cfg) {
 
 const AGENTS = ['orchestrator-init', 'code-reviewer', 'test-writer', 'loop-controller', 'cc-template-author', 'cc-cli-integrator', 'cc-test-maintainer', 'orchestrator', 'problem-architect', 'milestone-builder', 'security-auditor', 'spec-reviewer', 'constitution-guard', 'devops-engineer', 'qa-engineer'];
 
-function installAgents(projectDir, cfg, cliName) {
+function installAgents(projectDir, cfg) {
   const agentsDir = path.join(projectDir, cfg, 'agents');
   fs.mkdirSync(agentsDir, { recursive: true });
 
@@ -571,13 +517,11 @@ function installAgents(projectDir, cfg, cliName) {
     const dst = path.join(agentsDir, `${agent}.md`);
     if (!fs.existsSync(src)) continue;
     if (!fs.existsSync(dst)) {
-      let content = substitutePaths(fs.readFileSync(src, 'utf8'), cfg);
-      content = adaptFrontmatter(content, cliName || 'Claude Code');
+      const content = substitutePaths(fs.readFileSync(src, 'utf8'), cfg);
       fs.writeFileSync(dst, content);
       ok(`${agent} agent installed`);
     } else if (forceUpdate) {
-      let srcContent = substitutePaths(fs.readFileSync(src, 'utf8'), cfg);
-      srcContent = adaptFrontmatter(srcContent, cliName || 'Claude Code');
+      const srcContent = substitutePaths(fs.readFileSync(src, 'utf8'), cfg);
       const dstContent = fs.readFileSync(dst, 'utf8');
       if (srcContent !== dstContent) {
         fs.writeFileSync(dst, srcContent);
@@ -1329,12 +1273,12 @@ if (cli.cfg === '.claude') {
   installGlobalHooks(cli);
 }
 installCapabilities(projectDir, cli.cfg, fullInstall);
-installCommands(projectDir, cli.cfg, cli.name);
+installCommands(projectDir, cli.cfg);
 installSkills(projectDir, cli.cfg);
 installScripts(projectDir, cli.cfg);
 installVisualizer(projectDir, cli.cfg);
 installStatusline(projectDir, cli.cfg);
-installAgents(projectDir, cli.cfg, cli.name);
+installAgents(projectDir, cli.cfg);
 installRulesFile(projectDir, cli.cfg, cli.rulesFile);
 createDirectories(projectDir, cli.cfg);
 ensureSharedSkillsDir();
@@ -1457,6 +1401,4 @@ console.log('');
 console.log('  ─────────────────────────────────────────────');
 console.log('  all commands: /help  ·  docs: github.com/haytamAroui/AZ-CLAUDE-COPILOT');
 console.log('  upgrade:      npx azclaude-copilot@latest');
-console.log('  other CLI:    npx azclaude-copilot --cli opencode');
-console.log('                (claude, opencode, gemini, codex, cursor)');
 console.log('════════════════════════════════════════════════\n');

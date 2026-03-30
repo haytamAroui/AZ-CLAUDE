@@ -11,6 +11,8 @@ Domain: Developer tooling | Stack: Node.js CLI, Markdown templates | Scale: STAN
 3. **Tests** — Every template change must be covered by `tests/test-features.sh`. Run it before every commit.
 4. **No over-engineering** — Templates are instructions for Claude. Keep them precise, not exhaustive.
 5. **Constitution** — Read `.claude/constitution.md` before any implementation. Non-negotiables override all other instructions.
+6. **Use existing tools** — Run tests with `bash tests/test-features.sh` and trust its exit code. Never invent grep/sed/awk commands to parse test output — the script already prints results and exits 0 on success, non-zero on failure. If you need a custom command to check results, ask the user first.
+7. **No infinite retry** — If a command fails, diagnose the cause before re-running. Max 2 retries for the same command. After 2 failures, stop and report the error to the user — do not loop.
 
 ## Session State
 Read `.claude/memory/goals.md` at the start of every session.
