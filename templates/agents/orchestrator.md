@@ -208,21 +208,23 @@ Load `capabilities/shared/context-relay.md` for relay protocol and role-based fi
 4. If problem-architect returned a `## Relay` section, include it in the builder prompt as-is
 5. **Skill consistency** — collect the UNION of all skills from all Team Specs in this wave. Every agent in the wave loads the SAME skill set (not just its own). This ensures consistent patterns across parallel agents.
 6. **Include Verify commands** from each Team Spec in the agent prompt — the builder uses these in its exit gate
-7. Spawn each builder via Task with `isolation: "worktree"` in the same message (true parallel)
-8. Include worktree rules + **test scope** (`Test scope: {test-dir}`) in every parallel prompt
-9. **Merge-on-complete**: as each agent reports done, merge its branch immediately (don't wait for all)
-7. After each merge: check if newly-unblocked milestones exist → dispatch them immediately
-8. If `max_parallel <= 3` or merge conflicts detected: fall back to batch-merge (wait for all, then merge)
+7. **Model routing** — read `Model Recommendation` from each Team Spec. Pass it as `model: "{value}"` on the Task/Agent call. If absent, fall back to the agent's frontmatter `model:` field. Model selection varies per milestone — always use the actual recommendation, not a hardcoded assumption.
+8. Spawn each builder via Task with `isolation: "worktree"` and `model: "{from Team Spec}"` in the same message (true parallel)
+9. Include worktree rules + **test scope** (`Test scope: {test-dir}`) in every parallel prompt
+10. **Merge-on-complete**: as each agent reports done, merge its branch immediately (don't wait for all)
+11. After each merge: check if newly-unblocked milestones exist → dispatch them immediately
+12. If `max_parallel <= 3` or merge conflicts detected: fall back to batch-merge (wait for all, then merge)
 
 **Sequential dispatch (single milestone OR overlapping files):**
 
 Load `capabilities/shared/context-inoculation.md` and prepend its Required Preamble to the agent prompt below.
 Load `capabilities/shared/context-relay.md` for relay protocol and size limits.
 
-Spawn milestone-builder via Task with fully packaged context:
+Spawn milestone-builder via Task with `model: "{Model Recommendation from Team Spec}"` and fully packaged context:
 
 ```
 Task: Implement Milestone {N} — {title}
+Model: {from Team Spec — opus|sonnet|haiku, default sonnet}
 
 Agent role: {agent-name from spec} (owns {directories})
 Skills to activate: {skill list from spec}

@@ -180,6 +180,15 @@ If YES: topic = {what orchestrator must /debate before dispatching}
 SIMPLE (< 3 files) | MEDIUM (3-8 files) | COMPLEX (8+ files)
 COMPLEX → orchestrator gives builder 3 fix attempts instead of 2
 
+### Model Recommendation
+{opus | sonnet | haiku}
+Decision logic (use the FIRST matching rule):
+1. Read-only validation, checklist matching, constitution check → **haiku**
+2. Structural Decision: YES, OR Complexity: COMPLEX + touches schemas/APIs/auth → **opus**
+3. Everything else (standard implementation, follows patterns) → **sonnet**
+The orchestrator passes this as `model:` when spawning the agent via Task.
+If omitted, the orchestrator falls back to the agent's frontmatter `model:` field.
+
 ### Verify
 Read CLAUDE.md `## Verify` field for the project's commands. Scope them to this milestone:
 - Quick: `{Tier 1 command}` — static check, MANDATORY before done
