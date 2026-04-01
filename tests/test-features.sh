@@ -1019,6 +1019,9 @@ check      "orchestrator: consults problem-architect"    "$ORCH2" "problem-archi
 check      "orchestrator: parallel safety check"         "$ORCH2" "Files Written\|parallel.*safety\|file.*overlap"
 check      "orchestrator: owns plan.md"                  "$ORCH2" "plan\.md"
 check      "orchestrator: triggers evolve"               "$ORCH2" "evolve\|\/evolve"
+check      "orchestrator: model routing from Team Spec"  "$ORCH2" "Model Recommendation\|Model.*from.*Team Spec\|model:.*from Team Spec"
+check      "orchestrator: passes model to Task dispatch"  "$ORCH2" "model:.*from Team Spec"
+check      "orchestrator: model fallback to frontmatter"  "$ORCH2" "fall back.*frontmatter\|frontmatter.*model:"
 
 # ─── problem-architect agent (intelligent copilot tier 2) ────────────────────
 PA="$ROOT/agents/problem-architect.md"
@@ -1029,6 +1032,9 @@ check      "problem-architect: returns team spec"        "$PA" "Team Spec"
 check      "problem-architect: files written section"    "$PA" "Files Written"
 check      "problem-architect: complexity estimate"      "$PA" "SIMPLE.*MEDIUM.*COMPLEX\|Estimated Complexity"
 check      "problem-architect: structural decision flag" "$PA" "Structural Decision"
+check      "problem-architect: model recommendation field" "$PA" "Model Recommendation"
+check      "problem-architect: model routing decision logic" "$PA" "opus.*sonnet.*haiku\|haiku.*opus.*sonnet"
+check      "problem-architect: model fallback to frontmatter"  "$PA" "falls back.*frontmatter\|omitted.*falls back"
 
 # ─── milestone-builder agent (intelligent copilot tier 3) ────────────────────
 MB="$ROOT/agents/milestone-builder.md"
@@ -1109,7 +1115,7 @@ check "/dream: spawns problem-architect"               "$DREAM" "problem-archite
 check "/dream: skips architect on clean slate"         "$DREAM" "clean slate.*skip\|no .claude.*skip\|skip.*clean slate"
 
 LOOP="$CMD/loop.md"
-check "/loop: uses CronCreate (not prose timer)"       "$LOOP" "CronCreate"
+check "/loop: uses CronCreate not prose timer"          "$LOOP" "CronCreate"
 check "/loop: uses CronList"                           "$LOOP" "CronList"
 check "/loop: uses CronDelete for stop"                "$LOOP" "CronDelete"
 check "/loop: interval→cron mapping table"             "$LOOP" "Cron expression"
@@ -2809,6 +2815,30 @@ check      "visualizer: user-prompt sends context-update"    "templates/hooks/us
 check      "visualizer: stop sends pipeline-complete"        "templates/hooks/stop.js" "pipeline-complete"
 
 check_file "visualizer: command template exists"             "$CMD/visualize.md"
+
+# ── /kill command ─────────────────────────────────────────────────────────────
+check_file "command: kill.md exists"                                  "$CMD/kill.md"
+check      "command: kill targets dev ports"                          "$CMD/kill.md" "3000\|5173\|8080"
+check      "command: kill cross-platform Windows support"             "$CMD/kill.md" "Windows\|netstat\|taskkill"
+check      "command: kill cross-platform Unix support"                "$CMD/kill.md" "lsof\|Unix\|macOS"
+check      "command: kill excludes MCP servers"                       "$CMD/kill.md" "MCP\|mcp"
+check      "command: kill uses npx kill-port"                         "$CMD/kill.md" "kill-port"
+check      "command: kill has verify step"                            "$CMD/kill.md" "Verify\|verify"
+check      "command: kill has completion rule"                        "$CMD/kill.md" "Completion rule\|Completion"
+check      "cli: kill in EXTENDED_COMMANDS"                           "bin/cli.js"   "'kill'"
+
+# ── /run command ──────────────────────────────────────────────────────────────
+check_file "command: run.md exists"                                   "$CMD/run.md"
+check      "command: run detects Node via package.json"               "$CMD/run.md" "package.json"
+check      "command: run detects Python requirements"                 "$CMD/run.md" "requirements.txt\|pyproject.toml"
+check      "command: run detects Rust"                                "$CMD/run.md" "Cargo.toml"
+check      "command: run detects Go"                                  "$CMD/run.md" "go.mod"
+check      "command: run detects Django"                              "$CMD/run.md" "manage.py\|Django"
+check      "command: run detects Rails"                               "$CMD/run.md" "Rails\|Gemfile"
+check      "command: run has priority order"                          "$CMD/run.md" "priority\|Priority\|precedence\|Precedence"
+check      "command: run checks port already in use"                  "$CMD/run.md" "already in use\|occupied"
+check      "command: run has completion rule"                         "$CMD/run.md" "Completion rule\|Completion"
+check      "cli: run in EXTENDED_COMMANDS"                            "bin/cli.js"   "'run'"
 
 echo ""
 echo "════════════════════════════════════════════════════"
