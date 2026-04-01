@@ -6,7 +6,7 @@ description: >
   "port still in use", "EADDRINUSE", "address already in use", "stop all servers",
   "kill background processes", "clean up ports".
   Safe by design — only kills processes bound to TCP ports, never MCP servers (stdio, no ports).
-argument-hint: "[port number | --all (default) | --ports 3000,8080]"
+argument-hint: "[port number | --all | --ports 3000,8080]"
 disable-model-invocation: false
 allowed-tools: Bash, Read, Glob
 ---
@@ -27,49 +27,83 @@ Any process on a TCP port is a dev/test server, not Claude infrastructure.
 
 ## Step 1 — Parse target ports
 
-**If $ARGUMENTS contains a port number** (e.g., `/kill 3000`):
+**If $ARGUMENTS contains a port number** (e.g., `/kill 8005`):
 → Kill only that specific port. Skip to Step 3.
 
-**If $ARGUMENTS is `--ports <list>`** (e.g., `/kill --ports 3000,5173`):
+**If $ARGUMENTS is `--ports <list>`** (e.g., `/kill --ports 3000,8005`):
 → Parse the comma-separated list. Skip to Step 3.
 
-**Default (`--all` or no argument)**:
-→ Target the full dev port list below. Continue to Step 2.
+**`--all` or no argument**:
+→ Scan every active listening TCP port on this machine (dynamic — not a hardcoded list).
+→ Continue to Step 2a.
 
-### Default dev port list
+> Use `--all` when you have custom ports (e.g., 8005, 9999, any port not in a standard list).
+> `/kill 8005` also works to target a single non-standard port directly.
+
+### Common dev ports (reference only — `--all` does NOT use this list)
 ```
 3000  3001  3002  3003  4000  4200  4321
 5000  5001  5173  5174  6006  7000  8000
-8001  8080  8081  8888  9000  9001  9229
+8001  8005  8080  8081  8888  9000  9001  9229
 ```
-
-> Note: 9229 is Node.js debugger. Kill only if you're not actively debugging.
+> 9229 is Node.js debugger. Kill only if you're not actively debugging.
 
 ---
 
-## Step 2 — Detect which ports are actually in use
+## Step 2a — Discover ALL listening ports (used by `--all` / no argument)
 
 **Unix/macOS:**
 ```bash
-for port in 3000 3001 3002 3003 4000 4200 4321 5000 5001 5173 5174 6006 7000 8000 8001 8080 8081 8888 9000 9001 9229; do
+# Get every TCP port in LISTEN state — no hardcoded list needed
+lsof -iTCP -sTCP:LISTEN -P -n 2>/dev/null | awk 'NR>1 {print $9}' | sed 's/.*://' | sort -nu
+```
+
+**Windows:**
+```bash
+netstat -ano 2>/dev/null | grep "LISTENING" | awk '{print $2}' | sed 's/.*://' | sort -nu
+```
+
+Print each discovered port and its PID + process name:
+
+**Unix/macOS:**
+```bash
+lsof -iTCP -sTCP:LISTEN -P -n 2>/dev/null | awk 'NR>1 {print $2, $9, $1}' | sed 's/ .*:/  PORT /' | sort -k2 -n
+```
+
+**Windows:**
+```bash
+netstat -ano 2>/dev/null | grep "LISTENING" | awk '{print $2, $5}' | sed 's/.*://' | sort -k1 -n
+```
+
+If no ports found: print `No listening TCP servers found.` and stop.
+
+---
+
+## Step 2b — Detect specific ports (used by `/kill 8005` or `/kill --ports ...`)
+
+**Unix/macOS:**
+```bash
+for port in <PORTS>; do
   pid=$(lsof -ti tcp:$port 2>/dev/null)
   if [ -n "$pid" ]; then
     echo "  PORT $port → PID $pid ($(ps -p $pid -o comm= 2>/dev/null))"
+  else
+    echo "  PORT $port → not in use"
   fi
 done
 ```
 
 **Windows:**
 ```bash
-for port in 3000 3001 3002 3003 4000 4200 4321 5000 5001 5173 5174 6006 7000 8000 8001 8080 8081 8888 9000 9001 9229; do
+for port in <PORTS>; do
   result=$(netstat -ano 2>/dev/null | grep ":$port " | grep LISTENING | awk '{print $5}' | head -1)
   if [ -n "$result" ]; then
     echo "  PORT $port → PID $result"
+  else
+    echo "  PORT $port → not in use"
   fi
 done
 ```
-
-Print summary of occupied ports. If none found: print `No dev servers found on standard ports.` and stop.
 
 ---
 
@@ -79,9 +113,9 @@ Print summary of occupied ports. If none found: print `No dev servers found on s
 ```bash
 npx --yes kill-port <PORTS>
 ```
-Example: `npx --yes kill-port 3000 5173 8080`
+Example: `npx --yes kill-port 8005 3000 5173`
 
-This is safe, silent on ports that are already free, and exits 0 on success.
+Silent on ports already free, exits 0 on success.
 
 ### Fallback — Unix/macOS (if npx not available):
 ```bash
@@ -106,11 +140,11 @@ done
 
 ## Step 4 — Verify
 
-After killing, re-run the detection from Step 2.
+Re-run the detection from Step 2a or 2b (matching what was used).
 
 **Expected output:**
 ```
-No dev servers found on standard ports.
+No listening TCP servers found.
 ```
 
 If any port is still occupied: report it and its PID. Do not retry — report to user.
@@ -121,7 +155,7 @@ If any port is still occupied: report it and its PID. Do not retry — report to
 
 Print a summary:
 ```
-Killed: ports 3000, 5173
+Killed: ports 8005, 3000, 5173
 Still running: (none)
 ```
 
