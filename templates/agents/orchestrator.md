@@ -211,9 +211,14 @@ Load `capabilities/shared/context-relay.md` for relay protocol and role-based fi
 7. **Model routing** — read `Model Recommendation` from each Team Spec. Pass it as `model: "{value}"` on the Task/Agent call. If absent, fall back to the agent's frontmatter `model:` field. Model selection varies per milestone — always use the actual recommendation, not a hardcoded assumption.
 8. Spawn each builder via Task with `isolation: "worktree"` and `model: "{from Team Spec}"` in the same message (true parallel)
 9. Include worktree rules + **test scope** (`Test scope: {test-dir}`) in every parallel prompt
-10. **Merge-on-complete**: as each agent reports done, merge its branch immediately (don't wait for all)
-11. After each merge: check if newly-unblocked milestones exist → dispatch them immediately
-12. If `max_parallel <= 3` or merge conflicts detected: fall back to batch-merge (wait for all, then merge)
+10. **Mid-flight control** — while agents run, monitor their partial progress reports via SendMessage:
+    - Agent reports progress (not final result) + new information changes the spec → `SendMessage({ to: agentId, message: "Revised scope: ..." })`
+    - Agent appears stuck (no output for 3+ turns after dispatch) → `SendMessage({ to: agentId, message: "Status check — what's blocking you?" })`
+    - Scope needs adjusting due to a sibling agent's discovery → `SendMessage` with revised file list before the affected agent reaches that file
+    - Agent reports a blocker it cannot resolve → `SendMessage` with the resolution, or redirect to a different approach
+11. **Merge-on-complete**: as each agent reports final result (not partial), merge its branch immediately (don't wait for all)
+12. After each merge: check if newly-unblocked milestones exist → dispatch them immediately
+13. If `max_parallel <= 3` or merge conflicts detected: fall back to batch-merge (wait for all, then merge)
 
 **Sequential dispatch (single milestone OR overlapping files):**
 

@@ -1284,6 +1284,9 @@ check        "hooks: stop prints block count"                "templates/hooks/st
 check        "hooks: stop cleans up seclog"                  "templates/hooks/stop.js"          "unlinkSync.*seclog\|seclog.*unlink"
 check        "hooks: user-prompt scans every prompt"         "templates/hooks/user-prompt.js"   "prompt-injection-attempt\|PROMPT_INJECT\|promptText"
 check        "hooks: user-prompt scans before session gate"  "templates/hooks/user-prompt.js"   "prompt.*injection.*scan\|every prompt\|EVERY prompt"
+check        "hooks: user-prompt staleness warning helper"  "templates/hooks/user-prompt.js"   "_staleWarning"
+check        "hooks: user-prompt stale age threshold 1 day" "templates/hooks/user-prompt.js"   "ageDays.*>.*1\|> 1\|1.*day"
+check        "hooks: user-prompt stale warns decisions.md"  "templates/hooks/user-prompt.js"   "_staleWarning.*decisions\|decisions.*stale"
 
 # Performance hooks
 check        "hooks: user-prompt caps Done to 20"         "templates/hooks/user-prompt.js"   "MAX_DONE.*20\|MAX_DONE = 20"
@@ -2328,6 +2331,8 @@ check      "parallel-coord: rule summary table"                  "$PARA_CAP"   "
 check      "orchestrator: verification wave in step 5"           "$ROOT/agents/orchestrator.md" "VERIFICATION WAVE\|full build.*full test\|verification passes"
 check      "orchestrator: context refresh wave 3+"               "$ROOT/agents/orchestrator.md" "Context refresh.*Wave 3\|Fresh reads\|FRESH.*not cached"
 check      "orchestrator: skill consistency enforcement"         "$ROOT/agents/orchestrator.md" "Skill consistency\|UNION.*skills\|SAME skill set"
+check      "orchestrator: mid-flight SendMessage control"      "$ROOT/agents/orchestrator.md" "SendMessage\|mid-flight\|Mid-flight"
+check      "orchestrator: SendMessage status check"            "$ROOT/agents/orchestrator.md" "Status check\|status check\|3+.*turns\|turns.*dispatch"
 check      "problem-architect: SEQUENTIAL-ONLY option"           "$ROOT/agents/problem-architect.md" "SEQUENTIAL-ONLY"
 check      "problem-architect: agent sizing rules"               "$ROOT/agents/problem-architect.md" "Agent Sizing Rules\|15.*files\|better decomposition"
 check      "problem-architect: migration detection"              "$ROOT/agents/problem-architect.md" "migration\|Framework.*migration\|Store.*rewrite"

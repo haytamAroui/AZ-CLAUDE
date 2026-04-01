@@ -36,7 +36,8 @@ If `$ARGUMENTS` contains `--deep`:
 
 ---
 
-**EnterPlanMode** — read and think only. No file modifications until Step 4.
+Call the `EnterPlanMode` tool NOW — this enforces read-only mode at the kernel level.
+No file edits are possible until you call `ExitPlanMode` at Step 4: Approval Gate.
 
 ---
 
