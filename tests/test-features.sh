@@ -1191,7 +1191,7 @@ check_file "install: agent-creator scaffold script"      "$IDIR/.claude/skills/a
 check_file "install: agent-creator references"           "$IDIR/.claude/skills/agent-creator/references/agent-engineering-guide.md"
 check_file "install: agent-creator examples"             "$IDIR/.claude/skills/agent-creator/examples/sample-agent.md"
 INSTALLED=$(ls "$IDIR/.claude/commands/" | wc -l | tr -d ' ')
-EXPECTED_CMDS=45
+EXPECTED_CMDS=46
 if [ "$INSTALLED" -eq "$EXPECTED_CMDS" ]; then
   echo "  ✓ install: all $EXPECTED_CMDS commands present"
   PASS=$((PASS + 1))
@@ -2967,10 +2967,24 @@ check      "/obsidian: generates AZCLAUDE-MAP.md"     "$CMD/obsidian.md"    "AZC
 check      "/obsidian: uses wikilink syntax"          "$CMD/obsidian.md"    "\[\["
 check      "/obsidian: has completion rule"           "$CMD/obsidian.md"    "Completion Rule"
 
+# ─── /canvas command ─────────────────────────────────────────────────────────
+echo ""
+echo "─── /canvas command ───"
+check      "/canvas: has frontmatter name"              "$CMD/canvas.md"    "name: canvas"
+check      "/canvas: disable-model-invocation"          "$CMD/canvas.md"    "disable-model-invocation: true"
+check      "/canvas: writes agent-pipeline.canvas"      "$CMD/canvas.md"    "agent-pipeline.canvas"
+check      "/canvas: NOT_INSTALLED guard"               "$CMD/canvas.md"    "NOT_INSTALLED"
+check      "/canvas: extracts milestones from plan.md"  "$CMD/canvas.md"    "plan.md"
+check      "/canvas: orchestrator node defined"         "$CMD/canvas.md"    "orchestrator"
+check      "/canvas: milestone-builder node defined"    "$CMD/canvas.md"    "milestone-builder"
+check      "/canvas: color 6 for milestones"            "$CMD/canvas.md"    "color=6"
+check      "/canvas: builds edge label"                 "$CMD/canvas.md"    "builds"
+check      "/canvas: has completion rule"               "$CMD/canvas.md"    "Completion Rule"
+
 # ─── cross-surface sync for knowledge commands ───────────────────────────────
 echo ""
 echo "─── knowledge cross-surface ───"
-for CMD_NAME in ingest knowledge obsidian; do
+for CMD_NAME in ingest knowledge obsidian canvas; do
   check "cross-surface: $CMD_NAME in EXTENDED_COMMANDS (cli.js)"  "bin/cli.js"              "$CMD_NAME"
   check "cross-surface: $CMD_NAME in Available Commands (CLAUDE.md template)" "templates/CLAUDE.md" "$CMD_NAME"
   check_file "cross-surface: $CMD_NAME template file exists"       "$CMD/$CMD_NAME.md"

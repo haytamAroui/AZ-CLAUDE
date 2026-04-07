@@ -110,7 +110,7 @@ npx azclaude-copilot@latest
 
 One command, no flags. Auto-detects whether this is a fresh install or an upgrade:
 
-- **First time** → full install (45 commands, 5 hooks, 16 agents, 10 skills, memory, reflexes). Creates folders, instructions, and hooks — **no manual setup required.**
+- **First time** → full install (46 commands, 5 hooks, 16 agents, 10 skills, memory, reflexes). Creates folders, instructions, and hooks — **no manual setup required.**
 - **Already installed, older version** → auto-upgrades everything to latest templates
 - **Already up to date** → verifies, no overwrites
 
@@ -123,7 +123,7 @@ npx azclaude-copilot@latest doctor   # 32 checks — verify everything is wired 
 
 ## What You Get
 
-**45 commands** · **10 auto-invoked skills** · **16 agents** · **5 hooks** · **memory across sessions** · **learned reflexes** · **self-evolving environment**
+**46 commands** · **10 auto-invoked skills** · **16 agents** · **5 hooks** · **memory across sessions** · **learned reflexes** · **self-evolving environment**
 
 ```
 .claude/
@@ -272,7 +272,7 @@ Claude Code
   │   └── stop.js         → Session cleanup, friction logging
   │
   └── Markdown files (capability — Claude reads natively, zero overhead)
-      ├── 45 commands     → Claude reads the .md, follows instructions
+      ├── 46 commands     → Claude reads the .md, follows instructions
       ├── 16 agents       → Claude spawns as subagents with Task tool
       ├── 10 skills       → Auto-invoked when relevant context detected
       ├── 48 capabilities → Lazy-loaded via manifest.md (~100 tokens overhead)
@@ -637,11 +637,11 @@ AZCLAUDE is a lazy-loaded environment of 48 capability modules. It only loads wh
 
 ## Verified
 
-2124 tests. Every template, command, capability, agent, hook, and CLI feature verified.
+2137 tests. Every template, command, capability, agent, hook, and CLI feature verified.
 
 ```bash
 bash tests/test-features.sh
-# Results: 2124 passed, 0 failed, 2124 total
+# Results: 2137 passed, 0 failed, 2137 total
 ```
 
 ---
