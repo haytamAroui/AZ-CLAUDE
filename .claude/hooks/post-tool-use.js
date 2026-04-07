@@ -59,7 +59,6 @@ if (!filePath) filePath = process.env.CLAUDE_FILE_PATH || '';
 if (process.env.AZCLAUDE_VISUALIZER && toolName) {
   try {
     const vPort = parseInt(process.env.AZCLAUDE_VISUALIZER, 10) || 8765;
-    // Read the tool_use_id stashed by pre-tool-use hook (or use Claude's native ID)
     let vizId = _toolUseId || null;
     if (!vizId) {
       const vizIdPath = path.join(os.tmpdir(), `.azclaude-vizid-${process.ppid || process.pid}`);

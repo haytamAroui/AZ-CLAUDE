@@ -56,7 +56,6 @@ if (process.env.AZCLAUDE_VISUALIZER && toolName) {
       agent_id: _agentId,
       agent_type: _agentType,
     });
-    // Stash tool_use_id for post-tool-use to match
     try { fs.writeFileSync(path.join(os.tmpdir(), `.azclaude-vizid-${process.ppid || process.pid}`), vizId); } catch (_) {}
     const vReq = require('http').request(
       { hostname: '127.0.0.1', port: vPort, path: '/event', method: 'POST',

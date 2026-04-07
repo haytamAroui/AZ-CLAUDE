@@ -379,6 +379,16 @@ if (fs.existsSync(blockersPath)) {
   } catch (_) {}
 }
 
+// ── Staleness helper — warns when memory files are older than 1 day ──────────
+// File:line references and architecture decisions go stale fast.
+// Claude Code natively warns on memories > 1 day old — AZCLAUDE matches that.
+function _staleWarning(filePath) {
+  try {
+    const ageDays = Math.floor((Date.now() - fs.statSync(filePath).mtimeMs) / 86_400_000);
+    return ageDays > 1 ? `\n⚠ This memory is ${ageDays} day${ageDays > 1 ? 's' : ''} old — verify file:line references against current code before asserting as fact.` : '';
+  } catch (_) { return ''; }
+}
+
 // ── Inject architecture decisions if present ────────────────────────────────
 const decisionsPath = path.join('.claude', 'memory', 'decisions.md');
 if (fs.existsSync(decisionsPath)) {
@@ -387,10 +397,12 @@ if (fs.existsSync(decisionsPath)) {
     if (decisionsContent.length > 0) {
       const decisionsLines = decisionsContent.split('\n').filter(l => !INJECTION.test(l));
       const capped = decisionsLines.slice(0, 30);
+      const stale = _staleWarning(decisionsPath);
       console.log('');
       console.log('--- ARCHITECTURE DECISIONS ---');
       console.log(capped.join('\n'));
       if (decisionsLines.length > 30) console.log(`... ${decisionsLines.length - 30} more lines (on disk)`);
+      if (stale) console.log(stale);
       console.log('--- END DECISIONS ---');
     }
   } catch (_) {}
@@ -404,10 +416,12 @@ if (fs.existsSync(patternsPath)) {
     if (patternsContent.length > 0) {
       const patternsLines = patternsContent.split('\n').filter(l => !INJECTION.test(l));
       const capped = patternsLines.slice(0, 20);
+      const stale = _staleWarning(patternsPath);
       console.log('');
       console.log('--- CODE PATTERNS ---');
       console.log(capped.join('\n'));
       if (patternsLines.length > 20) console.log(`... ${patternsLines.length - 20} more lines (on disk)`);
+      if (stale) console.log(stale);
       console.log('--- END PATTERNS ---');
     }
   } catch (_) {}
@@ -428,9 +442,11 @@ if (fs.existsSync(checkpointDir)) {
     const cpTrimmed  = cpLines.length > MAX_CP
       ? cpLines.slice(0, MAX_CP).concat([`... ${cpLines.length - MAX_CP} more lines (on disk)`])
       : cpLines;
+    const stale = _staleWarning(latest);
     console.log('');
     console.log(`--- LAST CHECKPOINT (${files[0]}) ---`);
     console.log(cpTrimmed.join('\n').trim());
+    if (stale) console.log(stale);
     console.log('--- END CHECKPOINT ---');
   }
 }
