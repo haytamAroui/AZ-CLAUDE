@@ -163,6 +163,18 @@ The user is the last resort, not the first.
 
 ---
 
+## Knowledge Filing (if knowledge layer exists)
+
+```bash
+ls .claude/knowledge/index.md 2>/dev/null && echo "KNOWLEDGE_EXISTS" || echo "NO_KNOWLEDGE"
+```
+
+If `KNOWLEDGE_EXISTS` and the root cause was non-obvious (confidence was medium, or required 2 attempts):
+Create `knowledge/concepts/{failure-mode-slug}.md` documenting the root cause, mechanism, and fix.
+This prevents the same class of bug from recurring. Use `auto_generated_by: /fix`. Update index and log.
+
+---
+
 **Completion Rule — NON-NEGOTIABLE:**
 Never say "this should be fixed", "probably works now", "I think this resolves it."
 Show the passing test output. If tests aren't passing: stay in progress.

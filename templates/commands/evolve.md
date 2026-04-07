@@ -135,6 +135,73 @@ Use **CronList** to check if a schedule already exists before creating a new one
 
 ---
 
+## Cycle 4: Knowledge Health (if knowledge layer exists)
+
+```bash
+ls .claude/knowledge/index.md 2>/dev/null && echo "KNOWLEDGE_EXISTS" || echo "NO_KNOWLEDGE"
+```
+
+If `KNOWLEDGE_EXISTS`:
+
+### 4a. Staleness — code_refs drift
+For each knowledge page with `code_refs:` in frontmatter:
+```bash
+grep -rl "code_refs:" .claude/knowledge/{entities,concepts,decisions}/ 2>/dev/null
+```
+Check if referenced code files changed since page's `updated:` date:
+```bash
+git log --since="{page_updated_date}" --oneline -- {code_ref_path} 2>/dev/null | head -3
+```
+If code changed → flag page as stale. If change is straightforward (rename, moved) → auto-update.
+
+### 4b. Orphan detection
+Find knowledge pages with zero inbound [[wikilinks]]:
+```bash
+for f in $(find .claude/knowledge/{entities,concepts,decisions} -name "*.md" 2>/dev/null); do
+  PAGE=$(basename "$f" .md)
+  REFS=$(grep -rl "\[\[$PAGE\]\]" .claude/knowledge/ 2>/dev/null | wc -l)
+  [ "$REFS" -eq 0 ] && echo "ORPHAN: $f"
+done
+```
+Orphan pages with `confidence: low` and > 30 days old → archive candidate.
+
+### 4c. Gap detection
+Find code areas with no knowledge coverage:
+```bash
+# Directories with 10+ files but zero knowledge pages mentioning them
+for d in $(find src/ app/ lib/ -mindepth 1 -maxdepth 1 -type d 2>/dev/null); do
+  FILE_COUNT=$(find "$d" -type f | wc -l)
+  DIR_NAME=$(basename "$d")
+  KNOWLEDGE_REFS=$(grep -rl "$DIR_NAME" .claude/knowledge/ 2>/dev/null | wc -l)
+  [ "$FILE_COUNT" -ge 10 ] && [ "$KNOWLEDGE_REFS" -eq 0 ] && echo "GAP: $d ($FILE_COUNT files, 0 knowledge pages)"
+done
+```
+For each gap → suggest creating a knowledge page via knowledge-compiler.
+
+### 4d. Confidence decay
+Recalculate confidence scores using formula from `shared/knowledge-layer.md`:
+- `high` → `medium` if no updates in 30 days AND code_refs changed
+- `medium` → `low` if single source AND > 60 days old
+- `low` + never referenced + > 90 days → archive candidate
+
+### 4e. Contradiction scan
+For each entity/concept, check if 2+ pages make conflicting claims about the same topic.
+Flag contradictions — do NOT auto-resolve. Record in knowledge/log.md.
+
+Print Cycle 4 summary:
+```
+Cycle 4 — Knowledge Health:
+  Stale pages:      {N} ({N} auto-updated, {N} flagged)
+  Orphan pages:     {N} ({N} archived, {N} kept)
+  Coverage gaps:    {N} directories with no knowledge
+  Confidence decay: {N} pages downgraded
+  Contradictions:   {N} flagged for review
+```
+
+If `NO_KNOWLEDGE`: skip Cycle 4 silently.
+
+---
+
 ## Step 6: Log Evolution History
 
 Append to `ops/evolution-log.md` (create if missing):

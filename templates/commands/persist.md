@@ -65,6 +65,27 @@ topics: [{what was worked on}]
 
 ---
 
+## Step 4: File Domain Insights to Knowledge (if knowledge layer exists)
+
+```bash
+ls .claude/knowledge/index.md 2>/dev/null && echo "KNOWLEDGE_EXISTS" || echo "NO_KNOWLEDGE"
+```
+
+If `KNOWLEDGE_EXISTS`:
+Review the session. Did you:
+- Explain a complex domain concept in detail? → Offer to file as `knowledge/concepts/{slug}.md`
+- Discover a root cause for a non-obvious bug? → Offer to file as `knowledge/concepts/{failure-mode}.md`
+- Make or reference an architectural decision? → Check if it's in `knowledge/decisions/` already
+- Learn something about an external service or API? → Offer to file as `knowledge/entities/{slug}.md`
+
+Only offer for **reusable** insights — not ephemeral task details.
+If the user accepts, create the page following `capabilities/shared/knowledge-layer.md` conventions.
+Update `knowledge/index.md` and append to `knowledge/log.md`.
+
+If `NO_KNOWLEDGE`: skip this step silently.
+
+---
+
 ## Completion Rule — NON-NEGOTIABLE
 
 Print the updated goals.md content.

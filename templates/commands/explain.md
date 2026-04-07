@@ -23,3 +23,15 @@ Rules:
 
 If nothing was provided above, ask:
 "What would you like me to explain? You can paste code, an error message, a file name, or ask about any concept."
+
+---
+
+## Knowledge Filing (if knowledge layer exists)
+
+```bash
+ls .claude/knowledge/index.md 2>/dev/null && echo "KNOWLEDGE_EXISTS" || echo "NO_KNOWLEDGE"
+```
+
+If `KNOWLEDGE_EXISTS` and the explanation covers a reusable domain concept (not a one-off code question):
+After answering, offer: "This covers a reusable concept. Save to knowledge/concepts/{slug}.md?"
+If accepted → create page with `auto_generated_by: /explain`, update index and log.

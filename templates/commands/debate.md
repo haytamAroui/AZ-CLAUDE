@@ -81,4 +81,13 @@ Also read `capabilities/intelligence/elo.md` for pairwise ranking.
 
 State the winner, the confidence level, and the one verified claim that decided it.
 Record the decision in `.claude/memory/decisions.md`.
+
+### Knowledge Filing
+
+```bash
+ls .claude/knowledge/index.md 2>/dev/null && echo "KNOWLEDGE_EXISTS" || echo "NO_KNOWLEDGE"
+```
+
+If `KNOWLEDGE_EXISTS`: also file the decision to `knowledge/decisions/{slug}.md` with full tradeoff analysis, options considered, winner, rationale, and date. Update `knowledge/index.md` and append to `knowledge/log.md`. Use `auto_generated_by: /debate`.
+
 Do not say "I recommend X" without showing the evidence-weighted reasoning.

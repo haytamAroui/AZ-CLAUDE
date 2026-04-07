@@ -42,6 +42,7 @@ Quick dispatch (core — used most sessions):
 Extended (load command file on use):
 - /setup · /dream · /snapshot · /persist · /refactor · /doc · /loop
 - /migrate · /deps · /find · /create · /reflect · /hookify
+- Knowledge: /ingest → process docs into knowledge base · /knowledge → browse/query/health-check
 - Spec-driven: /constitute → /spec → /clarify → /blueprint → /copilot
   - /analyze: cross-artifact consistency check (ghost milestones, spec vs. code drift)
   - /tasks: dependency graph + parallel wave groups from plan.md
@@ -81,6 +82,7 @@ Agents live in `.claude/agents/`. Spawn them via the Agent tool with the matchin
 | Test strategy, E2E, release readiness | `qa-engineer` | Risk-based coverage, acceptance criteria validation |
 | Spec file provided for planning | `spec-reviewer` | Validates spec quality before /blueprint uses it |
 | Milestone about to be implemented | `constitution-guard` | Checks milestone against constitution.md non-negotiables |
+| Document ingestion or knowledge maintenance | `knowledge-compiler` | Extracts entities/concepts, maintains cross-references, updates knowledge index |
 
 **Mandatory pipeline for ALL code tasks (enforced by hook on every message):**
 1. **ALWAYS** spawn `problem-architect` FIRST → get Team Spec (agents, skills, files, risks)
@@ -107,4 +109,4 @@ When priorities conflict:
 3. {{PRIORITY_3}}
 
 ## Available Commands
-/dream · /setup · /fix · /add · /audit · /test · /blueprint · /evolve · /debate · /snapshot · /persist · /level-up · /ship · /pulse · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect · /hookify · /spec · /clarify · /analyze · /constitute · /tasks · /issues · /driven · /mcp · /parallel · /verify · /inoculate · /ghost-test
+/dream · /setup · /fix · /add · /audit · /test · /blueprint · /evolve · /debate · /snapshot · /persist · /level-up · /ship · /pulse · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect · /hookify · /spec · /clarify · /analyze · /constitute · /tasks · /issues · /driven · /mcp · /parallel · /verify · /inoculate · /ghost-test · /ingest · /knowledge

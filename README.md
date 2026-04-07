@@ -637,11 +637,11 @@ AZCLAUDE is a lazy-loaded environment of 48 capability modules. It only loads wh
 
 ## Verified
 
-1996 tests. Every template, command, capability, agent, hook, and CLI feature verified.
+2113 tests. Every template, command, capability, agent, hook, and CLI feature verified.
 
 ```bash
 bash tests/test-features.sh
-# Results: 1996 passed, 0 failed, 1996 total
+# Results: 2113 passed, 0 failed, 2113 total
 ```
 
 ---

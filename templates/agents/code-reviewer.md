@@ -53,6 +53,7 @@ Bash     — git diff, git log, run test suite (read-only commands only)
 2. `CLAUDE.md` — project conventions
 3. `.claude/memory/patterns.md` — known good patterns
 4. `.claude/memory/antipatterns.md` — known bad patterns
+5. `.claude/knowledge/index.md` — if it exists, scan for domain concepts/anti-patterns relevant to the changed files. Check code against knowledge pages for domain-specific correctness.
 
 ## Layer 4: CONSTRAINTS
 

@@ -23,6 +23,7 @@ Load only the files that match the current task. Never load the full list.
 | shared/plan-tracker.md | Reading/writing plan.md, updating milestone status, copilot mode | ~200 |
 | shared/reflexes.md | Learned behavioral patterns, reflex analysis, observation patterns, promote reflexes | ~250 |
 | shared/context-artifacts.md | Project has DB schemas, API specs, infra configs, or knowledge/ dir — discover and use non-code knowledge before implementing | ~200 |
+| shared/knowledge-layer.md | /ingest or /knowledge runs, /persist detects domain insights, /explain produces reusable answer, /debate files decision, /evolve Cycle 4 — page conventions, directory structure, confidence, wikilinks, code_refs | ~350 |
 | shared/semantic-boundary-check.md | /evolve Cycle 3 or boundary validator warns — detect deeper behavioral duplication across extension types that grep misses | ~300 |
 | shared/domain-advisor-generator.md | Non-tech domain detected (compliance, marketing, finance, medical, legal, research) — generates domain-specific advisor skill | ~400 |
 | shared/intelligent-dispatch.md | About to build, fix, refactor, audit, or ship — non-trivial scope (3+ files or structural) — pre-flight analysis via problem-architect | ~300 |

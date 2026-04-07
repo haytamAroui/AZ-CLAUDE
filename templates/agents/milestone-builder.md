@@ -44,11 +44,12 @@ If any item is missing → ask orchestrator before proceeding.
 Read every file in the pre-read list. Order matters:
 1. `.claude/constitution.md` — non-negotiables (if present — read FIRST, constraints before code)
 2. `.claude/code-rules.md` — coding standards contract (if present — read SECOND, style rules before code)
-3. Schema / config files (structural constraints)
-4. Related source files (existing patterns to match)
-5. Related test files (test framework + naming conventions)
-6. patterns.md entries for this area
-7. antipatterns.md entries for this area
+3. Knowledge pages from `.claude/knowledge/` — if listed in pre-read (domain context — read THIRD, before touching code)
+4. Schema / config files (structural constraints)
+5. Related source files (existing patterns to match)
+6. Related test files (test framework + naming conventions)
+7. patterns.md entries for this area
+8. antipatterns.md entries for this area
 
 If constitution.md exists: keep its Non-Negotiables visible throughout implementation.
 Flag any implementation choice that would violate them BEFORE writing — do not discover violations after the fact.

@@ -77,6 +77,17 @@ If a `knowledge/` directory exists:
 - Purpose: grep-based retrieval. The model searches key_questions to find which file to read.
 - DO NOT load these files into memory. Use the index to find which file to read on demand.
 
+### ENRICH knowledge layer (if .claude/knowledge/index.md exists)
+Check for knowledge pages that should be updated from recent session learnings:
+```bash
+ls .claude/knowledge/index.md 2>/dev/null && echo "KNOWLEDGE_EXISTS" || echo "NO_KNOWLEDGE"
+```
+If `KNOWLEDGE_EXISTS`:
+- Scan session files for domain facts referenced 2+ times → check if a knowledge page covers them
+- If no knowledge page exists for a frequently-referenced fact → flag as candidate for /ingest
+- If knowledge page exists but is missing the new information → update it
+- Update `knowledge/index.md` Key Questions if new questions emerged from sessions
+
 ---
 
 ### LOG

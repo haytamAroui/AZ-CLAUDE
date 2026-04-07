@@ -54,6 +54,7 @@ Also read:
 - `.claude/memory/antipatterns.md` — known failure patterns to avoid
 - Context artifacts: `prisma/schema.prisma`, `openapi.yaml`, `.env.example`
 - CLAUDE.md `## Verify` section — for the `Verify:` field in Team Spec (see `capabilities/shared/toolchain-gate.md`)
+- `.claude/knowledge/index.md` — if it exists, scan Key Questions for domain knowledge relevant to this milestone. Add matching knowledge pages to Pre-Read Files in the Team Spec. This gives the builder domain context without re-deriving it from code.
 
 ---
 

@@ -1,4 +1,4 @@
----
+claude---
 name: run
 description: >
   Auto-detect the project tech stack and run the appropriate dev server.

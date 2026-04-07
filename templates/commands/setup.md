@@ -144,6 +144,26 @@ This fills the gap when git history is too thin for co-change analysis.
 
 ---
 
+## Step 6b: Auto-Discover Knowledge Sources
+
+```bash
+ls docs/*.md docs/**/*.md ARCHITECTURE.md specs/*.md *.pdf 2>/dev/null | head -20
+ls knowledge/ .claude/knowledge/ 2>/dev/null | head -5
+```
+
+If foundational docs exist AND no knowledge directory:
+```
+Foundational documents detected:
+{list of files}
+
+Run /ingest scan to process these into a structured knowledge base.
+The knowledge layer lets agents reference domain expertise instead of re-reading docs every session.
+```
+
+If `.claude/knowledge/index.md` already exists: skip — knowledge layer already initialized.
+
+---
+
 ## Step 7: Quality Gate
 
 Load `capabilities/shared/quality-check.md` and run the full environment check.

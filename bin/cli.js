@@ -8,7 +8,7 @@ const { execSync }  = require('child_process');
 
 const TEMPLATE_DIR = path.join(__dirname, '..', 'templates');
 const CORE_COMMANDS     = ['setup', 'fix', 'add', 'audit', 'test', 'blueprint', 'ship', 'pulse', 'explain', 'snapshot', 'persist'];
-const EXTENDED_COMMANDS = ['dream', 'refactor', 'doc', 'loop', 'migrate', 'deps', 'find', 'create', 'reflect', 'hookify', 'sentinel', 'clarify', 'spec', 'analyze', 'constitute', 'tasks', 'issues', 'driven', 'mcp', 'verify', 'inoculate', 'ghost-test', 'visualize', 'kill', 'run'];
+const EXTENDED_COMMANDS = ['dream', 'refactor', 'doc', 'loop', 'migrate', 'deps', 'find', 'create', 'reflect', 'hookify', 'sentinel', 'clarify', 'spec', 'analyze', 'constitute', 'tasks', 'issues', 'driven', 'mcp', 'verify', 'inoculate', 'ghost-test', 'visualize', 'kill', 'run', 'ingest', 'knowledge'];
 const ADVANCED_COMMANDS = ['evolve', 'debate', 'level-up', 'copilot', 'reflexes', 'parallel'];
 const COMMANDS          = [...CORE_COMMANDS, ...EXTENDED_COMMANDS, ...ADVANCED_COMMANDS];
 
@@ -506,7 +506,7 @@ function installStatusline(projectDir, cfg) {
 
 // ─── Agents ───────────────────────────────────────────────────────────────────
 
-const AGENTS = ['orchestrator-init', 'code-reviewer', 'test-writer', 'loop-controller', 'cc-template-author', 'cc-cli-integrator', 'cc-test-maintainer', 'orchestrator', 'problem-architect', 'milestone-builder', 'security-auditor', 'spec-reviewer', 'constitution-guard', 'devops-engineer', 'qa-engineer'];
+const AGENTS = ['orchestrator-init', 'code-reviewer', 'test-writer', 'loop-controller', 'cc-template-author', 'cc-cli-integrator', 'cc-test-maintainer', 'orchestrator', 'problem-architect', 'milestone-builder', 'security-auditor', 'spec-reviewer', 'constitution-guard', 'devops-engineer', 'qa-engineer', 'knowledge-compiler'];
 
 function installAgents(projectDir, cfg) {
   const agentsDir = path.join(projectDir, cfg, 'agents');

@@ -37,6 +37,7 @@ Your only job: does this milestone violate any rule in the constitution?
 ## Layer 2 — SCOPE
 
 You ONLY read `constitution.md` and the milestone description.
+You also check `.claude/knowledge/decisions/` if it exists — milestones must not contradict recorded architectural decisions.
 You do NOT review code quality, test coverage, or style.
 You do NOT run tests. You do NOT write to any file.
 You do NOT judge things the constitution doesn't cover — silence is APPROVED.
