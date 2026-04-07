@@ -1191,7 +1191,7 @@ check_file "install: agent-creator scaffold script"      "$IDIR/.claude/skills/a
 check_file "install: agent-creator references"           "$IDIR/.claude/skills/agent-creator/references/agent-engineering-guide.md"
 check_file "install: agent-creator examples"             "$IDIR/.claude/skills/agent-creator/examples/sample-agent.md"
 INSTALLED=$(ls "$IDIR/.claude/commands/" | wc -l | tr -d ' ')
-EXPECTED_CMDS=44
+EXPECTED_CMDS=45
 if [ "$INSTALLED" -eq "$EXPECTED_CMDS" ]; then
   echo "  ✓ install: all $EXPECTED_CMDS commands present"
   PASS=$((PASS + 1))
@@ -2955,10 +2955,22 @@ check      "ingest: completion shows count format"                  "$ING" "enti
 check      "setup: suggests /ingest scan"                           "$CMD/setup.md" "/ingest scan\|/ingest.*scan"
 check      "cycle2: flags facts as /ingest candidates"              "$EVOL/cycle2-knowledge.md" "candidate for /ingest\|candidate.*ingest"
 
+# ─── /obsidian command ───────────────────────────────────────────────────────
+echo ""
+echo "─── /obsidian command ───"
+check      "/obsidian: has frontmatter name"          "$CMD/obsidian.md"    "name: obsidian"
+check      "/obsidian: disable-model-invocation"      "$CMD/obsidian.md"    "disable-model-invocation: true"
+check      "/obsidian: scans .claude/commands"        "$CMD/obsidian.md"    ".claude/commands"
+check      "/obsidian: scans .claude/agents"          "$CMD/obsidian.md"    ".claude/agents"
+check      "/obsidian: scans .claude/skills"          "$CMD/obsidian.md"    ".claude/skills"
+check      "/obsidian: generates AZCLAUDE-MAP.md"     "$CMD/obsidian.md"    "AZCLAUDE-MAP.md"
+check      "/obsidian: uses wikilink syntax"          "$CMD/obsidian.md"    "\[\["
+check      "/obsidian: has completion rule"           "$CMD/obsidian.md"    "Completion Rule"
+
 # ─── cross-surface sync for knowledge commands ───────────────────────────────
 echo ""
 echo "─── knowledge cross-surface ───"
-for CMD_NAME in ingest knowledge; do
+for CMD_NAME in ingest knowledge obsidian; do
   check "cross-surface: $CMD_NAME in EXTENDED_COMMANDS (cli.js)"  "bin/cli.js"              "$CMD_NAME"
   check "cross-surface: $CMD_NAME in Available Commands (CLAUDE.md template)" "templates/CLAUDE.md" "$CMD_NAME"
   check_file "cross-surface: $CMD_NAME template file exists"       "$CMD/$CMD_NAME.md"
