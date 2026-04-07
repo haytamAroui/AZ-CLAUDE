@@ -59,7 +59,7 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 bash tests/test-features.sh
 ```
 
-2113 tests. All must pass before any PR is merged. No exceptions.
+2124 tests. All must pass before any PR is merged. No exceptions.
 
 ## Diagnosing your local setup
 

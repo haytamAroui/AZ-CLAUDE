@@ -87,10 +87,10 @@ Each wikilink connects to the matching command, agent, or skill file.
 ## Skills
 
 {for each name in $SKILLS}
-- [[{name}/SKILL]]
+- [[.claude/skills/{name}/SKILL|{name}]]
 ```
 
-Skills link as `[[{skill-name}/SKILL]]` because the file is `SKILL.md` inside the skill directory.
+Skills link as `[[.claude/skills/{name}/SKILL|{name}]]` — full vault-relative path required because Obsidian cannot resolve `[[skill/SKILL]]` without the `.claude/skills/` prefix.
 
 Write the generated content to the output path determined in Step 2. Overwrite any existing file at that path without prompting — this command is idempotent.
 
