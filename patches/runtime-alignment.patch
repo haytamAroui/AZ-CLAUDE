@@ -1,0 +1,84 @@
+diff --git a/package.json b/package.json
+--- a/package.json
++++ b/package.json
+@@
+-  "repository": {
+-    "type": "git",
+-    "url": "git+https://github.com/haytamAroui/AZ-CLAUDE-COPILOT.git"
+-  },
+-  "homepage": "https://github.com/haytamAroui/AZ-CLAUDE-COPILOT#readme",
+-  "bugs": {
+-    "url": "https://github.com/haytamAroui/AZ-CLAUDE-COPILOT/issues"
+-  },
++  "repository": {
++    "type": "git",
++    "url": "git+https://github.com/haytamAroui/AZ-CLAUDE.git"
++  },
++  "homepage": "https://github.com/haytamAroui/AZ-CLAUDE#readme",
++  "bugs": {
++    "url": "https://github.com/haytamAroui/AZ-CLAUDE/issues"
++  },
+
+diff --git a/bin/copilot.js b/bin/copilot.js
+--- a/bin/copilot.js
++++ b/bin/copilot.js
+@@
+-const { spawnSync } = require('child_process');
++const { spawnSync } = require('child_process');
+@@
+-  const r = spawnSync('node', [cliPath, ...args], { cwd: process.cwd(), stdio: 'inherit' });
++  const r = spawnSync(process.execPath, [cliPath, ...args], { cwd: process.cwd(), stdio: 'inherit' });
+@@
+-  const installResult = spawnSync('node', [cliPath, projectDir], {
++  const installResult = spawnSync(process.execPath, [cliPath, projectDir], {
+     cwd: projectDir,
+     stdio: 'inherit',
+     timeout: 60000,
+   });
+
+diff --git a/templates/hooks/user-prompt.js b/templates/hooks/user-prompt.js
+--- a/templates/hooks/user-prompt.js
++++ b/templates/hooks/user-prompt.js
+@@
+-// Ensure required directories exist — only in AZCLAUDE projects
+-for (const d of ['.claude/memory', '.claude/memory/checkpoints']) {
++// Ensure required directories exist — only in AZCLAUDE projects
++for (const d of [path.join(cfg, 'memory'), path.join(cfg, 'memory', 'checkpoints')]) {
+   try { fs.mkdirSync(d, { recursive: true }); } catch (_) {}
+ }
+@@
+-const blockersPath = path.join('.claude', 'memory', 'blockers.md');
++const blockersPath = path.join(cfg, 'memory', 'blockers.md');
+@@
+-const decisionsPath = path.join('.claude', 'memory', 'decisions.md');
++const decisionsPath = path.join(cfg, 'memory', 'decisions.md');
+@@
+-const patternsPath = path.join('.claude', 'memory', 'patterns.md');
++const patternsPath = path.join(cfg, 'memory', 'patterns.md');
+@@
+-const checkpointDir = path.join('.claude', 'memory', 'checkpoints');
++const checkpointDir = path.join(cfg, 'memory', 'checkpoints');
+@@
+-  const intentPath = path.join('.claude', 'copilot-intent.md');
++  const intentPath = path.join(cfg, 'copilot-intent.md');
+@@
+-    const planPath = path.join('.claude', 'plan.md');
++    const planPath = path.join(cfg, 'plan.md');
+@@
+-  const reflexDir = path.join('.claude', 'memory', 'reflexes');
++  const reflexDir = path.join(cfg, 'memory', 'reflexes');
+
+diff --git a/README.md b/README.md
+--- a/README.md
++++ b/README.md
+@@
+-    <a href="https://github.com/haytamAroui/AZ-CLAUDE-COPILOT/actions/workflows/tests.yml"><img src="https://github.com/haytamAroui/AZ-CLAUDE-COPILOT/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
+-    <a href="https://github.com/haytamAroui/AZ-CLAUDE-COPILOT/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license"></a>
++    <a href="https://github.com/haytamAroui/AZ-CLAUDE/actions/workflows/tests.yml"><img src="https://github.com/haytamAroui/AZ-CLAUDE/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
++    <a href="https://github.com/haytamAroui/AZ-CLAUDE/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license"></a>
+@@
+-**Why this matters:** The routing happens inside Node.js hooks — Claude cannot skip or override it. Ask a question (Tier 0) and it answers directly. Ask it to build (Tier 2) and it is structurally required to run `problem-architect`, load skills, and pass a security gate before a single file is touched.
++**Why this matters:** The routing happens inside Node.js hooks and is injected before Claude sees the task. Ask a question (Tier 0) and it answers directly. Ask it to build (Tier 2) and AZCLAUDE injects a mandatory pre-flight that instructs Claude to run `problem-architect`, load skills, and pass the security gate before a single file is touched.
+@@
+-All 15 AZCLAUDE agents and all 10 skills use this exact format. Claude Code routes them, describes them in `/help`, and invokes them via `subagent_type=` — all from the frontmatter, zero extra config.
++All 15 AZCLAUDE agents and all 10 skills use this exact format. Claude Code can route them, describe them in `/help`, and invoke them via `subagent_type=` from the frontmatter, with no extra project-side registration.
