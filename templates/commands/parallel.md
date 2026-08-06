@@ -144,23 +144,93 @@ Worktree rules (MANDATORY):
 - Run ONLY tests in your Test scope — not the full suite
 - If you see errors in files outside your directories: STOP, report "scope violation"
 - End your report with: "Branch: parallel/{slug}"
+
+Checkpoint protocol (MANDATORY):
+- Exception to the ownership rule: you MAY create and update `.claude/checkpoint.md`
+  (gitignored, so it never enters git history). It is the only file outside your
+  "Directories owned" you are allowed to write. Create the dir if absent: `mkdir -p .claude`.
+- After completing each logical sub-step:
+  1. Write/append to `.claude/checkpoint.md`:
+     ## Checkpoint {N} — {ISO timestamp}
+     Completed: {one-line description of what was done}
+     Files modified: {files touched in this sub-step}
+     Decisions: {non-obvious choices — e.g. "used JWT not session tokens"}
+     Next: {what remains}
+  2. Commit your owned-dir changes locally: `git add <owned files> && git commit -m "checkpoint {N}: {summary}"`
+     (makes recovery verifiable via `git log`; gives the retrospective real duration data — Patch 2 9b)
+- If a sub-step fails after 2 retries, STOP. Do not continue past the failure.
+  Report your last successful checkpoint number in the completion message.
+- Completion message format becomes:
+  "Branch: parallel/{slug} | Checkpoints: {N} completed | Status: COMPLETE or FAILED_AT_{N+1}"
+
 ```
 
 **Max parallel agents:** 6 (default). Test-only milestones don't count toward the limit.
 
 ---
 
-## Step 6: Merge-on-Complete + Monitor
+## Step 6: Wave Merge (Wait-for-All)
 
-**Default (DAG mode, max_parallel > 3):** As each agent reports done, merge immediately:
-1. `git checkout main && git merge parallel/{slug} --no-ff`
-2. Run scoped tests for the merged module
-3. Update ownership.md and `.claude/parallel-wave-state.md` (status → `done`, fill commit hash)
-4. **Check DAG for newly-unblocked milestones** → dispatch them immediately (back to Step 3)
+All agents in a wave resolve before any merge starts (see rationale above).
+Once ALL agents in the wave have reported:
 
-**Fallback (max_parallel <= 3 or merge conflict):** Wait for all, then merge sequentially.
+1. Merge sequentially in complexity order (simplest first):
+   `git checkout main && git merge parallel/{slug} --no-ff`
+2. Run scoped tests after each merge to isolate which branch breaks if any
+3. Update ownership.md and `.claude/parallel-wave-state.md`:
+   - Successful: status → `done`, fill commit hash, record `Notes:` as `—`
+   - Failed: status → `failed`, record `Notes:` as `FAILURE={type} FILE={path}`
+4. After all merges complete → check DAG for newly-unblocked milestones
+5. Run **Between-Wave Discovery Injection** (from parallel-coordination.md)
+6. Dispatch next wave (back to Step 3) with injected discoveries
 
 Mark FAILED agents as `blocked` in plan.md — do NOT hold up other agents.
+
+---
+
+## Step 6b: Checkpoint Recovery for Failed Agents
+
+When a Task returns with status FAILED or the agent reports FAILED_AT_{N}:
+
+1. **Read the checkpoint file** from the failed agent's worktree:
+   ```bash
+   cat <worktree-path>/.claude/checkpoint.md 2>/dev/null
+   ```
+
+2. **Verify checkpoint claims against git ground truth** (run in the failed worktree):
+   ```bash
+   git diff --name-only main...HEAD          # files actually changed
+   git log --oneline main..HEAD              # checkpoint commits (from Patch 1a)
+   ```
+   Compare against the checkpoint's `Files modified:` and `Checkpoint {N}` count.
+   If they diverge — trust the diff/log, not the checkpoint narrative.
+
+3. **Decide recovery strategy:**
+   - **Verified checkpoints exist** → re-dispatch from last good checkpoint:
+     ```
+     Task: Resume Milestone {N} — {title}
+
+     [CHECKPOINT RECOVERY — WORKTREE ISOLATED]
+     Branch: parallel/{milestone-slug}-retry
+     Resume from: Checkpoint {last_good}
+
+     ## Verified prior state (from checkpoint + git verification)
+     Files already modified: {verified list}
+     Decisions already made: {from checkpoint Decisions field}
+     What failed: {agent's failure report}
+
+     IMPORTANT: The previous attempt failed at step {N+1}. Before continuing
+     from checkpoint {N}, evaluate whether the APPROACH was wrong — not just
+     the execution. If the approach seems flawed, try a different strategy
+     for the remaining work.
+
+     {remaining milestone spec}
+     ```
+   - **No checkpoints or verification fails** → full re-dispatch (current behavior)
+   - **Failed at Checkpoint 1** → no recovery benefit, full re-dispatch
+
+4. Only attempt checkpoint recovery **once** per milestone. If the retry also fails →
+   mark as `blocked` in plan.md. Do not loop.
 
 ---
 
@@ -174,9 +244,6 @@ After all agents in this dispatch have completed and been merged:
 
 # If all pass → push
 git push origin main
-
-# Clean up any remaining worktree branches
-git branch -d parallel/{slug-1} parallel/{slug-2} 2>/dev/null
 ```
 
 **If full suite fails**: identify which merge introduced the break → revert that branch → add to blocked.
@@ -187,7 +254,8 @@ git branch -d parallel/{slug-1} parallel/{slug-2} 2>/dev/null
 
 Update `.claude/plan.md` — set merged milestones to `status: done`.
 Update `.claude/ownership.md` — replace active table with merge record.
-**Delete `.claude/parallel-wave-state.md`** — wave is complete, prevent false resume on next session.
+Do NOT delete `.claude/parallel-wave-state.md` yet — Step 9 (retrospective) reads it,
+then deletes it in Step 9d. This still prevents false resume on the next session.
 
 Show final report:
 ```
@@ -201,6 +269,89 @@ Milestones dispatched: {N}
 Tests: PASS — {N} passing after merge
 Time saved vs sequential: ~{N} build cycles
 ```
+
+---
+
+## Step 9: Wave Retrospective
+
+Analyze the completed wave using **objective signals only** — parse actual output, never narrate.
+
+### 9a. Structured Failure Analysis
+
+Prerequisite: Step 6 (Patch 4) writes structured failure data to wave-state Notes:
+
+    | Milestone | Branch | Status | Commit | Notes |
+    |-----------|--------|--------|--------|-------|
+    | M3 — Auth | parallel/m3-auth | done | a1b2c3d | — |
+    | M4 — Profile | parallel/m4-profile | failed | — | FAILURE=merge_conflict FILE=src/shared/types.ts |
+    | M5 — Email | parallel/m5-email | done | e4f5g6h | — |
+
+Parse failures (wave-state still exists — Step 8 no longer deletes it):
+
+    grep "FAILURE=" .claude/parallel-wave-state.md 2>/dev/null
+
+For each `FAILURE=merge_conflict`:
+- Extract the FILE that conflicted
+- Check: was this file in either agent's `Directories Owned` (ownership map)? If no → coupling miss
+- Check: was this file in Layer 1's grep patterns (blueprint.md)? If no → detection gap
+
+### 9b. Duration Calibration (git timestamps only)
+
+Branches still exist (Step 7 no longer deletes them); commit-per-checkpoint (Patch 1a) makes first→last commit span approximate real duration:
+
+    for branch in $(git branch --merged main | grep "parallel/"); do
+      FIRST=$(git log "$branch" --reverse --format="%ci" | head -1)
+      LAST=$(git log "$branch" --format="%ci" | head -1)
+      echo "$branch: $FIRST → $LAST"
+    done
+
+Compare actual spans against Wave estimates from plan.md.
+Do not use agent self-reports. If a branch has a single commit (no per-checkpoint commits),
+record duration as "unknown" rather than 0.
+
+### 9c. Write to learnings file (versioned)
+
+Append to `.claude/memory/parallel-learnings.md` (create if missing — `.claude/` is gitignored, so this is a local calibration store, not shared across clones):
+
+    ## Wave {date} — {wave_number}
+
+    ### Objective Signals
+    - Milestones dispatched: {N}
+    - Succeeded: {N} | Failed: {N} | Checkpoint-recovered: {N}
+    - Merge conflicts: {list with FILE= values}
+    - Full suite result after merge: PASS/FAIL
+
+    ### Coupling Misses (if any)
+    - M{X} and M{Y} conflicted on: {file}
+    - Root cause: {shared utility / shared type / shared config}
+    - Was in Layer 1 grep? YES/NO
+    - Detection fix: Add `{pattern}` to Layer 1 shared-utility grep
+
+    ### Duration Calibration (if significant deviation)
+    - M{N}: estimated ~30min, actual {X}min (git timestamps)
+    - Adjustment: {over-scoped → split next time | under-scoped → increase Risk}
+
+**Versioning:** before writing, snapshot:
+
+    cp .claude/memory/parallel-learnings.md .claude/memory/parallel-learnings.$(date +%Y%m%d).bak 2>/dev/null
+
+If the learnings file grows past 50 coupling entries, prune entries older than 90 days
+that have been addressed (their detection fix was added to Layer 1).
+
+### 9d. Cleanup (replaces the deletions removed from Steps 7/8)
+
+Run ONLY after 9a-9c have consumed their inputs:
+
+    # 1. Archive wave-state for the record, then delete it
+    cp .claude/parallel-wave-state.md .claude/memory/wave-{N}-state.bak 2>/dev/null
+    rm .claude/parallel-wave-state.md
+
+    # 2. Remove worktrees BEFORE deleting branches (branch -d fails on checked-out branches)
+    git worktree remove <worktree-path-1> --force 2>/dev/null
+    git worktree remove <worktree-path-2> --force 2>/dev/null
+
+    # 3. Now delete the branches
+    git branch -d parallel/{slug-1} parallel/{slug-2} 2>/dev/null
 
 ---
 

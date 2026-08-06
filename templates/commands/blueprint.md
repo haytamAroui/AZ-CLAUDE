@@ -89,6 +89,15 @@ Identify:
 - **Tests** that must be added or modified
 - **Config / migration** side effects
 
+### Historical coupling data (from parallel wave retrospectives)
+```bash
+cat .claude/memory/parallel-learnings.md 2>/dev/null | grep -A2 "Coupling Miss"
+```
+If previous waves recorded coupling misses for file patterns that appear in this
+blueprint's affected files → auto-merge those milestones into a single milestone
+in Step 3, regardless of what Layer 1's directory check says.
+This is how parallel execution learns from its own failures.
+
 ---
 
 ## Step 3: Write the Plan

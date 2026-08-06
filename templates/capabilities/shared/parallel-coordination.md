@@ -108,7 +108,7 @@ As each agent reports `COMPLETE`, merge immediately:
 2. Run scoped tests: `{test command} tests/{scope}/ 2>&1 | tail -10`
 3. Update plan.md status → `done`, update DAG state file
 4. **Check DAG for newly-unblocked milestones** → dispatch them immediately (back to Step 1)
-5. Clean up branch: `git branch -d parallel/{slug}`
+5. Clean up branch: `git worktree remove <worktree-path> --force 2>/dev/null && git branch -d parallel/{slug}`
 
 **Batch-merge fallback (max_parallel <= 3 OR merge conflict detected):**
 Wait for ALL dispatched agents to complete, then merge sequentially (simplest first).
@@ -132,6 +132,7 @@ Each agent's branch is merged as soon as it completes — no waiting for others:
 git checkout main
 git merge parallel/m3-auth --no-ff -m "merge: M3 auth endpoints [dag]"
 {test command} tests/auth/ 2>&1 | tail -10  # scoped test only
+git worktree remove <worktree-path-m3> --force 2>/dev/null
 git branch -d parallel/m3-auth
 
 # Check DAG: M5 depends on M3 → M5 is now ready → dispatch M5 immediately
@@ -151,6 +152,7 @@ git merge parallel/m3-auth --no-ff -m "merge: M3 auth endpoints [dag]"
 git merge parallel/m4-profile --no-ff -m "merge: M4 user profile [dag]"
 {test command} 2>&1 | tail -20  # full suite after all merges
 git push origin main
+git worktree remove <worktree-path-m3> <worktree-path-m4> --force 2>/dev/null
 git branch -d parallel/m3-auth parallel/m4-profile
 ```
 
@@ -160,6 +162,58 @@ git branch -d parallel/m3-auth parallel/m4-profile
 - **If merge conflict**: read both versions, apply correct merge (keep both feature additions)
 - **If conflict is unresolvable**: switch from Mode A to Mode B for remaining branches
 - **If tests fail after merge**: identify which merge broke it → revert that branch → add to blocked
+
+---
+
+## Between-Wave Discovery Injection
+
+When a wave completes, the orchestrator has all Task return values (agent completion
+reports) in context. Before dispatching the next wave, extract discoveries that
+affect upcoming milestones.
+
+### Extraction (runs between waves, not during)
+
+For each completed agent's report, look for:
+- **Schema/API differences** from what the plan assumed
+- **Missing dependencies** the agent had to install
+- **Convention decisions** the agent made (naming, patterns, error handling)
+- **Unexpected constraints** discovered during implementation
+
+These are pulled from the Task return value — no shared file needed, no
+worktree-visibility problem. The orchestrator already has this data.
+
+### Injection format
+
+For each next-wave milestone, prepend discoveries from the prior wave
+that are relevant to that milestone's scope:
+
+    ## Discoveries from Wave {N-1} (verified — from completed agent reports)
+
+    - M{X} found that {table_name} requires a NOT NULL migration before inserting
+      (relevant because your milestone reads from this table)
+    - M{Y} chose {pattern} for error handling in {shared module}
+      (relevant because your milestone extends this module)
+    - M{Z} installed {dependency}@{version} — already in package.json on main
+      (relevant to avoid duplicate install or version conflict)
+
+### What this does NOT solve
+
+Same-wave agents cannot help each other. If P1 and P2 are dispatched together
+and P1 discovers something P2 needs, P2 will hit the same issue independently.
+This is a permanent structural limitation of round-based dispatch.
+
+Between-wave injection prevents the *second* occurrence: Wave N+1 agents won't
+repeat Wave N's mistakes. It does not prevent the first occurrence within a wave.
+
+### Rule: discoveries are claims until verified
+
+Before injecting a discovery into a next-wave prompt, verify it:
+- Schema claim → check the actual merged state on main
+- Dependency claim → check package.json / requirements.txt on main
+- Convention claim → check the actual code on main
+
+If verification fails (agent reported something that isn't true in the merged
+state), discard the discovery. Do not inject unverified claims.
 
 ---
 
