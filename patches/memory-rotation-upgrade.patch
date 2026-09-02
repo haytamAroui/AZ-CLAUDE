@@ -1,0 +1,180 @@
+diff --git a/templates/hooks/post-tool-use.js b/templates/hooks/post-tool-use.js
+--- a/templates/hooks/post-tool-use.js
++++ b/templates/hooks/post-tool-use.js
+@@
+ const cfg       = process.env.AZCLAUDE_CFG || '.claude';
+ // Guard: cfg must resolve inside the project root
+ if (path.resolve(cfg).indexOf(process.cwd()) !== 0) process.exit(0);
+ const goalsPath = path.join(cfg, 'memory', 'goals.md');
++const summaryPath = path.join(cfg, 'memory', 'summary.md');
+ if (!fs.existsSync(goalsPath)) process.exit(0); // not an AZCLAUDE project
++
++function updateSummary(patch = {}) {
++  try {
++    fs.mkdirSync(path.join(cfg, 'memory'), { recursive: true });
++    const nowIso = new Date().toISOString();
++    const prev = fs.existsSync(summaryPath) ? fs.readFileSync(summaryPath, 'utf8') : '';
++    const summary = {
++      last_updated: nowIso,
++      last_rotation_at: patch.last_rotation_at || (prev.match(/^last_rotation_at:\s*(.+)$/m)?.[1] || ''),
++      rotated_in_progress_count: patch.rotated_in_progress_count ?? Number(prev.match(/^rotated_in_progress_count:\s*(\d+)$/m)?.[1] || 0),
++      archived_done_count: patch.archived_done_count ?? Number(prev.match(/^archived_done_count:\s*(\d+)$/m)?.[1] || 0),
++      latest_checkpoint: patch.latest_checkpoint || (prev.match(/^latest_checkpoint:\s*(.+)$/m)?.[1] || ''),
++      active_files: patch.active_files || [],
++    };
++    const lines = [
++      '---',
++      `last_updated: ${summary.last_updated}`,
++      `last_rotation_at: ${summary.last_rotation_at}`,
++      `rotated_in_progress_count: ${summary.rotated_in_progress_count}`,
++      `archived_done_count: ${summary.archived_done_count}`,
++      `latest_checkpoint: ${summary.latest_checkpoint}`,
++      '---',
++      '',
++      '## Active files',
++      ...(summary.active_files.length > 0 ? summary.active_files.map(f => `- ${f}`) : ['- none']),
++      ''
++    ];
++    fs.writeFileSync(summaryPath, lines.join('\n'));
++  } catch (_) {}
++}
+@@
+ if (isFileTool) {
+@@
+ const entry = `- ${ts} — ${rel}${diffStat}${changeSummary}`;
+@@
+ try { fs.writeFileSync(goalsPath, content); } catch (_) {}
++updateSummary({ active_files: [rel] });
+@@
+   if (ipEntries.length >= ROTATE_THRESHOLD) {
+@@
+     try { fs.writeFileSync(goalsPath, pruned.join('\n')); } catch (_) {}
++    updateSummary({
++      last_rotation_at: archiveTs,
++      rotated_in_progress_count: toArchive.length,
++      active_files: ipEntries.slice(0, KEEP_NEWEST).map(e => e.line.replace(/^-\s+\d\d:\d\d\s+—\s+/, '').split(' (+')[0])
++    });
+   }
+ }
+
+ } // end isFileTool goals tracking
+
+diff --git a/templates/hooks/stop.js b/templates/hooks/stop.js
+--- a/templates/hooks/stop.js
++++ b/templates/hooks/stop.js
+@@
+ const cfg       = process.env.AZCLAUDE_CFG || '.claude';
+ // Guard: cfg must resolve inside the project root
+ if (path.resolve(cfg).indexOf(process.cwd()) !== 0) process.exit(0);
+ const goalsPath = path.join(cfg, 'memory', 'goals.md');
++const summaryPath = path.join(cfg, 'memory', 'summary.md');
+@@
+ if (!fs.existsSync(goalsPath)) process.exit(0);
++
++function updateSummary(patch = {}) {
++  try {
++    fs.mkdirSync(path.join(cfg, 'memory'), { recursive: true });
++    const nowIso = new Date().toISOString();
++    const prev = fs.existsSync(summaryPath) ? fs.readFileSync(summaryPath, 'utf8') : '';
++    const rotated = Number(prev.match(/^rotated_in_progress_count:\s*(\d+)$/m)?.[1] || 0);
++    const archived = Number(prev.match(/^archived_done_count:\s*(\d+)$/m)?.[1] || 0);
++    const latestCheckpoint = patch.latest_checkpoint || (prev.match(/^latest_checkpoint:\s*(.+)$/m)?.[1] || '');
++    const lines = [
++      '---',
++      `last_updated: ${nowIso}`,
++      `last_rotation_at: ${patch.last_rotation_at || (prev.match(/^last_rotation_at:\s*(.+)$/m)?.[1] || '')}`,
++      `rotated_in_progress_count: ${patch.rotated_in_progress_count ?? rotated}`,
++      `archived_done_count: ${patch.archived_done_count ?? archived}`,
++      `latest_checkpoint: ${latestCheckpoint}`,
++      '---',
++      '',
++      '## Active files',
++      '- session closed',
++      ''
++    ];
++    fs.writeFileSync(summaryPath, lines.join('\n'));
++  } catch (_) {}
++}
+@@
+   if (doneEntries.length > DONE_KEEP) {
+@@
+     const archivedSet = new Set(toArchive.map(e => e.idx));
+     content = trimLines.filter((_, i) => !archivedSet.has(i)).join('\n');
++    updateSummary({ last_rotation_at: new Date().toISOString(), archived_done_count: toArchive.length });
+   }
+ }
+@@
+ if (fs.existsSync(checkpointDir)) {
+   try {
+     const cpFiles = fs.readdirSync(checkpointDir)
+@@
+     for (const f of cpFiles.slice(MAX_CHECKPOINTS)) {
+       try { fs.unlinkSync(path.join(checkpointDir, f)); } catch (_) {}
+     }
++    if (cpFiles.length > 0) updateSummary({ latest_checkpoint: cpFiles[0] });
+   } catch (_) {}
+ }
+
+diff --git a/templates/hooks/user-prompt.js b/templates/hooks/user-prompt.js
+--- a/templates/hooks/user-prompt.js
++++ b/templates/hooks/user-prompt.js
+@@
+ const cfg = process.env.AZCLAUDE_CFG || '.claude';
+ const goalsPath = path.join(cfg, 'memory', 'goals.md');
++const summaryPath = path.join(cfg, 'memory', 'summary.md');
+ if (!fs.existsSync(goalsPath)) process.exit(0);
+@@
+-for (const d of ['.claude/memory', '.claude/memory/checkpoints']) {
++for (const d of [path.join(cfg, 'memory'), path.join(cfg, 'memory', 'checkpoints')]) {
+   try { fs.mkdirSync(d, { recursive: true }); } catch (_) {}
+ }
++
++if (fs.existsSync(summaryPath)) {
++  try {
++    const summaryContent = fs.readFileSync(summaryPath, 'utf8');
++    const summaryLines = summaryContent.split('\n').filter(l => !INJECTION.test(l)).slice(0, 20);
++    console.log('--- MEMORY SUMMARY ---');
++    console.log(summaryLines.join('\n').trim());
++    console.log('--- END MEMORY SUMMARY ---');
++    console.log('');
++  } catch (_) {}
++}
+@@
+-const blockersPath = path.join('.claude', 'memory', 'blockers.md');
++const blockersPath = path.join(cfg, 'memory', 'blockers.md');
+@@
+-const decisionsPath = path.join('.claude', 'memory', 'decisions.md');
++const decisionsPath = path.join(cfg, 'memory', 'decisions.md');
+@@
+-const patternsPath = path.join('.claude', 'memory', 'patterns.md');
++const patternsPath = path.join(cfg, 'memory', 'patterns.md');
+@@
+-const checkpointDir = path.join('.claude', 'memory', 'checkpoints');
++const checkpointDir = path.join(cfg, 'memory', 'checkpoints');
+@@
+-  const intentPath = path.join('.claude', 'copilot-intent.md');
++  const intentPath = path.join(cfg, 'copilot-intent.md');
+@@
+-    const planPath = path.join('.claude', 'plan.md');
++    const planPath = path.join(cfg, 'plan.md');
+@@
+-  const reflexDir = path.join('.claude', 'memory', 'reflexes');
++  const reflexDir = path.join(cfg, 'memory', 'reflexes');
+
+diff --git a/tests/test-features.sh b/tests/test-features.sh
+--- a/tests/test-features.sh
++++ b/tests/test-features.sh
+@@
+ check        "rotation: post-tool-use threshold 30"        "templates/hooks/post-tool-use.js" "ROTATE_THRESHOLD\|>= 30\|=== 30"
+ check        "rotation: post-tool-use keeps newest 15"     "templates/hooks/post-tool-use.js" "KEEP_NEWEST\|slice.*15\|15.*slice"
++check        "rotation: post-tool-use summary path"        "templates/hooks/post-tool-use.js" "summary\.md"
++check        "rotation: post-tool-use updateSummary"       "templates/hooks/post-tool-use.js" "function updateSummary"
+ check        "rotation: post-tool-use archives to sessions" "templates/hooks/post-tool-use.js" "sessions.*edits\.md"
+@@
+ check        "rotation: stop trims Done section to 20"     "templates/hooks/stop.js"          "DONE_KEEP\|doneEntries.*20\|> DONE_KEEP"
++check        "rotation: stop summary path"                 "templates/hooks/stop.js"          "summary\.md"
+ check        "rotation: stop archives done overflow"       "templates/hooks/stop.js"          "sessions.*edits\.md"
+@@
+ check        "hooks: user-prompt injects blockers.md"      "templates/hooks/user-prompt.js"   "blockers\.md\|ACTIVE BLOCKERS"
++check        "hooks: user-prompt injects summary"          "templates/hooks/user-prompt.js"   "MEMORY SUMMARY\|summary\.md"
+ check        "hooks: user-prompt injects decisions.md"     "templates/hooks/user-prompt.js"   "decisions\.md\|ARCHITECTURE DECISIONS"
