@@ -140,11 +140,17 @@ If code-rules found → read the file header line (`# Architecture: {pattern}`):
 - If a plan step would introduce a pattern that conflicts with the declared architecture — flag it
 - Add note: `⚠ Code rules: this step should follow {architecture pattern} — verify approach before implementing`
 
-Then run `/tasks` to show dependency waves:
+Then run `/tasks` to show dependency waves — **only if `.claude/plan.md` exists**:
+```bash
+[ -f .claude/plan.md ] && echo "plan present" || echo "no plan yet"
+```
 ```
 Next: Run /tasks to see which plan steps can run in parallel
 ```
-(Do not block — /tasks is informational at this stage)
+`/tasks` reads `.claude/plan.md`. In interactive mode the plan lives only in the reply
+above and is not written to disk, so skip this step and use the Step 3c visualization
+instead. In copilot mode plan.md is written later, so this hint is informational either
+way — do not block on it.
 
 ---
 
@@ -421,7 +427,10 @@ When running inside `/copilot` (detected by: `.claude/copilot-intent.md` exists)
 - Task Classifier + Layer 1 already ran in the "Parallel Planning" section above
 - Write the plan to `.claude/plan.md` using the classified milestones
 - Read `.claude/capabilities/shared/plan-tracker.md` for the exact format
-- Each milestone = one logical unit of work (1-3 files, one commit)
+- Each milestone = one logical unit of work, one commit. Target 1-3 files, but a
+  **fat milestone** (coupled work the classifier merged) legitimately exceeds that —
+  it trades a larger unit for zero conflict risk. Do not split a fat milestone to hit
+  the 1-3 target; that is the coupling the classifier removed on purpose.
 - Include `Depends:` for milestones that require prior work
 - Include `Files:` with expected paths
 - Include `Risk: 1-5` — failure cost (1=safe, 5=likely to fail or cascade). Score based on: touches shared state? new pattern? external dependency?

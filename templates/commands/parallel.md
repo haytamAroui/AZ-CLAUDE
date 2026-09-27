@@ -171,7 +171,13 @@ Checkpoint protocol (MANDATORY):
 
 ## Step 6: Wave Merge (Wait-for-All)
 
-All agents in a wave resolve before any merge starts (see rationale above).
+All agents in a wave resolve before any merge starts.
+
+**Why wait for all:** merging on first-completion reintroduces exactly the class of
+conflict the safety check in Step 2 exists to prevent. If M1 merges while M2 is still
+editing a shared file, the conflict surfaces inside M2's worktree and is attributed to
+the wrong milestone. Waiting also means one full-suite run validates the whole wave
+rather than N runs validating partial states.
 Once ALL agents in the wave have reported:
 
 1. Merge sequentially in complexity order (simplest first):
@@ -311,7 +317,11 @@ record duration as "unknown" rather than 0.
 
 ### 9c. Write to learnings file (versioned)
 
-Append to `.claude/memory/parallel-learnings.md` (create if missing — `.claude/` is gitignored, so this is a local calibration store, not shared across clones):
+Append to `.claude/memory/parallel-learnings.md` (create if missing).
+
+**This file IS tracked in git.** `.claude/memory/` is deliberately not ignored — copilot
+depends on goals.md and checkpoints living in the tree. Treat learnings as shared state:
+it is reviewable, and other clones inherit the calibration.
 
     ## Wave {date} — {wave_number}
 
