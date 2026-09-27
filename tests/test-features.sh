@@ -1442,6 +1442,21 @@ check      "node-smoke: uses node:test"              "tests/node-smoke.test.js" 
 check      "node-smoke: validates hooks.json"        "tests/node-smoke.test.js" "hooks.json"
 check      "node-smoke: validates cli.js syntax"     "tests/node-smoke.test.js" "cli.js"
 
+# ── Hook behaviour suite ─────────────────────────────────────────────────────
+# Unlike the grep assertions above, this file EXECUTES the hooks and asserts on
+# exit codes and filesystem effects. It is the only coverage that can prove a
+# hook actually blocks, allows, and preserves data.
+check_file "hooks.test: behaviour suite exists"      "tests/hooks.test.js"
+check      "hooks.test: uses node:test"              "tests/hooks.test.js" "node:test"
+check      "hooks.test: asserts secret block (exit 2)" "tests/hooks.test.js" "hardcoded secret is BLOCKED"
+check      "hooks.test: asserts clean allow (exit 0)"  "tests/hooks.test.js" "clean code is ALLOWED"
+check      "hooks.test: asserts archive not delete"    "tests/hooks.test.js" "ARCHIVED, never deleted"
+check      "hooks.test: guards destructive unlink"     "tests/hooks.test.js" "destructive unlink pattern"
+check      "hooks.test: asserts goals.md injection"    "tests/hooks.test.js" "injects goals.md content"
+check_file "ci: workflow exists"                      ".github/workflows/tests.yml"
+check      "ci: runs hook behaviour suite"            ".github/workflows/tests.yml" "tests/hooks.test.js"
+check      "ci: covers windows"                       ".github/workflows/tests.yml" "windows-latest"
+
 # ─── Pressure tests ────────────────────────────────────────────────────────────
 echo ""
 echo "─── Pressure tests ───"

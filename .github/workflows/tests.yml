@@ -26,6 +26,9 @@ jobs:
       - name: Run Node smoke tests
         run: node --test tests/node-smoke.test.js
 
+      - name: Run hook behaviour tests
+        run: node --test tests/hooks.test.js
+
       - name: Verify package structure
         run: |
           node -e "
@@ -179,3 +182,27 @@ jobs:
       - name: Dry-run npm pack (verify publish structure)
         run: npm pack --dry-run 2>&1 | grep -E "files|kB|total" | tail -5
         if: matrix.node-version == '22'
+
+  # The hooks are plain Node precisely so they run on Windows (PowerShell/CMD/
+  # Git Bash), macOS and Linux alike. That claim is only worth something if CI
+  # proves it, so the behavioural suite runs on all three.
+  cross-platform:
+    name: Hook behaviour (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run hook behaviour tests
+        run: node --test tests/hooks.test.js
+
+      - name: Run feature regression suite
+        run: bash tests/test-features.sh
+        shell: bash
