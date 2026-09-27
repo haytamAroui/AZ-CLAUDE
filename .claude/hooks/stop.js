@@ -95,8 +95,10 @@ content = content.replace(/^Updated: .*/m, `Updated: ${today}`);
 try { fs.writeFileSync(goalsPath, content); } catch (_) {}
 
 // ── Prune old checkpoints — keep 5 most recent, archive the rest ────────────
-// MOVED, not deleted: this previously called unlinkSync, which silently removed
-// git-tracked files and left the working tree dirty.
+// Older checkpoints are superseded by goals.md "Current threads" entries.
+// MOVED, not deleted: an earlier version called unlinkSync here, which silently
+// removed git-tracked files and left the working tree dirty. Archived files stay
+// recoverable and the active dir stays bounded.
 const checkpointDir = path.join(cfg, 'memory', 'checkpoints');
 if (fs.existsSync(checkpointDir)) {
   try {
@@ -113,6 +115,7 @@ if (fs.existsSync(checkpointDir)) {
         const from = path.join(checkpointDir, f);
         const to   = path.join(archiveDir, f);
         try {
+          // Don't clobber a same-named archive from an earlier prune.
           if (fs.existsSync(to)) fs.rmSync(to, { force: true });
           fs.renameSync(from, to);
         } catch (_) {}

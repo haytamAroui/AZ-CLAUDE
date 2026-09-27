@@ -5,15 +5,15 @@
 | Name | Package | API Key | Use in AZCLAUDE |
 |------|---------|---------|-----------------|
 | Context7 | `@upstash/context7-mcp` | None | Inject live library docs into /add, /fix, /copilot |
-| Sequential Thinking | `@modelcontextprotocol/server-sequential-thinking` | None | Better reasoning in orchestrator, /blueprint, /debate |
+| Sequential Thinking | `@modelcontextprotocol/server-sequential-thinking` | None | Better reasoning in orchestrator and /blueprint |
 
 ## Developer Tools
 
 | Name | Package | API Key | Use in AZCLAUDE |
 |------|---------|---------|-----------------|
-| GitHub | `@modelcontextprotocol/server-github` | `GITHUB_TOKEN` (optional) | /issues, /ship, PR creation, repo search |
+| GitHub | `@modelcontextprotocol/server-github` | `GITHUB_TOKEN` (optional) | /ship, PR creation, repo search |
 | Playwright | `@playwright/mcp` | None | E2E tests with qa-engineer, /test |
-| Brave Search | `@modelcontextprotocol/server-brave-search` | `BRAVE_API_KEY` | /fix error lookup, /sentinel CVE research |
+| Brave Search | `@modelcontextprotocol/server-brave-search` | `BRAVE_API_KEY` | /fix error lookup, CVE research |
 | Firecrawl | `firecrawl-mcp` | `FIRECRAWL_API_KEY` | Scrape live docs, competitor analysis |
 | Sentry | `@sentry/mcp-server` | `SENTRY_TOKEN` | Pipe production errors into /fix sessions |
 
@@ -50,5 +50,5 @@ claude mcp list
 
 - [ ] No plaintext secrets in `.mcp.json` — use `${ENV_VAR}`
 - [ ] Versions pinned (not `@latest`) for production
-- [ ] Run `/sentinel` after changes to score MCP config
+- [ ] Run `/security-review` after changes to score MCP config
 - [ ] `.mcp.json` in `.gitignore` if it contains env refs to local paths
