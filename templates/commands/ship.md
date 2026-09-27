@@ -28,7 +28,7 @@ Available skills: {list}
 ```
 Use returned Team Spec:
 - Risks → must address before shipping (not suggestions)
-- Structural Decision: YES → a decision was made without /debate → log it to decisions.md now
+- Structural Decision: YES → a decision was made without stating trade-offs → log it to decisions.md now
 - Pre-Conditions → any unmet condition blocks ship (e.g., migration not run, env var not set)
 
 If problem-architect not installed OR git diff is only docs/config: skip and proceed to Pre-Ship Gate.
@@ -43,12 +43,12 @@ If problem-architect not installed OR git diff is only docs/config: skip and pro
 [ -f .claude/plan.md ] && echo "plan=found" || echo "plan=missing"
 ```
 
-If `plan=found`: run `/analyze plan` inline:
+If `plan=found`: audit the plan against the diff inline:
 - Scan for milestones marked `done` where the committed files no longer exist
 - If ANY ghost milestones found → STOP:
   ```
   ✗ Pre-ship blocked: ghost milestones detected (marked done, files missing).
-    Run /analyze to see full list. Fix plan.md before shipping.
+    List the mismatches. Fix plan.md before shipping.
   ```
 - If constitution.md exists: also verify no `pending` milestones violate a non-negotiable
   (a quick grep is sufficient — full constitution-guard runs per-milestone during /copilot)
@@ -61,13 +61,13 @@ ls .claude/agents/security-auditor.md 2>/dev/null && echo "agent=found" || echo 
 ```
 If `agent=found`: read `.claude/agents/security-auditor.md` and execute the secrets scan inline using its rules. If verdict is `BLOCKED` → STOP.
 ```
-✗ Pre-ship blocked: security-auditor found BLOCKED findings. Run /sentinel for details.
+✗ Pre-ship blocked: security-auditor found BLOCKED findings. Run /security-review for details.
 ```
 **0c. Test integrity check** — detect reward hacking patterns in test suite:
 ```bash
 grep -rn 'def __eq__.*return True\|sys\.exit\s*(0)\|TestReport\.from_item_and_call' tests/ test/ conftest.py 2>/dev/null
 ```
-If any match: WARN. `⚠ Pre-ship warning: reward hack pattern detected in test files. Run /ghost-test for details.`
+If any match: WARN. `⚠ Pre-ship warning: reward hack pattern detected in test files. Verify they can fail.`
 
 If `agent=missing`: run inline secret scan:
 ```bash

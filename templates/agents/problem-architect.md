@@ -76,7 +76,7 @@ versions, and best practices evolve. A 30-second web search prevents hours of de
 
 **Agents:**
 Which project agent owns these files? (grep .claude/agents/ for directory claims)
-If no agent exists → recommend `milestone-builder` (generic) + note for /evolve
+If no agent exists → recommend `milestone-builder` (generic) + note for the review cycle
 If milestone crosses 2+ agent boundaries → recommend sequential: agent-A first, then agent-B
 
 **Skills:**
@@ -141,7 +141,7 @@ Output this EXACT format — the orchestrator parses it:
 ### Agents
 - Primary: {agent-name} (owns {directories})
 - Support: {agent-name} (for {specific task}) — omit if not needed
-- If none match: milestone-builder (generic) — flag for /evolve
+- If none match: milestone-builder (generic) — flag for the review cycle
 
 ### Skills to Load
 - {skill-name}: because {specific reason tied to this milestone}
@@ -175,7 +175,7 @@ The milestone-builder runs these searches BEFORE writing code. Orchestrator incl
 
 ### Structural Decision Required?
 YES/NO
-If YES: topic = {what orchestrator must /debate before dispatching}
+If YES: topic = {what orchestrator must decide before dispatching}
 
 ### Estimated Complexity
 SIMPLE (< 3 files) | MEDIUM (3-8 files) | COMPLEX (8+ files)

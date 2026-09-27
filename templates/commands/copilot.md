@@ -40,7 +40,7 @@ If `intent=missing`:
 ```
 ⚠ No copilot-intent.md found.
 
-Run /dream first to define your product? (recommended — provides test strategy, done criteria, deployment target)
+Run /blueprint first to define the plan? (recommended — provides test strategy, done criteria, deployment target)
 Or continue inferring intent from CLAUDE.md? (faster, less precise for complex projects)
 
 Proceeding without copilot-intent.md — inferring from CLAUDE.md and plan.md.
@@ -85,8 +85,8 @@ Follow this decision tree in order:
    - If `constitution.md` exists → spawn `constitution-guard` agent with milestone details before implementing
    - If constitution-guard returns VIOLATION → log to `blockers.md`, skip this milestone, continue to next
    - If APPROVED (or no constitution) → implement the milestone
-5. **3 milestones done since last /evolve?** → Run `/evolve` first, then continue
-6. **All milestones done?** → Run `/analyze` then `/audit` on the full project
+5. **3 milestones done?** → Run the Step 4 review cycle, then continue
+6. **All milestones done?** → Run `/test` on the full project, then review against copilot-intent.md
 7. **Review passes?** → Run `/ship` and deploy
 8. **Deploy succeeds?** → Write `COPILOT_COMPLETE` to goals.md, generate copilot-report.md
 
@@ -112,20 +112,20 @@ For each milestone in plan.md:
 6. Stage and commit: `{type}: {what} — {why}`
 7. Push
 8. Update plan.md: set milestone status to `done`
-9. Run `/snapshot`
+9. Append a milestone entry to `.claude/memory/goals.md` (compaction protection)
 
 ---
 
-## Step 4: Evolution Cycle (Every 3 Milestones)
+## Step 4: Review Cycle (Every 3 Milestones)
 
 After every 3 completed milestones:
-1. Run `/reflexes analyze` — detect patterns from tool-use observations, create/update reflexes
-2. Run `/evolve` — scans git history for patterns, creates agents if evidence found
-3. Run `/analyze` — check for GHOST milestones (marked done but not implemented) and spec→plan drift
+1. Audit plan.md against the actual diff — check for GHOST milestones (marked done
+   but not implemented) and spec→plan drift
    - If GHOST milestones found → set their status back to `pending` in plan.md, add back to queue
    - If spec drift found → log gap to `.claude/memory/blockers.md` as a fix milestone
-4. Check if CLAUDE.md conventions need updating
-5. Re-read plan.md — re-evaluate remaining milestone priorities
+2. Spawn `code-reviewer` on the work completed since the last cycle
+3. Check if CLAUDE.md conventions need updating
+4. Re-read plan.md — re-evaluate remaining milestone priorities
 6. If a blocked milestone can now be unblocked (new agents/context available) → retry it
 
 ---
@@ -133,10 +133,11 @@ After every 3 completed milestones:
 ## Step 5: Final Review
 
 When all milestones show status `done` (or `blocked` with no unblock path):
-1. Run `/analyze` — verify all done milestones are actually implemented (no GHOSTs)
+1. Verify all done milestones are actually implemented (no GHOSTs) by auditing
+   plan.md against the real diff
    - If GHOST milestones found → re-open them, add as fix milestones, continue building
-   - If /analyze shows consistency ≥ 90% → proceed
-2. Run `/audit` on the full project against copilot-intent.md
+   - If consistency ≥ 90% → proceed
+2. Spawn `code-reviewer` on the full project, checked against copilot-intent.md
 3. If review finds gaps → create fix milestones, add to plan.md, continue building
 4. If review passes → proceed to ship
 
@@ -161,7 +162,7 @@ When all milestones show status `done` (or `blocked` with no unblock path):
    {from decisions.md}
 
    ## Agents Created
-   {list any agents /evolve generated}
+   {agents created, if any}
 
    ## Blockers Encountered
    {from blockers.md, or "None"}
@@ -170,7 +171,7 @@ When all milestones show status `done` (or `blocked` with no unblock path):
    {test results summary}
    ```
 3. Write `COPILOT_COMPLETE` to the top of goals.md
-4. Final `/snapshot`
+4. Final goals.md summary write
 
 ---
 
@@ -180,8 +181,8 @@ If any milestones are `blocked` and other milestones are now `done`:
 1. Re-read `.claude/memory/blockers.md` for each blocked milestone
 2. With full project context now available, retry the blocked milestone
 3. If retry succeeds → update plan.md status to `done`, remove from blockers.md
-4. If retry still fails → run `/debate` to find alternative approach
-5. If debate finds solution → implement it
+4. If retry still fails → state a different approach and its trade-offs, and try it
+5. If the alternative works → implement it
 6. If no solution → mark as `skipped` in plan.md, document reason
 
 ---
@@ -217,6 +218,6 @@ Every failure teaches the environment something. Never fail silently.
 - STOP only if: tests fail after 2 fix attempts on same issue AND alternative approach also fails → log to blockers.md, continue to next milestone
 - STOP if: all milestones complete and shipped
 - Every commit message follows: `{type}: {what} — {why}`
-- Run `/snapshot` after every milestone (context compaction protection)
+- Append to `.claude/memory/goals.md` after every milestone (context compaction protection)
 - Read `.claude/memory/patterns.md` before implementing — follow what works
 - Read `.claude/memory/antipatterns.md` before implementing — avoid what broke

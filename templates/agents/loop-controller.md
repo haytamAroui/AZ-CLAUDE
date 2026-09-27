@@ -76,7 +76,7 @@ If < 3 sessions: skip to Cycle 3.
 
 ## Cycle 3: Topology Optimization
 
-Check if topology friction was detected in Cycle 1 OR if explicitly triggered by `/level-up`:
+Check if topology friction was detected in Cycle 1:
 
 Load `.claude/capabilities/evolution/cycle3-topology.md` and run.
 Output: optimized pipeline map, agent merge candidates, updated manifest token estimates

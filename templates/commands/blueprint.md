@@ -89,14 +89,14 @@ Identify:
 - **Tests** that must be added or modified
 - **Config / migration** side effects
 
-### Historical coupling data (from parallel wave retrospectives)
+### Historical coupling data
 ```bash
-cat .claude/memory/parallel-learnings.md 2>/dev/null | grep -A2 "Coupling Miss"
+cat .claude/memory/coupling-learnings.md 2>/dev/null | grep -A2 "Coupling Miss"
 ```
-If previous waves recorded coupling misses for file patterns that appear in this
+If previous plans recorded coupling misses for file patterns that appear in this
 blueprint's affected files → auto-merge those milestones into a single milestone
 in Step 3, regardless of what Layer 1's directory check says.
-This is how parallel execution learns from its own failures.
+This is how planning learns from its own failures.
 
 ---
 
@@ -140,17 +140,9 @@ If code-rules found → read the file header line (`# Architecture: {pattern}`):
 - If a plan step would introduce a pattern that conflicts with the declared architecture — flag it
 - Add note: `⚠ Code rules: this step should follow {architecture pattern} — verify approach before implementing`
 
-Then run `/tasks` to show dependency waves — **only if `.claude/plan.md` exists**:
-```bash
-[ -f .claude/plan.md ] && echo "plan present" || echo "no plan yet"
-```
-```
-Next: Run /tasks to see which plan steps can run in parallel
-```
-`/tasks` reads `.claude/plan.md`. In interactive mode the plan lives only in the reply
-above and is not written to disk, so skip this step and use the Step 3c visualization
-instead. In copilot mode plan.md is written later, so this hint is informational either
-way — do not block on it.
+Dependency waves are rendered by the Step 3c visualization below. There is no
+separate command to run — in copilot mode the orchestrator dispatches straight from
+that output.
 
 ---
 

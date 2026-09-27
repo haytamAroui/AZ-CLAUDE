@@ -4,7 +4,7 @@ description: >
   Load when patterns.md has 10+ entries that haven't been reviewed. Load when
   goals.md has stale sessions older than 2 weeks. Load when the same pattern
   appears in multiple session files and hasn't been consolidated. Load after
-  detect+generate+evaluate as part of /evolve to close the learning loop.
+  detect+generate+evaluate as part of a review cycle to close the learning loop.
 tokens: ~200
 ---
 

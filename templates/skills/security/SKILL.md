@@ -90,7 +90,7 @@ Fires on **every** prompt (before session gate). Filters from goals.md + checkpo
 - Always check lockfile exists before `npm install` in new projects
 - `npm audit` CRITICAL findings → block; HIGH → warn
 - Loose pins (`^`, `~`, `*`) in package.json → flag for review
-- Run `/sentinel --supply-chain` for full dependency scan
+- Run `security-auditor` with the supply-chain category for a full dependency scan
 
 For full details: `references/security-details.md`
 </instructions>

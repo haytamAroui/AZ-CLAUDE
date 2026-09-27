@@ -261,7 +261,7 @@ CLAUDE.md                   → project-wide conventions
 Stack detection (package.json, requirements.txt) → framework-specific rules
 ```
 
-**The EvoSkill insight:** Domain knowledge evolves. After /evolve reads session friction, new patterns get added to the agent's Layer 5. The agent that starts with generic FastAPI knowledge accumulates project-specific knowledge over sessions.
+**The EvoSkill insight:** Domain knowledge evolves. After the review cycle reads session friction, new patterns get added to the agent's Layer 5. The agent that starts with generic FastAPI knowledge accumulates project-specific knowledge over sessions.
 
 ---
 
@@ -474,19 +474,19 @@ Decided   → decisions.md    ("chose X over Y because Z")
 3. Read .claude/memory/antipatterns.md for what broke before
 ```
 
-### Evolution cycle (/evolve):
+### Evolution cycle (review cycle):
 
 ```
 Session 1:  Agent writes code → user edits error handling
-Session 2:  /evolve detects: "error handling edited in 4/5 outputs"
+Session 2:  review detects: "error handling edited in 4/5 outputs"
 Session 3:  Agent's Layer 5 updated: "Always use try/catch with 
             specific error types, not generic catch(e)"
 Session 4:  Agent writes correct error handling → user accepts
-Session 5:  /evolve detects: "error handling accepted 5/5"
+Session 5:  review detects: "error handling accepted 5/5"
             → pattern promoted to patterns.md
 ```
 
-From OpenClaw-RL's insight: the user's next action after seeing agent output is the most honest feedback. Accepted = positive signal. Edited = partial signal. Reverted = negative signal. /evolve reads git diffs to detect these signals.
+From OpenClaw-RL's insight: the user's next action after seeing agent output is the most honest feedback. Accepted = positive signal. Edited = partial signal. Reverted = negative signal. The review cycle reads git diffs to detect these signals.
 
 ### ELO for agents:
 
@@ -574,7 +574,7 @@ For a FastAPI + Next.js project:
 6. Agent works following constraints and domain knowledge
 7. PostToolUse tracks every edit to goals.md
 8. Results feed back into memory for future sessions
-9. /evolve reads sessions, detects gaps, improves agents and skills
+9. The review cycle reads sessions, detects gaps, improves agents and skills
 
 **Memory feeds agents. Agents use skills. Skills produce work. Work feeds memory. The system improves itself.**
 

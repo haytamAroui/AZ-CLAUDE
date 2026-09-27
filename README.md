@@ -110,7 +110,7 @@ npx azclaude-copilot@latest
 
 One command, no flags. Auto-detects whether this is a fresh install or an upgrade:
 
-- **First time** → full install (46 commands, 5 hooks, 16 agents, 10 skills, memory, reflexes). Creates folders, instructions, and hooks — **no manual setup required.**
+- **First time** → full install (12 commands, 5 hooks, 16 agents, 10 skills, memory, reflexes). Creates folders, instructions, and hooks — **no manual setup required.**
 - **Already installed, older version** → auto-upgrades everything to latest templates
 - **Already up to date** → verifies, no overwrites
 
@@ -123,7 +123,7 @@ npx azclaude-copilot@latest doctor   # 32 checks — verify everything is wired 
 
 ## What You Get
 
-**46 commands** · **10 auto-invoked skills** · **16 agents** · **5 hooks** · **memory across sessions** · **learned reflexes** · **self-evolving environment**
+**12 commands** · **10 auto-invoked skills** · **16 agents** · **5 hooks** · **memory across sessions** · **learned reflexes** · **self-evolving environment**
 
 ```
 .claude/
@@ -272,7 +272,7 @@ Claude Code
   │   └── stop.js         → Session cleanup, friction logging
   │
   └── Markdown files (capability — Claude reads natively, zero overhead)
-      ├── 46 commands     → Claude reads the .md, follows instructions
+      ├── 12 commands     → Claude reads the .md, follows instructions
       ├── 16 agents       → Claude spawns as subagents with Task tool
       ├── 10 skills       → Auto-invoked when relevant context detected
       ├── 50 capabilities → Lazy-loaded via manifest.md
@@ -504,59 +504,42 @@ Zero dependencies in `package.json`. No supply-chain risk.
 
 ---
 
-## All 39 Commands
+## The 12 Commands
 
-AZCLAUDE commands are divided into four tiers of intelligence.
+Cut from 46 in September 2026. Anything that duplicated a native Claude Code
+command was removed — Claude Code now ships `/doctor`, `/security-review`,
+`/code-review`, `/loop`, `/batch`, `/workflows`, `/rewind` and `/usage`, and
+maintaining second versions of those cost context on every turn without adding
+capability. What remains is what native genuinely does not supply.
 
-### 1. Build & Core
+### 1. Dev loop
 | Command | Purpose |
 |---------|---------|
-| `/copilot` | **Autonomous Mode.** Zero-human-input milestone execution. |
-| `/dream` | **Greenfield.** High-fidelity project generation from a single idea. |
-| `/setup` | **Environment Scan.** Detects stack/domain and builds the initial agent team. |
-| `/add` | **Feature Addition.** Intelligent pre-flight + implementation of new logic. |
+| `/setup` | **Environment Scan.** Detects stack/domain and fills CLAUDE.md. |
 | `/fix` | **Bug Resolution.** 4-phase mandatory-repro/hypothesize/verify loop. |
-| `/ship` | **Release Gate.** Ghost check → security scan → tests → commit → push. |
-| `/refactor` | **Structural Shift.** Dependency-aware code restructuring. |
+| `/add` | **Feature Addition.** Pre-flight + implementation of new logic. |
 | `/test` | **Smart Testing.** Framework detection + failure classification. |
-| `/blueprint` | **Strategic Planning.** Read-only analysis → multi-milestone path. |
-| `/migrate` | **Upgrades.** Safe dependency/framework version transitions. |
-| `/doc` | **Documentation.** Code-to-markdown generation with signature detection. |
+| `/ship` | **Release Gate.** Ghost check → tests → commit → push. |
 
-### 2. Spec-Driven Tier
+### 2. Spec-driven chain
 | Command | Purpose |
 |---------|---------|
 | `/constitute` | **Ground Rules.** Define non-negotiables before planning. |
-| `/spec` | **Requirements.** Structured goals/user-stories/ACs before code. |
-| `/clarify` | **Interrogation.** 5-question loop to resolve vague requirements. |
-| `/analyze` | **Consistency.** Detects ghost milestones and plan drift. |
-| `/tasks` | **Wave Groups.** Builds parallelizable dependency graphs. |
-| `/issues` | **GitHub sync.** Converts plan milestones to tracked issues. |
-| `/parallel` | **Concurrent Exec.** Runs milestones in isolated worktrees. |
-| `/driven` | **Coding Contract.** Stack-specific DO/DO NOT rules. |
-| `/verify` | **Compliance.** Audits code against the coding contract. |
-| `/sentinel` | **Security.** 111-rule, 6-layer deep environment scan. |
+| `/spec` | **Requirements.** Structured goals, user stories, ACs before code. |
+| `/clarify` | **Ambiguity.** Resolve open questions in a spec before planning. |
+| `/blueprint` | **Strategic Planning.** Read-only analysis → milestone plan. |
 
-### 3. Intelligence & Evolution
+### 3. Knowledge layer
 | Command | Purpose |
 |---------|---------|
-| `/debate` | **Decision Protocol.** Evidence-tagged adversarial reasoning. |
-| `/evolve` | **Self-Improvement.** Scans for gaps → fixes them → quality-gates. |
-| `/reflexes` | **Behavioral Learning.** Manages confidence-scored tool patterns. |
-| `/reflect` | **Metacognition.** Re-writes its own rules from friction logs. |
-| `/level-up` | **Capabilities.** Visual checklist to build the next capability level. |
+| `/ingest` | **Ingest.** Turn documents into structured, linked knowledge pages. |
+| `/knowledge` | **Query.** Browse, search and health-check the knowledge base. |
 
-### 4. Memory & Utilities
+### 4. Autonomy
 | Command | Purpose |
 |---------|---------|
-| `/snapshot` | **Reasoning Checkpoint.** Saves tech-lead context mid-session. |
-| `/persist` | **Session Closure.** Goals + friction log → session archive. |
-| `/pulse` | **Health Check.** Quick overview of git, health, and next steps. |
-| `/explain` | **Plain Language.** Step-by-step logic breakdown. |
-| `/loop` | **Automation.** Schedule commands on a cron interval. |
-| `/mcp` | **Stack Scaling.** Tailored external MCP recommendations. |
+| `/copilot` | **Autonomous Mode.** Zero-human-input milestone execution across sessions. |
 
----
 
 ## The 15 Expert Agents
 
@@ -637,11 +620,11 @@ AZCLAUDE is a lazy-loaded environment of 50 capability modules. It only loads wh
 
 ## Verified
 
-2138 tests. Every template, command, capability, agent, hook, and CLI feature verified.
+1763 tests. Every template, command, capability, agent, hook, and CLI feature verified.
 
 ```bash
 bash tests/test-features.sh
-# Results: 2138 passed, 0 failed, 2138 total
+# Results: 1763 passed, 0 failed, 1763 total
 ```
 
 ---

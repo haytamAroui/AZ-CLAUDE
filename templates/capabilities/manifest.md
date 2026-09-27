@@ -16,7 +16,7 @@ Load only the files that match the current task. Never load the full list.
 | shared/5-layer-agent.md | Writing a new agent or an existing agent is incomplete / making mistakes (see also: agent-creator skill) | ~500 |
 | shared/vocabulary-transform.md | Generating files for compliance, medical, legal, finance, or creative domain | ~60 |
 | shared/multi-cli-paths.md | CLI is not Claude Code, or path configuration is wrong for the platform | ~80 |
-| shared/quality-check.md | /setup or /level-up just ran — verify it actually worked correctly | ~80 |
+| shared/quality-check.md | /setup just ran — verify it actually worked correctly | ~80 |
 | shared/security.md | Handling credentials, modifying hooks, reviewing untrusted project, deploying | ~200 |
 | shared/native-tools.md | Writing or improving a skill — which Claude Code tools to use and when | ~200 |
 | shared/review-reception.md | Receiving review feedback — before responding, implementing, or pushing back | ~80 |
@@ -24,16 +24,16 @@ Load only the files that match the current task. Never load the full list.
 | shared/plan-tracker.md | Reading/writing plan.md, updating milestone status, copilot mode | ~200 |
 | shared/reflexes.md | Learned behavioral patterns, reflex analysis, observation patterns, promote reflexes | ~250 |
 | shared/context-artifacts.md | Project has DB schemas, API specs, infra configs, or knowledge/ dir — discover and use non-code knowledge before implementing | ~200 |
-| shared/knowledge-layer.md | /ingest or /knowledge runs, /persist detects domain insights, /explain produces reusable answer, /debate files decision, /evolve Cycle 4 — page conventions, directory structure, confidence, wikilinks, code_refs | ~350 |
-| shared/semantic-boundary-check.md | /evolve Cycle 3 or boundary validator warns — detect deeper behavioral duplication across extension types that grep misses | ~300 |
+| shared/knowledge-layer.md | /ingest or /knowledge runs, or a decision or answer is worth filing as a knowledge page — page conventions, directory structure, confidence, wikilinks, code_refs | ~350 |
+| shared/semantic-boundary-check.md | A boundary validator warns, or a review cycle finds dead manifest entries — detect deeper behavioral duplication that grep misses | ~300 |
 | shared/domain-advisor-generator.md | Non-tech domain detected (compliance, marketing, finance, medical, legal, research) — generates domain-specific advisor skill | ~400 |
 | shared/intelligent-dispatch.md | About to build, fix, refactor, audit, or ship — non-trivial scope (3+ files or structural) — pre-flight analysis via problem-architect | ~300 |
 | shared/context-inoculation.md | /copilot dispatch, milestone-builder spawn, autonomous agent context — inject anti-reward-hack boundaries (75-90% reduction) | ~120 |
-| shared/reward-hack-detection.md | /audit, /ship, post-milestone review — detect reward hacking patterns in test modifications | ~150 |
+| shared/reward-hack-detection.md | /test, /ship, post-milestone review — detect reward hacking patterns in test modifications | ~150 |
 | shared/ultrathink.md | $ARGUMENTS contains --deep, or command needs extended thinking for complex analysis | ~80 |
 | shared/context-relay.md | About to spawn a subagent — pass pre-read files to eliminate redundant reads across agent boundaries | ~300 |
-| shared/toolchain-gate.md | /copilot dispatch, /parallel, agent verify, env-scan — stack detection, verify commands, toolchain bootstrap, 3-tier verification, log protocol | ~500 |
-| shared/strategies.md | /tasks --strategy flag, or orchestrator reading plan.md with strategy: field — milestone dispatch ordering within waves | ~120 |
+| shared/toolchain-gate.md | /copilot dispatch, agent verify, env-scan — stack detection, verify commands, toolchain bootstrap, 3-tier verification, log protocol | ~500 |
+| shared/strategies.md | Orchestrator reading plan.md with a strategy: field — milestone dispatch ordering within waves | ~120 |
 
 ## Level Builders — load ONE at a time
 | File | When to load | Tokens |
@@ -45,12 +45,12 @@ Load only the files that match the current task. Never load the full list.
 | level-builders/level5-agents.md | Project has parallel workstreams with no specialized agents yet | ~400 |
 | level-builders/level6-hooks.md | No PostToolUse / UserPromptSubmit hooks, or hooks are bash-based | ~400 |
 | level-builders/level7-extmcp.md | Project needs external MCP servers — databases, browsers, APIs | ~150 |
-| level-builders/level8-orchestrated.md | Considering pipelines, debates, or self-improvement — unsure which | ~200 |
+| level-builders/level8-orchestrated.md | Considering pipelines or self-improvement — unsure which | ~200 |
 
 ## Evolution — compose by what the cycle needs
 | File | When to load | Tokens |
 |------|-------------|--------|
-| evolution/detect.md | Starting /evolve, environment feels stale, skills misfiring, friction repeating | ~250 |
+| evolution/detect.md | Environment feels stale, skills misfiring, friction repeating | ~250 |
 | evolution/generate.md | detect.md produced a PLAN — about to write a fix or new skill | ~250 |
 | evolution/evaluate.md | Just generated a skill or agent — before promoting or committing it | ~200 |
 | evolution/cycle2-knowledge.md | patterns.md bloated, stale sessions, learning not consolidated | ~200 |
@@ -69,12 +69,12 @@ Load only the files that match the current task. Never load the full list.
 ## Code Rules — per-stack rule libraries (load matching stack only)
 | File | When to load | Tokens |
 |------|-------------|--------|
-| shared/rules/typescript.md | Writing or verifying TypeScript code — load for /add, /fix, /verify when TS detected | ~250 |
+| shared/rules/typescript.md | Writing or verifying TypeScript code — load for /add, /fix when TS detected | ~250 |
 | shared/rules/react.md | Writing or verifying React/Next.js components — load when JSX/TSX detected | ~250 |
 | shared/rules/python.md | Writing or verifying Python/FastAPI/Django code — load when .py detected | ~250 |
 | shared/rules/node.md | Writing or verifying Node.js/Express backend code — load when Node stack detected | ~250 |
 
-**When to load:** `/verify` (rule source), `/driven` (default rule generation), `/add` and `/fix` (when no code-rules.md exists and stack is detected). Load only the matching stack file, never all four.
+**When to load:** `/add` and `/fix` (when no code-rules.md exists and stack is detected). Load only the matching stack file, never all four.
 
 ## Spec-Driven Workflow — load in sequence
 | Command | Purpose | Loads |
@@ -83,10 +83,7 @@ Load only the files that match the current task. Never load the full list.
 | /spec | Write structured feature spec (goal → ACs → failure modes) | commands/spec.md |
 | /clarify | Resolve open questions in a spec before blueprinting | commands/clarify.md |
 | /blueprint | Derive milestone plan from a spec (spec-reviewer validates first) | commands/blueprint.md |
-| /analyze | Cross-artifact consistency check — ghost milestones, spec vs. code | commands/analyze.md |
-| /tasks | Build dependency graph + wave groups from plan.md | commands/tasks.md |
-| /issues | Convert plan.md milestones to GitHub Issues | commands/issues.md |
 
-**Typical sequence**: /constitute → /spec → /clarify → /blueprint → /copilot → /analyze
+**Typical sequence**: /constitute → /spec → /clarify → /blueprint → /copilot
 **Gates**: spec-reviewer (haiku) blocks /blueprint if spec is incomplete; constitution-guard (haiku) blocks milestones that violate non-negotiables
 **Agents**: spec-reviewer validates spec quality; constitution-guard checks each milestone before dispatch

@@ -5,7 +5,7 @@ description: >
   across 6 categories: secrets (14), permissions (10), hooks (34), MCP servers (23),
   agent configs (25), supply chain (5). Read-only — never modifies files. Returns a
   structured Security Report with score (0–100), grade (A–F), and per-finding file:line refs.
-  Spawned by /sentinel and /ship risk gate. All checks are native Claude Code tools —
+  Spawned by /security-review and the /ship risk gate. All checks are native Claude Code tools —
   no npm install, no third-party binaries.
   Use when: security scan, before ship, check environment, audit hooks, check MCP,
   review agent configs, scan for secrets, is my setup safe.
@@ -415,7 +415,7 @@ total = cat1 + cat2 + cat3 + cat4 + cat5   (max 100)
 grade = A (≥90) | B (≥75) | C (≥60) | D (≥45) | F (<45)
 ```
 
-**Output this EXACT format** (the orchestrator and /sentinel parse it):
+**Output this EXACT format** (the orchestrator and /security-review parse it):
 
 ```
 ## Security Report: {project-name or cwd} — {date}

@@ -43,7 +43,7 @@ Layer 2: UserPromptSubmit hook
   Coverage: PUSH-based, doesn't depend on Claude following instructions
 
 Layer 3: Stop hook
-  ↓ Creates friction stub when session ends without /persist
+  ↓ Creates friction stub when session ends without a goals.md update
   Failure mode: hook not installed, session crashes
   Coverage: catches unclean exits that Layer 1+2 cannot
 ```
@@ -108,8 +108,8 @@ Do not duplicate the hook code here; reference it instead.
 
 **Stop** — runs `~/.claude/hooks/stop.js` (Node.js, cross-platform). Fires when session ends:
 - Stamps `goals.md` with today's date
-- Creates friction stub in `ops/observations/` if `/persist` was not run
-- Warns: "session state not persisted — run /persist before closing"
+- Creates friction stub in `ops/observations/` if goals.md was not updated
+- Warns: "session state not recorded — update goals.md before closing"
 
 ---
 

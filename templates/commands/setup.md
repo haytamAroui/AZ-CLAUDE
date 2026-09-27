@@ -211,9 +211,8 @@ If no coding rules found:
 ```
 ```
   · No coding rules contract found.
-    Run: /driven
     Why: generates .claude/code-rules.md — your project's coding standards.
-    Every /add, /fix, /refactor, /audit, /test, /doc, /blueprint reads this before writing code.
+    Every /add, /fix, /test, /blueprint reads this before writing code.
 ```
 
 If no specs found:
@@ -236,7 +235,6 @@ claude mcp list 2>/dev/null | grep -c "." || echo "0"
 
 ```
   · MCP servers configured: {N}
-    Run: /mcp
     Why: Context7 fixes stale API docs in /add and /copilot.
          Sequential Thinking improves /blueprint and /copilot planning.
          Both are free — no API key needed.
@@ -244,7 +242,7 @@ claude mcp list 2>/dev/null | grep -c "." || echo "0"
 
 If N ≥ 1, show instead:
 ```
-  · {N} MCP server(s) active. Run /mcp to check stack-specific recommendations.
+  · {N} MCP server(s) active.
 ```
 
 ---

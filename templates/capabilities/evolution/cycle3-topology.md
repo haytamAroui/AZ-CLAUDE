@@ -3,7 +3,7 @@ name: evolution-cycle3-topology
 description: >
   Load when agents overlap in scope and you're not sure which handles what. Load
   when a pipeline feels slow or agents are passing too much context to each other.
-  Load when manifest.md has capabilities that never get loaded. Load during /level-up
+  Load when manifest.md has capabilities that never get loaded. Load during a review cycle
   or when the user says "too many agents" or "agents are getting confused".
 tokens: ~250
 ---

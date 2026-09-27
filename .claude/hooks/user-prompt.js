@@ -297,15 +297,15 @@ try {
         if (fs.existsSync(waveStatePath)) {
           console.log('PARALLEL WAVE STATE INCLUDED — interrupted wave will auto-resume on next session.');
         }
-        console.log('Run /snapshot NOW to save your reasoning and decisions (goals.md alone is not enough).');
+        console.log('Update goals.md NOW to save your reasoning and decisions before compaction.');
         console.log('--- END GUARD ---');
       }
     } else if (pct >= 70) {
       console.log('');
-      console.log(`!!! SNAPSHOT REQUIRED (${pct}% context used) !!!`);
-      console.log(`Run /snapshot NOW — Claude will compact and lose your session reasoning soon.`);
-      console.log(`This warning repeats every message until you run /snapshot or context resets.`);
-      console.log(`!!! /snapshot !!! /snapshot !!! /snapshot !!!`);
+      console.log(`!!! CHECKPOINT REQUIRED (${pct}% context used) !!!`);
+      console.log(`Update .claude/memory/goals.md NOW — Claude will compact and lose your session reasoning soon.`);
+      console.log(`This warning repeats every message until goals.md is updated or context resets.`);
+      console.log(`!!! goals.md !!! goals.md !!! goals.md !!!`);
     }
   }
 } catch (_) {}

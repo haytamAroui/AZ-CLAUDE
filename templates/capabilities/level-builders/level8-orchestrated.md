@@ -48,23 +48,23 @@ Not a permanent overhead — each intelligence file loads on demand.
 
 ### Level 9 — Persistent Knowledge Layer
 
-Build when: questions 6-8 have any "yes" OR `/evolve` has been run 3+ times.
+Build when: questions 6-8 have any "yes" OR a review cycle has been run 3+ times.
 
 What to add:
-- Schedule `/evolve` (or run manually after 5+ sessions)
+- Schedule a review cycle (or run manually after 5+ sessions)
 - `evolution/cycle2-knowledge.md` for memory pruning
 - `evolution/cycle3-topology.md` for agent topology maintenance
 
-**When to run `/level-up` vs `/evolve`:**
-- `/level-up` = structural upgrade (add a new level/capability) — run once
-- `/evolve` = quality improvement cycle (improve existing capabilities) — run periodically
+**Structural upgrade vs quality cycle:**
+- structural upgrade = add a new level/capability — run once
+- quality cycle = improve existing capabilities — run periodically
 
 ---
 
 ### Level 10 — Self-Improving Loop
 
 Build only when:
-- You've run `/evolve` 5+ times and the manual cycle is becoming overhead
+- You've run the review cycle 5+ times and the manual cycle is becoming overhead
 - The project has 10+ sessions of history and active memory files
 - A loop controller would genuinely reduce friction
 
@@ -81,12 +81,12 @@ cp .claude/capabilities/../agents/loop-controller.md .claude/agents/loop-control
 Or instruct Claude to create `.claude/agents/loop-controller.md` by reading the template
 at `.claude/agents/loop-controller.md` (installed by `npx azclaude`).
 
-Once the loop controller exists, `/evolve` automatically delegates to it — no further
-configuration needed. The handoff is built into the `/evolve` command.
+Once the loop controller exists, the review cycle automatically delegates to it — no
+further configuration needed.
 
 **Level 10 complete when:**
 - `.claude/agents/loop-controller.md` exists
-- Running `/evolve` shows "Delegating to loop-controller…" instead of running manually
+- Running the review cycle shows "Delegating to loop-controller…" instead of running manually
 - First autonomous cycle completes and shows the cycle report
 
 ---
@@ -94,5 +94,5 @@ configuration needed. The handoff is built into the `/evolve` command.
 ### Level 8+ Complete When
 - Decision matrix answered — only relevant capabilities added
 - ELO files exist if ELO was chosen
-- `/evolve` schedule defined if knowledge consolidation was chosen
+- review cycle schedule defined if knowledge consolidation was chosen
 - No capability added "just in case" — every addition answers a matrix yes

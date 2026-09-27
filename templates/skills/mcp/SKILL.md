@@ -45,11 +45,11 @@ Always recommend both. They cost nothing (free, no API key) and improve every se
 
 | If stack contains | Recommend | Why |
 |------------------|-----------|-----|
-| Any GitHub repo | **GitHub MCP** | Richer than `gh` CLI for `/issues`, `/ship`, PR reviews, repo search |
+| Any GitHub repo | **GitHub MCP** | Richer than `gh` CLI for `/ship`, PR reviews, repo search |
 | Any web project | **Playwright MCP** | E2E testing — pairs with qa-engineer agent and `/test` |
 | `supabase` in deps | **Supabase MCP** | Schema introspection, migrations, Edge Functions from within Claude Code |
 | `postgres`/`prisma` in deps | **PostgreSQL MCP** | Natural language queries, schema exploration during development |
-| Debugging / `/fix` heavy | **Brave Search** | Real-time error lookup, CVE research for `/sentinel`, library issue tracking |
+| Debugging / `/fix` heavy | **Brave Search** | Real-time error lookup, CVE research, library issue tracking |
 | Design-to-code workflow | **Figma MCP** | Translate Figma components directly to code |
 
 ## Step 3: Install Commands
@@ -84,7 +84,7 @@ Before writing any `.mcp.json`:
 - **Never hardcode secrets** — use `${ENV_VAR}` syntax always
 - **Pin versions** — use `@1.2.3` not `@latest` in production
 - **Scope to project** — use `claude mcp add --scope project` not global when possible
-- Run `/sentinel` after adding MCPs to verify the config scores cleanly
+- Run `/security-review` after adding MCPs to verify the config scores cleanly
 
 ```json
 {

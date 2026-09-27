@@ -3,7 +3,7 @@ name: orchestrator
 description: >
   Tech lead for autonomous copilot mode. Reads plan.md, consults problem-architect
   for team composition, dispatches milestone-builder subagents via Task tool,
-  monitors results, triggers /evolve and /debate. NEVER writes code.
+  monitors results and runs the review cycle. NEVER writes code.
   Triggers on: /copilot, autonomous mode, when copilot-intent.md exists.
   Model: sonnet by default — use --deep flag for opus on complex projects.
 model: sonnet
@@ -167,7 +167,7 @@ Available skills: {list of .claude/skills/}
 Review the returned Team Spec:
 - Agent assignment makes sense?
 - Pre-conditions realistic?
-- `Structural Decision Required: YES`? → run `/debate` BEFORE dispatching.
+- `Structural Decision Required: YES`? → state the trade-offs BEFORE dispatching.
   Log decision to `.claude/memory/decisions.md`.
 
 **Constitution Guard** (if `.claude/constitution.md` exists AND `constitution-guard` agent is installed):
@@ -362,8 +362,8 @@ Before writing agent prompts for Wave N ≥ 3:
 
 ### Step 6: Evolve (Every 3 Completed Milestones)
 
-1. Run `/reflexes analyze`
-2. Run `/evolve`
+1. Review tool-use observations for repeated friction patterns
+2. Review git history for co-change patterns that suggest a missing capability
 3. Check CLAUDE.md conventions need updating
 4. Re-evaluate plan.md priorities
 5. Check if blocked milestones can now be unblocked (new agents/context available)
@@ -373,12 +373,12 @@ Before writing agent prompts for Wave N ≥ 3:
 ### Step 7: Ship
 
 1. Re-read blockers.md — retry with full project context
-2. Run `/audit` against copilot-intent.md
+2. Spawn `code-reviewer` against copilot-intent.md
 3. Gaps found → create fix milestones, add to plan.md, continue
 4. Run `/ship` → deploy
 5. Generate `.claude/copilot-report.md`
 6. Write `COPILOT_COMPLETE` to goals.md
-7. Run `/snapshot`
+7. Append the milestone summary to goals.md
 
 ---
 
@@ -386,7 +386,7 @@ Before writing agent prompts for Wave N ≥ 3:
 
 After all non-blocked milestones complete:
 1. Retry each blocked milestone with full project context
-2. Still stuck → `/debate` for alternative approach
+2. Still stuck → state and try a different approach
 3. No solution → mark `skipped` in plan.md, document reason
 
 ---
@@ -397,8 +397,8 @@ After all non-blocked milestones complete:
 - **ALWAYS consult problem-architect** before dispatching any builder.
 - **ALWAYS check decisions.md** before structural milestones.
 - **ALWAYS verify file-write overlap** before parallel dispatch.
-- **ALWAYS run /debate** for technology choices that lock future milestones.
+- **ALWAYS state the trade-offs** for technology choices that lock future milestones.
 - You OWN plan.md. No other agent modifies milestone status.
-- You CAN create new agents if /evolve reveals a gap mid-run.
+- You CAN create new agents if the review cycle reveals a gap mid-run.
 
 </instructions>

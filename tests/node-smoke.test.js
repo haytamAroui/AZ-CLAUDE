@@ -47,7 +47,7 @@ test('all hook scripts are valid JavaScript', () => {
 test('all command templates exist and have content', () => {
   const commandsDir = path.join(ROOT, 'templates', 'commands');
   const commands = fs.readdirSync(commandsDir).filter(f => f.endsWith('.md'));
-  assert.ok(commands.length >= 20, `expected 20+ commands, got ${commands.length}`);
+  assert.strictEqual(commands.length, 12, `expected the 12-command surface, got ${commands.length}`);
   for (const cmd of commands) {
     const content = fs.readFileSync(path.join(commandsDir, cmd), 'utf8');
     assert.ok(content.length > 50, `${cmd} has content (${content.length} chars)`);

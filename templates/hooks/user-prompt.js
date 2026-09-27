@@ -52,13 +52,17 @@ const cfg = process.env.AZCLAUDE_CFG || '.claude';
 const goalsPath = path.join(cfg, 'memory', 'goals.md');
 if (!fs.existsSync(goalsPath)) process.exit(0);
 
-// ── AZCLAUDE Brain Router — fires on EVERY message ─────────────────────────
-// This is the enforcement layer that makes Claude Code USE AZCLAUDE.
-// Without this, Claude Code ignores all installed agents, skills, and capabilities.
-//
-// Pipeline: problem-architect FIRST → Team Spec → skills + agents → implement → review
-// No skip conditions for code tasks. problem-architect ALWAYS runs first.
+// ── AZCLAUDE Brain Router — first message of the session only ─────────────
+// Gated on isFirstMessage. The mandate (which skills to load, which agents to
+// spawn) is stable for the whole session, so repeating it on every turn bought
+// nothing and cost ~1,500 tokens per message. The injection scan above still
+// runs on every message; this block does not.
+if (isFirstMessage) {
 try {
+  // Re-read the prompt from the temp file written during the injection scan.
+  // The const above is block-scoped to that try block, so the router needs its
+  // own binding — without this the router threw ReferenceError and the catch
+  // below swallowed it, making the whole block dead code.
   const promptText = (function() {
     try {
       return fs.readFileSync(path.join(os.tmpdir(), `.azclaude-prompt-${process.ppid || process.pid}`), 'utf8');
@@ -238,6 +242,7 @@ try {
     }
   }
 } catch (_) {}
+}
 
 // ── Compaction Guard — auto-snapshot before context is lost ─────────────────
 // Reads context % signal from statusline (written to temp file after each turn).
@@ -297,15 +302,15 @@ try {
         if (fs.existsSync(waveStatePath)) {
           console.log('PARALLEL WAVE STATE INCLUDED — interrupted wave will auto-resume on next session.');
         }
-        console.log('Run /snapshot NOW to save your reasoning and decisions (goals.md alone is not enough).');
+        console.log('Update goals.md NOW to save your reasoning and decisions before compaction.');
         console.log('--- END GUARD ---');
       }
     } else if (pct >= 70) {
       console.log('');
-      console.log(`!!! SNAPSHOT REQUIRED (${pct}% context used) !!!`);
-      console.log(`Run /snapshot NOW — Claude will compact and lose your session reasoning soon.`);
-      console.log(`This warning repeats every message until you run /snapshot or context resets.`);
-      console.log(`!!! /snapshot !!! /snapshot !!! /snapshot !!!`);
+      console.log(`!!! CHECKPOINT REQUIRED (${pct}% context used) !!!`);
+      console.log(`Update .claude/memory/goals.md NOW — Claude will compact and lose your session reasoning soon.`);
+      console.log(`This warning repeats every message until goals.md is updated or context resets.`);
+      console.log(`!!! goals.md !!! goals.md !!! goals.md !!!`);
     }
   }
 } catch (_) {}

@@ -52,7 +52,7 @@ description: >
   validation, SQL injection, XSS, CSRF, command injection, path traversal, 
   eval(), os.system(), exec(), shell commands, file permissions, CORS, 
   authentication, authorization, rate limiting, data exposure, error 
-  leaking stack traces. Trigger on: /audit, /ship, security check, 
+  leaking stack traces. Trigger on: /ship, security check, 
   audit, vulnerability, penetration test, compliance check, OWASP, 
   secure coding, hardening. Even if the user doesn't explicitly mention 
   security, use this skill whenever code touches authentication, payments, 
@@ -67,7 +67,7 @@ description =
   + ACTIONS that trigger it (write, review, fix, audit, check, scan...)
   + OBJECTS it applies to (keys, tokens, passwords, .env, connections...)
   + PATTERNS it detects (injection, XSS, CSRF, eval, exec...)
-  + COMMANDS that invoke it (/audit, /ship, security...)
+  + COMMANDS that invoke it (/ship, security...)
   + INPUT CONSTRAINTS where it does NOT apply (e.g., "not for non-JS projects")
   + CONTEXTS where it should fire even without explicit request
   + "Even if the user doesn't explicitly mention X, use this skill when Y"
@@ -137,7 +137,7 @@ If input is vague (no framework specified, no target stated):
 → Ask: "[specific question, e.g., 'Which framework — React, Vue, or vanilla HTML?']"
 
 If input is malformed or out of scope:
-→ Say: "[specific message, e.g., 'This skill handles UI creation. For code review, use /audit instead.']"
+→ Say: "[specific message, e.g., 'This skill handles UI creation. For code review, use /code-review instead.']"
 
 If a required prerequisite is missing (e.g., no CLAUDE.md, no design system):
 → Do: "[specific fallback, e.g., 'Assume stack from package.json, proceed with default aesthetic']"
@@ -314,7 +314,7 @@ From Anthropic's skill-development skill + AZCLAUDE's debate engine research:
 
 ## Part 7: The Evolution Connection
 
-From EvoSkill paper + AZCLAUDE's /evolve:
+From EvoSkill paper + AZCLAUDE's review cycle:
 
 Skills aren't static. After real usage:
 
@@ -324,7 +324,7 @@ Skills aren't static. After real usage:
 4. **Promote patterns.** If a skill's patterns keep working → mark as portable in ~/shared-skills/
 5. **Prune failures.** If a skill consistently produces bad output → rewrite or remove
 
-This is the evolution loop applied to skills. /evolve should read session friction and identify which skills need improvement.
+This is the evolution loop applied to skills. The review cycle should read session friction and identify which skills need improvement.
 
 ---
 

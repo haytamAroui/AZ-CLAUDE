@@ -115,7 +115,7 @@ Write rankings to `.claude/memory/elo-rankings.json` so scores accumulate across
 ```
 
 **Update rules:**
-- `debate_elo`: updated after each `/debate` cycle — one entry per argued position
+- `debate_elo`: updated after each structured debate — one entry per argued position
 - `agent_elo`: updated after each pipeline run — winner = agent whose output was accepted without revision
 - `pattern_elo`: updated after each task — pattern succeeded if the approach worked, failed if re-derivation was triggered
 

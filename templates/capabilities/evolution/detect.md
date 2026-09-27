@@ -1,7 +1,7 @@
 ---
 name: evolution-detect
 description: >
-  Load at the start of /evolve. Load when the environment feels stale or broken.
+  Load at the start of a review cycle. Load when the environment feels stale or broken.
   Load when skills aren't triggering correctly, agents are making repeated mistakes,
   or friction logs mention the same pain 3+ times. Load when you suspect something
   was built weeks ago and may no longer match how the project actually works.

@@ -113,7 +113,7 @@ Libraries, frameworks, or services that must never be introduced:
 
 ## Architectural Commitments
 
-Decisions already made. Not open for debate without a /debate session.
+Decisions already made. Changing one requires an explicit, reasoned override.
 
 | Concern | Decision | Reason |
 |---------|----------|--------|

@@ -2,9 +2,9 @@
 
 ## Quick Start
 1. Run `/setup` — scans this project, fills in the sections below, creates `goals.md`
-2. Run `/pulse` — shows current state of the project
+2. Read `.claude/memory/goals.md` — shows current state of the project
 3. Run `/add [what to build]` to add features, `/fix [what's broken]` to fix bugs
-4. Run `/persist` before closing — saves session state so next session picks up where you left off
+4. Update `.claude/memory/goals.md` before closing — so the next session picks up where you left off
 
 ---
 
@@ -33,36 +33,35 @@ Update it at the end of every session.
 Read `.claude/capabilities/manifest.md` to find what to load.
 Load ONLY the files relevant to the current task — nothing else.
 
-Quick dispatch (core — used most sessions):
-- /add → commands/add.md · /fix → commands/fix.md · /test → commands/test.md
-- /audit → commands/audit.md · /blueprint → commands/blueprint.md · /ship → commands/ship.md
-- /pulse → commands/pulse.md · /explain → commands/explain.md
+Twelve commands, grouped by what they add that Claude Code cannot supply natively.
+Anything that duplicated a native command was removed — see README "Why twelve".
+
+Dev loop:
+- /setup → commands/setup.md · /fix → commands/fix.md · /add → commands/add.md
+- /test → commands/test.md · /ship → commands/ship.md
 - Any code task → shared/tdd.md + shared/completion-rule.md
 
-Extended (load command file on use):
-- /setup · /dream · /snapshot · /persist · /refactor · /doc · /loop
-- /migrate · /deps · /find · /create · /reflect · /hookify
-- Knowledge: /ingest → process docs into knowledge base · /knowledge → browse/query/health-check
-- Spec-driven: /constitute → /spec → /clarify → /blueprint → /copilot
-  - /analyze: cross-artifact consistency check (ghost milestones, spec vs. code drift)
-  - /tasks: dependency graph + parallel wave groups from plan.md
-  - /issues: convert plan.md milestones to GitHub Issues
-- Standards: /driven → generates .claude/code-rules.md (coding contract for /add and /fix)
-  - /verify → audits existing code against code-rules.md (file:line violations + auto-fix)
-- MCP: /mcp → recommends and installs MCP servers based on your stack
+Spec-driven chain (judgment layer — native gives the mechanism, never the content):
+- /constitute → commands/constitute.md · /spec → commands/spec.md
+- /clarify → commands/clarify.md · /blueprint → commands/blueprint.md
 
-Advanced (Level 5+):
-- /evolve · /debate · /level-up
-- Parallel execution: /parallel → dispatch multiple milestones simultaneously (worktree isolation + auto-merge)
-  - /tasks → shows which milestones can run in parallel (wave groups)
+Knowledge layer (the cloud product — native auto-memory is machine-local):
+- /ingest → commands/ingest.md · /knowledge → commands/knowledge.md
+
+Autonomy:
+- /copilot → commands/copilot.md
+
+Native Claude Code already covers what the rest of this framework used to: /doctor,
+/security-review, /code-review, /loop, /batch, /workflows, /rewind, /usage, /skills.
+Do not reimplement them — reach for the native command instead.
 
 ## Parallel Agent Rules
-When running parallel agents (/copilot with parallel waves, or /parallel):
+When running parallel agents:
 1. **Own your scope** — only write files in your declared directories. Touch nothing outside.
 2. **Errors in files you didn't modify** → do not fix them. Report "scope violation: {file}" to orchestrator.
-3. **Never push from a worktree** — commit locally only. Orchestrator merges after all agents complete.
+3. **Never push from a worktree** — commit locally only. Merge after all agents complete.
 4. **Test in isolation** — run `{test framework} tests/{your-area}/` not the full suite. Cross-cutting failures are expected during parallel execution.
-5. **Report your branch** — always end completion report with "Branch: parallel/{slug}".
+5. **Report your branch** — always end completion report with "Branch: {branch}".
 
 Unknown capability → grep manifest.md by description, load match
 
@@ -88,7 +87,7 @@ Agents live in `.claude/agents/`. Spawn them via the Agent tool with the matchin
 1. **ALWAYS** spawn `problem-architect` FIRST → get Team Spec (agents, skills, files, risks)
 2. **RELAY**: Pass Team Spec + pre-read file contents to the next agent via `## Pre-loaded Context` block. The receiving agent MUST NOT re-read files listed in that block. See `capabilities/shared/context-relay.md` for role-based filters and size limits.
 3. Follow Team Spec exactly: load listed skills, pre-read listed files, in order
-4. If structural decision flagged → spawn `architecture-advisor` skill or run /debate
+4. If structural decision flagged → spawn `architecture-advisor` skill for an evidence-based comparison
 5. Implement following Team Spec patterns
 6. **ALWAYS** spawn `code-reviewer` after implementation
 7. **ALWAYS** spawn `test-writer` if tests are needed
@@ -109,4 +108,4 @@ When priorities conflict:
 3. {{PRIORITY_3}}
 
 ## Available Commands
-/dream · /setup · /fix · /add · /audit · /test · /blueprint · /evolve · /debate · /snapshot · /persist · /level-up · /ship · /pulse · /explain · /loop · /refactor · /doc · /migrate · /deps · /find · /create · /reflect · /hookify · /spec · /clarify · /analyze · /constitute · /tasks · /issues · /driven · /mcp · /parallel · /verify · /inoculate · /ghost-test · /ingest · /knowledge · /obsidian · /canvas
+/setup · /fix · /add · /test · /ship · /constitute · /spec · /clarify · /blueprint · /ingest · /knowledge · /copilot

@@ -104,7 +104,7 @@ $ARGUMENTS
 | `argument-hint` | Recommended | Skill takes arguments — shows in `/` autocomplete. |
 | `disable-model-invocation: true` | For manual commands | Prevents auto-triggering. Use for destructive or session-ending commands. |
 | `allowed-tools` | Recommended | Scope permissions. Read-only skills: `Read, Grep`. Build skills: `Read, Write, Edit, Bash`. |
-| `context: fork` | For heavy commands | Runs in isolated subagent. Use for long autonomous tasks (/evolve, /dream). |
+| `context: fork` | For heavy commands | Runs in isolated subagent. Use for long autonomous tasks such as /copilot. |
 | `user-invocable: false` | For background knowledge | Hides from `/` menu. Use for internal reference-only skills. |
 
 **Dynamic injection** — inject real data before Claude reads the skill:
@@ -113,7 +113,7 @@ $ARGUMENTS
 !`git log --oneline -5`
 !`bash .claude/scripts/env-scan.sh 2>/dev/null`
 ```
-The `!`command`` syntax runs the shell command immediately. Claude only sees the output — not the command. Use for `/pulse`, `/setup`, any skill that needs live project data.
+The `!`command`` syntax runs the shell command immediately. Claude only sees the output — not the command. Use for `/setup`, any skill that needs live project data.
 
 **`ultrathink`** — include this word anywhere in the skill body to enable extended thinking for that skill.
 

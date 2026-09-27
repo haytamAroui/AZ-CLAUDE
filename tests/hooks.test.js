@@ -260,6 +260,47 @@ test('user-prompt: benign prompt raises no security warning', () => {
   assert.ok(!/injection/i.test(r.stderr), `unexpected warning: ${r.stderr}`);
 });
 
+test('user-prompt: Brain Router fires on the first message only', () => {
+  // Both runs are spawned by this test process, so both children share a
+  // process.ppid — the key user-prompt.js uses for its session marker. Spawning
+  // from a shell would give each run a fresh ppid and every run would look
+  // like a first message.
+  const dir = fixture();
+  const cfg = path.join(dir, '.claude');
+  fs.mkdirSync(path.join(cfg, 'memory'), { recursive: true });
+  fs.writeFileSync(path.join(cfg, 'memory', 'goals.md'),
+    '# Goals\n\n## Current threads\n- ROUTER_GATE_MARKER\n');
+
+  const run = (prompt) => runHook('user-prompt.js', { prompt },
+    { cwd: dir, env: { AZCLAUDE_CFG: cfg } }).stdout;
+
+  fs.rmSync(path.join(os.tmpdir(), `.azclaude-session-${process.pid}`), { force: true });
+
+  const first = run('add a feature to the parser');
+  const second = run('add another feature');
+  const third = run('and one more');
+
+  assert.match(first, /AZCLAUDE PIPELINE/,
+    'the mandate must be injected on the first message');
+  assert.ok(!/AZCLAUDE PIPELINE/.test(second),
+    'the mandate must NOT repeat on the second message');
+  assert.ok(!/AZCLAUDE PIPELINE/.test(third),
+    'the mandate must NOT repeat on the third message');
+  assert.match(first, /ROUTER_GATE_MARKER/, 'goals.md should reach the model on the first prompt');
+});
+
+test('user-prompt: router block is not dead code', () => {
+  // Regression: the router referenced a block-scoped `promptText`, threw
+  // ReferenceError, and the surrounding catch swallowed it — the whole router
+  // silently did nothing. Assert the re-binding exists.
+  const src = fs.readFileSync(path.join(HOOKS, 'user-prompt.js'), 'utf8');
+  const routerStart = src.indexOf('Brain Router');
+  assert.ok(routerStart > 0, 'router block should still exist');
+  const routerBody = src.slice(routerStart, routerStart + 1200);
+  assert.match(routerBody, /const promptText = \(function\(\)/,
+    'the router must re-bind promptText from the temp file, not rely on a block-scoped const');
+});
+
 // ── manifest integrity ──────────────────────────────────────────────────────
 
 test('plugin hooks manifest points at a file that exists', () => {

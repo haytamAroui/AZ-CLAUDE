@@ -7,10 +7,20 @@ const crypto        = require('crypto');
 const { execSync }  = require('child_process');
 
 const TEMPLATE_DIR = path.join(__dirname, '..', 'templates');
-const CORE_COMMANDS     = ['setup', 'fix', 'add', 'audit', 'test', 'blueprint', 'ship', 'pulse', 'explain', 'snapshot', 'persist'];
-const EXTENDED_COMMANDS = ['dream', 'refactor', 'doc', 'loop', 'migrate', 'deps', 'find', 'create', 'reflect', 'hookify', 'sentinel', 'clarify', 'spec', 'analyze', 'constitute', 'tasks', 'issues', 'driven', 'mcp', 'verify', 'inoculate', 'ghost-test', 'visualize', 'kill', 'run', 'ingest', 'knowledge', 'obsidian', 'canvas'];
-const ADVANCED_COMMANDS = ['evolve', 'debate', 'level-up', 'copilot', 'reflexes', 'parallel'];
-const COMMANDS          = [...CORE_COMMANDS, ...EXTENDED_COMMANDS, ...ADVANCED_COMMANDS];
+// Twelve commands, grouped by what they contribute that Claude Code cannot
+// supply natively. Anything that duplicated a native command was removed in
+// the 46 -> 12 cut (see README "Why twelve").
+//   spec chain    — judgment layer, native gives mechanism not content
+//   knowledge     — the cloud product; native auto-memory is machine-local
+//   dev loop      — the completion-rule discipline this framework is built on
+//   autonomy      — cross-session milestone execution
+const CORE_COMMANDS     = ['setup', 'fix', 'add', 'test', 'ship'];
+const SPEC_COMMANDS     = ['constitute', 'spec', 'clarify', 'blueprint'];
+const KNOWLEDGE_COMMANDS = ['ingest', 'knowledge'];
+const AUTONOMY_COMMANDS = ['copilot'];
+const COMMANDS          = [
+  ...CORE_COMMANDS, ...SPEC_COMMANDS, ...KNOWLEDGE_COMMANDS, ...AUTONOMY_COMMANDS,
+];
 
 function ok(msg)   { console.log(`  ✓ ${msg}`); }
 function warn(msg) { console.log(`  ⚠ ${msg}`); }

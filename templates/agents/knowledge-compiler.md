@@ -4,7 +4,7 @@ description: >
   Specialist in processing documents into structured knowledge pages.
   Extracts entities, concepts, and decisions. Maintains cross-references
   via [[wikilinks]]. Calculates confidence scores. Updates knowledge index.
-  Spawned by /ingest, /setup (auto-discovery), and /evolve Cycle 4.
+  Spawned by /ingest and /setup (auto-discovery).
   NEVER modifies source code. Only writes to .claude/knowledge/.
 model: sonnet
 tools: [Read, Write, Edit, Glob, Grep, Bash]
@@ -109,7 +109,7 @@ grep -ril "{entity-name}\|{concept-keyword}" src/ app/ lib/ 2>/dev/null | head -
 ```
 
 If matches found → add `code_refs` to the knowledge page frontmatter.
-This enables /evolve Cycle 4 to track when code drifts from knowledge.
+This lets the knowledge layer track when code drifts from knowledge.
 
 ---
 

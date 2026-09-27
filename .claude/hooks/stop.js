@@ -5,7 +5,7 @@
  * Runs at end of every session.
  * 1. Migrates "In progress" entries → "Done this session"
  * 2. Stamps goals.md with today's date
- * 3. Writes friction stub if /persist was not run
+ * 3. Writes friction stub if goals.md was not updated
  * Works on: Windows (PowerShell/CMD/Git Bash), macOS, Linux.
  */
 const fs   = require('fs');
@@ -245,13 +245,13 @@ for (const pat of tempPatterns) {
 // Also clean the session marker from user-prompt.js
 try { fs.unlinkSync(path.join(os.tmpdir(), `.azclaude-session-${sid}`)); } catch (_) {}
 
-// ── Warn if /persist was not run (only in AZCLAUDE projects with obs dir) ──
+// ── Warn if goals.md was not updated (only in AZCLAUDE projects with obs dir) ──
 const obsDir = path.join(cfg, 'memory', 'sessions');
 if (!fs.existsSync(obsDir)) process.exit(0);
 try {
   const existing = fs.readdirSync(obsDir).filter(f => f.startsWith(today) && f.endsWith('-edits.md'));
   if (existing.length === 0) {
-    process.stdout.write('⚠ session state not persisted — run /persist before closing\n');
+    process.stdout.write('⚠ session state not recorded — update .claude/memory/goals.md before closing\n');
   }
 } catch (_) {
   // obs dir doesn't exist yet — that's fine

@@ -100,29 +100,12 @@ check_file "intelligence/opro.md exists"                 "$INTEL/opro.md"
 check_file "intelligence/elo.md exists"                  "$INTEL/elo.md"
 check_file "intelligence/pipeline.md exists"             "$INTEL/pipeline.md"
 check_file "intelligence/experiment.md exists"           "$INTEL/experiment.md"
-check_file "commands/dream.md exists"                    "$CMD/dream.md"
 check_file "commands/setup.md exists"                    "$CMD/setup.md"
 check_file "commands/fix.md exists"                      "$CMD/fix.md"
-check_file "commands/evolve.md exists"                   "$CMD/evolve.md"
-check_file "commands/debate.md exists"                   "$CMD/debate.md"
-check_file "commands/persist.md exists"                  "$CMD/persist.md"
-check_file "commands/level-up.md exists"                 "$CMD/level-up.md"
 check_file "commands/ship.md exists"                     "$CMD/ship.md"
-check_file "commands/pulse.md exists"                    "$CMD/pulse.md"
-check_file "commands/explain.md exists"                  "$CMD/explain.md"
-check_file "commands/loop.md exists"                     "$CMD/loop.md"
 check_file "commands/add.md exists"                      "$CMD/add.md"
-check_file "commands/audit.md exists"                    "$CMD/audit.md"
 check_file "commands/test.md exists"                     "$CMD/test.md"
 check_file "commands/blueprint.md exists"                "$CMD/blueprint.md"
-check_file "commands/refactor.md exists"                 "$CMD/refactor.md"
-check_file "commands/doc.md exists"                      "$CMD/doc.md"
-check_file "commands/migrate.md exists"                  "$CMD/migrate.md"
-check_file "commands/deps.md exists"                     "$CMD/deps.md"
-check_file "commands/find.md exists"                     "$CMD/find.md"
-check_file "commands/create.md exists"                   "$CMD/create.md"
-check_file "commands/reflect.md exists"                  "$CMD/reflect.md"
-check_file "commands/hookify.md exists"                  "$CMD/hookify.md"
 
 # ─────────────────────────────────────────────
 echo ""
@@ -138,8 +121,6 @@ TF="$SKILLS_DIR/test-first/SKILL.md"
 ES="$SKILLS_DIR/env-scanner/SKILL.md"
 
 check "session-guard: has name field"                    "$SG" "name: session-guard"
-check "session-guard: mentions /snapshot"                "$SG" "/snapshot"
-check "session-guard: mentions /persist"                 "$SG" "/persist"
 check "session-guard: mentions goals.md"                 "$SG" "goals.md"
 
 check "test-first: has name field"                       "$TF" "name: test-first"
@@ -258,39 +239,12 @@ check "security: references progressive disclosure"      "$SC" "references/secur
 echo ""
 echo "[ /reflect — Self-Improving CLAUDE.md ]"
 # ─────────────────────────────────────────────
-REFLECT="$CMD/reflect.md"
-check "reflect: reads friction logs"                     "$REFLECT" "friction"
-check "reflect: reads goals.md"                          "$REFLECT" "goals.md"
-check "reflect: proposes CLAUDE.md edits"                "$REFLECT" "CLAUDE.md"
 
-HOOKIFY="$CMD/hookify.md"
-check "hookify: conversation friction scan"             "$HOOKIFY" "friction\|conversation\|corrections"
-check "hookify: PreToolUse/PostToolUse classification"  "$HOOKIFY" "PreToolUse\|PostToolUse"
-check "hookify: hook script generation"                 "$HOOKIFY" "hooks/\|\.sh"
-check "hookify: warn vs block decision"                 "$HOOKIFY" "Warn.*block\|warn.*Block\|Block.*warn"
-check "hookify: settings.json registration"             "$HOOKIFY" "settings.json\|hooks config"
-check "reflect: categorizes findings"                    "$REFLECT" "Missing rule\|Vague rule\|Dead rule"
 
 # ─────────────────────────────────────────────
 echo ""
 echo "[ Commands — /sentinel ]"
 # ─────────────────────────────────────────────
-SENTINEL="$CMD/sentinel.md"
-check_file "commands/sentinel.md exists"                "$SENTINEL"
-check "sentinel: hook integrity layer"                  "$SENTINEL" "integrity\|Integrity"
-check "sentinel: permission audit layer"                "$SENTINEL" "Permission.*Audit\|permission.*audit\|allowedTools\|allowed.*Tools"
-check "sentinel: MCP server scan layer"                 "$SENTINEL" "MCP\|mcp\.json"
-check "sentinel: agent config review layer"             "$SENTINEL" "Agent.*Config\|agent.*config\|prompt injection"
-check "sentinel: secrets scan layer"                    "$SENTINEL" "Secrets.*Scan\|secrets.*scan\|AKIA\|glpat"
-check "sentinel: scoring A-F grade"                     "$SENTINEL" "grade\|Grade\|A.*B.*C.*D.*F\|A–F\|A-F"
-check "sentinel: blocking verdict on findings"          "$SENTINEL" "VERDICT.*BLOCKED\|BLOCK.*finding\|block.*ship"
-check "sentinel: read-only EnterPlanMode"               "$SENTINEL" "EnterPlanMode\|read-only"
-check "sentinel: supply chain layer exists"             "$SENTINEL" "Supply Chain\|supply.chain\|supply_chain"
-check "sentinel: supply chain advisory no score"        "$SENTINEL" "advisory\|no score\|no.*score.*deduct\|score deduct"
-check "sentinel: supply chain lockfile check"           "$SENTINEL" "lockfile\|package-lock\|yarn.lock\|poetry.lock"
-check "sentinel: supply chain npm audit"                "$SENTINEL" "npm audit\|audit_critical\|audit_high"
-check "sentinel: context surface injection scan"        "$SENTINEL" "clinerules\|CLAUDE\.md\|context.*surface\|injection.*surface"
-check "sentinel: Layer 6 arg flag"                      "$SENTINEL" "supply-chain\|supply_chain"
 check "hooks: pre-tool-use warns weak crypto"           "templates/hooks/pre-tool-use.js" "MD5\|SHA.1\|weak.crypto\|weak-crypto"
 check "hooks: pre-tool-use warns prototype pollution"   "templates/hooks/pre-tool-use.js" "__proto__\|prototype.pollution\|prototype-pollution"
 check "hooks: pre-tool-use warns yaml.load"             "templates/hooks/pre-tool-use.js" "yaml\.load\|yaml.unsafe\|yaml-unsafe"
@@ -300,8 +254,6 @@ check "security-auditor: 111 rules"                    "templates/agents/securit
 check "security-auditor: 6 categories"                 "templates/agents/security-auditor.md" "6 categor\|supply chain.*5\|SC1\|SC2"
 check "security-auditor: scans .clinerules"            "templates/agents/security-auditor.md" "\.clinerules\|clinerules"
 check "security-auditor: supply chain category"        "templates/agents/security-auditor.md" "Supply Chain\|supply.*chain\|Category 6"
-check "reflect: waits for user approval"                 "$REFLECT" "approval\|Apply which"
-check "reflect: logs to observations"                    "$REFLECT" "observations"
 
 # ─────────────────────────────────────────────
 echo ""
@@ -516,7 +468,6 @@ check "8-question matrix"                        "$L8" "8 questions\|8 question\
 check "Intelligence layer (Level 8)"             "$L8" "Level 8"
 check "Knowledge layer (Level 9)"                "$L8" "Level 9"
 check "Self-improving loop (Level 10)"           "$L8" "Level 10"
-check "/evolve vs /level-up distinction"         "$L8" "level-up.*evolve\|evolve.*level-up"
 check "Only add what matrix says yes to"         "$L8" "overhead.*value\|matrix.*yes"
 
 # ─────────────────────────────────────────────
@@ -753,10 +704,6 @@ check "No overwrite on existing CLAUDE.md"       "$SETUP" "not overwrite\|existi
 echo ""
 echo "[ Commands — /persist ]"
 # ─────────────────────────────────────────────
-PER="$CMD/persist.md"
-check "goals.md update"                          "$PER" "goals.md"
-check "Friction log written"                     "$PER" "friction\|ops/observations"
-check "Session summary"                          "$PER" "session.*summary\|summary"
 
 # ─────────────────────────────────────────────
 echo ""
@@ -771,19 +718,11 @@ check "git push present"                         "$SHIP" "git push"
 echo ""
 echo "[ Commands — /evolve ]"
 # ─────────────────────────────────────────────
-EVV="$CMD/evolve.md"
-check "Routes to evolution capabilities"         "$EVV" "detect\|generate\|evaluate"
-check "Cycle composition by need"                "$EVV" "cycle\|Cycle"
-check "Loop controller check in /evolve"         "$EVV" "loop-controller"
-check "Delegates to loop controller if exists"   "$EVV" "delegate\|Delegate"
 
 # ─────────────────────────────────────────────
 echo ""
 echo "[ Commands — /level-up ]"
 # ─────────────────────────────────────────────
-LU="$CMD/level-up.md"
-check "Detects current level"                    "$LU" "current level\|detect.*level\|level.*detect"
-check "Loads ONE level-builder"                  "$LU" "ONE\|one level"
 
 # ─────────────────────────────────────────────
 echo ""
@@ -791,9 +730,11 @@ echo "[ CLI Installer — bin/cli.js ]"
 # ─────────────────────────────────────────────
 CLI="$(cd "$(dirname "$0")/.." && pwd)/bin/cli.js"
 check_file "bin/cli.js exists"                   "$CLI"
-check "CORE_COMMANDS array defined"              "$CLI" "CORE_COMMANDS.*=.*setup.*fix.*add.*audit"
-check "EXTENDED_COMMANDS array defined"          "$CLI" "EXTENDED_COMMANDS.*=.*dream.*refactor.*doc.*hookify.*sentinel"
-check "ADVANCED_COMMANDS array defined"          "$CLI" "ADVANCED_COMMANDS.*=.*evolve.*debate"
+check "CORE_COMMANDS array defined"              "$CLI" "CORE_COMMANDS.*=.*setup.*fix.*add"
+check "SPEC_COMMANDS array defined"              "$CLI" "SPEC_COMMANDS.*=.*constitute.*spec.*clarify.*blueprint"
+check "KNOWLEDGE_COMMANDS array defined"         "$CLI" "KNOWLEDGE_COMMANDS.*=.*ingest.*knowledge"
+check "AUTONOMY_COMMANDS array defined"          "$CLI" "AUTONOMY_COMMANDS.*=.*copilot"
+check "COMMANDS composed from the four groups"   "$CLI" "CORE_COMMANDS.*SPEC_COMMANDS.*KNOWLEDGE_COMMANDS.*AUTONOMY_COMMANDS"
 check "CLI_TABLE with 5 entries"                 "$CLI" "CLI_TABLE"
 check "Claude Code entry in CLI_TABLE"           "$CLI" "Claude Code"
 check "Gemini CLI entry in CLI_TABLE"            "$CLI" "Gemini CLI"
@@ -882,16 +823,6 @@ check "/add: intelligent-dispatch pre-flight"          "$ADD" "intelligent-dispa
 check "/add: spawns problem-architect"                 "$ADD" "problem-architect"
 check "/add: uses team spec"                           "$ADD" "Team Spec\|team spec"
 
-REV="$CMD/audit.md"
-check "/audit: EnterPlanMode at start"                  "$REV" "EnterPlanMode"
-check "/audit: ExitPlanMode at end"                     "$REV" "ExitPlanMode"
-check "/audit: spec compliance checked first"           "$REV" "Spec compliance"
-check "/audit: STOP if spec fails"                      "$REV" "STOP if spec"
-check "/audit: mcp__ide__getDiagnostics in quality"    "$REV" "mcp__ide__getDiagnostics"
-check "/audit: blocking vs suggestion distinction"      "$REV" "blocking\|suggestion"
-check "/audit: intelligent-dispatch structural context" "$REV" "intelligent-dispatch\|Structural Context"
-check "/audit: spawns problem-architect"               "$REV" "problem-architect"
-check "/audit: injects decisions+patterns+antipatterns" "$REV" "decisions\.md\|patterns\.md\|antipatterns\.md"
 
 TST="$CMD/test.md"
 check "/test: mcp__ide__getDiagnostics first"           "$TST" "mcp__ide__getDiagnostics"
@@ -967,8 +898,6 @@ check      "security-auditor: BLOCKED severity"               "$SA" "BLOCKED"
 check      "security-auditor: structured verdict output"      "$SA" "VERDICT.*BLOCKED\|Verdict.*BLOCKED\|CLEAR\|PROCEED"
 check      "security-auditor: file:line references required"  "$SA" "file:line\|file.*line"
 check      "security-auditor: no false positives rule"        "$SA" "false positive\|uncertain\|confirmed"
-check      "sentinel: dispatches to security-auditor agent"   "$CMD/sentinel.md" "security-auditor"
-check      "sentinel: fallback when no agent"                 "$CMD/sentinel.md" "agent=missing\|fallback\|missing"
 
 # ─── cc-template-author agent ────────────────────────────────────────────────
 CTA="$ROOT/agents/cc-template-author.md"
@@ -1018,7 +947,6 @@ check      "orchestrator: never writes code"             "$ORCH2" "NEVER writes 
 check      "orchestrator: consults problem-architect"    "$ORCH2" "problem-architect"
 check      "orchestrator: parallel safety check"         "$ORCH2" "Files Written\|parallel.*safety\|file.*overlap"
 check      "orchestrator: owns plan.md"                  "$ORCH2" "plan\.md"
-check      "orchestrator: triggers evolve"               "$ORCH2" "evolve\|\/evolve"
 check      "orchestrator: model routing from Team Spec"  "$ORCH2" "Model Recommendation\|Model.*from.*Team Spec\|model:.*from Team Spec"
 check      "orchestrator: passes model to Task dispatch"  "$ORCH2" "model:.*from Team Spec"
 check      "orchestrator: model fallback to frontmatter"  "$ORCH2" "fall back.*frontmatter\|frontmatter.*model:"
@@ -1051,11 +979,10 @@ check      "copilot: delegates to orchestrator"          "templates/commands/cop
 check      "copilot: fallback if no orchestrator"        "templates/commands/copilot.md" "does not exist.*fallback\|fallback"
 
 check "level3-skills: references native-tools.md"      "$LVL/level3-skills.md" "native-tools"
-check "level3-skills: copy /add /audit /test pattern"  "$LVL/level3-skills.md" "add\.md.*audit\.md.*test\.md\|add.md\|audit.md"
 
 check "CLI installer: AZCLAUDE_CLI env override"       "$CLI" "AZCLAUDE_CLI"
 check "CLI installer: add command registered"          "$CLI" "'add'"
-check "CLI installer: audit command registered"        "$CLI" "'audit'"
+check "CLI installer: setup command registered"        "$CLI" "'setup'"
 check "CLI installer: test command registered"         "$CLI" "'test'"
 check "CLI installer: blueprint command registered"    "$CLI" "'blueprint'"
 check "/fix: mcp__ide__getDiagnostics has fallback"   "$CMD/fix.md" "unavailable\|if available\|if.*empty"
@@ -1064,8 +991,6 @@ check "/fix: spawns problem-architect after repro"    "$CMD/fix.md" "problem-arc
 check "/fix: pre-reads affected files"                "$CMD/fix.md" "pre-read.*affected\|affected files"
 check "/test: mcp__ide__getDiagnostics has fallback"  "$CMD/test.md" "unavailable\|if available\|skip this step"
 check "/ship: mcp__ide__getDiagnostics has fallback"  "$CMD/ship.md" "unavailable\|if available\|skip"
-check "/pulse: mcp__ide__getDiagnostics has fallback"  "$CMD/pulse.md" "unavailable\|if available\|skip"
-check "/audit: mcp__ide__getDiagnostics has fallback"  "$CMD/audit.md" "unavailable\|if available\|skip"
 check "level3-skills: correct install path check"      "$LVL/level3-skills.md" "re-run.*npx azclaude\|npx azclaude"
 
 check "CLI installer: path sanitization documented"     "$CLI" "Path sanitization.*handled in hooks\|rejects paths.*outside"
@@ -1099,26 +1024,12 @@ check_file "intelligent-dispatch: file exists"         "$IDISP"
 check      "intelligent-dispatch: when-to-run rule"    "$IDISP" "3+ files\|structural.*change\|crosses.*boundary"
 check      "intelligent-dispatch: invocation format"   "$IDISP" "ARCHITECT_AVAILABLE\|problem-architect"
 check      "intelligent-dispatch: team spec actions"   "$IDISP" "Team Spec\|Pre-Read Files\|Skills to Load"
-check      "intelligent-dispatch: structural decision" "$IDISP" "Structural Decision.*YES\|\/debate"
 check      "intelligent-dispatch: impl protocol"       "$IDISP" "Implementation Protocol\|milestone-builder"
 check      "intelligent-dispatch: fix budget"          "$IDISP" "2 fix attempts\|fix attempt budget\|Budget"
 check      "intelligent-dispatch: escalate to orch"    "$IDISP" "orchestrator\|escalate"
 check      "intelligent-dispatch: never skip pre-read" "$IDISP" "NEVER skip pre-read\|no exceptions"
 
-DREAM="$CMD/dream.md"
-check "/dream: uses AskUserQuestion for intake"        "$DREAM" "AskUserQuestion"
-check "/dream: uses TaskCreate per level"              "$DREAM" "TaskCreate"
-check "/dream: uses EnterPlanMode for scan"            "$DREAM" "EnterPlanMode"
-check "/dream: uses WebSearch for unfamiliar stack"    "$DREAM" "WebSearch"
-check "/dream: intelligent-dispatch for existing project" "$DREAM" "intelligent-dispatch\|deep scan"
-check "/dream: spawns problem-architect"               "$DREAM" "problem-architect"
-check "/dream: skips architect on clean slate"         "$DREAM" "clean slate.*skip\|no .claude.*skip\|skip.*clean slate"
 
-LOOP="$CMD/loop.md"
-check "/loop: uses CronCreate not prose timer"          "$LOOP" "CronCreate"
-check "/loop: uses CronList"                           "$LOOP" "CronList"
-check "/loop: uses CronDelete for stop"                "$LOOP" "CronDelete"
-check "/loop: interval→cron mapping table"             "$LOOP" "Cron expression"
 
 FIX="$CMD/fix.md"
 check "/fix Phase 1: mcp__ide__getDiagnostics"         "$FIX" "mcp__ide__getDiagnostics"
@@ -1130,21 +1041,9 @@ check "/setup: AskUserQuestion if domain ambiguous"    "$SETUP" "AskUserQuestion
 check "/setup: TaskCreate for step tracking"           "$SETUP" "TaskCreate"
 check "/setup: TaskUpdate to in_progress"              "$SETUP" "in_progress"
 
-EVOLVE="$CMD/evolve.md"
-check "/evolve: EnterWorktree for isolation"           "$EVOLVE" "EnterWorktree"
-check "/evolve: ExitWorktree after evaluate"           "$EVOLVE" "ExitWorktree"
-check "/evolve: CronCreate for scheduling"             "$EVOLVE" "CronCreate"
 
-LU="$CMD/level-up.md"
-check "/level-up: TaskCreate for level being built"    "$LU" "TaskCreate"
 
-STATUS="$CMD/pulse.md"
-check "/pulse: mcp__ide__getDiagnostics in health"    "$STATUS" "mcp__ide__getDiagnostics"
 
-DEBATE="$CMD/debate.md"
-check "/debate: AskUserQuestion if args vague"         "$DEBATE" "AskUserQuestion"
-check "/debate: EnterPlanMode during analysis"         "$DEBATE" "EnterPlanMode"
-check "/debate: ExitPlanMode before recording"         "$DEBATE" "ExitPlanMode"
 
 # ─────────────────────────────────────────────
 echo ""
@@ -1158,23 +1057,15 @@ check_file "install: CLAUDE.md created"                "$IDIR/CLAUDE.md"
 check_file "install: manifest.md present"              "$IDIR/.claude/capabilities/manifest.md"
 check_file "install: env-scan.sh present"              "$IDIR/.claude/scripts/env-scan.sh"
 check_file "install: orchestrator-init.md present"     "$IDIR/.claude/agents/orchestrator-init.md"
-check_file "install: /dream installed"                 "$IDIR/.claude/commands/dream.md"
 check_file "install: /add installed"                   "$IDIR/.claude/commands/add.md"
-check_file "install: /audit installed"                 "$IDIR/.claude/commands/audit.md"
 check_file "install: /test installed"                  "$IDIR/.claude/commands/test.md"
 check_file "install: /blueprint installed"             "$IDIR/.claude/commands/blueprint.md"
 check_file "install: /fix installed"                   "$IDIR/.claude/commands/fix.md"
 check_file "install: /ship installed"                  "$IDIR/.claude/commands/ship.md"
-check_file "install: /evolve installed"                "$IDIR/.claude/commands/evolve.md"
-check_file "install: /loop installed"                  "$IDIR/.claude/commands/loop.md"
-check_file "install: /persist installed"               "$IDIR/.claude/commands/persist.md"
-check_file "install: /pulse installed"                 "$IDIR/.claude/commands/pulse.md"
-check_file "install: /snapshot installed"              "$IDIR/.claude/commands/snapshot.md"
 check_file "install: shared/tdd.md present"            "$IDIR/.claude/capabilities/shared/tdd.md"
 check_file "install: shared/native-tools.md present"   "$IDIR/.claude/capabilities/shared/native-tools.md"
 check_file "install: shared/security.md present"       "$IDIR/.claude/capabilities/shared/security.md"
 check      "install: CLAUDE.md has placeholders"       "$IDIR/CLAUDE.md" "{{PROJECT_NAME}}"
-check_file "install: /reflect installed"                "$IDIR/.claude/commands/reflect.md"
 check_file "install: session-guard skill installed"     "$IDIR/.claude/skills/session-guard/SKILL.md"
 check_file "install: test-first skill installed"        "$IDIR/.claude/skills/test-first/SKILL.md"
 check_file "install: env-scanner skill installed"       "$IDIR/.claude/skills/env-scanner/SKILL.md"
@@ -1191,7 +1082,7 @@ check_file "install: agent-creator scaffold script"      "$IDIR/.claude/skills/a
 check_file "install: agent-creator references"           "$IDIR/.claude/skills/agent-creator/references/agent-engineering-guide.md"
 check_file "install: agent-creator examples"             "$IDIR/.claude/skills/agent-creator/examples/sample-agent.md"
 INSTALLED=$(ls "$IDIR/.claude/commands/" | wc -l | tr -d ' ')
-EXPECTED_CMDS=46
+EXPECTED_CMDS=12
 if [ "$INSTALLED" -eq "$EXPECTED_CMDS" ]; then
   echo "  ✓ install: all $EXPECTED_CMDS commands present"
   PASS=$((PASS + 1))
@@ -1235,7 +1126,6 @@ check        "hooks: user-prompt creates required dirs"     "templates/hooks/use
 check        "hooks: user-prompt session-once marker"       "templates/hooks/user-prompt.js"   "azclaude-session\|marker.*existsSync"
 check        "hooks: stop stamps today's date"              "templates/hooks/stop.js"          "toISOString\|Updated:"
 check        "hooks: stop respects AZCLAUDE_CFG"            "templates/hooks/stop.js"          "AZCLAUDE_CFG"
-check        "hooks: stop warns if persist not run"          "templates/hooks/stop.js"          "not persisted\|run /persist"
 check        "hooks: post-tool-use guards outside project"  "templates/hooks/post-tool-use.js" "startsWith.*\.\.\|outside project"
 check        "hooks: post-tool-use guards node_modules"     "templates/hooks/post-tool-use.js" "node_modules"
 check        "hooks: post-tool-use respects AZCLAUDE_CFG"   "templates/hooks/post-tool-use.js" "AZCLAUDE_CFG"
@@ -1335,23 +1225,6 @@ check      "setup: problem-architect recommends agents" "templates/commands/setu
 
 # ─── /evolve quick mode ───────────────────────────────────────────────────────
 echo ""
-echo "─── /evolve quick mode ───"
-check      "evolve: scope gate present"             "templates/commands/evolve.md" "Scope Gate\|scope gate"
-check      "evolve: quick mode skips generate"      "templates/commands/evolve.md" "quick.*skip\|Skip GENERATE"
-check      "evolve: quick mode token estimate"      "templates/commands/evolve.md" "500 tokens\|~500"
-check      "evolve: description mentions quick"     "templates/commands/evolve.md" "quick"
-check      "evolve: full mode still runs all cycles" "templates/commands/evolve.md" "blank.*full\|full.*all cycles"
-check      "evolve: evolution history log step"     "templates/commands/evolve.md" "evolution-log\.md\|Evolution History"
-check      "evolve: logs before/after score"        "templates/commands/evolve.md" "before score\|after score\|delta"
-check      "evolve: generates skills from git evidence" "templates/commands/evolve.md" "level3-skills\|project-specific.*skill\|skill.*git.*evidence"
-check      "evolve: generates agents from co-change"  "templates/commands/evolve.md" "level5-agents\|co-change.*agent\|agent.*cluster"
-check      "evolve: checks existing before creating"  "templates/commands/evolve.md" "existing.*before\|Skip.*creation\|already covers"
-check      "evolve: promotes GENERAL to shared-skills" "templates/commands/evolve.md" "shared-skills\|GENERAL.*promote\|Promoted to"
-check      "evolve: adds discovered_in on promote"  "templates/commands/evolve.md" "discovered_in"
-check      "evolve: checksums on promote"            "templates/commands/evolve.md" "checksums\|sha256"
-check      "evolve: orchestrator re-evaluates plan"  "templates/commands/evolve.md" "orchestrator.*re-evaluat\|re-evaluat.*plan\|unblocked\|unblock"
-check      "evolve: checks for orchestrator+plan"    "templates/commands/evolve.md" "orchestrator\.md.*plan\.md\|plan\.md.*orchestrator"
-check      "evolve: reports unblocked milestones"    "templates/commands/evolve.md" "unblock\|blocked.*pending\|pending"
 check      "cli: creates evolution-log.md"           "bin/cli.js" "evolution-log\.md"
 check      "cli: --full flag for advanced install"    "bin/cli.js" "npx azclaude --full\|fullInstall\|--full"
 check      "cli: --update flag for refreshing"       "bin/cli.js" "forceUpdate\|--update"
@@ -1371,7 +1244,6 @@ echo ""
 echo "─── CLAUDE.md onboarding ───"
 check      "CLAUDE.md: quick start block present"   "templates/CLAUDE.md" "Quick Start"
 check      "CLAUDE.md: /setup as first step"        "templates/CLAUDE.md" "1.*setup\|setup.*first"
-check      "CLAUDE.md: /persist mentioned"          "templates/CLAUDE.md" "persist"
 check      "CLAUDE.md: quick start before identity" "templates/CLAUDE.md" "Quick Start"
 
 # ─── azclaude doctor ──────────────────────────────────────────────────────────
@@ -1494,30 +1366,11 @@ check "trigger: manifest uses symptom language for shared" "templates/capabiliti
 # ─── Distrust-in-review + review reception ─────────────────────────────────────
 echo ""
 echo "─── Distrust-in-review ───"
-check "audit: distrust implementer warning"               "templates/commands/audit.md" "incomplete or optimistic\|Verify independently\|Do not trust"
-check "audit: runs tests to verify"                       "templates/commands/audit.md" "npm test\|run.*test\|verification method"
-check "audit: shows verification method in output"        "templates/commands/audit.md" "Verification method"
 check_file "review-reception: capability file exists"     "$SHARED/review-reception.md"
 check "review-reception: bans performative agreement"     "$SHARED/review-reception.md" "You're absolutely right\|Great point\|performative"
 check "review-reception: pushback guidance"               "$SHARED/review-reception.md" "Push back\|push back\|wrong"
 check "review-reception: YAGNI check"                     "$SHARED/review-reception.md" "YAGNI"
 check "review-reception: in manifest"                     "templates/capabilities/manifest.md" "review-reception"
-
-# ─── /snapshot ──────────────────────────────────────────────────────────────
-echo ""
-echo "─── /snapshot ───"
-CKPT="$ROOT/commands/snapshot.md"
-check_file "snapshot: command file exists"                "$CKPT"
-check      "snapshot: writes to checkpoints dir"         "$CKPT" "checkpoints"
-check      "snapshot: captures current reasoning"        "$CKPT" "What I'm doing right now\|current.*reasoning"
-check      "snapshot: captures decisions + why"          "$CKPT" "key decisions\|Why"
-check      "snapshot: captures what's next"              "$CKPT" "What's next"
-check      "snapshot: updates goals.md thread"           "$CKPT" "Current threads\|goals\.md"
-check      "snapshot: updates Next actions from checkpoint" "$CKPT" "Next actions"
-check      "snapshot: cli includes snapshot command"     "bin/cli.js" "snapshot"
-check      "snapshot: CLAUDE.md dispatch entry"          "templates/CLAUDE.md" "snapshot"
-check      "checkpoint: user-prompt injects latest"      "templates/hooks/user-prompt.js" "checkpoints\|checkpoint"
-check      "checkpoint: user-prompt labels checkpoint"   "templates/hooks/user-prompt.js" "LAST CHECKPOINT\|END CHECKPOINT"
 
 # ─── CONTRIBUTING.md ──────────────────────────────────────────────────────────
 echo ""
@@ -1531,66 +1384,22 @@ check      "contributing: PR checklist present"        "CONTRIBUTING.md" "checkl
 
 # ─── /refactor command ────────────────────────────────────────────────────────
 echo ""
-echo "─── /refactor ───"
-REF="$CMD/refactor.md"
-check      "refactor: tests before and after"            "$REF" "BEFORE refactor\|AFTER refactor"
-check      "refactor: maps all references"               "$REF" "grep.*references\|all files"
-check      "refactor: intelligent-dispatch pre-flight"   "$REF" "intelligent-dispatch\|Pre-Flight"
-check      "refactor: spawns problem-architect"          "$REF" "problem-architect"
-check      "refactor: uses files-written list"           "$REF" "Files Written\|files.*touch"
-check      "refactor: completion rule shows both runs"   "$REF" "both test runs\|Before.*After"
-check      "refactor: high risk uses worktree"           "$REF" "EnterWorktree\|worktree"
-check      "refactor: never changes behavior"            "$REF" "never behavior\|never chang.*behavior\|Change structure"
 
 # ─── /doc command ────────────────────────────────────────────────────────────
 echo ""
-echo "─── /doc ───"
-DOC="$CMD/doc.md"
-check      "doc: detects existing doc style"             "$DOC" "existing doc\|match.*style\|JSDoc.*docstring"
-check      "doc: reads code before documenting"          "$DOC" "Read the code\|read the implementation\|Never document from memory"
-check      "doc: verifies examples work"                 "$DOC" "run.*verify\|Verify example"
-check      "doc: completion rule"                        "$DOC" "Do not say.*docs updated"
 
 # ─── /migrate command ───────────────────────────────────────────────────────
 echo ""
-echo "─── /migrate ───"
-MIG="$CMD/migrate.md"
-check      "migrate: tests before and after"             "$MIG" "BEFORE migration\|AFTER migration"
-check      "migrate: researches breaking changes"        "$MIG" "breaking change\|changelog\|migration guide"
-check      "migrate: uses WebSearch for major versions"  "$MIG" "WebSearch"
-check      "migrate: worktree for major upgrades"        "$MIG" "EnterWorktree\|worktree"
-check      "migrate: checks lock file"                   "$MIG" "lock file\|package-lock\|poetry.lock"
 
 # ─── /deps command ───────────────────────────────────────────────────────────
 echo ""
-echo "─── /deps ───"
-DEP="$CMD/deps.md"
-check      "deps: outdated check"                        "$DEP" "npm outdated\|pip list.*outdated"
-check      "deps: security audit"                        "$DEP" "npm audit\|pip audit\|govulncheck"
-check      "deps: unused detection"                      "$DEP" "UNUSED\|unused"
-check      "deps: structured output format"              "$DEP" "Package.*Current.*Latest\|Severity.*CVE"
-check      "deps: cli registers new commands"            "bin/cli.js" "'refactor'.*'doc'.*'migrate'.*'deps'\|refactor.*doc.*migrate.*deps"
+check      "cli: registers the twelve commands"          "bin/cli.js" "'setup'.*'fix'.*'add'"
 
 # ─── /find command ───────────────────────────────────────────────────────────
 echo ""
-echo "─── /find ───"
-FND="$CMD/find.md"
-check      "find: searches project commands"             "$FND" "commands/\*.md\|project commands"
-check      "find: searches shared-skills"                "$FND" "shared-skills"
-check      "find: searches capabilities manifest"        "$FND" "manifest\.md"
-check      "find: shows results table"                   "$FND" "Command.*Description\|Skill.*Description"
-check      "find: suggests /create on no results"        "$FND" "/create\|build a new"
 
 # ─── /create command ─────────────────────────────────────────────────────────
 echo ""
-echo "─── /create ───"
-CRT="$CMD/create.md"
-check      "create: intent capture phase"                "$CRT" "Intent Capture\|AskUserQuestion"
-check      "create: duplicate check"                     "$CRT" "Check for Duplicates\|duplicate"
-check      "create: generates frontmatter template"      "$CRT" "disable-model-invocation\|allowed-tools"
-check      "create: requires 5+ trigger phrases"         "$CRT" "5.*trigger\|trigger phrases"
-check      "create: generates test cases"                "$CRT" "Test Cases\|evals"
-check      "create: completion rule required"            "$CRT" "Completion Rule\|completion rule"
 
 # ─── /copilot command ─────────────────────────────────────────────────────────
 echo ""
@@ -1604,10 +1413,8 @@ check      "copilot: per-milestone protocol"           "$COPILOT" "Per Milestone
 check      "copilot: COPILOT_COMPLETE signal"          "$COPILOT" "COPILOT_COMPLETE"
 check      "copilot: blockers.md logging"              "$COPILOT" "blockers\.md"
 check      "copilot: evolution every 3 milestones"     "$COPILOT" "3 milestones\|Every 3"
-check      "copilot: references /dream /blueprint /evolve"  "$COPILOT" "/dream\|/blueprint\|/evolve\|/audit\|/ship"
 check      "copilot: no permission asking"             "$COPILOT" "Do NOT ask for permission"
 check      "copilot: copilot-report.md generation"     "$COPILOT" "copilot-report"
-check      "copilot: snapshot after milestone"         "$COPILOT" "/snapshot"
 
 # ─── copilot.js runner ──────────────────────────────────────────────────────
 echo ""
@@ -1670,16 +1477,9 @@ check      "cli: routes copilot to copilot.js"         "bin/cli.js" "copilot\.js
 # ─── Phase 4: Copilot mode wiring ───────────────────────────────────────────
 echo ""
 echo "─── Phase 4: copilot mode wiring ───"
-check "dream: copilot mode detection"              "$CMD/dream.md" "COPILOT_MODE"
-check "dream: reads copilot-intent.md"             "$CMD/dream.md" "copilot-intent.md"
-check "dream: skips AskUserQuestion in copilot"    "$CMD/dream.md" "skip.*Phase 1\|skip AskUserQuestion"
 check "add: copilot mode detection"                "$CMD/add.md" "COPILOT_MODE"
 check "add: reads plan.md milestones"              "$CMD/add.md" "plan.md.*milestone\|milestone.*plan.md"
 check "add: skips complexity gate in copilot"      "$CMD/add.md" "Skip.*Complexity Gate\|skip.*complexity"
-check "audit: copilot mode detection"              "$CMD/audit.md" "COPILOT_MODE"
-check "audit: reviews against copilot-intent"      "$CMD/audit.md" "copilot-intent.md.*spec\|spec.*copilot-intent"
-check "debate: copilot mode detection"             "$CMD/debate.md" "COPILOT_MODE"
-check "debate: reads blockers.md"                  "$CMD/debate.md" "blockers.md"
 check "ship: copilot deploy step"                  "$CMD/ship.md" "Deploy.*Copilot\|Copilot Mode Only"
 check "ship: deploy target detection"              "$CMD/ship.md" "Vercel.*Railway\|Railway.*Netlify\|deploy.*target"
 check "copilot: blocker recovery"                  "$CMD/copilot.md" "Blocker Recovery"
@@ -1690,11 +1490,6 @@ check "copilot: reads patterns.md"                 "$CMD/copilot.md" "patterns.m
 # ─── Reflexes system ─────────────────────────────────────────────────────────
 echo ""
 echo "─── Reflexes system ───"
-check_file "reflexes: command exists"                   "$CMD/reflexes.md"
-check      "reflexes: confidence scoring"               "$CMD/reflexes.md" "confidence.*0\.\|0\.3.*0\.5.*0\.7\|tentative.*moderate.*strong"
-check      "reflexes: subcommands"                      "$CMD/reflexes.md" "status.*analyze.*promote\|analyze.*promote.*clear"
-check      "reflexes: copilot mode"                     "$CMD/reflexes.md" "Copilot Mode"
-check      "reflexes: observations.jsonl"               "$CMD/reflexes.md" "observations.jsonl"
 check_file "reflexes: capability exists"                "$ROOT/capabilities/shared/reflexes.md"
 check      "reflexes: reflex model"                     "$ROOT/capabilities/shared/reflexes.md" "Reflex Model"
 check      "reflexes: scope rules"                      "$ROOT/capabilities/shared/reflexes.md" "Scope Rules\|scope.*project.*global"
@@ -1705,7 +1500,7 @@ check      "reflexes: hook captures observations"       "templates/hooks/post-to
 check      "reflexes: hook scrubs secrets"              "templates/hooks/post-tool-use.js" "REDACTED"
 check      "reflexes: hook auto-truncates"              "templates/hooks/post-tool-use.js" "Auto-truncate\|auto-truncate\|last.*2000\|slice.*-500"
 check      "reflexes: in ADVANCED_COMMANDS"             "bin/cli.js" "reflexes"
-check      "copilot: runs reflexes analyze"             "$CMD/copilot.md" "reflexes analyze"
+check      "copilot: has a review cycle"                  "$CMD/copilot.md" "Review Cycle"
 
 # ─── Architecture Advisor skill ──────────────────────────────────────────────
 SKILLS_DIR="$ROOT/skills"
@@ -1747,7 +1542,6 @@ check      "domain-gen: thresholds per domain"          "$DAG" "Threshold\|thres
 check      "domain-gen: generation workflow"            "$DAG" "Generation Workflow"
 check      "domain-gen: multi-domain support"           "$DAG" "Multi-Domain"
 check      "domain-gen: in manifest"                    "$ROOT/capabilities/manifest.md" "domain-advisor-generator"
-check      "dream: generates domain advisor"            "$CMD/dream.md" "domain-advisor-generator\|Generate Domain Advisor"
 
 # ─── Hook profiles ───────────────────────────────────────────────────────────
 echo ""
@@ -1809,7 +1603,6 @@ check      "import-graph: circular dep detection"        "$IG" "Circular.*dep\|c
 check      "import-graph: co-change analysis"            "$IG" "co-change\|Co-change"
 check      "import-graph: multi-language"                "$IG" "TypeScript\|Python\|Go"
 check      "import-graph: zero dependencies"             "$IG" "grep\|Zero depend"
-check      "evolve: runs import graph"                   "$CMD/evolve.md" "import-graph"
 
 # ─── Search before read ─────────────────────────────────────────────────────
 echo ""
@@ -1856,7 +1649,6 @@ check      "boundaries: orphan detection"                "$VB" "Orphan\|orphan"
 check      "boundaries: collision check"                 "$VB" "collision\|Collision\|BUILTINS"
 check      "boundaries: machine-readable output"        "$VB" "BOUNDARY_RESULT:pass=.*:warn="
 check      "boundaries: structured exit code"            "$VB" "exit.*WARN"
-check      "boundaries: wired into evolve"               "$CMD/evolve.md" "validate-boundaries"
 check      "audit: scores boundary health"               "bin/cli.js" "Boundary Health"
 check      "audit: parses BOUNDARY_RESULT"              "bin/cli.js" "BOUNDARY_RESULT"
 
@@ -1900,9 +1692,8 @@ check      "guard: auto-saves at 85%"                      "$UP" "pct >= 85"
 check      "guard: saves checkpoint file"                  "$UP" "auto-compaction"
 check      "guard: one-shot marker"                        "$UP" "autoSaveMarker"
 check      "guard: copies goals.md"                        "$UP" "goalsContent"
-check      "guard: tells user to /snapshot"                "$UP" "snapshot"
 
-check      "router: fires on every message"                "$UP" "fires on EVERY message"
+check      "router: gated to first message"                 "$UP" "if (isFirstMessage)"
 check      "router: mandatory pipeline"                    "$UP" "AZCLAUDE PIPELINE.*MANDATORY\|MANDATORY"
 check      "router: intent detection BUILD"                "$UP" "intents.push.*BUILD"
 check      "router: intent detection FIX"                  "$UP" "intents.push.*FIX"
@@ -2008,7 +1799,6 @@ check      "semantic: reads full bodies"                 "$SBC" "full body\|full
 check      "semantic: merge protocol"                    "$SBC" "merge.*redundant\|Merge.*REDUNDANT"
 check      "semantic: records decisions"                 "$SBC" "decisions.md"
 check      "semantic: in manifest"                       "$ROOT/capabilities/manifest.md" "semantic-boundary-check"
-check      "semantic: wired into evolve Cycle 3"         "$CMD/evolve.md" "semantic-boundary-check\|semantic boundary"
 check      "boundaries: JSON report output"             "$VB" "boundaries.json"
 check      "boundaries: timestamp in report"             "$VB" "timestamp"
 check      "boundaries: install-time check"              "bin/cli.js" "postInstallValidator\|Post-install boundary"
@@ -2036,7 +1826,6 @@ check      "copilot: all-done detection"                 "bin/copilot.js" "All m
 # ─── Content audit + deep mode ────────────────────────────────────────────────
 echo ""
 echo "─── Content audit + deep mode ───"
-check      "audit: content audit for educational projects"  "$CMD/audit.md" "Content Audit.*educational\|Weight.*percentage validation\|educational.*documentation"
 check      "copilot: --deep flag support"                   "bin/copilot.js" "deepMode\|--deep"
 check      "copilot: deep mode prompt additions"            "bin/copilot.js" "DEEP MODE.*audit\|Content accuracy audit\|Accessibility audit"
 check      "copilot: --deep uses Opus model"               "bin/copilot.js" "claude-opus-4-6\|deepMode.*opus\|opus.*deepMode"
@@ -2048,13 +1837,9 @@ check_file "ultrathink: shared capability exists"        "$CAP/shared/ultrathink
 check      "ultrathink: keyword present in capability"   "$CAP/shared/ultrathink.md" "ultrathink"
 check      "ultrathink: manifest entry"                  "$CAP/manifest.md" "shared/ultrathink.md"
 check      "ultrathink: blueprint --deep detection"      "$CMD/blueprint.md" "Deep Mode Detection"
-check      "ultrathink: debate --deep detection"         "$CMD/debate.md" "Deep Mode Detection"
-check      "ultrathink: dream --deep detection"          "$CMD/dream.md" "Deep Mode Detection"
 check      "ultrathink: fix --deep detection"            "$CMD/fix.md" "Deep Mode Detection"
 check      "ultrathink: add --deep detection"            "$CMD/add.md" "Deep Mode Detection"
 check      "ultrathink: blueprint loads ultrathink"      "$CMD/blueprint.md" "shared/ultrathink.md"
-check      "ultrathink: debate loads ultrathink"         "$CMD/debate.md" "shared/ultrathink.md"
-check      "ultrathink: dream loads ultrathink"          "$CMD/dream.md" "shared/ultrathink.md"
 check      "ultrathink: fix loads ultrathink"            "$CMD/fix.md" "shared/ultrathink.md"
 check      "ultrathink: add loads ultrathink"            "$CMD/add.md" "shared/ultrathink.md"
 
@@ -2077,8 +1862,8 @@ check_absent "stop: never unlinks checkpoints"        "templates/hooks/stop.js" 
 # ─── Cross-surface sync: every command registered in all 3 surfaces ──────────
 echo ""
 echo "─── Cross-surface sync ───"
-for CMD_NAME in clarify spec analyze constitute tasks issues driven; do
-  check "cross-surface: $CMD_NAME in EXTENDED_COMMANDS (cli.js)"  "bin/cli.js"              "$CMD_NAME"
+for CMD_NAME in clarify spec constitute; do
+  check "cross-surface: $CMD_NAME registered in cli.js"      "bin/cli.js"              "$CMD_NAME"
   check "cross-surface: $CMD_NAME in Available Commands (CLAUDE.md template)" "templates/CLAUDE.md" "$CMD_NAME"
   check_file "cross-surface: $CMD_NAME template file exists"       "$CMD/$CMD_NAME.md"
 done
@@ -2100,7 +1885,6 @@ echo ""
 echo "─── /spec ───"
 SPC="$CMD/spec.md"
 check_file "spec: command file exists"                 "$SPC"
-check      "spec: workflow position documented"        "$SPC" "/dream.*\\/spec.*\\/blueprint\|/spec.*before.*blueprint"
 check      "spec: copilot mode detection"              "$SPC" "COPILOT_MODE"
 check      "spec: acceptance criteria required"        "$SPC" "Acceptance Criteria"
 check      "spec: out of scope required"               "$SPC" "Out of Scope"
@@ -2113,18 +1897,6 @@ check      "spec: completion rule no code"             "$SPC" "Do not write any 
 
 # ─── /analyze command ─────────────────────────────────────────────────────────
 echo ""
-echo "─── /analyze ───"
-ANL="$CMD/analyze.md"
-check_file "analyze: command file exists"              "$ANL"
-check      "analyze: EnterPlanMode read-only"          "$ANL" "EnterPlanMode"
-check      "analyze: plan vs reality check"            "$ANL" "Plan vs\. Reality\|plan.*reality"
-check      "analyze: GHOST detection"                  "$ANL" "GHOST"
-check      "analyze: spec vs implementation check"     "$ANL" "Spec vs\. Implementation\|spec.*implementation"
-check      "analyze: intent vs codebase check"         "$ANL" "Intent vs\. Codebase\|intent.*codebase"
-check      "analyze: consistency score"                "$ANL" "Consistency.*Score\|consistency.*score"
-check      "analyze: recommended actions"              "$ANL" "Recommended Actions\|recommended actions"
-check      "analyze: ExitPlanMode"                     "$ANL" "ExitPlanMode"
-check      "analyze: completion rule no modifications" "$ANL" "Do not modify"
 
 # ─── /constitute command ──────────────────────────────────────────────────────
 echo ""
@@ -2142,22 +1914,6 @@ check      "constitute: governed by human rule"        "$CON" "human\|Human"
 
 # ─── /tasks command ───────────────────────────────────────────────────────────
 echo ""
-echo "─── /tasks ───"
-TSK="$CMD/tasks.md"
-check_file "tasks: command file exists"                "$TSK"
-check      "tasks: EnterPlanMode read-only"            "$TSK" "EnterPlanMode"
-check      "tasks: reads plan.md"                      "$TSK" "plan\.md"
-check      "tasks: wave grouping"                      "$TSK" "Wave 1\|Wave.*parallel"
-check      "tasks: parallel detection"                 "$TSK" "parallel\|simultaneously"
-check      "tasks: file collision detection"           "$TSK" "collision\|shared files"
-check      "tasks: critical path"                      "$TSK" "Critical path\|critical path"
-check      "tasks: ExitPlanMode"                       "$TSK" "ExitPlanMode"
-check      "tasks: no file modifications"              "$TSK" "Do not modify"
-check      "tasks: --strategy flag detection"          "$TSK" "strategy.*flag\|contains.*strategy"
-check      "tasks: strategy scoring step"              "$TSK" "Step 4b.*Strategy Scoring\|Strategy Scoring"
-check      "tasks: strategy formulas listed"           "$TSK" "risk_first\|value_first\|simple_first\|complex_first"
-check      "tasks: Score column in output"             "$TSK" "Score:"
-check      "tasks: Dispatch strategy in analysis"      "$TSK" "Dispatch strategy:"
 
 # ─── dispatch strategies capability ────────────────────────────────────────────
 echo ""
@@ -2190,81 +1946,32 @@ check      "plan-tracker: Value field defined"         "$PT" "Value: 1-5"
 
 # ─── /issues command ──────────────────────────────────────────────────────────
 echo ""
-echo "─── /issues ───"
-ISS="$CMD/issues.md"
-check_file "issues: command file exists"               "$ISS"
-check      "issues: gh CLI pre-flight"                 "$ISS" "gh auth status\|gh.*auth"
-check      "issues: skips done milestones"             "$ISS" "done.*milestones\|Skip.*done\|Do not create.*done"
-check      "issues: writes issue links back to plan.md" "$ISS" "plan\.md"
-check      "issues: creates azclaude label"            "$ISS" "azclaude.*label\|label.*azclaude"
-check      "issues: no delete/close existing"          "$ISS" "Do not delete\|Do not.*close"
-check      "issues: dedup check"                       "$ISS" "already.*issue\|existing.*issue\|Skipped.*already"
 
 # ─── /driven command ──────────────────────────────────────────────────────────
 echo ""
-echo "─── /driven ───"
-DRV="$CMD/driven.md"
-check_file "driven: command file exists"                  "$DRV"
-check      "driven: generates .claude/code-rules.md"      "$DRV" "code-rules\.md"
-check      "driven: 6-question interview"                 "$DRV" "Q1\|Q2\|Q3\|Q4\|Q5\|Q6"
-check      "driven: uses AskUserQuestion"                 "$DRV" "AskUserQuestion"
-check      "driven: DO/DO NOT format"                     "$DRV" "DO NOT\|DO:"
-check      "driven: stack detection"                      "$DRV" "stack\|Stack"
-check      "driven: constitution conflict check"          "$DRV" "constitution\.md\|constitution=found"
-check      "driven: update flow"                         "$DRV" "update"
-check      "driven: Default option in questions"          "$DRV" "Default"
-check      "driven: suggest commit not run it"            "$DRV" "Suggested commit\|git add.*code-rules"
-check      "driven: precedence hierarchy"                 "$DRV" "constitution.*wins\|governance wins\|Precedence"
-check      "driven: max rules per section"                "$DRV" "Max 8\|max 8\|8 rules"
-check      "driven: show subcommand"                      "$DRV" "show"
-check      "driven: in EXTENDED_COMMANDS (cli.js)"        "bin/cli.js" "driven"
+check      "cli: /spec in SPEC_COMMANDS (cli.js)"         "bin/cli.js" "SPEC_COMMANDS"
 check      "/add: reads code-rules pre-flight"            "$CMD/add.md" "code-rules=found\|code-rules\.md"
 check      "/fix: reads code-rules pre-flight"            "$CMD/fix.md" "code-rules=found\|code-rules\.md"
-check      "/audit: reads code-rules in Step 3"           "$CMD/audit.md" "code-rules=found\|code-rules\.md"
-check      "/audit: code-rules overrides generic conventions" "$CMD/audit.md" "overrides\|primary convention"
-check      "/refactor: reads code-rules pre-flight"       "$CMD/refactor.md" "code-rules=found\|code-rules\.md"
-check      "/refactor: refactor toward code-rules style"  "$CMD/refactor.md" "TOWARD\|toward"
 check      "/test: reads code-rules pre-flight"           "$CMD/test.md" "code-rules=found\|code-rules\.md"
 check      "/test: applies testing section from code-rules" "$CMD/test.md" "Testing.*section\|testing section\|## Testing"
-check      "/doc: reads code-rules pre-flight"            "$CMD/doc.md" "code-rules=found\|code-rules\.md"
-check      "/doc: code-rules overrides inferred style"    "$CMD/doc.md" "overrides\|authoritative"
 check      "/blueprint: reads code-rules in Step 3b"      "$CMD/blueprint.md" "code-rules=found\|code-rules\.md"
 check      "/blueprint: architecture pattern from code-rules" "$CMD/blueprint.md" "architecture pattern\|Architecture.*pattern"
-check      "/setup: suggests /driven when missing"        "$CMD/setup.md" "/driven"
 check      "/setup: explains code-rules benefit"          "$CMD/setup.md" "code-rules\.md\|coding rules"
 check      "milestone-builder: reads code-rules in pre-read" "$ROOT/agents/milestone-builder.md" "code-rules\.md"
 check      "milestone-builder: code-rules second in read order" "$ROOT/agents/milestone-builder.md" "read SECOND\|SECOND.*style"
 
 # ─── /mcp command + MCP wiring ───────────────────────────────────────────────
 echo ""
-echo "─── /mcp command + MCP wiring ───"
-check_file "/mcp: command file exists"                        "$CMD/mcp.md"
-check      "/mcp: loads mcp skill"                           "$CMD/mcp.md" "skills/mcp/SKILL\.md\|mcp.*skill"
-check      "/mcp: in EXTENDED_COMMANDS"                      "bin/cli.js"  "EXTENDED_COMMANDS.*mcp\|mcp.*EXTENDED"
 check      "/add: checks context7 MCP in pre-flight"         "$CMD/add.md" "context7"
 check      "/add: uses context7 for library docs"            "$CMD/add.md" "context7.*docs\|resolve-library-id\|get-library-docs"
 check      "/fix: checks brave search in Phase 2"            "$CMD/fix.md" "brave\|brave-search"
 check      "/fix: uses brave search for error lookup"        "$CMD/fix.md" "brave_web_search\|web_search"
-check      "/setup: recommends /mcp in next steps"           "$CMD/setup.md" "/mcp"
 check      "/setup: Context7 benefit described"              "$CMD/setup.md" "Context7\|context7"
-check      "template CLAUDE.md: /mcp in Available Commands"  "$ROOT/CLAUDE.md" "/mcp"
-check      "template CLAUDE.md: /mcp in Extended routing"    "$ROOT/CLAUDE.md" "mcp.*recommends\|/mcp.*MCP servers"
-check      "CLAUDE.md: /mcp in Available Commands"           "CLAUDE.md"   "/mcp"
 
 # ─── /parallel command + parallel coordination ────────────────────────────────
 echo ""
-echo "─── /parallel command + parallel coordination ───"
-PARA_CMD="$CMD/parallel.md"
 PARA_CAP="$ROOT/capabilities/shared/parallel-coordination.md"
-check_file "/parallel: command file exists"                      "$PARA_CMD"
 check_file "parallel-coordination.md: capability exists"        "$PARA_CAP"
-check      "/parallel: in ADVANCED_COMMANDS (cli.js)"           "bin/cli.js"  "ADVANCED_COMMANDS.*parallel\|parallel.*ADVANCED"
-check      "/parallel: loads parallel-coordination.md"          "$PARA_CMD"   "parallel-coordination"
-check      "/parallel: safety check for file collisions"        "$PARA_CMD"   "Files Written\|Files:.*field\|file collision\|shared file"
-check      "/parallel: worktree isolation dispatch"             "$PARA_CMD"   "isolation.*worktree\|worktree.*isolated\|WORKTREE"
-check      "/parallel: merge protocol step"                     "$PARA_CMD"   "Merge\|merge.*branch\|git merge"
-check      "/parallel: ownership map written"                   "$PARA_CMD"   "ownership\.md"
-check      "/parallel: reports time saved"                      "$PARA_CMD"   "time saved\|wave complete\|Wave Complete"
 check      "parallel-coord: worktree required rationale"        "$PARA_CAP"   "worktree\|isolation"
 check      "parallel-coord: ownership map format"               "$PARA_CAP"   "ownership\.md\|Directories Owned"
 check      "parallel-coord: merge protocol defined"             "$PARA_CAP"   "Merge Protocol\|git merge"
@@ -2280,8 +1987,6 @@ check      "milestone-builder: no push in worktree mode"       "$ROOT/agents/mil
 check      "milestone-builder: reports branch on completion"   "$ROOT/agents/milestone-builder.md" "Branch:.*parallel\|branch name"
 check      "milestone-builder: scope violation reporting"      "$ROOT/agents/milestone-builder.md" "scope violation\|outside.*scope\|outside my dir"
 check      "template CLAUDE.md: parallel agent rules"          "$ROOT/CLAUDE.md" "Parallel Agent Rules\|parallel.*rules"
-check      "template CLAUDE.md: /parallel in commands"         "$ROOT/CLAUDE.md" "/parallel"
-check      "CLAUDE.md: /parallel in Available Commands"        "CLAUDE.md"  "/parallel"
 
 # ─── Wave state persistence (context loss protection) ────────────────────────
 echo ""
@@ -2296,11 +2001,7 @@ check      "parallel-coord: Wave 0 bottleneck pattern"          "$PARA_CAP"   "W
 check      "parallel-coord: same file different sections rule"  "$PARA_CAP"   "SAME FILE.*DIFFERENT SECTIONS\|100.*lines apart"
 check      "parallel-coord: test-only agents always safe"       "$PARA_CAP"   "TEST-ONLY.*always safe\|test.*always safe"
 check      "parallel-coord: conflict decision table"            "$PARA_CAP"   "return type.*callers\|Serialize.*different waves"
-check      "/parallel: writes wave state before dispatch"       "$PARA_CMD"   "parallel-wave-state\.md"
-check      "/parallel: Step 0 checks interrupted wave"          "$PARA_CMD"   "Interrupted Wave\|interrupted.*wave\|Step 0"
-check      "/parallel: deletes wave state on cleanup"           "$PARA_CMD"   "Delete.*parallel-wave-state\|delete.*wave"
 check      "orchestrator: resume interrupted wave step"         "$ROOT/agents/orchestrator.md" "Resume Interrupted\|parallel-wave-state"
-check      "snapshot: detects active parallel wave"             "$ROOT/commands/snapshot.md" "parallel-wave-state\|Active parallel wave"
 check      "compaction guard: saves wave state"                 "$ROOT/hooks/user-prompt.js" "parallel-wave-state\|waveStatePath\|wave.*state"
 
 # ─── DAG-based parallel dispatch ────────────────────────────���────────────────
@@ -2323,14 +2024,6 @@ check      "orchestrator: test-only milestone classification"   "$ROOT/agents/or
 check      "orchestrator: pre-read shared files"                "$ROOT/agents/orchestrator.md" "Pre-read shared\|pre-read.*inject\|inject.*content"
 check      "orchestrator: DAG unblock after merge"              "$ROOT/agents/orchestrator.md" "newly-unblocked\|Check DAG.*unblocked\|dispatch.*immediately"
 check      "orchestrator: batch-merge fallback"                 "$ROOT/agents/orchestrator.md" "batch-merge\|fall back.*batch\|Fallback"
-check      "/parallel: DAG dispatch mode"                       "$PARA_CMD"   "DAG.*DISPATCH\|DAG Mode\|dag.*dispatch"
-check      "/parallel: pre-read shared files"                   "$PARA_CMD"   "Pre-read shared\|Pre-loaded Context\|redundant.*reads"
-check      "/parallel: test scope per agent"                    "$PARA_CMD"   "Test scope\|test.*scope"
-check      "/parallel: merge-on-complete step"                  "$PARA_CMD"   "Merge-on-Complete\|merge.*immediately\|merge-on-complete\|Wave Merge\|Wait-for-All"
-check      "/parallel: DAG unblock after merge"                 "$PARA_CMD"   "newly-unblocked\|Check DAG\|unblock"
-check      "/parallel: max parallel agents"                     "$PARA_CMD"   "Max parallel.*6\|max_parallel\|max parallel"
-check      "tasks: DAG dispatch note"                           "$CMD/tasks.md" "DAG dispatch\|Depends:.*satisfaction\|merge-on-complete"
-check      "tasks: foundation first in dispatch"                "$CMD/tasks.md" "Foundation first\|foundation.*sequential"
 check      "blueprint: Wave field is informational"             "$CMD/blueprint.md" "informational\|orchestrator uses Depends"
 
 # ─── Universal parallel execution rules ──────────────────────────────────────
@@ -2415,19 +2108,6 @@ check      "agent-creator: web research mandatory"             "$ROOT/skills/age
 
 # ─── /verify command + code-rules system ─────────────────────────────────────
 echo ""
-echo "─── /verify command + code-rules system ───"
-VRF="$CMD/verify.md"
-check_file "/verify: command file exists"                     "$VRF"
-check      "/verify: audits against code-rules.md"           "$VRF" "code-rules\.md"
-check      "/verify: reports violations at file:line"        "$VRF" "file.*line\|{file}.*{line}\|file:line"
-check      "/verify: uses DO NOT rules as search patterns"   "$VRF" "DO NOT\|grep.*DO NOT\|violat"
-check      "/verify: handles missing code-rules (fallback)"  "$VRF" "fallback\|no code-rules\|no.*code-rules"
-check      "/verify: targets git changed files by default"   "$VRF" "git diff.*name-only\|git diff --name"
-check      "/verify: auto-fix offer"                         "$VRF" "auto.fix\|Auto-fix\|Auto.*fix"
-check      "/verify: export report option"                   "$VRF" "verify-report\.md\|export"
-check      "/verify: in EXTENDED_COMMANDS"                   "bin/cli.js" "verify"
-check      "/verify: in CLAUDE.md Available Commands"        "CLAUDE.md" "/verify"
-check      "/verify: in templates CLAUDE.md commands"        "$ROOT/CLAUDE.md" "/verify"
 
 # ─── Per-stack rule capabilities ─────────────────────────────────────────────
 echo ""
@@ -2452,8 +2132,6 @@ check      "rules/node: no secrets in code"                 "$RULES_DIR/node.md"
 check      "manifest: rules section added"                  "$ROOT/capabilities/manifest.md" "Code Rules\|per-stack rule"
 check      "manifest: typescript.md entry"                  "$ROOT/capabilities/manifest.md" "rules/typescript"
 check      "manifest: react.md entry"                       "$ROOT/capabilities/manifest.md" "rules/react"
-check      "/driven: loads per-stack rule library"          "$CMD/driven.md" "rule library\|Rule Library\|rule.*library"
-check      "/driven: typescript capability reference"       "$CMD/driven.md" "rules/typescript\|typescript\.md"
 
 # ─── Feature-scoped dirs ──────────────────────────────────────────────────────
 echo ""
@@ -2531,9 +2209,7 @@ check "copilot: governance check step"              "$CMD/copilot.md" "Governanc
 check "copilot: constitution check"                 "$CMD/copilot.md" "constitution\.md"
 check "copilot: spec→blueprint flow"               "$CMD/copilot.md" "specs exist.*blueprint\|specs.*blueprint\|blueprint.*spec"
 check "copilot: spawns constitution-guard"          "$CMD/copilot.md" "constitution-guard"
-check "copilot: /analyze in evolution cycle"        "$CMD/copilot.md" "/analyze.*evolution\|evolution.*analyze\|Run.*\/analyze"
 check "copilot: GHOST milestone re-open"            "$CMD/copilot.md" "GHOST.*pending\|pending.*GHOST\|re-open\|set.*pending"
-check "copilot: /analyze before /audit"             "$CMD/copilot.md" "analyze.*audit\|\/analyze.*then.*\/audit"
 
 # ─── Wiring: blueprint ↔ spec-reviewer/tasks/constitution ────────────────────
 echo ""
@@ -2542,7 +2218,6 @@ check "blueprint: spawns spec-reviewer"            "$CMD/blueprint.md" "spec-rev
 check "blueprint: reads spec file if provided"     "$CMD/blueprint.md" "spec.*file.*detected\|spec-file.*mode\|spec file"
 check "blueprint: stops on NEEDS_CLARIFY"          "$CMD/blueprint.md" "NEEDS_CLARIFY"
 check "blueprint: constitution non-negotiables"    "$CMD/blueprint.md" "Non-Negotiables\|non-negotiables"
-check "blueprint: suggests /tasks after plan"      "$CMD/blueprint.md" "/tasks"
 
 # ─── Wiring: setup ↔ constitute/spec ─────────────────────────────────────────
 echo ""
@@ -2555,10 +2230,6 @@ check "setup: spec-first workflow hint"            "$CMD/setup.md" "spec.*\/blue
 # ─── Wiring: evolve ↔ analyze ────────────────────────────────────────────────
 echo ""
 echo "─── Wiring: evolve ↔ analyze ───"
-check "evolve: Step 7f drift analysis"             "$CMD/evolve.md" "Step 7f\|Spec.*Plan Drift\|Plan Drift"
-check "evolve: runs /analyze"                      "$CMD/evolve.md" "\/analyze.*plan\|run.*analyze"
-check "evolve: re-opens ghost milestones"          "$CMD/evolve.md" "GHOST\|ghost.*pending\|pending.*ghost\|status.*pending"
-check "evolve: logs drift to evolution-log"        "$CMD/evolve.md" "DRIFT.*evolution-log\|evolution-log.*DRIFT"
 
 # ─── Wiring: add ↔ constitution/spec ─────────────────────────────────────────
 echo ""
@@ -2571,24 +2242,14 @@ check "add: maps ACs to tasks"                     "$CMD/add.md" "acceptance cri
 # ─── Wiring: dream ↔ constitute/spec ─────────────────────────────────────────
 echo ""
 echo "─── Wiring: dream ↔ constitute/spec ───"
-check "dream: Phase 5 spec-driven readiness"       "$CMD/dream.md" "Phase 5\|Spec-Driven Readiness\|Spec-Driven.*Workflow"
-check "dream: suggests /constitute"                "$CMD/dream.md" "/constitute"
-check "dream: suggests /spec"                      "$CMD/dream.md" "/spec.*feature\|\/spec \["
-check "dream: full SDD workflow shown"             "$CMD/dream.md" "\/spec.*\/clarify\|\/clarify.*\/blueprint\|Spec-Driven Workflow"
 
 # ─── Pulse health snapshot ───────────────────────────────────────────────────
 echo ""
 echo "─── Pulse health snapshot ───"
-check      "pulse: intelligence health section"          "$CMD/pulse.md" "Intelligence Health"
-check      "pulse: copilot status"                       "$CMD/pulse.md" "Copilot.*plan.md\|plan.md.*exists"
-check      "pulse: reflex health"                        "$CMD/pulse.md" "Reflex.*health\|observations"
-check      "pulse: boundary health"                      "$CMD/pulse.md" "Boundary.*health\|boundaries.json"
-check      "pulse: blocker count"                        "$CMD/pulse.md" "Blocker.*count\|blockers.md"
 
 # ─── Reflex observation health ───────────────────────────────────────────────
 echo ""
 echo "─── Reflex observation health ───"
-check      "reflexes: observation health in status"      "$CMD/reflexes.md" "Observation health\|observation health\|Health.*good\|hooks.*capturing"
 
 # ─── P0 gap fixes: orchestrator + milestone-builder + ship ───────────────────
 echo ""
@@ -2603,7 +2264,6 @@ check "milestone-builder: reads constitution.md first"   "$ROOT/agents/milestone
 check "milestone-builder: keeps non-negotiables visible" "$ROOT/agents/milestone-builder.md" "Non-Negotiables.*visible\|visible.*throughout\|throughout implementation"
 check "ship: ghost milestone check before gate"          "$CMD/ship.md"                 "ghost\|Ghost"
 check "ship: blocks on ghost milestones"                 "$CMD/ship.md"                 "Pre-ship blocked.*ghost\|ghost.*milestones detected"
-check "ship: uses /analyze for ghost check"              "$CMD/ship.md"                 "/analyze"
 
 # ─── P1 gap fixes: spec / fix / refactor / architecture-advisor / audit ──────
 echo ""
@@ -2614,12 +2274,8 @@ check "spec: NEEDS_CLARIFY downgrades to draft"          "$CMD/spec.md"         
 check "spec: INCOMPLETE blocks file write"               "$CMD/spec.md"                 "INCOMPLETE.*do NOT\|do NOT write.*INCOMPLETE"
 check "fix: constitution pre-flight"                     "$CMD/fix.md"                  "Constitution Check\|constitution.*found"
 check "fix: non-negotiables must not be violated"        "$CMD/fix.md"                  "Non-Negotiables\|non-negotiable"
-check "refactor: constitution pre-flight"                "$CMD/refactor.md"             "Constitution Check\|constitution.*found"
-check "refactor: checks architectural commitments"       "$CMD/refactor.md"             "Architectural Commitments"
 check "architecture-advisor: Step 0 constitution check" "$SKILLS_DIR/architecture-advisor/SKILL.md" "Step 0\|Constitution Check"
 check "architecture-advisor: flags deviation conflicts"  "$SKILLS_DIR/architecture-advisor/SKILL.md" "conflict\|deviation"
-check "audit: plan consistency check before review"      "$CMD/audit.md"                "Plan Consistency Check\|consistency.*check"
-check "audit: ghost milestone scan in audit"             "$CMD/audit.md"                "GHOST\|ghost milestones"
 
 # ─── P2 docs: manifest + CLAUDE.md spec-driven workflow ──────────────────────
 echo ""
@@ -2628,7 +2284,6 @@ check "manifest: Spec-Driven Workflow section"           "$ROOT/capabilities/man
 check "manifest: lists /constitute"                      "$ROOT/capabilities/manifest.md" "constitute"
 check "manifest: lists /spec"                            "$ROOT/capabilities/manifest.md" "spec.*purpose\|spec.*structured"
 check "manifest: lists /clarify"                         "$ROOT/capabilities/manifest.md" "clarify"
-check "manifest: lists /analyze"                         "$ROOT/capabilities/manifest.md" "analyze"
 check "manifest: documents spec-reviewer gate"           "$ROOT/capabilities/manifest.md" "spec-reviewer"
 check "manifest: documents constitution-guard gate"      "$ROOT/capabilities/manifest.md" "constitution-guard"
 check "CLAUDE.md: spec-driven sequence in routing"       "$ROOT/CLAUDE.md"              "constitute.*spec.*clarify\|Spec-driven"
@@ -2707,30 +2362,17 @@ check "manifest: reward-hack-detection registered"            "$ROOT/capabilitie
 check "orchestrator: loads context-inoculation"               "$ROOT/agents/orchestrator.md" "context-inoculation"
 
 echo ""
-echo "─── /inoculate command ───"
-check_file "command: inoculate.md exists"                     "$CMD/inoculate.md"
-check "command: inoculate scans agents"                       "$CMD/inoculate.md" "agents"
-check "command: inoculate classifies coverage"                "$CMD/inoculate.md" "INOCULATED"
-check "command: inoculate read-only mode"                     "$CMD/inoculate.md" "EnterPlanMode"
 
 echo ""
-echo "─── /ghost-test command ───"
-check_file "command: ghost-test.md exists"                    "$CMD/ghost-test.md"
-check "command: ghost-test static scan phase"                 "$CMD/ghost-test.md" "Static Scan"
-check "command: ghost-test canary assertion"                  "$CMD/ghost-test.md" "canary\|Canary"
-check "command: ghost-test compromised verdict"               "$CMD/ghost-test.md" "COMPROMISED"
 
 echo ""
 echo "─── CLI registration (inoculate + ghost-test) ───"
-check "cli: inoculate in EXTENDED_COMMANDS"                   "bin/cli.js" "inoculate"
-check "cli: ghost-test in EXTENDED_COMMANDS"                  "bin/cli.js" "ghost-test"
+check "cli: knowledge layer present"                         "bin/cli.js" "KNOWLEDGE_COMMANDS"
+check "cli: autonomy group present"                          "bin/cli.js" "AUTONOMY_COMMANDS"
 
 echo ""
 echo "─── command wiring (ghost-test + inoculate referenced) ───"
 check "ship: reward hack pre-ship check"                      "$CMD/ship.md" "ghost-test\|reward hack pattern"
-check "audit: reward hack detection step"                     "$CMD/audit.md" "reward-hack-detection\|Reward Hack Detection"
-check "sentinel: references ghost-test"                       "$CMD/sentinel.md" "ghost-test"
-check "sentinel: references inoculate"                        "$CMD/sentinel.md" "inoculate"
 check "test: reward hack pre-flight"                          "$CMD/test.md" "ghost-test\|reward hack"
 
 echo ""
@@ -2835,34 +2477,12 @@ check      "visualizer: user-prompt sends user-message"      "templates/hooks/us
 check      "visualizer: user-prompt sends context-update"    "templates/hooks/user-prompt.js" "context-update"
 check      "visualizer: stop sends pipeline-complete"        "templates/hooks/stop.js" "pipeline-complete"
 
-check_file "visualizer: command template exists"             "$CMD/visualize.md"
 
 # ── /kill command ─────────────────────────────────────────────────────────────
-check_file "command: kill.md exists"                                  "$CMD/kill.md"
-check      "command: kill targets dev ports"                          "$CMD/kill.md" "3000\|5173\|8080"
-check      "command: kill includes port 8005"                         "$CMD/kill.md" "8005"
-check      "command: kill --all scans dynamically"                    "$CMD/kill.md" "iTCP.*LISTEN\|LISTEN.*iTCP\|dynamic\|every.*listen\|all.*listen"
-check      "command: kill --all not hardcoded list"                   "$CMD/kill.md" "dynamic.*not a hardcoded\|does NOT use this list\|not.*hardcoded"
-check      "command: kill cross-platform Windows support"             "$CMD/kill.md" "Windows\|netstat\|taskkill"
-check      "command: kill cross-platform Unix support"                "$CMD/kill.md" "lsof\|Unix\|macOS"
-check      "command: kill excludes MCP servers"                       "$CMD/kill.md" "MCP\|mcp"
-check      "command: kill uses npx kill-port"                         "$CMD/kill.md" "kill-port"
-check      "command: kill has verify step"                            "$CMD/kill.md" "Verify\|verify"
-check      "command: kill has completion rule"                        "$CMD/kill.md" "Completion rule\|Completion"
-check      "cli: kill in EXTENDED_COMMANDS"                           "bin/cli.js"   "'kill'"
+check      "cli: copilot in AUTONOMY_COMMANDS"                        "bin/cli.js"   "'copilot'"
 
 # ── /run command ──────────────────────────────────────────────────────────────
-check_file "command: run.md exists"                                   "$CMD/run.md"
-check      "command: run detects Node via package.json"               "$CMD/run.md" "package.json"
-check      "command: run detects Python requirements"                 "$CMD/run.md" "requirements.txt\|pyproject.toml"
-check      "command: run detects Rust"                                "$CMD/run.md" "Cargo.toml"
-check      "command: run detects Go"                                  "$CMD/run.md" "go.mod"
-check      "command: run detects Django"                              "$CMD/run.md" "manage.py\|Django"
-check      "command: run detects Rails"                               "$CMD/run.md" "Rails\|Gemfile"
-check      "command: run has priority order"                          "$CMD/run.md" "priority\|Priority\|precedence\|Precedence"
-check      "command: run checks port already in use"                  "$CMD/run.md" "already in use\|occupied"
-check      "command: run has completion rule"                         "$CMD/run.md" "Completion rule\|Completion"
-check      "cli: run in EXTENDED_COMMANDS"                            "bin/cli.js"   "'run'"
+check      "cli: blueprint in SPEC_COMMANDS"                          "bin/cli.js"   "'blueprint'"
 
 # ─── /ingest command ──────────────────────────────────────────────────────────
 echo ""
@@ -2880,7 +2500,7 @@ check      "ingest: moves to ingested"                              "$ING" "raw/
 check      "ingest: batch mode"                                     "$ING" "Batch Mode\|batch mode"
 check      "ingest: has completion rule"                            "$ING" "Completion Rule\|Completion rule"
 check      "ingest: WebFetch for URLs"                              "$ING" "WebFetch"
-check      "cli: ingest in EXTENDED_COMMANDS"                       "bin/cli.js" "'ingest'"
+check      "cli: ingest in KNOWLEDGE_COMMANDS"                      "bin/cli.js" "'ingest'"
 
 # ─── /knowledge command ───────────────────────────────────────────────────────
 echo ""
@@ -2898,7 +2518,7 @@ check      "knowledge: stale code_refs"                             "$KNW" "Stal
 check      "knowledge: health score formula"                        "$KNW" "Score.*formula\|100 -"
 check      "knowledge: offers to file query results"                "$KNW" "File.*knowledge.*concepts\|Save to knowledge"
 check      "knowledge: has completion rule"                         "$KNW" "Completion Rule\|Completion rule"
-check      "cli: knowledge in EXTENDED_COMMANDS"                    "bin/cli.js" "'knowledge'"
+check      "cli: knowledge in KNOWLEDGE_COMMANDS"                   "bin/cli.js" "'knowledge'"
 
 # ─── knowledge-compiler agent ─────────────────────────────────────────────────
 echo ""
@@ -2933,20 +2553,10 @@ check      "knowledge-layer: auto confidence calculation"           "$KL" "sourc
 check      "knowledge-layer: raw sources immutability rule"         "$KL" "Never modify.*raw\|immutable evidence"
 check      "knowledge-layer: in manifest"                           "$MANIFEST" "knowledge-layer"
 check      "knowledge-layer: integration rules for agents"          "$KL" "problem-architect.*index\|milestone-builder.*context"
-check      "knowledge-layer: integration rules for commands"        "$KL" "/persist.*domain insights\|/explain.*reusable"
 
 # ─── knowledge wiring into existing commands ──────────────────────────────────
 echo ""
 echo "─── knowledge wiring ───"
-check      "persist: Step 4 knowledge filing"                       "$CMD/persist.md" "Knowledge.*knowledge layer\|File Domain Insights"
-check      "explain: knowledge filing offer"                        "$CMD/explain.md" "Knowledge Filing\|knowledge/concepts"
-check      "debate: knowledge filing"                               "$CMD/debate.md" "Knowledge Filing\|knowledge/decisions"
-check      "evolve: Cycle 4 Knowledge Health"                       "$CMD/evolve.md" "Cycle 4.*Knowledge Health"
-check      "evolve: staleness detection"                            "$CMD/evolve.md" "4a.*Staleness\|code_refs drift"
-check      "evolve: orphan detection in Cycle 4"                    "$CMD/evolve.md" "4b.*Orphan\|ORPHAN"
-check      "evolve: gap detection in Cycle 4"                       "$CMD/evolve.md" "4c.*Gap\|GAP.*files.*knowledge"
-check      "evolve: confidence decay in Cycle 4"                    "$CMD/evolve.md" "4d.*Confidence decay"
-check      "evolve: contradiction scan in Cycle 4"                  "$CMD/evolve.md" "4e.*Contradiction"
 check      "setup: knowledge auto-discovery"                        "$CMD/setup.md" "Auto-Discover Knowledge\|knowledge.*auto-discover\|knowledge layer"
 check      "architect: reads knowledge index"                       "$ROOT/agents/problem-architect.md" "knowledge/index.md"
 check      "cycle2: enriches knowledge layer"                       "$EVOL/cycle2-knowledge.md" "ENRICH knowledge layer\|knowledge/index.md exists"
@@ -2955,11 +2565,6 @@ check      "constitution-guard: checks knowledge decisions"         "$ROOT/agent
 check      "milestone-builder: reads knowledge pages"               "$ROOT/agents/milestone-builder.md" "knowledge.*domain context\|knowledge/"
 check      "fix: knowledge filing for root cause"                   "$CMD/fix.md" "Knowledge Filing\|knowledge/concepts"
 check      "dispatch: knowledge-compiler in auto-dispatch table"    "templates/CLAUDE.md" "knowledge-compiler.*Document ingestion\|Document ingestion.*knowledge-compiler"
-check      "persist: only files reusable insights not ephemeral"    "$CMD/persist.md" "reusable.*insights\|Only offer.*reusable"
-check      "debate: updates knowledge index on decision"            "$CMD/debate.md" "knowledge/index.md"
-check      "debate: appends to knowledge log on decision"           "$CMD/debate.md" "knowledge/log.md"
-check      "debate: uses auto_generated_by /debate"                 "$CMD/debate.md" "auto_generated_by.*debate"
-check      "explain: uses auto_generated_by /explain"               "$CMD/explain.md" "auto_generated_by.*explain"
 check      "knowledge: stops if no knowledge base"                  "$KNW" "No knowledge base found\|NO_KNOWLEDGE"
 check      "knowledge: suggests /ingest when pending"               "$KNW" "suggest.*/ingest\|pending.*ingest"
 check      "knowledge: query appends to log"                        "$KNW" "log.md"
@@ -2973,35 +2578,15 @@ check      "cycle2: flags facts as /ingest candidates"              "$EVOL/cycle
 
 # ─── /obsidian command ───────────────────────────────────────────────────────
 echo ""
-echo "─── /obsidian command ───"
-check      "/obsidian: has frontmatter name"          "$CMD/obsidian.md"    "name: obsidian"
-check      "/obsidian: disable-model-invocation"      "$CMD/obsidian.md"    "disable-model-invocation: true"
-check      "/obsidian: scans .claude/commands"        "$CMD/obsidian.md"    ".claude/commands"
-check      "/obsidian: scans .claude/agents"          "$CMD/obsidian.md"    ".claude/agents"
-check      "/obsidian: scans .claude/skills"          "$CMD/obsidian.md"    ".claude/skills"
-check      "/obsidian: generates AZCLAUDE-MAP.md"     "$CMD/obsidian.md"    "AZCLAUDE-MAP.md"
-check      "/obsidian: uses wikilink syntax"          "$CMD/obsidian.md"    "\[\["
-check      "/obsidian: has completion rule"           "$CMD/obsidian.md"    "Completion Rule"
 
 # ─── /canvas command ─────────────────────────────────────────────────────────
 echo ""
-echo "─── /canvas command ───"
-check      "/canvas: has frontmatter name"              "$CMD/canvas.md"    "name: canvas"
-check      "/canvas: disable-model-invocation"          "$CMD/canvas.md"    "disable-model-invocation: true"
-check      "/canvas: writes agent-pipeline.canvas"      "$CMD/canvas.md"    "agent-pipeline.canvas"
-check      "/canvas: NOT_INSTALLED guard"               "$CMD/canvas.md"    "NOT_INSTALLED"
-check      "/canvas: extracts milestones from plan.md"  "$CMD/canvas.md"    "plan.md"
-check      "/canvas: orchestrator node defined"         "$CMD/canvas.md"    "orchestrator"
-check      "/canvas: milestone-builder node defined"    "$CMD/canvas.md"    "milestone-builder"
-check      "/canvas: color 6 for milestones"            "$CMD/canvas.md"    "color=6"
-check      "/canvas: builds edge label"                 "$CMD/canvas.md"    "builds"
-check      "/canvas: has completion rule"               "$CMD/canvas.md"    "Completion Rule"
 
 # ─── cross-surface sync for knowledge commands ───────────────────────────────
 echo ""
 echo "─── knowledge cross-surface ───"
-for CMD_NAME in ingest knowledge obsidian canvas; do
-  check "cross-surface: $CMD_NAME in EXTENDED_COMMANDS (cli.js)"  "bin/cli.js"              "$CMD_NAME"
+for CMD_NAME in ingest knowledge; do
+  check "cross-surface: $CMD_NAME registered in cli.js"      "bin/cli.js"              "$CMD_NAME"
   check "cross-surface: $CMD_NAME in Available Commands (CLAUDE.md template)" "templates/CLAUDE.md" "$CMD_NAME"
   check_file "cross-surface: $CMD_NAME template file exists"       "$CMD/$CMD_NAME.md"
 done

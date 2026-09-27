@@ -19,8 +19,8 @@ through goals.md and checkpoints — but only if they're written.
 
 ## When to act
 
-- **40+ turns without /snapshot**: remind the user
-- **Session closing** (user says "bye", "done", "thanks", "that's all"): run /persist
+- **40+ turns with no goals.md update**: remind the user
+- **Session closing** (user says "bye", "done", "thanks", "that's all"): update `.claude/memory/goals.md`
 - **Context compaction happened**: re-read goals.md to recover state
 - **goals.md not loaded yet**: read `.claude/memory/goals.md` before doing work
 - **Resuming a session**: check latest checkpoint in `.claude/memory/snapshots/`
@@ -28,8 +28,8 @@ through goals.md and checkpoints — but only if they're written.
 ## What to say
 
 Keep it brief — one line, not a lecture:
-- "40+ turns — consider /snapshot before compaction."
-- "Closing? Run /persist to save session state."
+- "40+ turns — consider updating goals.md before compaction."
+- "Closing? Update goals.md to save session state."
 - "Context was compacted — re-reading goals.md for continuity."
 
 Do NOT block the user's work. This is a gentle nudge, not a gate.

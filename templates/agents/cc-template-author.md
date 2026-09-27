@@ -105,7 +105,7 @@ that Claude Code follows during autonomous sessions (no human in the loop).
 **Key signals:**
 - `COPILOT_COMPLETE` in goals.md = runner exits with success
 - Blockers log: milestone + error + attempts + context
-- Every 3 milestones → trigger /evolve
+- Every 3 milestones → trigger a review cycle
 
 ## Self-Correction
 

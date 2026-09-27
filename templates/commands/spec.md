@@ -8,7 +8,7 @@ description: >
   "spec before we plan", "what should we build", "define the feature",
   "product spec", "technical spec for", "write spec then plan",
   "spec before blueprint", "let's spec this".
-  Use after /dream (intent exists) and before /blueprint (plan).
+  Use once the intent is clear and before /blueprint (plan).
   NOT triggered by "add X" or "build X" alone.
 argument-hint: "[feature or product description]"
 disable-model-invocation: true
@@ -24,12 +24,12 @@ $ARGUMENTS
 ## Purpose
 
 The spec is the primary artifact. Code is derived from it, not the reverse.
-A spec produced here becomes the canonical input for /blueprint → /add → /audit.
+A spec produced here becomes the canonical input for /blueprint → /add → /test.
 Without a spec, /blueprint is guessing. With a spec, every milestone traces to a requirement.
 
 **Workflow position:**
 ```
-/dream → /spec → /clarify (if needed) → /blueprint → /add
+/constitute → /spec → /clarify (if needed) → /blueprint → /add
 ```
 
 ---
