@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 # validate-boundaries.sh — Detect overlap between commands, skills, capabilities, agents
-# Run by: /evolve Cycle 3, doctor --audit, or manually
+# Run by: a topology review, `azclaude doctor --audit`, or manually
 # Output: warnings for overlapping descriptions, stale manifest entries, orphaned files
 
 ROOT="${1:-.claude}"
@@ -136,7 +136,7 @@ fi
 echo ""
 echo "### Summary: $PASS passed, $WARN warnings"
 if [ "$WARN" -gt 0 ]; then
-  echo "  Run /evolve to auto-fix overlaps and orphans"
+  echo "  Review overlaps and orphans manually"
 fi
 
 # ── Machine-readable output (last line, always) ─────────────────────────────

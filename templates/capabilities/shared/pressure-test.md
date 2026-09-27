@@ -85,4 +85,4 @@ If the skill is enforcement: the pressure-test scenarios verify it actually enfo
 Load this when:
 - Writing a new capability file → add pressure tests before promoting
 - A skill exists but keeps getting skipped in sessions → diagnose which pressure type is breaking it
-- `/evolve generate` produces a new skill → pressure tests are required before the evaluate step
+- A new skill or agent is generated → pressure tests are required before the evaluate step

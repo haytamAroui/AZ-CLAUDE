@@ -2,8 +2,8 @@
 name: knowledge-layer
 description: >
   Load when project has a knowledge/ directory, when /ingest or /knowledge runs,
-  when /persist detects domain insights worth filing, when /explain produces a
-  reusable answer, when /debate produces a decision, when /evolve Cycle 4 runs.
+  when a session ends with domain insights worth filing, when an answer is
+  reusable, or when a decision is worth recording.
   Defines page conventions, directory structure, confidence scoring, wikilinks,
   and code_refs for bidirectional code-knowledge tracking.
 tokens: ~350
@@ -43,14 +43,14 @@ updated: YYYY-MM-DD
 sources: [[[source-slug]], [[source-slug2]]]
 code_refs: [src/path/file.ts:45, src/other/file.py:12]
 tags: [tag1, tag2]
-auto_generated_by: /ingest | /fix | /debate | /explain | /add | /persist | manual
+auto_generated_by: /ingest | /fix | /add | /blueprint | manual
 ---
 ```
 
 ### Field definitions
 
 - **confidence**: `high` = multiple sources agree or verified by user. `medium` = single source or LLM synthesis. `low` = speculative, needs verification.
-- **code_refs**: Source code locations this knowledge describes. When these files change, the page is flagged stale by /evolve Cycle 4.
+- **code_refs**: Source code locations this knowledge describes. When these files change, the page is flagged stale by a review cycle.
 - **auto_generated_by**: Which command created this page. `manual` if user created it directly.
 - **sources**: `[[wikilinks]]` to source pages that informed this page.
 
@@ -147,7 +147,7 @@ Created: concepts/null-pointer-in-auth.md. code_refs: [src/auth.ts:45].
 
 ## Confidence Auto-Calculation
 
-When /evolve Cycle 4 runs, recalculate confidence:
+When a review cycle runs, recalculate confidence:
 
 ```
 score = (source_count * 2) + (citation_count * 3) + (recency * 2) - (staleness * 4)
@@ -172,11 +172,11 @@ Thresholds: score >= 25 = high, 10-24 = medium, < 10 = low.
 
 ### For commands
 - **/setup**: Auto-discover docs/, specs/, knowledge/ and run lightweight ingest.
-- **/persist**: Scan session for domain insights. Offer to file as knowledge pages.
-- **/explain**: After answering, offer to file reusable explanations as knowledge pages.
+- **Session end**: Scan the session for domain insights. Offer to file as knowledge pages.
+- **After answering**: Offer to file reusable explanations as knowledge pages.
 - **/debate**: Auto-file decisions to knowledge/decisions/.
 - **/fix**: If root cause is non-obvious, create a concept page for the failure mode.
-- **/evolve**: Cycle 4 — Knowledge Health (staleness, orphans, gaps, confidence decay, contradictions).
+- **Review cycle**: Knowledge Health (staleness, orphans, gaps, confidence decay, contradictions).
 
 ## Raw Sources Rules
 
@@ -188,6 +188,6 @@ Thresholds: score >= 25 = high, 10-24 = medium, < 10 = low.
 ## Anti-Patterns
 
 - Creating knowledge pages with no source attribution
-- Letting knowledge pages drift from code without /evolve catching it
+- Letting knowledge pages drift from code without a review cycle catching it
 - Duplicating knowledge that belongs in CLAUDE.md rules
-- Over-generating: not every /explain answer deserves a knowledge page — only reusable ones
+- Over-generating: not every answer deserves a knowledge page — only reusable ones

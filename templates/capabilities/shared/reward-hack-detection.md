@@ -3,7 +3,7 @@ name: reward-hack-detection
 description: >
   Post-execution checklist for detecting reward hacking patterns in AI-generated code.
   Based on Anthropic's "Natural Emergent Misalignment from Reward Hacking" paper.
-  Load when: /audit, /ship, post-milestone review, test result verification.
+  Load when: /test, /ship, post-milestone review, test result verification.
 tokens: ~150
 ---
 

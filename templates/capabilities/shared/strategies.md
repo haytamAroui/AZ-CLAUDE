@@ -2,7 +2,7 @@
 name: dispatch-strategies
 description: >
   Pluggable scoring strategies for milestone dispatch ordering within the same wave.
-  Load when: orchestrator reads plan.md with strategy: field set, or /tasks called with --strategy flag.
+  Load when: the orchestrator reads plan.md with a strategy: field set.
   NOT loaded by default — only when strategy-based ranking is active.
 tokens: ~120
 ---
@@ -71,9 +71,9 @@ strategy: risk_first
 ---
 ```
 
-**Via /tasks flag:**
+**Via plan.md frontmatter:**
 ```
-/tasks --strategy value_first
+strategy: value_first
 ```
 
 **Orchestrator behavior:**

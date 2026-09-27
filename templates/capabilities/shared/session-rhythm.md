@@ -31,7 +31,7 @@ Lead with what matters now — not the full history.
 - Apply TDD Iron Law to every code task (see shared/tdd.md)
 - If a task blocks: name the blocker, don't guess around it
 
-### PERSIST (last response before session ends — or run /persist)
+### PERSIST (last response before session ends — update goals.md)
 
 1. **TaskUpdate → completed** for all finished tasks
 2. Update `.claude/memory/goals.md` — current threads, done, next actions, blockers

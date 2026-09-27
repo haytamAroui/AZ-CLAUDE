@@ -34,7 +34,7 @@ Pass context **filtered by the subagent's role**. Not everything — just what t
 
 ## Protocol
 
-### For commands (/add, /fix, /refactor)
+### For commands (/add, /fix, /blueprint)
 
 When the command reads files to understand context, and then spawns a subagent:
 

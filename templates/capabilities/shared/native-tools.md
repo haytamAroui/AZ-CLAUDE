@@ -19,7 +19,7 @@ These tools are built into Claude Code. Skills should use them instead of simula
 **Use instead of**: Asking questions in text and waiting for a reply.
 
 **When to use in skills**:
-- `/dream` — structured project intake (idea, stack, domain, v1 scope)
+- `/setup` — structured project intake (idea, stack, domain, v1 scope)
 - `/setup` — if domain is ambiguous after scanning
 - `/debate` — if $ARGUMENTS is vague, clarify the decision framing
 
@@ -39,9 +39,9 @@ Do not proceed until all answers are filled.
 **Use instead of**: Prose "I'll now do X, then Y, then Z."
 
 **When to use in skills**:
-- `/dream` — one task per level being built (L1: CLAUDE.md, L2: MCP, ...)
+- `/setup` — one task per level being built (L1: CLAUDE.md, L2: MCP, ...)
 - `/setup` — track setup steps (scan, fill CLAUDE.md, create memory, run quality check)
-- `/level-up` — one task for the level being built, mark complete when done
+- `/setup` — one task for the level being built, mark complete when done
 
 **Pattern**:
 ```
@@ -61,8 +61,8 @@ Do not skip TaskUpdate — the user uses it to track what happened.
 
 **When to use in skills**:
 - `/debate` — enter plan mode during analysis (Phases 1-5). Exit before recording decision.
-- `/audit` agents — enter plan mode on load, never exit (reviewers must never write)
-- `/dream` — enter plan mode during Phase 1 (environment scan), exit before building
+- `code-reviewer` and other reviewer agents — enter plan mode on load, never exit (reviewers must never write)
+- `/setup` — enter plan mode during Phase 1 (environment scan), exit before building
 
 **Pattern**:
 ```
@@ -80,7 +80,7 @@ Step 3: ExitPlanMode — proceed to implement
 **Use instead of**: Working on main directly for risky or experimental work.
 
 **When to use in skills**:
-- `/evolve` — run all evolution cycles in a worktree. Merge to main only if evaluate passes.
+- A review cycle — run in a worktree. Merge to main only if evaluation passes.
 - `/fix` — if Confidence = medium or low, offer: "Run in worktree? (safe to discard if wrong)"
 - `intelligence/experiment.md` — always use worktree (that's the point of experiments)
 
@@ -101,9 +101,9 @@ If not → ExitWorktree (discard)
 **Use instead of**: Telling the user to "re-run manually" or "set up a cron job yourself."
 
 **When to use in skills**:
-- `/loop` — wire CronCreate directly instead of simulating timing with prose
-- `/evolve` — after completion, offer to schedule: "Schedule `/evolve` weekly? (CronCreate)"
-- `/persist` — could offer a daily end-of-session reminder
+- Scheduling — use the native `/loop` skill instead of simulating timing with prose
+- A review cycle — after completion, offer to schedule it weekly with the native `/loop`
+- Session close — could offer a daily end-of-session reminder
 
 **Pattern**:
 ```
@@ -132,7 +132,7 @@ Show: "Scheduled: {command} every {interval}. CronList to view, CronDelete to ca
 
 **When to use in skills**:
 - `/fix Phase 1` — call this FIRST before running any test command. IDE already knows the error location.
-- `/pulse` — include diagnostic count in the health check
+- `/doctor` — use the native health check rather than a custom one
 - Any skill that deals with TypeScript, ESLint, or language-server errors
 
 **Pattern**:
@@ -154,7 +154,7 @@ If no diagnostics → proceed to run the test command
 
 **When to use in skills**:
 - `/fix Self-Correction` — if stuck on an unknown library error after 2 attempts, search the library docs
-- `/dream` — if tech stack is unfamiliar, search current best practices before scaffolding
+- `/setup` — if tech stack is unfamiliar, search current best practices before scaffolding
 - `/debate` — fetch published benchmarks or comparisons when claims need verification
 
 **Pattern**:
@@ -178,7 +178,6 @@ If the error references a third-party library and no local docs exist:
 
 **When to use in skills**:
 - `/setup` for Data/ML domain — create an exploration notebook as part of setup
-- `/dream` for data science projects — scaffold initial analysis notebook
 
 ---
 
@@ -186,14 +185,14 @@ If the error references a third-party library and no local docs exist:
 
 | Tool | Wire into |
 |------|----------|
-| `AskUserQuestion` | `/dream`, `/setup` (if ambiguous), `/debate` (if vague) |
-| `TaskCreate/Update` | `/dream`, `/setup`, `/level-up` |
-| `EnterPlanMode` | `/debate` (analysis phases), reviewer agents |
-| `ExitPlanMode` | `/debate` (before recording decision) |
-| `EnterWorktree` | `/evolve`, `/fix` (medium/low confidence) |
-| `CronCreate` | `/loop`, `/evolve` (post-run scheduling) |
-| `CronList` | `/loop stop`, `/pulse` |
-| `CronDelete` | `/loop stop` |
-| `mcp__ide__getDiagnostics` | `/fix` Phase 1, `/pulse` |
-| `WebSearch/WebFetch` | `/fix` self-correction, `/dream` (unfamiliar stack) |
-| `NotebookEdit` | `/setup` + `/dream` for Data/ML |
+| `AskUserQuestion` | `/setup` (if ambiguous), `/clarify`, `/blueprint` (plan approval) |
+| `TaskCreate/Update` | `/blueprint` (after approval), `/copilot` (milestone queue) |
+| `EnterPlanMode` | `/blueprint` (read-only analysis), reviewer agents |
+| `ExitPlanMode` | `/blueprint` Step 4 approval gate |
+| `EnterWorktree` | `/copilot` (isolated milestone work) |
+| `mcp__ide__getDiagnostics` | `/fix` Phase 1, `/ship` pre-commit gate |
+| `WebSearch/WebFetch` | `/fix` self-correction, `/blueprint` (unfamiliar stack) |
+| `NotebookEdit` | `/setup` for Data/ML |
+
+Scheduling and health checks are native now — use `/loop`, `/usage` and
+`/doctor` directly rather than wiring `CronCreate` into an AZCLAUDE command.

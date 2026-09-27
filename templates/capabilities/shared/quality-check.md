@@ -1,7 +1,7 @@
 ---
 name: quality-check
 description: >
-  Post-setup quality verification. Runs after /setup or /level-up to verify
+  Post-setup quality verification. Runs after /setup to verify
   generated output is correct. Triggers on: "verify setup", "check quality",
   "did setup work correctly", "validate environment".
 tokens: ~80
@@ -9,7 +9,7 @@ tokens: ~80
 
 ## Post-Setup Quality Check
 
-Run after `/setup` or any `/level-up`. Verifies generated files are correct, not just present.
+Run after `/setup`. Verifies generated files are correct, not just present.
 
 ---
 
@@ -104,4 +104,4 @@ Bad: "Setup complete!"
 Good: "Environment check: 15/15 ✓. Content check: CLAUDE.md filled, goals.md dated. Skills: 15 installed, all pass RECIPE test."
 ```
 
-Run this check automatically at the end of every `/setup` and `/level-up`.
+Run this check automatically at the end of every `/setup`.

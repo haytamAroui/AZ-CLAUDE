@@ -61,7 +61,7 @@ ls .env.example .env.template 2>/dev/null | head -5
 2. Reference artifact files in milestone descriptions
 3. Flag milestones that will change artifacts (schema migrations, API changes)
 
-### Before /audit
+### Before review
 1. Verify implementation matches schema (table names, column types)
 2. Verify API calls match spec (endpoints, request/response shapes)
 3. Verify deploy config supports the implementation
@@ -78,15 +78,15 @@ If `knowledge/` or `docs/` exists, maintain a lightweight index at `knowledge-in
 | terraform/main.tf | AWS ECS + RDS + S3 | What infra is provisioned? What are the limits? | infra, aws |
 ```
 
-Update this index when artifacts change. `/evolve` Cycle 2 refreshes it.
+Update this index when artifacts change. A review cycle refreshes it.
 
 ## Copilot Mode
 
 In copilot mode, artifact discovery runs automatically:
-- Session 1: `/dream` scans for existing artifacts, creates index
+- Session 1: `/setup` scans for existing artifacts, creates index
 - Per milestone: `/add` reads relevant artifacts before implementing
 - After schema changes: update artifact index
-- `/evolve`: check for stale artifact references
+- Review cycle: check for stale artifact references
 
 ## Anti-Patterns
 

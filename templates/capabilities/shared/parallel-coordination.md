@@ -347,21 +347,21 @@ milestones: [M3, M4, M5]
 
 ### Lifecycle
 
-1. **Created** — by `/parallel` Step 4 or orchestrator Step 4, before agent dispatch
+1. **Created** — by the orchestrator before agent dispatch
 2. **Updated** — as each agent reports completion (status → `done`/`failed`, commit hash filled)
-3. **Deleted** — by orchestrator Step 8 or `/parallel` Step 8, after all branches merged and cleanup done
+3. **Deleted** — by the orchestrator after all branches merged and cleanup done
 
 ### Rules
 
 - The file MUST exist whenever parallel agents are in-flight
 - If this file exists at session start → a previous wave was interrupted → trigger Resume Protocol
-- Only the orchestrator or `/parallel` command writes this file — builders never touch it
+- Only the orchestrator writes this file — builders never touch it
 
 ---
 
 ## Resume Protocol — Recovering Interrupted Waves
 
-When the orchestrator or `/parallel` finds `.claude/parallel-wave-state.md` at session start:
+When the orchestrator finds `.claude/parallel-wave-state.md` at session start:
 
 ### Step 1: Read Wave State
 ```bash

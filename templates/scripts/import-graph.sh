@@ -76,7 +76,7 @@ if [ "$CIRCULARS" -eq 0 ]; then
   echo "  ✓ No circular dependencies detected"
 fi
 
-# ── File co-change analysis (for /evolve) ────────────────────────────────────
+# ── File co-change analysis (for the review cycle) ────────────────────────────────────
 echo ""
 echo "### Co-change clusters (files that always commit together)"
 if command -v git &>/dev/null && [ -d .git ]; then

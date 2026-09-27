@@ -1,11 +1,11 @@
 ---
 name: semantic-boundary-check
 description: >
-  Load during /evolve Cycle 3 (topology) or when boundary validator finds lexical
+  Load during a topology review, or when the boundary validator finds lexical
   overlaps. Detects deeper behavioral duplication that grep cannot catch: same
   behavior in different wording, hidden role overlap between commands/skills/agents,
   conceptual redundancy across extension types. Load when validate-boundaries.sh
-  reports warnings, when adding a new skill/command/agent, or when /evolve
+  reports warnings, when adding a new skill/command/agent, or during a
   detects friction from competing extensions.
 tokens: ~300
 ---
@@ -19,7 +19,7 @@ comparing trigger keywords. This capability catches what grep misses:
 ## When to Run
 
 1. After `validate-boundaries.sh` reports any warnings
-2. During `/evolve` Cycle 3 (topology optimization)
+2. During a topology review
 3. When creating a new command, skill, or agent (via skill-creator or agent-creator)
 4. When a user reports "two things seem to do the same job"
 
@@ -122,7 +122,7 @@ Agent code-reviewer constraint: "Never approve code without checking tests pass"
 ```
 Both enforce "prove it works." → OVERLAPPING. Extract shared enforcement rule.
 
-## Integration with /evolve
+## Integration with the review cycle
 
 During Cycle 3 (topology):
 1. Run `validate-boundaries.sh` (lexical check)

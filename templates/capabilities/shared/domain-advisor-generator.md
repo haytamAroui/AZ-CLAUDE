@@ -1,7 +1,7 @@
 ---
 name: domain-advisor-generator
 description: >
-  Load when /dream or /setup detects a non-developer domain (compliance, marketing,
+  Load when /setup detects a non-developer domain (compliance, marketing,
   finance, medical, research, writing, legal, HR, logistics). Generates a domain-specific
   advisor skill with decision matrices, best practices, and anti-patterns — the same way
   architecture-advisor guides tech decisions. Load when the project needs domain expertise
@@ -17,7 +17,7 @@ knowledge based on project scale and context.
 
 ## When to Generate
 
-During `/dream` or `/setup`, after domain detection:
+During `/setup`, after domain detection:
 1. Detect domain from CLAUDE.md, README, or copilot-intent.md
 2. If domain is NOT pure developer → generate a domain advisor skill
 3. Install in `.claude/skills/{domain}-advisor/`
@@ -176,7 +176,7 @@ Generate `logistics-advisor/` with these decision areas:
 
 ## Generation Workflow
 
-When `/dream` or `/setup` detects a domain:
+When `/setup` detects a domain:
 
 1. Read the domain section from this file
 2. Create `{domain}-advisor/SKILL.md` with:
@@ -202,4 +202,4 @@ In copilot mode, domain advisor skills fire automatically when:
 - `/blueprint` creates milestones that touch domain-specific decisions
 - `/add` implements a feature that involves domain logic
 - `/debate` evaluates trade-offs in the domain space
-- `/evolve` detects domain patterns from git history
+- A review cycle detects domain patterns from git history

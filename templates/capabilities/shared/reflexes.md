@@ -1,7 +1,7 @@
 ---
 name: reflexes
 description: >
-  Load when /evolve finds repeated tool-use patterns, when reviewing learned behaviors,
+  Load when a review cycle finds repeated tool-use patterns, when reviewing learned behaviors,
   when the observer has accumulated enough observations, or when promoting reflexes to
   skills/agents. Load when: "reflexes", "learned behaviors", "what has copilot learned",
   "observation patterns", "promote reflex", "reflex status".
@@ -49,7 +49,7 @@ Adjustments:
 - -0.10 per contradicting observation (user corrects behavior)
 - -0.02 per week without observation (automatic decay)
 - Confidence never exceeds 0.95
-- Confidence < 0.15 after decay → auto-pruned by `/reflexes clear`
+- Confidence < 0.15 after decay → auto-pruned during consolidation
 
 ## Confidence Decay
 
@@ -62,7 +62,7 @@ effective_confidence = base_confidence - (0.02 × weeks_since_last_observed)
 
 Example: a reflex with confidence 0.5 not observed for 10 weeks → 0.5 - 0.2 = 0.3 (demoted to tentative).
 
-**Auto-pruning**: `/reflexes clear` and `/evolve` Cycle 2 remove reflexes where
+**Auto-pruning**: consolidation removes reflexes where
 effective_confidence < 0.15. This keeps the reflex library lean and relevant.
 
 ## Reflex Frontmatter
@@ -118,7 +118,7 @@ created: 2026-03-10
 Captured automatically by PostToolUse hook. Truncated to last 500 entries.
 Auto-purged after 30 days. Secret patterns scrubbed before writing.
 
-## Pattern Detection (run by /evolve or /reflexes analyze)
+## Pattern Detection (run during a review cycle)
 
 Detect these patterns from observations.jsonl:
 
@@ -134,14 +134,14 @@ Detect these patterns from observations.jsonl:
 Observations (raw)
     → 3+ occurrences detected
     → Reflex created (confidence 0.3-0.85)
-    → /evolve clusters related reflexes
+    → consolidation clusters related reflexes
     → Strong cluster (3+ reflexes, avg confidence > 0.7)
     → Evolved into skill, command, or agent
 ```
 
-## Integration with /evolve
+## Integration with the review cycle
 
-When `/evolve` runs Cycle 1 (Detect):
+When a review cycle runs Detect:
 1. Read `.claude/memory/reflexes/observations.jsonl`
 2. Detect patterns (3+ occurrences minimum)
 3. Create/update reflex files in `.claude/memory/reflexes/project/`
