@@ -10,7 +10,7 @@ description: >
   NOT triggered by: "add X" or "implement X" alone — those go to /add directly.
 argument-hint: "[complex feature or risky change to plan]"
 disable-model-invocation: true
-allowed-tools: Read, Grep, Glob, Bash
+allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Task, TaskCreate
 ---
 
 # /blueprint — Plan Before Implementing
@@ -487,4 +487,11 @@ After all milestones annotated and corrections applied → return control to /co
 
 Show: the plan with `file:line` references + risk level.
 Show: tasks created (only after approval).
-Do not write any code during /blueprint — ever (unless in copilot mode, where plan.md is the output).
+
+**Write scope during /blueprint.** `allowed-tools` includes Write and Edit because this
+command legitimately writes plan artifacts (`.claude/plan.md`, `.claude/features/**`,
+`.claude/specs/**`). That grant is scoped to those paths only.
+
+Do NOT write, edit, or delete implementation code during /blueprint — not a fix, not a
+stub, not a TODO marker. The read-only guarantee comes from EnterPlanMode plus this
+rule, and both must hold. The one exception is copilot mode, where plan.md is the output.

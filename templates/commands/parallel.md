@@ -10,7 +10,7 @@ description: >
   Do NOT trigger for: a single milestone, sequential work, or when milestones share files.
 argument-hint: "[M1 M2 M3 — milestone IDs from plan.md]"
 disable-model-invocation: true
-allowed-tools: Read, Bash, Glob, Grep, Task
+allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Task
 ---
 
 # /parallel — Parallel Milestone Execution
