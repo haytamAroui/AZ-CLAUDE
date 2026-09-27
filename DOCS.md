@@ -1,6 +1,6 @@
 # AZCLAUDE -- Complete User Guide
 
-> Version 0.7.6 · 2137 tests passing · AI coding environment
+> Version 0.8.3 · 2138 tests passing · AI coding environment
 
 ---
 
@@ -23,7 +23,7 @@
 15. [Spec-Driven Development](#spec-driven-development)
 16. [Parallel Execution](#parallel-execution)
 17. [Code Rules System](#code-rules-system)
-18. [All 39 Commands](#all-39-commands)
+18. [All 46 Commands](#all-46-commands)
 19. [Skills (Auto-Invoked)](#skills-auto-invoked)
 20. [Behavioral Defenses](#behavioral-defenses)
 21. [Multi-CLI Support](#multi-cli-support)
@@ -1648,7 +1648,7 @@ If no `code-rules.md` exists, `/verify` falls back to the per-stack rule library
 
 ---
 
-## All 39 Commands
+## All 46 Commands
 
 ### /dream
 **New project from idea.**

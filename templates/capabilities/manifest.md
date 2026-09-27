@@ -2,7 +2,8 @@
 last_updated: 2026-03-14
 version: 2.0.0
 
-The model reads this file ONCE (~100 tokens) to know what exists.
+The model reads this file ONCE per session to know what exists.
+It is ~8 KB / roughly 2,000 tokens — budget for it, and keep it that size.
 Load only the files that match the current task. Never load the full list.
 
 ## Shared — inject alongside any task

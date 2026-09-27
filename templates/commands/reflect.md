@@ -1,3 +1,17 @@
+---
+name: reflect
+description: >
+  Analyze friction logs and conversation patterns, then propose exact edits to
+  CLAUDE.md rules. Improves Claude's *behavior* by updating the instructions that
+  guide it, rather than the environment structure (that is /evolve).
+  Triggers on: "reflect", "improve CLAUDE.md", "the rules are stale",
+  "update my instructions", "self-improve", "my rules are wrong".
+  Reads .claude/memory/friction-log.md and proposals need approval before write.
+argument-hint: "[--apply | blank to preview proposals only]"
+disable-model-invocation: false
+allowed-tools: Read, Write, Edit, Grep, Glob
+---
+
 # /reflect — Self-Improving CLAUDE.md
 
 **Purpose**: Analyze conversation patterns and friction to propose improvements to CLAUDE.md rules.

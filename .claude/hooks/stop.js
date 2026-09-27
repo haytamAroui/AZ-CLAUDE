@@ -94,8 +94,9 @@ if (dTrimIdx !== -1) {
 content = content.replace(/^Updated: .*/m, `Updated: ${today}`);
 try { fs.writeFileSync(goalsPath, content); } catch (_) {}
 
-// ── Prune old checkpoints — keep 5 most recent, delete the rest ──────────────
-// Older checkpoints are superseded by goals.md "Current threads" entries.
+// ── Prune old checkpoints — keep 5 most recent, archive the rest ────────────
+// MOVED, not deleted: this previously called unlinkSync, which silently removed
+// git-tracked files and left the working tree dirty.
 const checkpointDir = path.join(cfg, 'memory', 'checkpoints');
 if (fs.existsSync(checkpointDir)) {
   try {
@@ -104,8 +105,18 @@ if (fs.existsSync(checkpointDir)) {
       .sort()
       .reverse(); // newest first (YYYY-MM-DD-HH-MM.md sorts correctly)
     const MAX_CHECKPOINTS = 5;
-    for (const f of cpFiles.slice(MAX_CHECKPOINTS)) {
-      try { fs.unlinkSync(path.join(checkpointDir, f)); } catch (_) {}
+    const stale = cpFiles.slice(MAX_CHECKPOINTS);
+    if (stale.length) {
+      const archiveDir = path.join(checkpointDir, '.archived');
+      fs.mkdirSync(archiveDir, { recursive: true });
+      for (const f of stale) {
+        const from = path.join(checkpointDir, f);
+        const to   = path.join(archiveDir, f);
+        try {
+          if (fs.existsSync(to)) fs.rmSync(to, { force: true });
+          fs.renameSync(from, to);
+        } catch (_) {}
+      }
     }
   } catch (_) {}
 }

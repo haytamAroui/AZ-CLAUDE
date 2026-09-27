@@ -1,3 +1,16 @@
+---
+name: visualize
+description: >
+  Start, stop, or check the AZCLAUDE real-time pipeline visualizer dashboard on
+  port 8765. Hooks POST session events to it when AZCLAUDE_VISUALIZER is set.
+  Triggers on: "visualize", "show the pipeline", "open the dashboard",
+  "start the visualizer", "stop the visualizer", "session dashboard".
+  Shells out to node .claude/visualizer/server.js — no other file writes.
+argument-hint: "[start | stop | status | blank for status]"
+disable-model-invocation: false
+allowed-tools: Bash, Read
+---
+
 # /visualize — Real-Time Session Visualizer
 
 Start or stop the AZCLAUDE pipeline-aware visualizer dashboard.

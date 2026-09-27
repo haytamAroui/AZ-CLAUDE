@@ -1,3 +1,16 @@
+---
+name: copilot
+description: >
+  Work through a structured plan autonomously across sessions: plan, build, test,
+  commit, evolve, ship. Delegates to the orchestrator when one is installed.
+  Triggers on: "copilot", "autonomous mode", "keep going until done",
+  "run this plan", "work through the milestones", "go until it ships".
+  Reads .claude/plan.md and .claude/copilot-state.md to decide the next step.
+argument-hint: "[intent | blank to resume from plan.md]"
+disable-model-invocation: false
+allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Task
+---
+
 # /copilot — Autonomous Milestone Execution
 
 **Purpose**: Work through a structured plan autonomously. Plan → Build → Test → Commit → Evolve → Ship.

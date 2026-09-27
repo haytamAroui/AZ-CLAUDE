@@ -2056,7 +2056,8 @@ check "copilot: session state file"                   "bin/copilot.js" "copilot-
 check "copilot: state persists across crash"          "bin/copilot.js" "loadState\|JSON\.parse.*statePath\|readFileSync.*statePath"
 check "copilot: state cleaned on complete"            "bin/copilot.js" "unlinkSync.*statePath\|clean up state"
 check "stop: checkpoint pruning to 5"                 "templates/hooks/stop.js" "MAX_CHECKPOINTS\|5.*checkpoint\|checkpoint.*5\|cpFiles\.slice"
-check "stop: checkpoint prune deletes old files"      "templates/hooks/stop.js" "unlinkSync.*checkpointDir\|pruned"
+check "stop: checkpoint prune archives old files"    "templates/hooks/stop.js" "\.archived\|renameSync"
+check_absent "stop: never unlinks checkpoints"        "templates/hooks/stop.js" "unlinkSync.*checkpointDir"
 
 # ─── Cross-surface sync: every command registered in all 3 surfaces ──────────
 echo ""
@@ -2310,7 +2311,7 @@ check      "orchestrator: batch-merge fallback"                 "$ROOT/agents/or
 check      "/parallel: DAG dispatch mode"                       "$PARA_CMD"   "DAG.*DISPATCH\|DAG Mode\|dag.*dispatch"
 check      "/parallel: pre-read shared files"                   "$PARA_CMD"   "Pre-read shared\|Pre-loaded Context\|redundant.*reads"
 check      "/parallel: test scope per agent"                    "$PARA_CMD"   "Test scope\|test.*scope"
-check      "/parallel: merge-on-complete step"                  "$PARA_CMD"   "Merge-on-Complete\|merge.*immediately\|merge-on-complete"
+check      "/parallel: merge-on-complete step"                  "$PARA_CMD"   "Merge-on-Complete\|merge.*immediately\|merge-on-complete\|Wave Merge\|Wait-for-All"
 check      "/parallel: DAG unblock after merge"                 "$PARA_CMD"   "newly-unblocked\|Check DAG\|unblock"
 check      "/parallel: max parallel agents"                     "$PARA_CMD"   "Max parallel.*6\|max_parallel\|max parallel"
 check      "tasks: DAG dispatch note"                           "$CMD/tasks.md" "DAG dispatch\|Depends:.*satisfaction\|merge-on-complete"

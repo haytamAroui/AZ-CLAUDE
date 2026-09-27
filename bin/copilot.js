@@ -39,10 +39,37 @@ if (noArgs || hasCliFlag || (args[0] && SUBCOMMANDS.includes(args[0].toLowerCase
 }
 
 const deepMode   = args.includes('--deep');
-const filteredArgs = args.filter(a => a !== '--deep');
+// Opt-in gate for unsandboxed execution. Copilot drives Claude with
+// --dangerously-skip-permissions, so every template the model reads becomes
+// executable with the user's full privileges. Require an explicit flag or env
+// var so nobody lands here by accident — a bare `npx azclaude-copilot` must not
+// silently disable the permission system.
+const unsafeAck  = args.includes('--yes') || args.includes('-y') ||
+                   process.env.AZCLAUDE_UNSAFE === '1';
+const wantsHelp  = args.includes('--help') || args.includes('-h');
+const filteredArgs = args.filter(a => a !== '--deep' && a !== '--yes' && a !== '-y');
 const projectDir = path.resolve(filteredArgs[0] || '.');
 const intentArg  = filteredArgs[1] || '';
 const maxSessions = parseInt(filteredArgs[2] || '20', 10);
+
+// --help must still work without acknowledgement, or the gate hides its own
+// escape hatch from anyone who needs to read what the flag does.
+if (!unsafeAck && !wantsHelp) {
+  console.error(`
+  AZCLAUDE — Autonomous mode requires explicit opt-in
+
+  Copilot runs Claude with --dangerously-skip-permissions, so anything the
+  model reads (plan.md, templates, dependencies) executes with your full
+  privileges and no prompts.
+
+  Re-run with one of:
+    npx azclaude-copilot <dir> "<intent>" --yes     acknowledge for this run
+    AZCLAUDE_UNSAFE=1 npx azclaude-copilot <dir> "<intent>"   acknowledge for the shell
+
+  Run inside a container or a scratch repo if you prefer not to.
+`);
+  process.exit(2);
+}
 
 if (args.includes('--help') || args.includes('-h')) {
   console.log(`
@@ -63,6 +90,8 @@ if (args.includes('--help') || args.includes('-h')) {
   Options:
     --help, -h    Show this help
     --deep        Enable deep audit mode (content accuracy, UX, links, a11y)
+    --yes, -y     Required. Acknowledge unsandboxed execution
+                  (--dangerously-skip-permissions). AZCLAUDE_UNSAFE=1 also works.
     max-sessions  Maximum sessions before stopping (default: 20)
   `);
   process.exit(0);
@@ -156,7 +185,7 @@ console.log('  │                                            │');
 console.log('  │  Reduce sessions with: copilot . intent 5  │');
 console.log('  └────────────────────────────────────────────┘');
 console.log('');
-console.log('  ⚠  Uses --dangerously-skip-permissions');
+console.log('  ⚠  Uses --dangerously-skip-permissions (acknowledged via --yes)');
 console.log('  ⚠  Claude has full access to this directory');
 console.log('  ⚠  See SECURITY.md for mitigations');
 console.log('════════════════════════════════════════════════');

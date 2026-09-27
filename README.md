@@ -275,7 +275,7 @@ Claude Code
       ├── 46 commands     → Claude reads the .md, follows instructions
       ├── 16 agents       → Claude spawns as subagents with Task tool
       ├── 10 skills       → Auto-invoked when relevant context detected
-      ├── 48 capabilities → Lazy-loaded via manifest.md (~100 tokens overhead)
+      ├── 50 capabilities → Lazy-loaded via manifest.md
       └── Memory files    → goals.md, decisions.md, patterns.md, checkpoints/
 ```
 
@@ -602,7 +602,7 @@ Skills fire automatically based on context—no commands needed.
 
 ## Capability Manifest (48 Modules)
 
-AZCLAUDE is a lazy-loaded environment of 48 capability modules. It only loads what the task needs, keeping context costs at ~380 tokens.
+AZCLAUDE is a lazy-loaded environment of 50 capability modules. It only loads what the task needs, keeping context costs at ~380 tokens.
 
 - **Shared Intelligence:** `debate.md`, `evidence.md`, `decision-log.md`
 - **Execution:** `parallel-coordination.md`, `worktree-isolation.md`, `merge-protocol.md`
@@ -637,11 +637,11 @@ AZCLAUDE is a lazy-loaded environment of 48 capability modules. It only loads wh
 
 ## Verified
 
-2137 tests. Every template, command, capability, agent, hook, and CLI feature verified.
+2138 tests. Every template, command, capability, agent, hook, and CLI feature verified.
 
 ```bash
 bash tests/test-features.sh
-# Results: 2137 passed, 0 failed, 2137 total
+# Results: 2138 passed, 0 failed, 2138 total
 ```
 
 ---
