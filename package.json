@@ -18,11 +18,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/haytamAroui/AZ-CLAUDE-COPILOT.git"
+    "url": "git+https://github.com/haytamAroui/AZ-CLAUDE.git"
   },
-  "homepage": "https://github.com/haytamAroui/AZ-CLAUDE-COPILOT#readme",
+  "homepage": "https://github.com/haytamAroui/AZ-CLAUDE#readme",
   "bugs": {
-    "url": "https://github.com/haytamAroui/AZ-CLAUDE-COPILOT/issues"
+    "url": "https://github.com/haytamAroui/AZ-CLAUDE/issues"
   },
   "scripts": {
     "test": "bash tests/test-features.sh && node --test tests/node-smoke.test.js",

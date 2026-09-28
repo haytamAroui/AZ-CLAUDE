@@ -3,8 +3,8 @@
   <p><strong>A complete AI coding environment — built on Claude Code's native architecture.</strong></p>
   <p>
     <a href="https://www.npmjs.com/package/azclaude-copilot"><img src="https://img.shields.io/npm/v/azclaude-copilot.svg" alt="npm version"></a>
-    <a href="https://github.com/haytamAroui/AZ-CLAUDE-COPILOT/actions/workflows/tests.yml"><img src="https://github.com/haytamAroui/AZ-CLAUDE-COPILOT/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
-    <a href="https://github.com/haytamAroui/AZ-CLAUDE-COPILOT/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license"></a>
+    <a href="https://github.com/haytamAroui/AZ-CLAUDE/actions/workflows/tests.yml"><img src="https://github.com/haytamAroui/AZ-CLAUDE/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
+    <a href="https://github.com/haytamAroui/AZ-CLAUDE/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license"></a>
     <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D16-brightgreen" alt="node version"></a>
   </p>
   <p>

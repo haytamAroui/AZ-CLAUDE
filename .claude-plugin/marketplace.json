@@ -12,14 +12,14 @@
       "version": "0.8.3",
       "source": {
         "source": "github",
-        "repo": "haytamAroui/AZ-CLAUDE-COPILOT",
+        "repo": "haytamAroui/AZ-CLAUDE",
         "ref": "main"
       },
       "author": {
         "name": "haytamAroui",
         "url": "https://github.com/haytamAroui"
       },
-      "homepage": "https://github.com/haytamAroui/AZ-CLAUDE-COPILOT/blob/main/DOCS.md",
+      "homepage": "https://github.com/haytamAroui/AZ-CLAUDE/blob/main/DOCS.md",
       "license": "MIT",
       "keywords": [
         "memory",

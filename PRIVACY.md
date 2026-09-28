@@ -26,4 +26,4 @@ AZCLAUDE runs inside Claude Code. Claude Code's own privacy policy governs how y
 
 ## Contact
 
-Issues: https://github.com/haytamAroui/AZ-CLAUDE-COPILOT/issues
+Issues: https://github.com/haytamAroui/AZ-CLAUDE/issues

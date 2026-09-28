@@ -1294,7 +1294,7 @@ check      "plugin: hooks use CLAUDE_PLUGIN_ROOT"         "hooks/hooks.json" "CL
 check      "plugin: PostToolUse async"                    "hooks/hooks.json" "async.*true"
 check      "plugin: marketplace has github source"        ".claude-plugin/marketplace.json" "github\|haytamAroui"
 check      "plugin: package.json includes plugin files"   "package.json" "\.claude-plugin"
-check      "plugin: marketplace repo is AZ-CLAUDE-COPILOT" ".claude-plugin/marketplace.json" "AZ-CLAUDE-COPILOT"
+check      "plugin: marketplace repo is AZ-CLAUDE"       ".claude-plugin/marketplace.json" "AZ-CLAUDE"
 PKG_VER=$(node -e "process.stdout.write(require('./package.json').version)")
 PKG_VER_RE=$(echo "$PKG_VER" | sed 's/\./\\./g')
 check      "plugin: marketplace version matches $PKG_VER"  ".claude-plugin/marketplace.json" "$PKG_VER_RE"

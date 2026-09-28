@@ -1409,6 +1409,6 @@ if (onboardingPath === 'RESUME') {
 
 console.log('');
 console.log('  ─────────────────────────────────────────────');
-console.log('  all commands: /help  ·  docs: github.com/haytamAroui/AZ-CLAUDE-COPILOT');
+console.log('  all commands: /help  ·  docs: github.com/haytamAroui/AZ-CLAUDE');
 console.log('  upgrade:      npx azclaude-copilot@latest');
 console.log('════════════════════════════════════════════════\n');
