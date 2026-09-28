@@ -742,6 +742,12 @@ check "OpenCode entry in CLI_TABLE"              "$CLI" "OpenCode"
 check "Codex CLI entry in CLI_TABLE"             "$CLI" "Codex CLI"
 check "Cursor entry in CLI_TABLE"                "$CLI" "Cursor"
 check "detectCLI function"                       "$CLI" "detectCLI"
+# doctor was auditing .opencode/ in a Claude Code project: argv[2] held the
+# subcommand word "doctor" and was resolved as a project directory.
+check      "detectCLI ignores subcommand words"   "$CLI" "SUBCOMMAND_WORDS"
+# the env override stripped whitespace from the table name but not the env
+# value, so AZCLAUDE_CLI could never match a multi-word CLI name.
+check      "detectCLI normalises both sides"      "$CLI" "normalizeCLIName"
 check "executable detection in PATH"             "$CLI" "execSync.*--version\|exe.*--version"
 check "HOME dir fallback detection"              "$CLI" "hooksDir.*existsSync\|existsSync.*hooksDir"
 check "substitutePaths function"                 "$CLI" "substitutePaths"

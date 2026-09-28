@@ -82,15 +82,31 @@ const CLI_TABLE = [
   { name: 'Cursor',      exe: 'cursor',   cfg: '.cursor',   rulesFile: '.cursor/rules/project.mdc', hooksDir: null                                },
 ];
 
+// Subcommand words that occupy argv[2] but are not project directories.
+// Without this, detectCLI() resolves argv[2] as a path, finds nothing, and
+// falls through to PATH detection — which is how `azclaude doctor` ended up
+// auditing .opencode/ in a Claude Code project.
+const SUBCOMMAND_WORDS = new Set([
+  'setup', 'init', 'install', 'doctor', 'upgrade', 'demo', 'audit', 'help', 'version',
+]);
+
+// Strip whitespace AND punctuation so "Claude Code", "claudecode" and
+// "claude-code" all match the same table entry.
+const normalizeCLIName = (s) => String(s).toLowerCase().replace(/[^a-z0-9]/g, '');
+
 function detectCLI() {
   // 0. Env override (for testing / explicit selection)
   if (process.env.AZCLAUDE_CLI) {
-    const forced = CLI_TABLE.find(c => c.name.toLowerCase().replace(/\s/g,'') === process.env.AZCLAUDE_CLI.toLowerCase());
+    const forced = CLI_TABLE.find(c => normalizeCLIName(c.name) === normalizeCLIName(process.env.AZCLAUDE_CLI));
     if (forced) return forced;
   }
 
-  // 0b. If project already has a .claude/ or .opencode/ etc, prefer that CLI
-  const projectDir = path.resolve(process.argv[2] || '.');
+  // 0b. If project already has a .claude/ or .opencode/ etc, prefer that CLI.
+  // argv[2] is only a project directory when it is not a subcommand word.
+  const arg2 = process.argv[2];
+  const projectDir = path.resolve(
+    (!arg2 || arg2.startsWith('-') || SUBCOMMAND_WORDS.has(arg2.toLowerCase())) ? '.' : arg2
+  );
   for (const cli of CLI_TABLE) {
     const existingCfg = path.join(projectDir, cli.cfg);
     if (fs.existsSync(existingCfg) && fs.statSync(existingCfg).isDirectory()) {
