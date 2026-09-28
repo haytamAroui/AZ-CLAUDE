@@ -1,5 +1,5 @@
 # Goals — AZCLAUDE
-Updated: 2026-09-27
+Updated: 2026-09-28
 
 ## Current threads
 - [checkpoint] 18:35 — v0.8.0-knowledge-layer-shipped → .claude/memory/checkpoints/2026-04-07-18-35.md
@@ -7,6 +7,11 @@ Updated: 2026-09-27
 - Marketplace listing submitted — awaiting approval (form submitted 2026-03-22)
 
 ## Done this session
+- 03:01 — bin\cli.js (+19/-3) — // 0b. If project already has a .claude/ or .opencode/ etc, 
+- 02:38 — tests\test-features.sh (+34/-0)
+- 02:37 — templates\commands\blueprint.md (+40/-14) — Find shared utility files that multiple features import from
+- 02:00 — bin\cli.js (+1/-1)
+- 01:59 — .fix7.py
 - 01:24 — .fix5.py
 - 01:23 — .fix4.py
 - 00:51 — tests\hooks.test.js (+41/-0) — test('user-prompt: Brain Router fires on the first message o
@@ -22,11 +27,6 @@ Updated: 2026-09-27
 - 00:15 — .fix-refs3.py
 - 00:15 — .fix-refs2.py
 - 00:12 — .fix-skills-agents.py
-- 00:10 — templates\CLAUDE.md (+26/-27)
-- 00:10 — .fix-claudemd.py
-- 00:07 — templates\commands\blueprint.md (+7/-15) — Historical coupling data
-- 00:06 — .fix-copilot.py
-- 00:05 — .fix-refs.py
 
 ## Next actions
 1. Test `npx azclaude-copilot@latest` on azcomply — run /ingest on azcomply's docs, /constitute + /spec + /copilot
