@@ -36,8 +36,16 @@ If `$ARGUMENTS` contains `--deep`:
 
 ---
 
-Call the `EnterPlanMode` tool NOW — this enforces read-only mode at the kernel level.
-No file edits are possible until you call `ExitPlanMode` at Step 4: Approval Gate.
+**Mode check (do this first):**
+```bash
+[ -f .claude/copilot-intent.md ] && echo "COPILOT_MODE" || echo "INTERACTIVE_MODE"
+```
+
+- **INTERACTIVE_MODE** → call the `EnterPlanMode` tool NOW — this enforces read-only mode.
+  No file edits are possible until you call `ExitPlanMode` at Step 4: Approval Gate.
+- **COPILOT_MODE** → do NOT call `EnterPlanMode`. Copilot runs autonomously: there is no
+  human to approve `ExitPlanMode`, and plan.md must be written. Skip Step 4 and follow
+  "Copilot Mode — plan.md Format + Layer 2 Validation" below.
 
 ---
 
@@ -63,7 +71,9 @@ First check if $ARGUMENTS is a spec file:
 **If inline description** (not a spec file):
 - Check if `.claude/specs/` has a spec matching $ARGUMENTS keywords:
   ```bash
-  ls .claude/specs/ 2>/dev/null | grep -i "$(echo "$ARGUMENTS" | cut -d' ' -f1-2)"
+  # Spec files are hyphenated slugs (add-login-flow.md), so slugify the first two words
+  KW=$(echo "$ARGUMENTS" | tr '[:upper:] ' '[:lower:]-' | tr -cd 'a-z0-9-' | cut -d- -f1-2)
+  [ -n "$KW" ] && ls .claude/specs/ 2>/dev/null | grep -i -- "$KW"
   ```
 - If matching spec found → use it. If not → proceed with AskUserQuestion below.
 
@@ -79,7 +89,10 @@ If $ARGUMENTS is vague (and no spec found), use **AskUserQuestion**:
 Find every file that will need to change:
 
 ```bash
-grep -r "{keyword from $ARGUMENTS}" --include="*.ts" --include="*.py" --include="*.js" -l | head -15
+# Stack-agnostic: search all text files, skip vendored/build/tooling dirs
+grep -rIl --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=.claude \
+  --exclude-dir=dist --exclude-dir=build --exclude-dir=target --exclude-dir=vendor \
+  "{keyword from $ARGUMENTS}" . | head -15
 ```
 
 For each affected file, read the relevant section — not the whole file.
@@ -91,7 +104,8 @@ Identify:
 
 ### Historical coupling data
 ```bash
-cat .claude/memory/coupling-learnings.md 2>/dev/null | grep -A2 "Coupling Miss"
+# coupling-learnings.md is the current name; parallel-learnings.md is the legacy name
+cat .claude/memory/coupling-learnings.md .claude/memory/parallel-learnings.md 2>/dev/null | grep -A2 "Coupling Miss"
 ```
 If previous plans recorded coupling misses for file patterns that appear in this
 blueprint's affected files → auto-merge those milestones into a single milestone
@@ -163,7 +177,11 @@ In copilot mode, the orchestrator dispatches directly from this output.
 
 **Step 0: Greenfield check**
 ```bash
-SRC_COUNT=$(find src/ app/ lib/ -type f 2>/dev/null | wc -l 2>/dev/null || echo 0)
+# Any stack: tracked files if a git repo, else find; count common source extensions only
+SRC_COUNT=$( (git ls-files 2>/dev/null || find . -type f \
+    -not -path './node_modules/*' -not -path './.git/*' -not -path './.claude/*') \
+  | grep -E '\.(ts|tsx|js|jsx|mjs|py|go|rs|java|kt|cs|rb|php|swift|c|cc|cpp|h|svelte|vue)$' \
+  | wc -l | tr -d ' ')
 echo "source_files=$SRC_COUNT"
 ```
 If source_files < 10 → greenfield project. Force Wave 1 = all foundation work (schema, config, shared utils, types) as a SINGLE milestone regardless of feature count. Parallel only unlocks from Wave 2 onward, after the foundation exists and greps have real files to scan.
@@ -208,8 +226,8 @@ Sub-3: {consumers group B — follows pattern} → Depends: Sub-2
 **Step 2: Coupling analysis — merge rule**
 For each pair of raw work items, check if they share ANY of:
 - Same database table (both CREATE or ALTER the same table)
-- Same config file (`package.json`, `tsconfig.json`, `prisma/schema.prisma`, `docker-compose.yml`, `go.mod`, `Cargo.toml`)
-- Same utility module (both CREATE or MODIFY files in `utils/`, `shared/`, `common/`, `lib/`, `helpers/`)
+- Same config file (`package.json`, `tsconfig.json`, `prisma/schema.prisma`, `docker-compose.yml`, `go.mod`, `Cargo.toml`, `pyproject.toml`, `pom.xml`, `build.gradle`, `Gemfile`)
+- Same utility module (both CREATE or MODIFY files in `utils/`, `shared/`, `common/`, `lib/`, `helpers/`, `internal/`, `pkg/`)
 - Same API contract (one produces an endpoint, the other consumes it within the same feature boundary)
 
 If any coupling exists → merge those two items into ONE milestone. Repeat until no same-wave pair shares any resource.
@@ -262,12 +280,16 @@ If two milestones share a top-level directory → add `Depends:` to split them i
 
 For each same-wave pair, check if they likely share utility files:
 ```bash
-# Find shared utility dirs that multiple features import from
-grep -r "from.*utils\|import.*utils\|require.*utils\|from.*shared\|from.*common\|from.*lib" \
-  src/ --include="*.ts" --include="*.py" --include="*.js" -l 2>/dev/null | head -20
+# Find shared utility files that multiple features import from (any stack)
+grep -rIlE "(utils|shared|common|lib|helpers|internal|pkg)" \
+  --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=.claude \
+  --exclude-dir=dist --exclude-dir=build --exclude-dir=target --exclude-dir=vendor \
+  --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.py" \
+  --include="*.go" --include="*.rs" --include="*.java" --include="*.kt" --include="*.cs" \
+  --include="*.rb" --include="*.php" --include="*.svelte" --include="*.vue" . 2>/dev/null | head -20
 ```
 
-If a `utils/`, `shared/`, `common/`, or `lib/` directory exists AND two parallel milestones
+If a `utils/`, `shared/`, `common/`, `lib/`, `helpers/`, `internal/`, or `pkg/` directory exists AND two parallel milestones
 both need to CREATE or MODIFY files there → set `Parallel: no` for both and add a Depends: relationship.
 
 **Do NOT spawn problem-architect here.** The grep is sufficient for Layer 1. Problem-architect
@@ -385,9 +407,13 @@ When $ARGUMENTS points to a spec file (`.claude/specs/*.md`) OR contains a named
 [ -f "$ARGUMENTS" ] && echo "spec-mode" || echo "inline-mode"
 
 # Determine next feature number
-NEXT_N=$(ls .claude/features/ 2>/dev/null | grep -c '^' || echo 0)
+NEXT_N=$(ls .claude/features/ 2>/dev/null | wc -l | tr -d ' ')
 N=$(printf '%02d' $((NEXT_N + 1)))
-SLUG=$(basename "$ARGUMENTS" .md 2>/dev/null || echo "$ARGUMENTS" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -cd 'a-z0-9-' | cut -c1-40)
+if [ -f "$ARGUMENTS" ]; then
+  SLUG=$(basename "$ARGUMENTS" .md)
+else
+  SLUG=$(echo "$ARGUMENTS" | tr '[:upper:] ' '[:lower:]-' | tr -cd 'a-z0-9-' | cut -c1-40)
+fi
 FEATURE_DIR=".claude/features/${N}-${SLUG}"
 ```
 

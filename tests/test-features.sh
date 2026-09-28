@@ -2218,6 +2218,40 @@ check "blueprint: spawns spec-reviewer"            "$CMD/blueprint.md" "spec-rev
 check "blueprint: reads spec file if provided"     "$CMD/blueprint.md" "spec.*file.*detected\|spec-file.*mode\|spec file"
 check "blueprint: stops on NEEDS_CLARIFY"          "$CMD/blueprint.md" "NEEDS_CLARIFY"
 check "blueprint: constitution non-negotiables"    "$CMD/blueprint.md" "Non-Negotiables\|non-negotiables"
+check "blueprint: renders dispatch map (Step 3c)"     "$CMD/blueprint.md" "Parallel Dispatch Plan"
+check "blueprint: mode check precedes EnterPlanMode" "$CMD/blueprint.md" "Mode check (do this first)"
+check "blueprint: copilot mode skips EnterPlanMode"  "$CMD/blueprint.md" "do NOT call .EnterPlanMode."
+check "blueprint: reads legacy parallel-learnings"   "$CMD/blueprint.md" "parallel-learnings\.md"
+
+# Behavioral: execute the blueprint shell snippets instead of only grepping for them.
+# Each of these was a real defect — a snippet that looks right and silently
+# produces the wrong value only when a shell actually runs it.
+BP_TMP=$(mktemp -d)
+
+# Spec files are hyphenated slugs; naive "first two words" matching never matches
+# "Add login flow" against add-login-flow.md.
+( cd "$BP_TMP" && mkdir -p .claude/specs && touch .claude/specs/add-login-flow.md
+  ARGUMENTS="Add login flow with SSO"
+  KW=$(echo "$ARGUMENTS" | tr '[:upper:] ' '[:lower:]-' | tr -cd 'a-z0-9-' | cut -d- -f1-2)
+  ls .claude/specs/ 2>/dev/null | grep -qi -- "$KW" ) \
+  && { echo "  ✓ blueprint (exec): inline args match hyphenated spec slug"; PASS=$((PASS + 1)); } \
+  || { echo "  ✗ blueprint (exec): inline args match hyphenated spec slug"; FAIL=$((FAIL + 1)); ERRORS="$ERRORS\n  FAILED: blueprint spec-slug matching (executed)"; }
+
+# First feature must be 01 when no features dir exists.
+( cd "$BP_TMP" && rm -rf .claude/features
+  NEXT_N=$(ls .claude/features/ 2>/dev/null | wc -l | tr -d ' ')
+  N=$(printf '%02d' $((NEXT_N + 1))) && [ "$N" = "01" ] ) \
+  && { echo "  ✓ blueprint (exec): first feature number is 01 with no features dir"; PASS=$((PASS + 1)); } \
+  || { echo "  ✗ blueprint (exec): first feature number is 01 with no features dir"; FAIL=$((FAIL + 1)); ERRORS="$ERRORS\n  FAILED: blueprint feature numbering (executed)"; }
+
+# A Go project living outside src/ must not be misread as greenfield.
+( cd "$BP_TMP" && mkdir -p cmd internal && for i in $(seq 1 11); do echo "package main" > cmd/f$i.go; done
+  SRC_COUNT=$( (find . -type f -not -path './.git/*' -not -path './.claude/*') | grep -E '\.(ts|tsx|js|jsx|mjs|py|go|rs|java|kt|cs|rb|php|swift|c|cc|cpp|h|svelte|vue)$' | wc -l | tr -d ' ')
+  [ "$SRC_COUNT" -ge 10 ] ) \
+  && { echo "  ✓ blueprint (exec): Go project outside src/ is not misread as greenfield"; PASS=$((PASS + 1)); } \
+  || { echo "  ✗ blueprint (exec): Go project outside src/ is not misread as greenfield"; FAIL=$((FAIL + 1)); ERRORS="$ERRORS\n  FAILED: blueprint greenfield detection (executed)"; }
+
+rm -rf "$BP_TMP"
 
 # ─── Wiring: setup ↔ constitute/spec ─────────────────────────────────────────
 echo ""
